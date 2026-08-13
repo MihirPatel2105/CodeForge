@@ -53,9 +53,9 @@ Tasks
       `CEREBRAS_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `LANGFUSE_*`.
 - [x] `GET /health` returning `{"status":"ok"}`.
 - [x] Ruff config + pre-commit hook.
-- [ ] Free-tier accounts created for Groq, Cerebras, OpenRouter, Google AI Studio; Ollama installed
+- [x] Free-tier accounts created for Groq, Cerebras, OpenRouter, Google AI Studio; Ollama installed
       locally with one small model pulled.
-      *(all four keys in `.env`; Ollama not installed yet — last-resort fallback, needed by Phase 3)*
+      *(all four keys in `.env`; Ollama 0.32.9 + `qwen2.5:3b`, verified through LiteLLM)*
 
 **DoD:** `docker compose up` → backend healthy, Mongo reachable, frontend renders, one successful
 LiteLLM `completion()` call logged in Langfuse.
@@ -68,7 +68,7 @@ LiteLLM `completion()` call logged in Langfuse.
 
 Tasks
 - [x] SRS document: functional + non-functional requirements.
-      *(`docs/SRS.md` — 47 FRs, 15 NFRs, 8 constraints. **Draft: team review still outstanding.**)*
+      *(`docs/SRS.md` — 47 FRs, 15 NFRs, 8 constraints. Team-reviewed 2026-08-13.)*
 - [x] Fix the supported prompt domain: **single-entity and two-entity CRUD REST APIs only**.
       *(`docs/SRS.md` §4, with rationale)*
 - [x] Write 10 canonical test prompts (books API, tasks API, notes API, contacts + groups, …).
