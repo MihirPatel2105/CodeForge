@@ -18,6 +18,10 @@ class Run(Document):
     # it is a TypedDict owned by the graph, and its shape evolves with the graph.
     state: dict[str, Any] = Field(default_factory=dict)
 
+    # Denormalised from state["loop_count"] so run-history lists can show an iteration
+    # count without loading every full state snapshot. Written on each node transition.
+    iterations: int = 0
+
     metrics: RunMetrics | None = None
 
     # Every SSE event is appended here so a reloaded client can rebuild the timeline

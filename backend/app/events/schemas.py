@@ -17,6 +17,7 @@ EventName = Literal[
     "agent.started",
     "agent.message",
     "agent.completed",
+    "agent.failed",
     "approval.required",
     "approval.resolved",
     "loop.iteration",
@@ -59,6 +60,18 @@ class AgentCompleted(BaseEvent):
     agent: str
     output_summary: dict[str, Any] = Field(default_factory=dict)
     duration_ms: int = 0
+
+
+class AgentFailed(BaseEvent):
+    """An agent could not produce valid output. Distinct from `run.failed`: the run may
+    still continue (a fix pass, a provider fallback). Without agent attribution the
+    dashboard cannot render an agent card in its failed state (FR-44)."""
+
+    event: Literal["agent.failed"] = "agent.failed"
+    agent: str
+    code: str  # e.g. "llm_exhausted", "schema_invalid"
+    message: str
+    iteration: int = 0
 
 
 class ApprovalRequired(BaseEvent):
@@ -127,6 +140,7 @@ AnyEvent = Annotated[
     | AgentStarted
     | AgentMessage
     | AgentCompleted
+    | AgentFailed
     | ApprovalRequired
     | ApprovalResolved
     | LoopIteration
