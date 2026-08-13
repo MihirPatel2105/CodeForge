@@ -181,7 +181,7 @@ class SandboxResult(BaseModel):
 ```
 
 Container rules
-- Image is **pre-baked** with fastapi, uvicorn, beanie, motor, pytest, httpx and `mongod` —
+- Image is **pre-baked** with fastapi, uvicorn, beanie, pymongo, pytest, httpx and `mongod` —
   `network_mode="none"` means nothing can be installed at run time.
 - Limits: `network_mode="none"`, `mem_limit="512m"`, `nano_cpus` capped, read-only mount for
   source, no host paths beyond the run's temp dir.

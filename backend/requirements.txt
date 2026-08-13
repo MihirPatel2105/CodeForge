@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 pydantic-settings
+pydantic[email]  # EmailStr validation on registration
+beanie>=2        # ODM: uses pymongo AsyncMongoClient (Beanie 2 dropped motor)
 
 litellm
 langfuse<3  # v2 SDK: matches the langfuse:2 server and LiteLLM's callback

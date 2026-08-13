@@ -147,7 +147,7 @@ yet. Kill the process mid-run and resume it from the checkpoint successfully.
 **Goal:** generated code actually runs.
 
 Tasks
-- [ ] Pre-baked sandbox Docker image: python:3.11-slim + fastapi, uvicorn, beanie, motor, pytest,
+- [ ] Pre-baked sandbox Docker image: python:3.11-slim + fastapi, uvicorn, beanie, pymongo, pytest,
       httpx, and `mongod` (no network at run time, so nothing installs later).
 - [ ] `sandbox/runner.py`: write file tree to a temp dir → mount → run container with
       `network_mode="none"`, CPU/memory limits, and a hard timeout.

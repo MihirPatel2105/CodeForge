@@ -16,10 +16,10 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 1 — Requirements
-LAST DoD MET  : Phase 0 (2026-08-13) — compose up healthy, /health ok, mongo reachable,
-                frontend builds, LiteLLM->Groq call traced in Langfuse
-NEXT UP       : SRS + 10 canonical prompts committed to backend/tests/prompts.json
+CURRENT PHASE : 2 — Design
+LAST DoD MET  : Phase 1 (2026-08-13) — SRS team-reviewed, 10 canonical prompts frozen
+                in backend/tests/prompts.json
+NEXT UP       : RunState schema + Pydantic I/O schema for every agent handoff
 BLOCKED ON    : nothing (Ollama still uninstalled — Phase 0 leftover, needed by Phase 3)
 ```
 
@@ -77,7 +77,7 @@ running, tested API on screen.
 | Agent framework | LangGraph |
 | Durability | LangGraph `MongoDBSaver` checkpointer |
 | Platform DB | MongoDB (Atlas M0 free tier or local Docker) |
-| ODM | Beanie (Motor + Pydantic) |
+| ODM | Beanie 2.x (PyMongo `AsyncMongoClient` + Pydantic) — Beanie 2 dropped Motor, which MongoDB deprecated in 2025 |
 | LLM routing | LiteLLM (single `completion()` call, auto-fallback on 429) |
 | Providers | Groq → Cerebras → OpenRouter `:free` → Google AI Studio → Ollama (local) |
 | Structured output | Pydantic + Instructor (schema-valid JSON between handoffs) |
@@ -123,7 +123,7 @@ CodeForge/
 │   │   ├── config.py               # pydantic-settings, reads .env
 │   │   ├── api/                    # routers: auth, projects, runs, stream
 │   │   ├── core/                   # security, jwt, deps, exceptions
-│   │   ├── db/                     # Motor client, Beanie init, GridFS
+│   │   ├── db/                     # Mongo client, Beanie init, GridFS
 │   │   ├── models/                 # Beanie Documents (User, Project, Run)
 │   │   ├── schemas/                # Pydantic request/response + agent I/O schemas
 │   │   ├── graph/
@@ -213,7 +213,7 @@ only** — its free tier was cut in Dec 2025 and is unstable.
    return a raw Beanie `Document`. The response-model pattern goes in the Architect Agent's prompt
    template **and** on the Reviewer Agent's checklist. This is the #1 predicted failure mode.
 2. `network_mode="none"` means **no pip install inside the sandbox at run time**. The sandbox
-   image must be pre-baked with fastapi, beanie, motor, pytest, httpx, uvicorn, and mongod.
+   image must be pre-baked with fastapi, beanie, pymongo, pytest, httpx, uvicorn, and mongod.
 3. Free-tier 429s are normal, not bugs. LiteLLM fallback must be tested deliberately, not assumed.
 4. Every sandbox container must be force-removed in a `finally` block. Leaked containers will
    eat the demo machine.
