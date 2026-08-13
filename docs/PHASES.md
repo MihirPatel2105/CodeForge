@@ -67,8 +67,10 @@ LiteLLM `completion()` call logged in Langfuse.
 **Goal:** freeze what gets built, on paper, before any real code.
 
 Tasks
-- [ ] SRS document: functional + non-functional requirements.
-- [ ] Fix the supported prompt domain: **single-entity and two-entity CRUD REST APIs only**.
+- [x] SRS document: functional + non-functional requirements.
+      *(`docs/SRS.md` — 47 FRs, 15 NFRs, 8 constraints. **Draft: team review still outstanding.**)*
+- [x] Fix the supported prompt domain: **single-entity and two-entity CRUD REST APIs only**.
+      *(`docs/SRS.md` §4, with rationale)*
 - [x] Write 10 canonical test prompts (books API, tasks API, notes API, contacts + groups, …).
       These become the permanent evaluation set — do not change them later or the metrics break.
       *(`backend/tests/prompts.json` — 6 single-entity, 4 two-entity)*

@@ -9,6 +9,7 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 | `docs/AGENTS.md` | Working on LangGraph, agent prompts, or the review ↔ test loop |
 | `docs/STATE_AND_API.md` | Touching the state schema, REST routes, SSE events, or DB models |
 | `docs/ACCEPTANCE.md` | Deciding what counts as success; metrics, failure categories, approvals |
+| `docs/SRS.md` | Checking whether a feature is actually required, in scope, or out of scope |
 
 ---
 
@@ -113,7 +114,8 @@ CodeForge/
 │   ├── PHASES.md            # SDLC phase-wise build plan
 │   ├── AGENTS.md            # agent specs, prompts, the feedback loop
 │   ├── STATE_AND_API.md     # state schema, REST + SSE contract, DB models
-│   └── ACCEPTANCE.md        # success criteria, failure taxonomy, approval checkpoints
+│   ├── ACCEPTANCE.md        # success criteria, failure taxonomy, approval checkpoints
+│   └── SRS.md               # requirements spec: FRs, NFRs, supported prompt domain
 ├── docker-compose.yml
 ├── backend/
 │   ├── app/
