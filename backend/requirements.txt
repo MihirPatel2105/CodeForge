@@ -4,6 +4,10 @@ pydantic-settings
 pydantic[email]  # EmailStr validation on registration
 beanie>=2        # ODM: uses pymongo AsyncMongoClient (Beanie 2 dropped motor)
 
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt<4.1       # passlib 1.7.4 breaks on bcrypt >=4.1 (removed __about__, 72-byte probe)
+
 litellm
 langfuse<3  # v2 SDK: matches the langfuse:2 server and LiteLLM's callback
 
