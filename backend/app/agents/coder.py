@@ -4,7 +4,7 @@ from app.prompts import coder as prompt
 from app.schemas.agents import CodeOutput, Requirements, SingleFileOutput
 
 
-def _describe_entities(requirements: Requirements) -> str:
+def describe_entities(requirements: Requirements) -> str:
     lines: list[str] = []
     for entity in requirements.entities:
         fields = ", ".join(
@@ -38,7 +38,7 @@ class CoderAgent(BaseAgent):
             prompt.render(
                 project_name=requirements.project_name,
                 summary=requirements.summary,
-                entities=_describe_entities(requirements),
+                entities=describe_entities(requirements),
                 operations=", ".join(requirements.operations),
             ),
             run_id=state["run_id"],
@@ -57,3 +57,29 @@ class SingleFileCoderAgent(CoderAgent):
     """
 
     output_schema = SingleFileOutput
+
+    async def run_file(self, state: dict, spec) -> LLMResult:
+        """Generate one file of the Design.
+
+        Called once per `Design.files` entry. Splitting the tree across calls is what
+        keeps each request inside Groq's 8000 TPM ceiling and avoids the nested
+        tool-call failures a whole-tree request provokes.
+        """
+        from app.agents.reviewer import describe_endpoints
+
+        requirements: Requirements = state["requirements"]
+        design = state["design"]
+
+        return await self.call(
+            prompt.render_file(
+                path=spec.path,
+                purpose=spec.purpose or "part of the application",
+                project_name=requirements.project_name,
+                summary=requirements.summary,
+                entities=describe_entities(requirements),
+                endpoints=describe_endpoints(design),
+                file_list=", ".join(f.path for f in design.files),
+            ),
+            run_id=state["run_id"],
+            iteration=state.get("loop_count", 0),
+        )

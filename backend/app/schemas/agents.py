@@ -11,7 +11,8 @@ prompt can be ignored and a schema cannot:
   that returns a raw Beanie document (CLAUDE.md §8, the predicted #1 failure mode).
 """
 
-from typing import Literal
+import json
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -31,7 +32,45 @@ Severity = Literal["blocking", "warning", "nit"]
 # --------------------------------------------------------------------------- #
 
 
-class GeneratedFile(BaseModel):
+class AgentSchema(BaseModel):
+    """Base for every agent output.
+
+    Free-tier models frequently hand back a *stringified* JSON array where a list is
+    expected — `"[{\\"name\\": ...}]"` instead of `[{...}]` — especially for deeply nested
+    fields. Observed on both Groq and OpenRouter; the models' own reasoning shows them
+    trying and failing to correct it, so retrying is expensive and unreliable.
+
+    Rather than flatten every schema, decode those strings here. Be liberal in what you
+    accept: the alternative is a whole run lost to a quoting mistake.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def _decode_stringified_json(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        for name, value in list(data.items()):
+            if not isinstance(value, str):
+                continue
+            stripped = value.strip()
+            if not stripped.startswith(("[", "{")):
+                continue
+            try:
+                data[name] = json.loads(stripped)
+            except (ValueError, TypeError):
+                pass  # genuinely a string; let normal validation judge it
+
+        # Models reach for the shorter, more natural name. The raw dict still carries it
+        # here even though it is not a declared field, so recover it rather than lose the
+        # whole generation. Each pair below cost a real run during development.
+        for emitted, declared in (("name", "path"), ("fix", "fix_hint")):
+            if declared in cls.model_fields and not data.get(declared) and data.get(emitted):
+                data[declared] = data[emitted]
+        return data
+
+
+class GeneratedFile(AgentSchema):
     """One file in a generated application. Content is complete and runnable as written."""
 
     # Descriptions are carried into the tool schema the model sees. Without them, models
@@ -45,7 +84,7 @@ class GeneratedFile(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class EntityField(BaseModel):
+class EntityField(AgentSchema):
     """A single attribute of an entity.
 
     Named `EntityField` rather than `Field` to avoid shadowing `pydantic.Field`.
@@ -57,12 +96,12 @@ class EntityField(BaseModel):
     default: str | None = None
 
 
-class Entity(BaseModel):
+class Entity(AgentSchema):
     name: str
     fields: list[EntityField] = Field(min_length=1)
 
 
-class Requirements(BaseModel):
+class Requirements(AgentSchema):
     project_name: str
     summary: str
     entities: list[Entity] = Field(min_length=1, max_length=2)
@@ -76,33 +115,60 @@ class Requirements(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class IndexSpec(BaseModel):
+class IndexSpec(AgentSchema):
     fields: list[str] = Field(min_length=1)
     unique: bool = False
 
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_bare_field_name(cls, data: Any) -> Any:
+        # Models routinely write indexes as ["title", "author"] rather than
+        # [{"fields": ["title"]}]. The intent is unambiguous, so accept it.
+        if isinstance(data, str):
+            return {"fields": [data]}
+        return data
 
-class Collection(BaseModel):
+
+class Collection(AgentSchema):
     name: str
-    entity: str  # the Requirements.entities[*].name this collection stores
+    # Optional on purpose: models often omit it, and it is inferable from `name`. A
+    # required field the model reliably forgets costs a whole generation.
+    entity: str = ""
     fields: list[EntityField] = Field(min_length=1)
     indexes: list[IndexSpec] = Field(default_factory=list)
 
 
-class Endpoint(BaseModel):
+class Endpoint(AgentSchema):
     method: HttpMethod
     path: str
-    summary: str
+    summary: str = ""  # documentation only; not worth failing a generation over
     request_model: str | None = None  # None for GET and DELETE
-    response_model: str  # required by design; see module docstring
+
+    # Nullable in the schema the model sees, because a 204 genuinely has no response
+    # body — requiring one there was a modelling error that made every correct DELETE
+    # fail validation. The real rule is enforced below, where it actually applies.
+    response_model: str | None = None
     status_code: int
 
+    @model_validator(mode="after")
+    def _require_response_model_when_there_is_a_body(self) -> "Endpoint":
+        if self.status_code != 204 and not self.response_model:
+            raise ValueError(
+                f"{self.method} {self.path} returns {self.status_code} but declares no "
+                "response_model; a raw Beanie Document would leak a non-serialisable "
+                "ObjectId (CLAUDE.md §8)"
+            )
+        return self
 
-class FileSpec(BaseModel):
-    path: str
-    purpose: str
+
+class FileSpec(AgentSchema):
+    # Optional in the emitted schema so a provider that validates server-side accepts
+    # the call; `AgentSchema` recovers it from `name` when the model uses that instead.
+    path: str = ""
+    purpose: str = ""
 
 
-class Design(BaseModel):
+class Design(AgentSchema):
     collections: list[Collection] = Field(min_length=1)
     endpoints: list[Endpoint] = Field(min_length=1)
     files: list[FileSpec] = Field(min_length=1)
@@ -114,12 +180,12 @@ class Design(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class CodeOutput(BaseModel):
+class CodeOutput(AgentSchema):
     files: list[GeneratedFile] = Field(min_length=1)
     changelog: list[str] = Field(default_factory=list)  # populated on fix passes
 
 
-class SingleFileOutput(BaseModel):
+class SingleFileOutput(AgentSchema):
     """One file, as a flat object.
 
     Free-tier models are unreliable at filling a nested `list[GeneratedFile]` in a single
@@ -141,15 +207,17 @@ class SingleFileOutput(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class Finding(BaseModel):
+class Finding(AgentSchema):
     severity: Severity
-    file: str
+    file: str = ""
     line: int | None = None
     issue: str
-    fix_hint: str
+    # Optional in the emitted schema because providers that validate server-side reject
+    # the whole review when a model writes "fix" instead; `AgentSchema` recovers it.
+    fix_hint: str = ""
 
 
-class ReviewResult(BaseModel):
+class ReviewResult(AgentSchema):
     findings: list[Finding] = Field(default_factory=list)
     passed: bool = True
 
@@ -170,19 +238,19 @@ class ReviewResult(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
-class TestOutput(BaseModel):
+class TestOutput(AgentSchema):
     """Written by the Tester agent: test_main.py, plus conftest.py when needed."""
 
     files: list[GeneratedFile] = Field(min_length=1)
 
 
-class TestFailure(BaseModel):
+class TestFailure(AgentSchema):
     test_name: str
     assertion: str
     traceback_tail: str
 
 
-class TestResult(BaseModel):
+class TestResult(AgentSchema):
     """Parsed from the sandbox pytest report — produced by execution, not by an LLM."""
 
     passed: bool

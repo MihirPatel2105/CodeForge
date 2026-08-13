@@ -85,6 +85,10 @@ _RETRYABLE_TYPES = (
     litellm.Timeout,
     litellm.NotFoundError,  # model retired from a provider's catalogue
     litellm.AuthenticationError,  # key missing or revoked for this provider only
+    # Generic provider error. Covers upstream failures a gateway forwards verbatim —
+    # OpenRouter relaying Nvidia's ResourceExhausted, Cerebras' "payment required".
+    # Without it those abort the run instead of reaching the local last resort.
+    litellm.APIError,
 )
 
 # Providers disagree on the status code for a bad credential: Groq answers an invalid key
@@ -114,6 +118,11 @@ _RETRYABLE_MARKERS = (
     # the next one has a different budget, so fall through instead of failing the run.
     "output is incomplete",
     "max_tokens length limit",
+    "resourceexhausted",
+    "resource exhausted",
+    # Instructor's wording when a model answers in prose instead of calling the tool.
+    # Another model usually complies, so it is worth one rung down.
+    "no tool calls",
 )
 
 

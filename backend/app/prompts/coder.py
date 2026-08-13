@@ -39,6 +39,47 @@ models, the lifespan that initialises Beanie, and every route. Return it as one 
 path "main.py"."""
 
 
+PER_FILE_TEMPLATE = """Write ONE file of this application: **{path}**
+
+Purpose of this file: {purpose}
+
+Project: {project_name}
+Summary: {summary}
+
+Entities:
+{entities}
+
+Endpoints (the whole application; implement only the parts belonging to {path}):
+{endpoints}
+
+The application is split across these files, so import from the others rather than
+duplicating them:
+{file_list}
+
+Return only {path}, complete and runnable."""
+
+
+def render_file(
+    *,
+    path: str,
+    purpose: str,
+    project_name: str,
+    summary: str,
+    entities: str,
+    endpoints: str,
+    file_list: str,
+) -> str:
+    return PER_FILE_TEMPLATE.format(
+        path=path,
+        purpose=purpose,
+        project_name=project_name,
+        summary=summary,
+        entities=entities,
+        endpoints=endpoints,
+        file_list=file_list,
+    )
+
+
 def render(*, project_name: str, summary: str, entities: str, operations: str) -> str:
     return TEMPLATE.format(
         project_name=project_name,
