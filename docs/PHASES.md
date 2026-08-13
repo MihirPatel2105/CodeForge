@@ -69,10 +69,13 @@ LiteLLM `completion()` call logged in Langfuse.
 Tasks
 - [ ] SRS document: functional + non-functional requirements.
 - [ ] Fix the supported prompt domain: **single-entity and two-entity CRUD REST APIs only**.
-- [ ] Write 10 canonical test prompts (books API, tasks API, notes API, contacts + groups, …).
+- [x] Write 10 canonical test prompts (books API, tasks API, notes API, contacts + groups, …).
       These become the permanent evaluation set — do not change them later or the metrics break.
-- [ ] Define the human approval checkpoints (after PM, after Architect; final code delivery).
-- [ ] Define acceptance criteria for "generation succeeded".
+      *(`backend/tests/prompts.json` — 6 single-entity, 4 two-entity)*
+- [x] Define the human approval checkpoints (after PM, after Architect; final code delivery).
+      *(`docs/ACCEPTANCE.md` §5)*
+- [x] Define acceptance criteria for "generation succeeded".
+      *(`docs/ACCEPTANCE.md` §2 — L3 boots = generation, L5 all green = tests)*
 
 **DoD:** SRS reviewed by the team; the 10 prompts are committed to `backend/tests/prompts.json`.
 
