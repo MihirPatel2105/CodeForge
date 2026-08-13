@@ -59,7 +59,7 @@ Prompt rules
   list what was dropped in `out_of_scope`.
 - Field types restricted to: `str`, `int`, `float`, `bool`, `datetime`, `list[str]`.
 
-**Model chain:** Groq (gpt-oss-120b) → Llama 3.3 70B → Gemini Flash → Ollama.
+**Model chain:** `CHAINS["pm"]` in `backend/app/llm/registry.py` (see CLAUDE.md §5).
 **Checkpoint:** human approval after this node.
 
 ---
@@ -89,7 +89,7 @@ Prompt rules
   JSON-serializable. `id` is exposed as a `str`.
 - REST conventions: plural paths, correct status codes (201 create, 204 delete, 404 missing).
 
-**Model chain:** Groq (gpt-oss-120b) → Cerebras → Gemini Flash → Ollama.
+**Model chain:** `CHAINS["architect"]` in `backend/app/llm/registry.py` (see CLAUDE.md §5).
 **Checkpoint:** human approval after this node.
 
 ---
@@ -119,8 +119,10 @@ Prompt rules
 - No network calls, no external services, no env vars in generated code. Mongo URI is always
   `mongodb://localhost:27017` (mongod runs inside the sandbox container).
 
-**Model chain:** Cerebras (Qwen3-Coder class) → Groq → Ollama. Cerebras is primary because this
-agent writes the most tokens per turn.
+**Model chain:** `CHAINS["coder"]` in `backend/app/llm/registry.py` (see CLAUDE.md §5). This
+agent writes the most tokens per turn, so it carries the largest `max_tokens` budget and a
+code-specialised cloud fallback. Cerebras was the intended primary until its free tier went
+paid — expect Groq rate limits here first.
 
 ---
 
@@ -155,7 +157,7 @@ Rules
 - Output findings only. Never rewrite code — that's the Coder's job.
 - `blocking` is reserved for "this will not run correctly". Style opinions are `nit`.
 
-**Model chain:** Groq (gpt-oss-120b) → OpenRouter `:free`.
+**Model chain:** `CHAINS["reviewer"]` in `backend/app/llm/registry.py` (see CLAUDE.md §5).
 
 ---
 
@@ -184,7 +186,7 @@ Prompt rules
 - Tests must be self-contained: create the data they assert on, clean up after.
 - No network, no external fixtures, no sleeping.
 
-**Model chain:** Groq → OpenRouter `:free`.
+**Model chain:** `CHAINS["tester"]` in `backend/app/llm/registry.py` (see CLAUDE.md §5).
 
 ---
 

@@ -17,11 +17,11 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 2 — Design
-LAST DoD MET  : Phase 1 (2026-08-13) — SRS team-reviewed, 10 canonical prompts frozen
-                in backend/tests/prompts.json
-NEXT UP       : RunState schema + Pydantic I/O schema for every agent handoff
-BLOCKED ON    : nothing (Ollama still uninstalled — Phase 0 leftover, needed by Phase 3)
+CURRENT PHASE : 3 — Implementation A: foundation
+LAST DoD MET  : Phase 2 (2026-08-13) — all schemas import cleanly; API contract signed off
+                by frontend and backend owners
+NEXT UP       : JWT auth + project/run CRUD + llm/client.py with provider fallback
+BLOCKED ON    : nothing
 ```
 
 Before starting work, read the matching phase in `docs/PHASES.md` and confirm its Definition of
@@ -80,7 +80,7 @@ running, tested API on screen.
 | Platform DB | MongoDB (Atlas M0 free tier or local Docker) |
 | ODM | Beanie 2.x (PyMongo `AsyncMongoClient` + Pydantic) — Beanie 2 dropped Motor, which MongoDB deprecated in 2025 |
 | LLM routing | LiteLLM (single `completion()` call, auto-fallback on 429) |
-| Providers | Groq → Cerebras → OpenRouter `:free` → Google AI Studio → Ollama (local) |
+| Providers | Groq → OpenRouter `:free` → Ollama (local). Cerebras and Google AI Studio dropped out — see §5 |
 | Structured output | Pydantic + Instructor (schema-valid JSON between handoffs) |
 | RAG | ChromaDB over a **curated** library of 15–20 hand-written FastAPI + Beanie snippets |
 | Sandbox | Docker SDK for Python, `network_mode="none"` |
@@ -157,17 +157,34 @@ Mongo directly, and never formats SSE payloads — it goes through `sandbox/`, `
 
 All model names live in `backend/app/llm/registry.py`. Never hardcode a model string in agent code.
 
+Every id below was probed against the live provider APIs on 2026-08-13.
+
 | Agent | Primary → fallback chain |
 |---|---|
-| PM | Groq (gpt-oss-120b) → Llama 3.3 70B → Gemini Flash → Ollama |
-| Architect | Groq (gpt-oss-120b) → Cerebras → Gemini Flash → Ollama |
-| Coder | **Cerebras (Qwen3-Coder class)** → Groq → Ollama |
-| Reviewer | Groq (gpt-oss-120b) → OpenRouter `:free` |
-| Tester | Groq → OpenRouter `:free` |
+| PM | Groq `openai/gpt-oss-120b` → Groq `llama-3.3-70b-versatile` → OpenRouter nemotron-super `:free` → Ollama |
+| Architect | Groq `openai/gpt-oss-120b` → OpenRouter nemotron-super `:free` → Ollama |
+| Coder | Groq `openai/gpt-oss-120b` → OpenRouter `cohere/north-mini-code:free` → Ollama |
+| Reviewer | Groq `openai/gpt-oss-120b` → OpenRouter nemotron-nano `:free` → Ollama |
+| Tester | Groq `llama-3.3-70b-versatile` → OpenRouter nemotron-nano `:free` → Ollama |
 
-Coder is on Cerebras first because it writes the most tokens per turn (~30K TPM headroom vs
-Groq's ~6K ceiling, which a multi-file write blows through instantly). Gemini is a **fallback
-only** — its free tier was cut in Dec 2025 and is unstable.
+Every chain ends at a local Ollama model — the only rung that still answers when every free
+tier rate-limits at once. Enforced by a test, not convention.
+
+### Providers that dropped out (2026-08-13)
+
+Both were in the original plan and both failed when probed. Recorded rather than deleted:
+the volatility is itself a finding, and it is what the fallback chain exists for.
+
+- **Cerebras — now paid.** Its catalogue for a free account (`zai-glm-4.7`, `gpt-oss-120b`,
+  `gemma-4-31b`) returns *"Payment required to access this resource"* on every model, and no
+  Qwen3-Coder is offered at all. This conflicts with the $0 constraint, so the Coder moved to
+  Groq. **Consequence to watch:** Cerebras was chosen for the Coder because of its ~30K TPM
+  headroom against Groq's ~6K ceiling, and the Coder writes the most tokens per turn. Expect
+  429s on multi-file generation — the fallback chain is load-bearing, not decorative.
+- **Google AI Studio — unusable, Google-side bug.** The account can only issue `AQ.`-prefixed
+  auth keys, and every one returns `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` against
+  `generativelanguage.googleapis.com`, via REST and via Google's own SDK. Widely reported,
+  no workaround, unresolved. Gemini appears in no chain until Google fixes it.
 
 ---
 
