@@ -177,7 +177,9 @@ class TestResult(BaseModel):     # produced by the sandbox, not the LLM
 ```
 
 Prompt rules
-- pytest + httpx `AsyncClient` against the FastAPI app.
+- pytest + `fastapi.testclient.TestClient`, **always as a context manager** — entering the
+  `with` block runs the app lifespan, which is what initialises Beanie. Tests are synchronous
+  even though the app is async; see `docs/GENERATED_APP.md` §5 for why.
 - One test per endpoint minimum, plus the 404 path for get/update/delete.
 - Tests must be self-contained: create the data they assert on, clean up after.
 - No network, no external fixtures, no sleeping.
@@ -188,24 +190,39 @@ Prompt rules
 
 ## 7. Orchestrator — the LangGraph graph
 
+```mermaid
+flowchart TD
+    START([START]) --> PM["<b>PM</b><br/>requirements"]
+    PM --> AP1{{"human approval<br/>interrupt"}}
+    AP1 -->|reject| REJ([rejected])
+    AP1 -->|approve| ARCH["<b>Architect</b><br/>design"]
+    ARCH --> AP2{{"human approval<br/>interrupt"}}
+    AP2 -->|reject| REJ
+    AP2 -->|approve| CODER["<b>Coder</b><br/>file tree"]
+
+    CODER --> REV["<b>Reviewer</b><br/>findings"]
+    REV --> D1{"review<br/>passed?"}
+    D1 -->|yes| TESTER["<b>Tester</b><br/>test suite"]
+    D1 -->|"no &middot; loop_count &lt; max"| CODER
+    D1 -->|"no &middot; loop_count &ge; max"| MAXED([failed_max_loops])
+
+    TESTER --> SBX["<b>Sandbox</b><br/>docker run, network none"]
+    SBX --> D2{"tests<br/>passed?"}
+    D2 -->|yes| DONE([succeeded])
+    D2 -->|"no &middot; loop_count &lt; max"| CODER
+    D2 -->|"no &middot; loop_count &ge; max"| MAXED
+
+    classDef agent fill:#e8f0fe,stroke:#4c6ef5,color:#1a1a1a
+    classDef gate fill:#fff4e6,stroke:#f59f00,color:#1a1a1a
+    classDef terminal fill:#f1f3f5,stroke:#868e96,color:#1a1a1a
+    class PM,ARCH,CODER,REV,TESTER,SBX agent
+    class AP1,AP2,D1,D2 gate
+    class START,DONE,MAXED,REJ terminal
 ```
-        ┌──────────────── approval ────────────────┐
-        ▼                                          │
-START → pm → [approve?] → architect → [approve?] → coder → reviewer
-                                                     ▲        │
-                                                     │   blocking findings
-                                                     │        ▼
-                                                     └──── (fix pass)
-                                                              │ passed
-                                                              ▼
-                                                           tester
-                                                              │
-                                                          sandbox run
-                                                     ┌────────┴────────┐
-                                              tests failed        tests passed
-                                                     │                 │
-                                            (back to coder)          done
-```
+
+The two edges returning to **Coder** are the cyclic feedback loop — the project's core
+contribution. Both increment `loop_count`; neither is a silent retry, and each emits a
+`loop.iteration` event so the dashboard renders the cycle visibly.
 
 **Conditional routing**
 

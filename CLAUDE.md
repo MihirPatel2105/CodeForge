@@ -10,6 +10,7 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 | `docs/STATE_AND_API.md` | Touching the state schema, REST routes, SSE events, or DB models |
 | `docs/ACCEPTANCE.md` | Deciding what counts as success; metrics, failure categories, approvals |
 | `docs/SRS.md` | Checking whether a feature is actually required, in scope, or out of scope |
+| `docs/GENERATED_APP.md` | Writing Architect/Coder/Reviewer prompts, the sandbox image, or RAG snippets |
 
 ---
 
@@ -115,7 +116,8 @@ CodeForge/
 │   ├── AGENTS.md            # agent specs, prompts, the feedback loop
 │   ├── STATE_AND_API.md     # state schema, REST + SSE contract, DB models
 │   ├── ACCEPTANCE.md        # success criteria, failure taxonomy, approval checkpoints
-│   └── SRS.md               # requirements spec: FRs, NFRs, supported prompt domain
+│   ├── SRS.md               # requirements spec: FRs, NFRs, supported prompt domain
+│   └── GENERATED_APP.md     # file structure + rules for what the Coder produces
 ├── docker-compose.yml
 ├── backend/
 │   ├── app/

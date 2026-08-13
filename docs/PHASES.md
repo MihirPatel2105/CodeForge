@@ -91,12 +91,14 @@ the single highest-leverage thing in the project.
 Tasks
 - [ ] **`RunState` schema** — see `docs/STATE_AND_API.md`. This is the project's spine.
 - [ ] Pydantic I/O schema for every agent handoff (PM out → Architect in, etc.).
-- [ ] LangGraph node/edge diagram including the conditional cyclic loop.
+- [x] LangGraph node/edge diagram including the conditional cyclic loop.
+      *(`docs/AGENTS.md` §7 — Mermaid, renders on GitHub)*
 - [ ] REST + SSE contract frozen (paths, payloads, event names).
 - [ ] Mongo collections: `users`, `projects`, `runs`, plus GridFS bucket for artifacts.
 - [ ] Sandbox contract: input (file tree) → output (stdout, stderr, exit code, test report).
-- [ ] Generated-app file-structure template the Architect must target
+- [x] Generated-app file-structure template the Architect must target
       (`main.py`, `models.py`, `database.py`, `schemas.py`, `test_main.py`).
+      *(`docs/GENERATED_APP.md` — reference code executed and verified, not just written)*
 
 **DoD:** all schemas exist as real Pydantic classes and import cleanly, even with empty logic
 behind them. Frontend and backend owners have both signed off on the API contract.
