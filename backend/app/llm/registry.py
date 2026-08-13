@@ -57,10 +57,14 @@ CHAINS: dict[str, list[ModelSpec]] = {
     ],
     # Writes the most tokens per turn, so it gets the largest budget and a
     # code-specialised cloud fallback.
+    # Groq's free tier caps at 8000 tokens per minute *including the prompt*, so the
+    # Coder's budget is set below that: at 8000 it overran on the first real run
+    # (requested 8470) and every request fell through to the fallback.
     "coder": [
-        ModelSpec(model=GROQ_GPT_OSS, max_tokens=8000),
-        ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=8000),
-        _ollama(max_tokens=4000),
+        ModelSpec(model=GROQ_GPT_OSS, max_tokens=5500),
+        ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=16000),
+        ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=16000),
+        _ollama(max_tokens=8000),
     ],
     "reviewer": [
         ModelSpec(model=GROQ_GPT_OSS),

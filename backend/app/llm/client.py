@@ -104,6 +104,16 @@ _RETRYABLE_MARKERS = (
     "overloaded",
     "does not exist",
     "unavailable",
+    # A model emitting arguments that violate the tool schema is a property of that
+    # model, not of the prompt — another provider may well comply, so fall through
+    # rather than failing the whole run.
+    "tool_use_failed",
+    "did not match schema",
+    "tool call validation failed",
+    # Output truncated at the model's ceiling. Retrying the same rung is pointless, but
+    # the next one has a different budget, so fall through instead of failing the run.
+    "output is incomplete",
+    "max_tokens length limit",
 )
 
 

@@ -34,8 +34,10 @@ Severity = Literal["blocking", "warning", "nit"]
 class GeneratedFile(BaseModel):
     """One file in a generated application. Content is complete and runnable as written."""
 
-    path: str
-    content: str
+    # Descriptions are carried into the tool schema the model sees. Without them, models
+    # emit "name" instead of "path" and the provider rejects the whole tool call.
+    path: str = Field(description="File name including extension, e.g. 'main.py'")
+    content: str = Field(description="Complete file contents, runnable as written")
 
 
 # --------------------------------------------------------------------------- #
@@ -115,6 +117,23 @@ class Design(BaseModel):
 class CodeOutput(BaseModel):
     files: list[GeneratedFile] = Field(min_length=1)
     changelog: list[str] = Field(default_factory=list)  # populated on fix passes
+
+
+class SingleFileOutput(BaseModel):
+    """One file, as a flat object.
+
+    Free-tier models are unreliable at filling a nested `list[GeneratedFile]` in a single
+    tool call — Groq's gpt-oss-120b repeatedly emits `name` instead of `path`, and the
+    provider rejects the whole call server-side before Instructor can re-ask. A flat
+    schema removes that failure mode, so the Coder emits one file per call.
+    """
+
+    path: str = Field(description="File name including extension, e.g. 'main.py'")
+    content: str = Field(description="Complete file contents, runnable as written")
+    notes: list[str] = Field(default_factory=list)
+
+    def as_generated_file(self) -> GeneratedFile:
+        return GeneratedFile(path=self.path, content=self.content)
 
 
 # --------------------------------------------------------------------------- #

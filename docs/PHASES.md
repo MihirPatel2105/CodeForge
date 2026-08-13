@@ -107,6 +107,8 @@ Tasks
 
 **DoD:** all schemas exist as real Pydantic classes and import cleanly, even with empty logic
 behind them. Frontend and backend owners have both signed off on the API contract.
+*(Met 2026-08-13. Contract signed off by the frontend and backend owners; TypeScript types and
+a replayable mock run live in `frontend/lib/`.)*
 
 ---
 
@@ -115,15 +117,16 @@ behind them. Frontend and backend owners have both signed off on the API contrac
 **Goal:** the platform exists, minus the intelligence.
 
 Tasks
-- [ ] Auth: register/login, JWT issue + verify, `get_current_user` dependency (~60 lines total).
-- [ ] Beanie models + DB init on startup.
-- [ ] CRUD: `POST/GET /projects`, `POST/GET /runs`.
-- [ ] `llm/client.py`: LiteLLM wrapper, model registry, retry + provider fallback on 429.
-- [ ] Instructor integration — one function that takes a prompt + Pydantic schema and returns a
+- [x] Auth: register/login, JWT issue + verify, `get_current_user` dependency (~60 lines total).
+- [x] Beanie models + DB init on startup.
+- [x] CRUD: `POST/GET /projects`, `POST/GET /runs`.
+- [x] `llm/client.py`: LiteLLM wrapper, model registry, retry + provider fallback on 429.
+- [x] Instructor integration — one function that takes a prompt + Pydantic schema and returns a
       validated object, retrying on malformed output.
-- [ ] Langfuse tracing wired into that one function.
-- [ ] **Two-agent toy:** PM → Coder, text only, no graph cycles. Prints requirements + a single
+- [x] Langfuse tracing wired into that one function.
+- [x] **Two-agent toy:** PM → Coder, text only, no graph cycles. Prints requirements + a single
       Python file to the console.
+      *(`POST /toy/run` — temporary, removed when the graph lands in Phase 4)*
 
 **DoD:** a curl request creates a run and returns PM output + one generated file, and the whole
 call chain is visible in Langfuse. Provider fallback verified by deliberately using a dead key.
