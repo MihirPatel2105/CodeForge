@@ -14,10 +14,11 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 0 — Environment & Repo Setup
-LAST DoD MET  : none yet
-NEXT UP       : docker-compose + FastAPI skeleton + one LiteLLM call
-BLOCKED ON    : nothing
+CURRENT PHASE : 1 — Requirements
+LAST DoD MET  : Phase 0 (2026-08-13) — compose up healthy, /health ok, mongo reachable,
+                frontend builds, LiteLLM->Groq call traced in Langfuse
+NEXT UP       : SRS + 10 canonical prompts committed to backend/tests/prompts.json
+BLOCKED ON    : nothing (Ollama still uninstalled — Phase 0 leftover, needed by Phase 3)
 ```
 
 Before starting work, read the matching phase in `docs/PHASES.md` and confirm its Definition of

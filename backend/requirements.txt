@@ -3,7 +3,7 @@ uvicorn[standard]
 pydantic-settings
 
 litellm
-langfuse
+langfuse<3  # v2 SDK: matches the langfuse:2 server and LiteLLM's callback
 
 pytest
 httpx

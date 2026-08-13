@@ -42,8 +42,9 @@ def main() -> int:
     print("tokens  :", response.usage.total_tokens)
 
     if langfuse_on:
-        litellm.flush()  # traces are batched; force the send before exit
-        print("langfuse: trace sent to", settings.langfuse_host)
+        # Traces are batched on a background thread; the langfuse SDK's atexit
+        # hook flushes them on interpreter shutdown.
+        print("langfuse: trace queued ->", settings.langfuse_host)
     else:
         print("langfuse: SKIPPED - keys not set yet (get them from localhost:3000)")
 

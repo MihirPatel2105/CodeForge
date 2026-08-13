@@ -46,15 +46,16 @@ deliberately out of scope and belong in the Future Scope chapter. Expect faculty
 **Goal:** every team member can run the same thing on their machine.
 
 Tasks
-- [ ] `backend/` FastAPI skeleton, Python 3.11 venv, `requirements.txt`.
-- [ ] `frontend/` Next.js 15 App Router + Tailwind + shadcn/ui init.
-- [ ] `docker-compose.yml`: mongo, backend, langfuse.
-- [ ] `.env.example` with every key: `MONGO_URI`, `JWT_SECRET`, `GROQ_API_KEY`,
+- [x] `backend/` FastAPI skeleton, Python 3.11 venv, `requirements.txt`.
+- [x] `frontend/` Next.js 15 App Router + Tailwind + shadcn/ui init.
+- [x] `docker-compose.yml`: mongo, backend, langfuse.
+- [x] `.env.example` with every key: `MONGO_URI`, `JWT_SECRET`, `GROQ_API_KEY`,
       `CEREBRAS_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `LANGFUSE_*`.
-- [ ] `GET /health` returning `{"status":"ok"}`.
-- [ ] Ruff config + pre-commit hook.
+- [x] `GET /health` returning `{"status":"ok"}`.
+- [x] Ruff config + pre-commit hook.
 - [ ] Free-tier accounts created for Groq, Cerebras, OpenRouter, Google AI Studio; Ollama installed
       locally with one small model pulled.
+      *(all four keys in `.env`; Ollama not installed yet — last-resort fallback, needed by Phase 3)*
 
 **DoD:** `docker compose up` → backend healthy, Mongo reachable, frontend renders, one successful
 LiteLLM `completion()` call logged in Langfuse.
