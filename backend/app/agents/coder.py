@@ -15,6 +15,18 @@ def _describe_entities(requirements: Requirements) -> str:
 
 
 class CoderAgent(BaseAgent):
+    """Asks for the whole file tree in one call, as `CodeOutput`.
+
+    Works, but not on the first rung of its chain: Groq validates tool-call arguments
+    server-side and its models repeatedly emit `name` instead of `path` inside the nested
+    `files[]` array, so Groq rejects the call and the chain falls through. Observed
+    succeeding on `openrouter/cohere/north-mini-code:free`.
+
+    The practical cost is a wasted Groq attempt — latency and free-tier quota — on every
+    generation, not a failure. Prefer `SingleFileCoderAgent` unless you specifically need
+    a whole tree from one call.
+    """
+
     name = "coder"
     output_schema = CodeOutput
     system = prompt.SYSTEM
@@ -35,12 +47,13 @@ class CoderAgent(BaseAgent):
 
 
 class SingleFileCoderAgent(CoderAgent):
-    """Emits one file per call via a flat schema.
+    """Emits one file per call via a flat schema. **The preferred path.**
 
-    Free-tier models fail often enough on nested `list[GeneratedFile]` tool calls that a
-    multi-file response is not dependable; see `SingleFileOutput`. Phase 4 should call
-    this once per file in the Design rather than asking for the whole tree at once —
-    which also keeps each request under Groq's 8000 TPM ceiling.
+    Two problems disappear at once: the flat schema avoids the nested tool-call
+    rejection described on `CoderAgent`, and one file per request stays under Groq's
+    8000 TPM ceiling, which a whole-tree request breaches.
+
+    Phase 4 should call this once per file in the Design and assemble the tree in state.
     """
 
     output_schema = SingleFileOutput
