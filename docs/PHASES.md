@@ -89,13 +89,18 @@ Tasks
 the single highest-leverage thing in the project.
 
 Tasks
-- [ ] **`RunState` schema** — see `docs/STATE_AND_API.md`. This is the project's spine.
-- [ ] Pydantic I/O schema for every agent handoff (PM out → Architect in, etc.).
+- [x] **`RunState` schema** — see `docs/STATE_AND_API.md`. This is the project's spine.
+      *(`backend/app/graph/state.py`)*
+- [x] Pydantic I/O schema for every agent handoff (PM out → Architect in, etc.).
+      *(`backend/app/schemas/agents.py`)*
 - [x] LangGraph node/edge diagram including the conditional cyclic loop.
       *(`docs/AGENTS.md` §7 — Mermaid, renders on GitHub)*
-- [ ] REST + SSE contract frozen (paths, payloads, event names).
-- [ ] Mongo collections: `users`, `projects`, `runs`, plus GridFS bucket for artifacts.
-- [ ] Sandbox contract: input (file tree) → output (stdout, stderr, exit code, test report).
+- [x] REST + SSE contract frozen (paths, payloads, event names).
+      *(`backend/app/schemas/api.py`, `backend/app/events/schemas.py` — 13 events, discriminated union)*
+- [x] Mongo collections: `users`, `projects`, `runs`, plus GridFS bucket for artifacts.
+      *(`backend/app/models/`, `backend/app/schemas/artifacts.py` — indexes and GridFS round-trip verified)*
+- [x] Sandbox contract: input (file tree) → output (stdout, stderr, exit code, test report).
+      *(`backend/app/schemas/sandbox.py`)*
 - [x] Generated-app file-structure template the Architect must target
       (`main.py`, `models.py`, `database.py`, `schemas.py`, `test_main.py`).
       *(`docs/GENERATED_APP.md` — reference code executed and verified, not just written)*
