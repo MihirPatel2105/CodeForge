@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "frozen": true,
+  "note": "Permanent evaluation set. Changing a prompt after metrics collection begins invalidates cross-run comparison (generation success rate, RAG vs no-RAG delta). Add new prompts under a new version instead of editing these.",
+  "constraints": {
+    "entities_per_prompt": "1-2",
+    "operations": ["create", "read", "update", "delete"],
+    "field_types": ["str", "int", "float", "bool", "datetime", "list[str]"]
+  },
+  "prompts": [
+    {
+      "id": "p01_books",
+      "prompt": "I want an API to manage my personal book collection. Each book has a title, an author, the year it was published, and a list of genres. I should be able to add books, list them, update them, and delete them.",
+      "expected_entities": 1,
+      "field_types": ["str", "int", "list[str]"],
+      "difficulty": "easy"
+    },
+    {
+      "id": "p02_tasks",
+      "prompt": "Build me a to-do list API. A task has a title, an optional description, a flag for whether it is done, a due date, and a priority number from 1 to 5.",
+      "expected_entities": 1,
+      "field_types": ["str", "bool", "datetime", "int"],
+      "difficulty": "easy"
+    },
+    {
+      "id": "p03_notes",
+      "prompt": "Create a notes app backend where I can save notes with a title, some body text, and tags. I also want to see when each note was created.",
+      "expected_entities": 1,
+      "field_types": ["str", "list[str]", "datetime"],
+      "difficulty": "easy"
+    },
+    {
+      "id": "p04_products",
+      "prompt": "I run a small shop and need an API to track products. For each product I want the name, the price, how many I have in stock, and whether it is currently available for sale.",
+      "expected_entities": 1,
+      "field_types": ["str", "float", "int", "bool"],
+      "difficulty": "medium"
+    },
+    {
+      "id": "p05_expenses",
+      "prompt": "I need something to keep track of my spending. Every expense should record how much I spent, what category it falls under like food or transport, the date it happened, and an optional note.",
+      "expected_entities": 1,
+      "field_types": ["float", "str", "datetime"],
+      "difficulty": "medium"
+    },
+    {
+      "id": "p06_workouts",
+      "prompt": "I need an API to track my gym workouts.",
+      "expected_entities": 1,
+      "field_types": ["str", "int", "datetime"],
+      "difficulty": "hard",
+      "tests": "Deliberately underspecified. Exercises the PM Agent's rule to resolve vagueness with sensible defaults instead of asking questions, and to populate out_of_scope."
+    },
+    {
+      "id": "p07_contacts_groups",
+      "prompt": "Build a contacts API. Each contact has a name, an email address, and a phone number, and belongs to a group such as Family or Work. I want to manage both the contacts and the groups.",
+      "expected_entities": 2,
+      "field_types": ["str"],
+      "difficulty": "medium"
+    },
+    {
+      "id": "p08_authors_books",
+      "prompt": "I want an API for a small library that stores authors and the books they wrote. An author has a name and a country. A book has a title, the year it was published, and a reference to its author.",
+      "expected_entities": 2,
+      "field_types": ["str", "int"],
+      "difficulty": "medium"
+    },
+    {
+      "id": "p09_posts_comments",
+      "prompt": "Create a blogging backend. A post has a title, body text, and a publish date. Readers can leave comments on a post, and each comment records the commenter's name and their message.",
+      "expected_entities": 2,
+      "field_types": ["str", "datetime"],
+      "difficulty": "hard"
+    },
+    {
+      "id": "p10_events_attendees",
+      "prompt": "I organise meetups and need an API for events and the people attending them. An event has a name, a location, a date, and a maximum capacity. An attendee has a name, an email, and the event they signed up for.",
+      "expected_entities": 2,
+      "field_types": ["str", "datetime", "int"],
+      "difficulty": "hard"
+    }
+  ]
+}
