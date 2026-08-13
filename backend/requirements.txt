@@ -2,5 +2,8 @@ fastapi
 uvicorn[standard]
 pydantic-settings
 
+litellm
+langfuse
+
 pytest
 httpx
