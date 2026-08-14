@@ -35,9 +35,10 @@ Entities:
 
 Operations: {operations}
 
-Produce: the Mongo collections with their fields and any indexes; every endpoint with its \
-method, path, request_model, response_model and status code; the four target files with a \
-one-line purpose each; and any design notes."""
+Produce: the Mongo collections, each with its name and a flat list of field NAMES (plain \
+strings, not objects) and any indexed field names; every endpoint with its method, path, \
+request_model, response_model and status code; the four target files with a one-line \
+purpose each; and any design notes."""
 
 
 def render(*, project_name: str, summary: str, entities: str, operations: str) -> str:

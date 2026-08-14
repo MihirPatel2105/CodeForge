@@ -22,6 +22,7 @@ from app.graph.nodes import (
     finalise_node,
     pm_node,
     reviewer_node,
+    sandbox_node,
     tester_node,
 )
 from app.graph.state import RunState
@@ -37,6 +38,7 @@ def build_graph() -> StateGraph:
     graph.add_node("coder", coder_node)
     graph.add_node("reviewer", reviewer_node)
     graph.add_node("tester", tester_node)
+    graph.add_node("sandbox", sandbox_node)
     graph.add_node("finalise", finalise_node)
 
     graph.add_edge(START, "pm")
@@ -44,7 +46,8 @@ def build_graph() -> StateGraph:
     graph.add_edge("architect", "coder")
     graph.add_edge("coder", "reviewer")
     graph.add_edge("reviewer", "tester")
-    graph.add_edge("tester", "finalise")
+    graph.add_edge("tester", "sandbox")
+    graph.add_edge("sandbox", "finalise")
     graph.add_edge("finalise", END)
 
     return graph

@@ -126,27 +126,26 @@ class Requirements(AgentSchema):
 # --------------------------------------------------------------------------- #
 
 
-class IndexSpec(AgentSchema):
-    fields: list[str] = Field(min_length=1)
-    unique: bool = False
-
-    @model_validator(mode="before")
-    @classmethod
-    def _accept_bare_field_name(cls, data: Any) -> Any:
-        # Models routinely write indexes as ["title", "author"] rather than
-        # [{"fields": ["title"]}]. The intent is unambiguous, so accept it.
-        if isinstance(data, str):
-            return {"fields": [data]}
-        return data
-
-
 class Collection(AgentSchema):
+    """A Mongo collection in the design.
+
+    Deliberately flat: `fields` and `indexes` are plain string arrays rather than nested
+    objects. The nested form was the single most common cause of a rejected Design —
+    providers that validate tool arguments server-side reject the whole call when a model
+    writes `fields` as an object, and no amount of client-side leniency can help because
+    the rejection happens before Pydantic runs.
+
+    Nothing is lost: field *types* live on `Requirements.entities`, which is what the
+    Coder actually reads. This records the storage shape for the report and the Reviewer,
+    not the type system.
+    """
+
     name: str
     # Optional on purpose: models often omit it, and it is inferable from `name`. A
     # required field the model reliably forgets costs a whole generation.
     entity: str = ""
-    fields: list[EntityField] = Field(min_length=1)
-    indexes: list[IndexSpec] = Field(default_factory=list)
+    fields: list[str] = Field(default_factory=list)
+    indexes: list[str] = Field(default_factory=list)
 
 
 class Endpoint(AgentSchema):

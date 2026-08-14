@@ -11,8 +11,12 @@ from typing import Any
 
 from app.agents import ArchitectAgent, PMAgent, ReviewerAgent, SingleFileCoderAgent, TesterAgent
 from app.core.exceptions import ProviderExhaustedError
+from app.db.artifacts import store_run_artifacts
 from app.graph.persistence import save_state
+from app.sandbox import parse_pytest, run_in_sandbox
+from app.sandbox.runner import SandboxUnavailableError
 from app.schemas.agents import Design, GeneratedFile, Requirements
+from app.schemas.sandbox import SandboxRequest
 
 State = dict[str, Any]
 
@@ -166,6 +170,61 @@ async def tester_node(state: State) -> State:
     return update
 
 
+async def sandbox_node(state: State) -> State:
+    """Execute the generated tree and record what happened.
+
+    The first node whose outcome is not an opinion: the Reviewer thinks the code is
+    right, the sandbox finds out. Its `TestResult` is what the Phase 6 loop routes on.
+    """
+    update: State = {"current_agent": None}
+
+    files: list[GeneratedFile] = state.get("files") or []
+    test_files: list[GeneratedFile] = state.get("test_files") or []
+
+    if not files or not test_files:
+        update["errors"] = _error(
+            state, "sandbox", RuntimeError("nothing to execute: missing code or tests")
+        )
+        await save_state({**state, **update})
+        return update
+
+    request = SandboxRequest(run_id=state["run_id"], files=files + test_files)
+
+    try:
+        result = await run_in_sandbox(request)
+    except SandboxUnavailableError as exc:
+        # Docker missing is a property of the host, not of the generated code.
+        # docs/ACCEPTANCE.md §3 excludes these runs from the metrics.
+        update["errors"] = _error(state, "sandbox", exc)
+        update["status"] = "failed_sandbox"
+        await save_state({**state, **update})
+        return update
+
+    update["sandbox"] = result
+    update["tests"] = parse_pytest(result)
+
+    if result.timed_out:
+        update["errors"] = _error(
+            state, "sandbox", RuntimeError(f"execution exceeded {request.timeout_s}s")
+        )
+
+    try:
+        await store_run_artifacts(
+            run_id=state["run_id"],
+            files=files,
+            test_files=test_files,
+            sandbox=result,
+            tests=update["tests"],
+            iteration=state.get("loop_count", 0),
+        )
+    except Exception as exc:  # noqa: BLE001
+        # Losing the artifacts is bad; losing the run because of it would be worse.
+        update["errors"] = _error({**state, **update}, "sandbox", exc)
+
+    await save_state({**state, **update})
+    return update
+
+
 async def finalise_node(state: State) -> State:
     """Terminal bookkeeping. The status set here is what the dashboard and the Phase 8
     metrics read, so it must not flatter the run.
@@ -191,6 +250,7 @@ async def finalise_node(state: State) -> State:
         and not missing
         and state.get("test_files")
         and state.get("review") is not None
+        and state.get("tests") is not None  # the sandbox actually ran
     )
 
     update: State = {
@@ -207,6 +267,8 @@ async def finalise_node(state: State) -> State:
             reasons.append("review did not run")
         if not state.get("test_files"):
             reasons.append("tests were not written")
+        if state.get("tests") is None:
+            reasons.append("the sandbox did not execute the code")
         if reasons:
             errors = list(state.get("errors") or [])
             errors.append(

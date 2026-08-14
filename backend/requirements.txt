@@ -8,6 +8,8 @@ python-jose[cryptography]
 passlib[bcrypt]
 bcrypt<4.1       # passlib 1.7.4 breaks on bcrypt >=4.1 (removed __about__, 72-byte probe)
 
+docker            # sandbox runner; the only module that imports it
+
 litellm
 langfuse<3  # v2 SDK: matches the langfuse:2 server and LiteLLM's callback
 instructor  # structured output; every agent handoff goes through it

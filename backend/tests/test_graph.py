@@ -67,10 +67,10 @@ def test_genuine_bad_request_still_fails_fast():
 
 @pytest.fixture
 def design_with_four_files():
-    from app.schemas.agents import Design, Endpoint, EntityField, FileSpec
+    from app.schemas.agents import Design, Endpoint, FileSpec
 
     return Design(
-        collections=[{"name": "books", "fields": [EntityField(name="title", type="str")]}],
+        collections=[{"name": "books", "fields": ["title", "author"]}],
         endpoints=[
             Endpoint(
                 method="GET",
@@ -111,13 +111,14 @@ def test_missing_file_is_not_a_success(design_with_four_files):
     """The bug: a tree missing schemas.py, never reviewed, reported 'succeeded'."""
     import asyncio
 
-    from app.schemas.agents import GeneratedFile, ReviewResult
+    from app.schemas.agents import GeneratedFile, ReviewResult, TestResult
 
     state = _state(
         design_with_four_files,
         ["database.py", "models.py", "main.py"],  # schemas.py absent
         review=ReviewResult(findings=[]),
         test_files=[GeneratedFile(path="test_main.py", content="x")],
+        tests=TestResult(passed=True, total=1, failed=0),
     )
     result = asyncio.run(_finalise(state))
     assert result["status"] == "failed_llm"
@@ -127,20 +128,23 @@ def test_missing_file_is_not_a_success(design_with_four_files):
 def test_missing_review_is_not_a_success(design_with_four_files):
     import asyncio
 
-    from app.schemas.agents import GeneratedFile
+    from app.schemas.agents import GeneratedFile, TestResult
 
     state = _state(
         design_with_four_files,
         ["database.py", "models.py", "schemas.py", "main.py"],
         review=None,
         test_files=[GeneratedFile(path="test_main.py", content="x")],
+        tests=TestResult(passed=True, total=1, failed=0),
     )
     result = asyncio.run(_finalise(state))
     assert result["status"] == "failed_llm"
     assert any("review did not run" in e["message"] for e in result["errors"])
 
 
-def test_complete_run_succeeds(design_with_four_files):
+def test_unexecuted_run_is_not_a_success(design_with_four_files):
+    """Phase 5 raised the bar: generated code that was never run is not a success, no
+    matter how complete the tree looks."""
     import asyncio
 
     from app.schemas.agents import GeneratedFile, ReviewResult
@@ -150,6 +154,24 @@ def test_complete_run_succeeds(design_with_four_files):
         ["database.py", "models.py", "schemas.py", "main.py"],
         review=ReviewResult(findings=[]),
         test_files=[GeneratedFile(path="test_main.py", content="x")],
+        tests=None,  # the sandbox never ran
+    )
+    result = asyncio.run(_finalise(state))
+    assert result["status"] == "failed_llm"
+    assert any("sandbox did not execute" in e["message"] for e in result["errors"])
+
+
+def test_complete_run_succeeds(design_with_four_files):
+    import asyncio
+
+    from app.schemas.agents import GeneratedFile, ReviewResult, TestResult
+
+    state = _state(
+        design_with_four_files,
+        ["database.py", "models.py", "schemas.py", "main.py"],
+        review=ReviewResult(findings=[]),
+        test_files=[GeneratedFile(path="test_main.py", content="x")],
+        tests=TestResult(passed=True, total=3, failed=0),
     )
     result = asyncio.run(_finalise(state))
     assert result["status"] == "succeeded"

@@ -4,9 +4,13 @@
 until then a created run stays `queued`.
 """
 
-from fastapi import APIRouter, status
+from pathlib import Path
+
+from fastapi import APIRouter, Response, status
 
 from app.core.deps import CurrentUser, get_owned
+from app.core.exceptions import NotFoundError
+from app.db.artifacts import list_artifacts, read_artifact
 from app.graph.state import new_run_state
 from app.models import Project, Run
 from app.schemas.agents import GeneratedFile
@@ -17,6 +21,7 @@ from app.schemas.api import (
     RunResponse,
     RunSummary,
 )
+from app.schemas.artifacts import ArtifactListResponse
 
 router = APIRouter(tags=["runs"])
 
@@ -93,3 +98,33 @@ async def list_project_runs(project_id: str, user: CurrentUser) -> list[RunSumma
     await get_owned(Project, project_id, str(user.id), "Project")
     runs = await Run.find(Run.project_id == project_id).sort(-Run.created_at).to_list()
     return [_to_summary(r) for r in runs]
+
+
+@router.get("/runs/{run_id}/artifacts", response_model=ArtifactListResponse)
+async def get_run_artifacts(run_id: str, user: CurrentUser) -> ArtifactListResponse:
+    """List stored artifacts for a run: the generated tree, sandbox log and test report,
+    one set per loop iteration."""
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+    return await list_artifacts(str(run.id))
+
+
+@router.get("/runs/{run_id}/artifacts/{file_id}")
+async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) -> Response:
+    """Download one artifact.
+
+    Ownership is checked against the run, not the file: a GridFS id must not be a way to
+    reach another user's output.
+    """
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+
+    listing = await list_artifacts(str(run.id))
+    match = next((a for a in listing.artifacts if a.file_id == file_id), None)
+    if match is None:
+        raise NotFoundError("Artifact not found")
+
+    payload = await read_artifact(file_id)
+    return Response(
+        content=payload,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{Path(match.filename).name}"'},
+    )

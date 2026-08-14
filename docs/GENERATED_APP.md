@@ -208,8 +208,14 @@ def test_get_missing_book_returns_404():
 The image is pre-built with everything below, because `network_mode="none"` means nothing can
 be installed at run time.
 
-`python:3.11-slim` + `fastapi`, `uvicorn`, `beanie`, `pymongo`, `pytest`, `httpx`, and
-`mongod`.
+Built from `sandbox/Dockerfile`: **`mongo:8`** (Ubuntu 24.04, official `mongod`) plus
+Python 3.12 and `fastapi`, `uvicorn`, `beanie`, `pymongo`, `pytest`, `httpx`.
+
+The base was originally specified as `python:3.11-slim`. That is not buildable: MongoDB
+publishes no arm64 `mongodb-org-server` for Debian, so the image cannot run `mongod` on
+Apple Silicon at all — and its 7.0 apt repo is signed with SHA1, which Debian's crypto
+policy has rejected since 2026-02-01. Starting from MongoDB's own image avoids both, at
+the cost of Python 3.12 rather than 3.11. Generated CRUD code runs identically on either.
 
 `pytest-asyncio` is deliberately **not** included: generated tests are synchronous (§5), and
 leaving the package out means a generated async test fails loudly at collection instead of

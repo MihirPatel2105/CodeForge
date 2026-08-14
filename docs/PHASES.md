@@ -167,14 +167,21 @@ review. Phase 8's repetitions turn that into a measured rate.)*
 **Goal:** generated code actually runs.
 
 Tasks
-- [ ] Pre-baked sandbox Docker image: python:3.11-slim + fastapi, uvicorn, beanie, pymongo, pytest,
-      httpx, and `mongod` (no network at run time, so nothing installs later).
-- [ ] `sandbox/runner.py`: write file tree to a temp dir → mount → run container with
+- [x] Pre-baked sandbox Docker image: fastapi, uvicorn, beanie, pymongo, pytest, httpx, and
+      `mongod` (no network at run time, so nothing installs later).
+      *(`sandbox/Dockerfile` — built on `mongo:8` + Python 3.12, not `python:3.11-slim`:
+      MongoDB ships no arm64 server for Debian. See `docs/GENERATED_APP.md` §6.)*
+- [x] `sandbox/runner.py`: write file tree to a temp dir → mount → run container with
       `network_mode="none"`, CPU/memory limits, and a hard timeout.
-- [ ] Start `mongod` inside the container, then run pytest; capture stdout, stderr, exit code, and
+      *(files are copied in via `put_archive`, so no host path is exposed at all)*
+- [x] Start `mongod` inside the container, then run pytest; capture stdout, stderr, exit code, and
       the pytest report.
-- [ ] Force-remove the container in `finally`. No leaks.
-- [ ] Artifacts (file tree zip + logs) stored in GridFS, downloadable by run id.
+      *(`app/sandbox/report.py` parses pytest output into `TestResult`; exit 2-5 means the
+      suite never ran and is not reported as "0 failures")*
+- [x] Force-remove the container in `finally`. No leaks.
+      *(verified: `docker ps -a` clean after passing, failing, and timed-out runs)*
+- [x] Artifacts (file tree zip + logs) stored in GridFS, downloadable by run id.
+      *(`app/db/artifacts.py`, `GET /runs/{id}/artifacts` and `/artifacts/{file_id}`)*
 
 **DoD:** the books-API prompt goes prompt → generated code → container run → real pytest output,
 and `docker ps -a` is clean afterwards. Container is killed correctly on timeout and on an
