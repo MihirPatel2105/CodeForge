@@ -81,6 +81,41 @@ class AgentSchema(BaseModel):
         return data
 
 
+def _parses(source: str) -> bool:
+    import ast
+
+    try:
+        ast.parse(source)
+    except SyntaxError:
+        return False
+    return True
+
+
+def _strip_fences(source: str) -> str:
+    """Remove a wrapping ```python ... ``` block."""
+    lines = source.strip().splitlines()
+    if lines and lines[0].lstrip().startswith("```"):
+        lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        return "\n".join(lines) + "\n"
+    return source
+
+
+def _strip_banner(source: str) -> str:
+    """Remove an unterminated `'''filename.py` or `\"\"\"filename.py` opener."""
+    lines = source.splitlines()
+    if not lines:
+        return source
+    first = lines[0].strip()
+    if first.startswith(("'''", '"""')):
+        body = first[3:].strip()
+        # A banner is a bare filename, not the start of a real docstring.
+        if body and body.endswith(".py") and " " not in body:
+            return "\n".join(lines[1:]) + "\n"
+    return source
+
+
 class GeneratedFile(AgentSchema):
     """One file in a generated application. Content is complete and runnable as written."""
 
@@ -88,6 +123,28 @@ class GeneratedFile(AgentSchema):
     # emit "name" instead of "path" and the provider rejects the whole tool call.
     path: str = Field(description="File name including extension, e.g. 'main.py'")
     content: str = Field(description="Complete file contents, runnable as written")
+
+    @model_validator(mode="after")
+    def _repair_wrapped_source(self) -> "GeneratedFile":
+        """Undo two ways models wrap source in the content field.
+
+        Observed in 5 of 10 generated trees: the model opens with a filename banner —
+        `\'\'\'database.py` — that is never closed, so the file fails to parse at line 1
+        even though the code below it is fine. Markdown fences are the same mistake in
+        a different costume.
+
+        Lives here rather than on `SingleFileOutput` so every path benefits: fresh
+        generations, files replayed from the database, and artifacts alike.
+
+        A repair is kept only if it turns unparseable source into parseable source, so
+        this can never damage a file that was already correct.
+        """
+        if self.path.endswith(".py") and not _parses(self.content):
+            for candidate in (_strip_fences(self.content), _strip_banner(self.content)):
+                if candidate != self.content and _parses(candidate):
+                    self.content = candidate
+                    break
+        return self
 
 
 # --------------------------------------------------------------------------- #
@@ -205,8 +262,38 @@ class SingleFileOutput(AgentSchema):
     """
 
     path: str = Field(description="File name including extension, e.g. 'main.py'")
-    content: str = Field(description="Complete file contents, runnable as written")
+    content: str = Field(
+        description=(
+            "Complete file contents. Raw source only: no markdown fences, no filename header"
+        )
+    )
     notes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _repair_then_require_valid_python(self) -> "SingleFileOutput":
+        """Repair wrapped source, then refuse anything that still will not compile.
+
+        Deliberately strict here and lenient on `GeneratedFile`. This model exists only
+        at *generation* time, so raising makes Instructor re-ask with the syntax error
+        attached, and failing that the chain drops to a rung with a larger token budget —
+        which is exactly what a truncated file needs. `GeneratedFile` stays permissive so
+        already-stored trees remain loadable for analysis and replay.
+        """
+        if not self.path.endswith(".py"):
+            return self
+
+        if not _parses(self.content):
+            for candidate in (_strip_fences(self.content), _strip_banner(self.content)):
+                if candidate != self.content and _parses(candidate):
+                    self.content = candidate
+                    break
+
+        if not _parses(self.content):
+            raise ValueError(
+                f"{self.path} is not valid Python. Return the complete file; if it was cut "
+                "short, write a shorter implementation rather than a truncated one."
+            )
+        return self
 
     def as_generated_file(self) -> GeneratedFile:
         return GeneratedFile(path=self.path, content=self.content)

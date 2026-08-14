@@ -209,7 +209,8 @@ The image is pre-built with everything below, because `network_mode="none"` mean
 be installed at run time.
 
 Built from `sandbox/Dockerfile`: **`mongo:8`** (Ubuntu 24.04, official `mongod`) plus
-Python 3.12 and `fastapi`, `uvicorn`, `beanie`, `pymongo`, `pytest`, `httpx`.
+Python 3.12 and `fastapi`, `uvicorn`, `beanie`, `pymongo`, `pytest`, `httpx`,
+`email-validator` (pydantic's `EmailStr` needs it; generated contact apps use it).
 
 The base was originally specified as `python:3.11-slim`. That is not buildable: MongoDB
 publishes no arm64 `mongodb-org-server` for Debian, so the image cannot run `mongod` on

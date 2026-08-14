@@ -34,11 +34,15 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # appearing to pass.
 RUN pip install --no-cache-dir \
     fastapi==0.115.6 \
+    email-validator==2.2.0 \
     uvicorn==0.34.0 \
     beanie==2.2.0 \
     pymongo==4.16.0 \
     pytest==8.3.4 \
     httpx==0.28.1
+# email-validator is required by pydantic's EmailStr. Generated contact and attendee
+# apps reach for it naturally, and without it they fail at import — a sandbox defect
+# that looks exactly like a generation defect.
 
 # Unprivileged: generated code is untrusted (NFR-2). The mongo image already ships a
 # `mongodb` user; reuse it rather than inventing another.

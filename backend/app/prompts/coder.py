@@ -22,7 +22,10 @@ files.
 - Initialise Beanie on startup using FastAPI's lifespan, registering every Document.
 - Correct status codes: 201 create, 200 read/update, 204 delete, 404 when missing.
 - The code must run exactly as written. No TODO, no ellipses, no "rest of the code \
-unchanged"."""
+unchanged".
+- The content field holds RAW PYTHON SOURCE ONLY. Do not wrap it in markdown fences, and \
+do not put the filename at the top. A line like '''database.py opens a string that is never \
+closed and makes the whole file fail to parse."."""
 
 TEMPLATE = """Write ONE complete Python file named main.py implementing this API.
 
