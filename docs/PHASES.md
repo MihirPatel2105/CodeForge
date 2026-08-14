@@ -186,6 +186,16 @@ Tasks
 **DoD:** the books-API prompt goes prompt → generated code → container run → real pytest output,
 and `docker ps -a` is clean afterwards. Container is killed correctly on timeout and on an
 infinite-loop test case.
+*(Met 2026-08-14. Books prompt ran end to end in 34s: 4 files generated, tests written, executed
+in the sandbox, real pytest output captured, three artifacts stored in GridFS, no containers
+leaked. Timeout and infinite-loop kills, the absence of network access, and mongod availability
+are covered by `tests/test_sandbox_live.py`.*
+
+*What execution revealed: the generated app failed to run — `SyntaxError: 'await' outside async
+function`. Complete-looking, reviewed, tested code that does not parse is exactly what Phase 4's
+text-only DoD could not detect, and exactly what the Phase 6 loop exists to fix. Across 3 stored
+trees re-executed, 1 reached the test stage (11/16 passing) and 2 failed at import. Reporting a
+broken app honestly is Phase 5 working, not failing.)*
 
 ---
 

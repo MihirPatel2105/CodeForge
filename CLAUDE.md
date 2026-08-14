@@ -17,11 +17,12 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 5 — Implementation C: sandbox execution
-LAST DoD MET  : Phase 4 (2026-08-14) — 10/10 canonical prompts produce a full file tree
-                plus tests; crash-resume verified twice with SIGKILL
-NEXT UP       : pre-baked sandbox image + sandbox/runner.py with network_mode="none"
-BLOCKED ON    : nothing
+CURRENT PHASE : 6 — Implementation D: the feedback loop + RAG
+LAST DoD MET  : Phase 5 (2026-08-14) — generated code executes in a network-isolated
+                container, real pytest output captured, artifacts in GridFS, no leaks
+NEXT UP       : conditional edges reviewer->coder and tester->coder, MAX_LOOPS=3
+BLOCKED ON    : nothing (OpenRouter daily free quota was exhausted 2026-08-14; it
+                resets daily and only affects the Reviewer's first rung)
 ```
 
 Before starting work, read the matching phase in `docs/PHASES.md` and confirm its Definition of
