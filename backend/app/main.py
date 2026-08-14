@@ -8,7 +8,6 @@ from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.projects import router as projects_router
 from app.api.runs import router as runs_router
-from app.api.toy import router as toy_router
 from app.core.exceptions import CodeForgeError
 from app.db import connect, disconnect
 
@@ -36,7 +35,6 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(projects_router)
     app.include_router(runs_router)
-    app.include_router(toy_router)  # Phase 3 only; removed when the graph lands
     return app
 
 

@@ -1,10 +1,10 @@
-"""Coder agent prompt (toy scope: a single file).
+"""Coder agent prompt — one file per call.
 
 The rules below are the ones from docs/GENERATED_APP.md §2 that matter most for a single
-file. The full multi-file template arrives in Phase 4.
+file. The graph calls `run_file` once per file in the Design.
 """
 
-VERSION = "coder_toy_v1"
+VERSION = "coder_v1"
 
 SYSTEM = """You are the Coder agent in an automated SDLC pipeline. You write complete, \
 runnable FastAPI applications backed by MongoDB via Beanie.

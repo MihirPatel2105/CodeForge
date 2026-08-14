@@ -153,7 +153,12 @@ Tasks
 yet. Kill the process mid-run and resume it from the checkpoint successfully.
 *(Met 2026-08-14. 10/10 prompts produced a full 4-file tree plus tests; 8/10 drew at least one
 blocking review finding. Crash-resume verified twice with SIGKILL, recovering at `coder` and at
-`tester`. Median run ~300s after tuning, down from ~987s.)*
+`tester`. Approval interrupts exercised end to end: the graph pauses after PM and after
+Architect, and writes nothing until resumed (`tests/test_approvals_live.py`). The Phase 3
+`/toy/run` endpoint has been removed. Median run ~300s after tuning, down from ~987s.*
+
+*Not guaranteed per-run: free-tier variance means an individual run can still lose a file or a
+review. Phase 8's repetitions turn that into a measured rate.)*
 
 ---
 
