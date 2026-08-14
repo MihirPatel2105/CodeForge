@@ -102,6 +102,9 @@ routing, and observability in one shot. Check the trace appears in the Langfuse 
 - **No hot-reload in the backend container.** `uvicorn` runs without `--reload`, so changes to
   `backend/app/` need `docker compose restart backend`. For active development, run uvicorn from
   the venv on the host instead.
+- **After any `requirements.txt` change, rebuild:** `docker compose build backend`. The container
+  mounts `backend/app` but bakes dependencies into the image, so new code arrives without its
+  new packages and the container crash-loops on `ModuleNotFoundError`.
 - `docker compose down` stops the stack; add `-v` to also wipe the Mongo and Langfuse volumes.
 - Ollama is the last-resort fallback in every model chain. Install it and pull one small model
   (`ollama pull qwen2.5:3b`) before Phase 3.

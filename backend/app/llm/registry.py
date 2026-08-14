@@ -34,7 +34,15 @@ class ModelSpec(BaseModel):
     model: str
     # Extra kwargs LiteLLM needs for this model; Ollama requires an explicit api_base.
     extra: dict = {}
+
+    # Groq reserves `prompt + max_tokens` against its 8000 TPM budget, so an inflated
+    # ceiling throttles throughput even when the reply is short. Keep these tight.
     max_tokens: int | None = None
+
+    # A rung that hangs is worse than one that fails: the chain cannot move on until it
+    # returns. Measured 2026-08-14: an OpenRouter rung burned 180s before timing out,
+    # which was 29% of a whole run.
+    timeout: int | None = None
 
 
 def _ollama(max_tokens: int | None = None) -> ModelSpec:
@@ -60,15 +68,24 @@ CHAINS: dict[str, list[ModelSpec]] = {
     # Groq's free tier caps at 8000 tokens per minute *including the prompt*, so the
     # Coder's budget is set below that: at 8000 it overran on the first real run
     # (requested 8470) and every request fell through to the fallback.
+    # 2500 rather than 5500: generated files run 1-3 KB (~500-800 tokens), so the larger
+    # ceiling reserved TPM that was never used and capped Groq at roughly one file per
+    # minute. Measured 2026-08-14: the Coder was 70% of a 764s run.
     "coder": [
-        ModelSpec(model=GROQ_GPT_OSS, max_tokens=5500),
-        ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=16000),
-        ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=16000),
-        _ollama(max_tokens=8000),
+        ModelSpec(model=GROQ_GPT_OSS, max_tokens=2500, timeout=90),
+        ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=8000, timeout=120),
+        ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=8000, timeout=120),
+        _ollama(max_tokens=4000),
     ],
+    # OpenRouter first, unlike every other agent. Groq fails this one predictably: a
+    # review's findings quote code, and long strings full of quotes and newlines break
+    # Groq's tool-call JSON parsing ("Failed to parse tool call arguments as JSON").
+    # Measured 2026-08-14: Groq fails, OpenRouter returns findings, local 3B emits no
+    # tool call at all.
     "reviewer": [
-        ModelSpec(model=GROQ_GPT_OSS),
-        ModelSpec(model=OPENROUTER_NEMOTRON_NANO),
+        ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, timeout=90),
+        ModelSpec(model=OPENROUTER_NEMOTRON_NANO, timeout=90),
+        ModelSpec(model=GROQ_GPT_OSS, timeout=60),
         _ollama(),
     ],
     "tester": [

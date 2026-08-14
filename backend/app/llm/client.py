@@ -187,6 +187,7 @@ async def structured(
                 max_retries=2,  # Instructor re-asks on schema violations
                 metadata=_trace_metadata(agent, trace),
                 **({"max_tokens": spec.max_tokens} if spec.max_tokens else {}),
+                **({"timeout": spec.timeout} if spec.timeout else {}),
                 **spec.extra,
             )
             attempts.append(LLMAttempt(model=spec.model, ok=True))
@@ -231,6 +232,7 @@ async def complete(
                 temperature=temperature,
                 metadata=_trace_metadata(agent, trace),
                 **({"max_tokens": spec.max_tokens} if spec.max_tokens else {}),
+                **({"timeout": spec.timeout} if spec.timeout else {}),
                 **spec.extra,
             )
             attempts.append(LLMAttempt(model=spec.model, ok=True))
