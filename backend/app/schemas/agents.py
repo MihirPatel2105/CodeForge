@@ -12,7 +12,7 @@ prompt can be ignored and a schema cannot:
 """
 
 import json
-from typing import Any, Literal
+from typing import Any, Literal, get_origin
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -53,13 +53,24 @@ class AgentSchema(BaseModel):
         for name, value in list(data.items()):
             if not isinstance(value, str):
                 continue
+
             stripped = value.strip()
-            if not stripped.startswith(("[", "{")):
-                continue
-            try:
-                data[name] = json.loads(stripped)
-            except (ValueError, TypeError):
-                pass  # genuinely a string; let normal validation judge it
+            if stripped.startswith(("[", "{")):
+                try:
+                    data[name] = json.loads(stripped)
+                    continue
+                except (ValueError, TypeError):
+                    # Usually truncated JSON: the model hit its token ceiling mid-array.
+                    # Fall through rather than crash; the chain will try another model.
+                    pass
+
+            # A list field handed one bare string. Models do this for single-item
+            # fields ("notes": "Defines the Document" instead of a list). Wrap it —
+            # losing a whole generation over a missing pair of brackets is absurd.
+            field = cls.model_fields.get(name)
+            if field is not None and get_origin(field.annotation) is list:
+                if not stripped.startswith("["):
+                    data[name] = [value]
 
         # Models reach for the shorter, more natural name. The raw dict still carries it
         # here even though it is not a declared field, so recover it rather than lose the

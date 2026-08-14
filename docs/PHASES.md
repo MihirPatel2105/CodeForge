@@ -138,17 +138,22 @@ call chain is visible in Langfuse. Provider fallback verified by deliberately us
 **Goal:** all five agents running through LangGraph, text-only, no execution yet.
 
 Tasks
-- [ ] LangGraph `StateGraph` over `RunState`, `MongoDBSaver` checkpointer attached.
-- [ ] Nodes: `pm` → `architect` → `coder` → `reviewer` → `tester` (linear first, cycles next).
-- [ ] Each agent: dedicated prompt template, Pydantic output schema, model chain from registry.
-- [ ] Coder writes a **multi-file tree** into state, not one blob.
-- [ ] Reviewer emits structured findings (`severity`, `file`, `line`, `issue`, `fix_hint`) —
+- [x] LangGraph `StateGraph` over `RunState`, `MongoDBSaver` checkpointer attached.
+- [x] Nodes: `pm` → `architect` → `coder` → `reviewer` → `tester` (linear first, cycles next).
+- [x] Each agent: dedicated prompt template, Pydantic output schema, model chain from registry.
+- [x] Coder writes a **multi-file tree** into state, not one blob.
+      *(one LLM call per file — a whole-tree call breaches Groq's TPM ceiling and provokes
+      nested tool-call rejections)*
+- [x] Reviewer emits structured findings (`severity`, `file`, `line`, `issue`, `fix_hint`) —
       not prose.
-- [ ] Tester writes `test_main.py` targeting the generated endpoints.
-- [ ] Run persisted to Mongo at every node transition; run is resumable after a crash.
+- [x] Tester writes `test_main.py` targeting the generated endpoints.
+- [x] Run persisted to Mongo at every node transition; run is resumable after a crash.
 
 **DoD:** all 10 canonical prompts produce a complete file tree + tests as text. Nothing executes
 yet. Kill the process mid-run and resume it from the checkpoint successfully.
+*(Met 2026-08-14. 10/10 prompts produced a full 4-file tree plus tests; 8/10 drew at least one
+blocking review finding. Crash-resume verified twice with SIGKILL, recovering at `coder` and at
+`tester`. Median run ~300s after tuning, down from ~987s.)*
 
 ---
 

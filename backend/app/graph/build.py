@@ -11,6 +11,7 @@ after Architect, and the API resumes it with the stored thread id (FR-28, FR-29)
 from functools import lru_cache
 
 from langgraph.checkpoint.mongodb import MongoDBSaver
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.graph import END, START, StateGraph
 from pymongo import MongoClient
 
@@ -53,7 +54,38 @@ def build_graph() -> StateGraph:
 def _checkpointer() -> MongoDBSaver:
     # MongoDBSaver takes a *sync* client even though its async methods are what the graph
     # calls; it is cached so every run shares one connection pool.
-    return MongoDBSaver(MongoClient(settings.mongo_uri), db_name=CHECKPOINT_DB)
+    #
+    # The serializer must be told which modules it may deserialise. Our agent schemas and
+    # state models go into every checkpoint, and LangGraph warns that unregistered types
+    # "will be blocked in a future version" — which would make every existing checkpoint
+    # unreadable after an upgrade, silently killing resumability.
+    return MongoDBSaver(
+        MongoClient(settings.mongo_uri),
+        db_name=CHECKPOINT_DB,
+        serde=JsonPlusSerializer(allowed_msgpack_modules=_checkpointed_types()),
+    )
+
+
+def _checkpointed_types() -> list[type]:
+    """Every model that can appear in RunState, collected from the modules themselves.
+
+    Enumerated rather than listed by hand: a model added to `schemas.agents` and forgotten
+    here would only fail when a real run tried to resume.
+    """
+    import inspect
+
+    from pydantic import BaseModel
+
+    import app.schemas.agents as agents_module
+    import app.schemas.sandbox as sandbox_module
+    from app.graph.state import ApprovalRecord, LoopRecord, RunError, RunMetrics
+
+    collected: list[type] = [ApprovalRecord, LoopRecord, RunError, RunMetrics]
+    for module in (agents_module, sandbox_module):
+        for _, obj in inspect.getmembers(module, inspect.isclass):
+            if issubclass(obj, BaseModel) and obj.__module__ == module.__name__:
+                collected.append(obj)
+    return collected
 
 
 def compile_graph(*, with_approvals: bool = True):

@@ -17,17 +17,11 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 4 — Implementation B: full agent pipeline
-LAST DoD MET  : Phase 3 (2026-08-13) — auth + CRUD + LLM client; POST /toy/run turns a
-                prompt into requirements and a runnable main.py, traced in Langfuse;
-                provider fallback verified with a dead key
-NEXT UP       : LangGraph StateGraph over RunState with MongoDBSaver checkpointer
+CURRENT PHASE : 5 — Implementation C: sandbox execution
+LAST DoD MET  : Phase 4 (2026-08-14) — 10/10 canonical prompts produce a full file tree
+                plus tests; crash-resume verified twice with SIGKILL
+NEXT UP       : pre-baked sandbox image + sandbox/runner.py with network_mode="none"
 BLOCKED ON    : nothing
-
-Phase 4 must know: generate ONE file per LLM call, not a whole tree. Free-tier models
-fail nested `list[GeneratedFile]` tool calls (Groq emits `name` for `path` and rejects
-server-side), and a multi-file request also breaches Groq's 8000 TPM ceiling. See
-`SingleFileCoderAgent`.
 ```
 
 Before starting work, read the matching phase in `docs/PHASES.md` and confirm its Definition of
