@@ -1,6 +1,7 @@
 from app.agents.base import BaseAgent
 from app.llm.client import LLMResult
 from app.prompts import coder as prompt
+from app.rag import context_for
 from app.schemas.agents import CodeOutput, Requirements, SingleFileOutput
 
 
@@ -79,6 +80,25 @@ class SingleFileCoderAgent(CoderAgent):
                 entities=describe_entities(requirements),
                 endpoints=describe_endpoints(design),
                 file_list=", ".join(f.path for f in design.files),
+                reference=context_for(
+                    f"{spec.path} {spec.purpose} {requirements.summary}",
+                    enabled=state.get("rag_enabled", False),
+                ),
+            ),
+            run_id=state["run_id"],
+            iteration=state.get("loop_count", 0),
+        )
+
+    async def run_fix(self, state: dict, path: str, current: str, problems: str) -> LLMResult:
+        """Regenerate one file to address specific problems."""
+        return await self.call(
+            prompt.render_fix(
+                path=path,
+                current=current,
+                problems=problems,
+                # The problem text is the best possible query: it describes exactly what
+                # went wrong, which is what the snippets are indexed against.
+                reference=context_for(problems, enabled=state.get("rag_enabled", False)),
             ),
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),

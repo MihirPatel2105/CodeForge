@@ -4,6 +4,7 @@
 until then a created run stays `queued`.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Response, status
@@ -11,10 +12,14 @@ from fastapi import APIRouter, Response, status
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import NotFoundError
 from app.db.artifacts import list_artifacts, read_artifact
+from app.events import events
+from app.graph import executor
 from app.graph.state import new_run_state
 from app.models import Project, Run
 from app.schemas.agents import GeneratedFile
 from app.schemas.api import (
+    ApprovalRequest,
+    ApprovalResponse,
     FileTreeResponse,
     RunCreate,
     RunCreateResponse,
@@ -75,9 +80,14 @@ async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse
     )
     run.state = {k: v for k, v in state.items() if k not in {"started_at", "finished_at"}}
     run.state["started_at"] = state["started_at"].isoformat()
+    run.state["rag_enabled"] = payload.rag_enabled
     await run.save()
 
-    return RunCreateResponse(run_id=run_id, status=run.status)
+    # Returns immediately; the pipeline continues in the background and the client
+    # attaches to GET /runs/{id}/stream to watch it (FR-7).
+    await executor.start_run(run)
+
+    return RunCreateResponse(run_id=run_id, status="running")
 
 
 @router.get("/runs/{run_id}", response_model=RunResponse)
@@ -128,3 +138,51 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
         media_type="application/octet-stream",
         headers={"Content-Disposition": f'attachment; filename="{Path(match.filename).name}"'},
     )
+
+
+@router.post("/runs/{run_id}/approve", response_model=ApprovalResponse)
+async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) -> ApprovalResponse:
+    """Resolve a human checkpoint: resume the pipeline, or end the run.
+
+    The graph is paused at an `interrupt_before`; resuming means invoking the same
+    thread again, which continues from the checkpoint rather than restarting.
+    """
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+
+    await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
+
+    approvals = dict((run.state or {}).get("approvals") or {})
+    approvals[payload.phase] = {
+        "approved": payload.approved,
+        "note": payload.note,
+        "at": datetime.now().isoformat(),
+    }
+    run.state = {**(run.state or {}), "approvals": approvals}
+
+    if not payload.approved:
+        run.status = "rejected"
+        run.updated_at = datetime.now()
+        await run.save()
+        await events.run_failed(str(run.id), "rejected", payload.note or "rejected by the user")
+        return ApprovalResponse(
+            run_id=str(run.id), phase=payload.phase, approved=False, status="rejected"
+        )
+
+    run.status = "running"
+    run.updated_at = datetime.now()
+    await run.save()
+    await executor.resume_run(str(run.id))
+
+    return ApprovalResponse(
+        run_id=str(run.id), phase=payload.phase, approved=True, status="running"
+    )
+
+
+@router.post("/runs/{run_id}/cancel", response_model=RunCreateResponse)
+async def cancel_run(run_id: str, user: CurrentUser) -> RunCreateResponse:
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+    executor.cancel(str(run.id))
+    run.status = "cancelled"
+    run.updated_at = datetime.now()
+    await run.save()
+    return RunCreateResponse(run_id=str(run.id), status="cancelled")

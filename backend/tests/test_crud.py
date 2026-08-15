@@ -62,7 +62,9 @@ def test_malformed_project_id_is_404_not_500(client, registered_user):
 # --------------------------------------------------------------------------- #
 
 
-def test_create_run_returns_202_and_queues(client, registered_user, project):
+def test_create_run_returns_202_and_launches(client, registered_user, project, no_background_runs):
+    """202 and return immediately — the pipeline runs in the background and the client
+    watches it over SSE (FR-7). Never block the request on a run that takes minutes."""
     response = client.post(
         "/runs",
         json={"project_id": project["id"], "prompt": "books api"},
@@ -70,8 +72,9 @@ def test_create_run_returns_202_and_queues(client, registered_user, project):
     )
     assert response.status_code == 202
     body = response.json()
-    assert body["status"] == "queued"
+    assert body["status"] == "running"
     assert body["run_id"]
+    assert no_background_runs == [body["run_id"]], "the pipeline was not launched"
 
 
 def test_create_run_on_another_users_project_is_404(client, project, other_user):
@@ -91,7 +94,7 @@ def test_get_run_returns_initial_state(client, registered_user, project):
     ).json()["run_id"]
 
     body = client.get(f"/runs/{run_id}", headers=registered_user["headers"]).json()
-    assert body["status"] == "queued"
+    assert body["status"] == "running"
     assert body["state"]["loop_count"] == 0
     assert body["state"]["max_loops"] == 3
     assert body["state"]["rag_enabled"] is True

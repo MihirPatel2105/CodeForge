@@ -72,12 +72,28 @@ class AgentSchema(BaseModel):
                 if not stripped.startswith("["):
                     data[name] = [value]
 
-        # Models reach for the shorter, more natural name. The raw dict still carries it
-        # here even though it is not a declared field, so recover it rather than lose the
+        # Case drift, then aliases — in that order, because a model that capitalises
+        # `Path` also capitalises `Fix`, and matching the alias first would miss it.
+        # Observed `{"Path": ..., "Content": ...}` from a Coder call, which failed
+        # validation on both required fields at once.
+        lowered = {k.lower(): k for k in data if isinstance(k, str)}
+
+        for declared in cls.model_fields:
+            if declared in data:
+                continue
+            source = lowered.get(declared.lower())
+            if source is not None and source != declared:
+                data[declared] = data[source]
+
+        # Models also reach for the shorter, more natural word. The raw dict still carries
+        # it even though it is not a declared field, so recover it rather than lose the
         # whole generation. Each pair below cost a real run during development.
         for emitted, declared in (("name", "path"), ("fix", "fix_hint")):
-            if declared in cls.model_fields and not data.get(declared) and data.get(emitted):
-                data[declared] = data[emitted]
+            if declared not in cls.model_fields or data.get(declared):
+                continue
+            source = lowered.get(emitted)
+            if source is not None:
+                data[declared] = data[source]
         return data
 
 
@@ -235,11 +251,46 @@ class FileSpec(AgentSchema):
     purpose: str = ""
 
 
+#: The generated-app file structure is fixed by docs/GENERATED_APP.md §1. The Architect
+#: describes it; it does not get to invent it.
+CANONICAL_FILES = ("database.py", "models.py", "schemas.py", "main.py")
+
+
 class Design(AgentSchema):
     collections: list[Collection] = Field(min_length=1)
     endpoints: list[Endpoint] = Field(min_length=1)
     files: list[FileSpec] = Field(min_length=1)
     notes: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _normalise_files(self) -> "Design":
+        """Repair the file list before the Coder iterates it.
+
+        Two failures seen in real runs, both caused by `FileSpec.path` being optional —
+        which it has to be, because providers that validate server-side reject the call
+        when a required field is missing:
+
+        * every path came back empty, so each Coder call invented its own filename and
+          the tree ended up with `database.py` twice and no `models.py`;
+        * duplicates silently overwrote earlier files.
+
+        Empty entries are dropped, duplicates collapsed, and an empty result falls back
+        to the canonical four files.
+        """
+        seen: set[str] = set()
+        cleaned: list[FileSpec] = []
+        for spec in self.files:
+            path = spec.path.strip()
+            if not path or path in seen:
+                continue
+            seen.add(path)
+            cleaned.append(FileSpec(path=path, purpose=spec.purpose))
+
+        if not cleaned:
+            cleaned = [FileSpec(path=p, purpose="") for p in CANONICAL_FILES]
+
+        self.files = cleaned
+        return self
 
 
 # --------------------------------------------------------------------------- #

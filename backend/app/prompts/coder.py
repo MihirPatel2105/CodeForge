@@ -58,7 +58,7 @@ Endpoints (the whole application; implement only the parts belonging to {path}):
 The application is split across these files, so import from the others rather than
 duplicating them:
 {file_list}
-
+{reference}
 Return only {path}, complete and runnable."""
 
 
@@ -71,6 +71,7 @@ def render_file(
     entities: str,
     endpoints: str,
     file_list: str,
+    reference: str = "",
 ) -> str:
     return PER_FILE_TEMPLATE.format(
         path=path,
@@ -80,6 +81,7 @@ def render_file(
         entities=entities,
         endpoints=endpoints,
         file_list=file_list,
+        reference=f"\n{reference}\n" if reference else "",
     )
 
 
@@ -89,4 +91,36 @@ def render(*, project_name: str, summary: str, entities: str, operations: str) -
         summary=summary,
         entities=entities,
         operations=operations,
+    )
+
+
+FIX_TEMPLATE = """This file has problems that must be fixed.
+
+File: {path}
+
+Current contents:
+```python
+{current}
+```
+
+Problems to fix:
+{problems}
+
+{reference}
+Rewrite {path} so those problems are gone. Change only what the problems require — keep \
+everything else byte-identical. Return the complete file, not a diff."""
+
+
+def render_fix(*, path: str, current: str, problems: str, reference: str = "") -> str:
+    """Fix-pass prompt.
+
+    Carries only the failing findings and this one file, never the accumulated history:
+    a fix pass that re-sends everything blows the free-tier token budget and buries the
+    signal the model needs (docs/AGENTS.md §4).
+    """
+    return FIX_TEMPLATE.format(
+        path=path,
+        current=current,
+        problems=problems,
+        reference=f"\n{reference}\n" if reference else "",
     )

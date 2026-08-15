@@ -25,6 +25,7 @@ from app.graph.nodes import (
     sandbox_node,
     tester_node,
 )
+from app.graph.routing import after_reviewer, after_sandbox
 from app.graph.state import RunState
 
 CHECKPOINT_DB = "codeforge_checkpoints"
@@ -45,9 +46,16 @@ def build_graph() -> StateGraph:
     graph.add_edge("pm", "architect")
     graph.add_edge("architect", "coder")
     graph.add_edge("coder", "reviewer")
-    graph.add_edge("reviewer", "tester")
+
+    # The feedback loop. Blocking findings and failing tests both send work back to the
+    # Coder, bounded by MAX_LOOPS; everything else moves forward.
+    graph.add_conditional_edges(
+        "reviewer", after_reviewer, {"tester": "tester", "coder": "coder", "finalise": "finalise"}
+    )
     graph.add_edge("tester", "sandbox")
-    graph.add_edge("sandbox", "finalise")
+    graph.add_conditional_edges(
+        "sandbox", after_sandbox, {"coder": "coder", "finalise": "finalise"}
+    )
     graph.add_edge("finalise", END)
 
     return graph

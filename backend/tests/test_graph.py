@@ -125,7 +125,14 @@ def test_missing_file_is_not_a_success(design_with_four_files):
     assert any("schemas.py" in e["message"] for e in result["errors"])
 
 
-def test_missing_review_is_not_a_success(design_with_four_files):
+def test_passing_tests_succeed_even_without_a_review(design_with_four_files):
+    """The sandbox's verdict outranks the Reviewer's.
+
+    Before Phase 6 a missing review failed the run. That was wrong once the loop existed:
+    a review is a means to working code, not an end. If the code passes its own tests it
+    succeeded — `docs/ACCEPTANCE.md` defines L3 and L5 without reference to review. The
+    reviewer's failure is still recorded in `errors`.
+    """
     import asyncio
 
     from app.schemas.agents import GeneratedFile, TestResult
@@ -138,8 +145,26 @@ def test_missing_review_is_not_a_success(design_with_four_files):
         tests=TestResult(passed=True, total=1, failed=0),
     )
     result = asyncio.run(_finalise(state))
-    assert result["status"] == "failed_llm"
-    assert any("review did not run" in e["message"] for e in result["errors"])
+    assert result["status"] == "succeeded"
+
+
+def test_failing_tests_after_loop_cap_report_max_loops(design_with_four_files):
+    """Loop exhaustion is a designed outcome with its own status, distinct from an agent
+    dying — Phase 8's failure taxonomy separates them."""
+    import asyncio
+
+    from app.schemas.agents import GeneratedFile, TestResult
+
+    state = _state(
+        design_with_four_files,
+        ["database.py", "models.py", "schemas.py", "main.py"],
+        test_files=[GeneratedFile(path="test_main.py", content="x")],
+        tests=TestResult(passed=False, total=4, failed=2),
+        loop_count=3,
+        max_loops=3,
+    )
+    result = asyncio.run(_finalise(state))
+    assert result["status"] == "failed_max_loops"
 
 
 def test_unexecuted_run_is_not_a_success(design_with_four_files):
