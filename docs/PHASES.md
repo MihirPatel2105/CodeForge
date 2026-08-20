@@ -429,8 +429,47 @@ element causing every prior bug in the mark was cut outright, and the email asse
 loading the real SVG into a browser canvas and exporting *that* — the verified shape, not a second,
 divergent implementation of it.*
 
-*Backend suite: 201 passed, 18 skipped. Still open, unchanged from the note above: get an actual
-non-technical person to watch one run for the literal DoD, then start Phase 8.*
+*Backend suite: 201 passed, 18 skipped.*
+
+*Status 2026-08-20 (later) — the demo path itself, driven through the browser.* Every
+earlier verification of this phase went through the API. That is not the path a viewer
+watches, and after the Ollama removal, the Mistral addition and the Atlas migration none
+of it had been exercised through the UI at all. Driving one run the way a visitor would —
+sign up with a real OTP, create a project, type the prompt, click both approvals — found
+three defects the API path could not have surfaced:*
+
+1. ***The code viewer showed "No files yet" beside a rail listing five files.**
+   `GET /runs/{id}/files` returned only `state.files`, omitting `state.test_files`. The
+   rail is built from SSE `file.written` events, which do include the test suite, and the
+   panel auto-selects the newest file — so it landed on `test_main.py` and found no
+   content for it. Only the empty-tree case had coverage, so the omission was invisible.*
+2. ***Every timeline row was shifted by the viewer's UTC offset**, showing 01:41 for an
+   event that happened at 12:41 IST. Two causes stacked: event timestamps serialised
+   without an offset (a naive string is parsed by JavaScript as local time, then
+   `toISOString()` converts it back, subtracting 5h30m), and `formatTime` deliberately
+   rendered UTC — right for a fixed replay, wrong for a live run someone is watching
+   against the clock on their wall. **The first fix attempt missed the real source**:
+   patching `nodes.py` and `runs.py` left `BaseEvent.at` in `events/schemas.py` still
+   defaulting to a bare `datetime.now()`, which is what every timeline row actually reads.
+   Only reading the raw SSE payload caught it. This is the third instance of the naive-vs-
+   aware datetime bug in this project, after the OTP countdown and the reset cooldown —
+   treat a bare `datetime.now()` on any value that crosses into the frontend as a defect.*
+3. ***Closing an account with real artifacts returned 500.** `delete_run_artifacts`
+   iterated GridFS and read `record["_id"]`, but `bucket.find()` yields `AsyncGridOut`
+   objects, which are not subscriptable — while `list_artifacts` in the same file already
+   used `record._id` correctly. Every delete-account test used an account whose runs had
+   produced no artifacts, so the loop body never executed and `artifacts_deleted == 0`
+   passed for entirely the wrong reason.*
+
+*All three are fixed, each with a regression test confirmed to fail against the old code.
+Two consecutive runs then completed clean through the browser: `6a86a7b5…` at 7/7 tests
+with a Reviewer loop, and `6a86b4c2…` at **8/8 after a Sandbox loop** — tests came back
+1/8, the failures went back to the Coder, and the retry passed, which is the review↔test
+cycle doing exactly what the project claims. Mistral served the Tester on both, so the
+provider added the same day did real work in a real run.*
+
+*Backend suite: 203 passed, 18 skipped. Still open, unchanged: get an actual non-technical
+person to watch one run for the literal DoD, then start Phase 8.*
 
 ---
 
