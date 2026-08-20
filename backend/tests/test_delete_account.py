@@ -163,3 +163,37 @@ def test_the_account_is_still_deleted_if_the_email_fails(client, user_with_data,
 
     assert _delete(client, user_with_data["headers"]).status_code == 200
     assert db.users.find_one({"email": user_with_data["email"]}) is None
+
+
+def test_gridfs_artifacts_are_actually_deleted(client, user_with_data, notices, db):
+    """The cascade must remove stored artifacts, not just count them.
+
+    Regression test for a real bug: `delete_run_artifacts` iterated GridFS with
+    `bucket.find()` and subscripted each result as `record["_id"]`, but that yields
+    `AsyncGridOut` objects, which raises `TypeError`. Every existing delete-account test
+    happened to use an account whose runs had no artifacts, so the loop body never ran
+    and `artifacts_deleted == 0` passed for entirely the wrong reason. The bug only
+    surfaced when a live pipeline run finally produced real artifacts, and it 500'd.
+
+    Seeded with synchronous GridFS rather than the app's own async helper: the app's
+    client is bound to the event loop the lifespan created it on, and driving it from
+    the test's loop raises. The stored shape is identical either way.
+    """
+    from gridfs import GridFSBucket
+
+    run_id = user_with_data["run_id"]
+    bucket = GridFSBucket(db, bucket_name="artifacts")
+    bucket.upload_from_stream(
+        f"{run_id}_file_tree_0.zip",
+        b"PK\x03\x04 fake zip payload",
+        metadata={"run_id": run_id, "kind": "file_tree", "iteration": 0},
+    )
+    assert db["artifacts.files"].count_documents({"metadata.run_id": run_id}) == 1
+
+    response = _delete(client, user_with_data["headers"])
+
+    assert response.status_code == 200
+    assert response.json()["artifacts_deleted"] == 1
+    # Both halves of the bucket must be gone, not just the file record.
+    assert db["artifacts.files"].count_documents({"metadata.run_id": run_id}) == 0
+    assert db["artifacts.chunks"].count_documents({}) == 0

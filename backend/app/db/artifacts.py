@@ -163,7 +163,12 @@ async def delete_run_artifacts(run_ids: list[str]) -> int:
     deleted = 0
     # `find` then delete one by one: GridFS has no bulk delete, because every file is
     # a document plus its chunks.
+    #
+    # `record` is an `AsyncGridOut`, not a dict — `record["_id"]` raises TypeError.
+    # Nothing caught that until a live run finally produced real artifacts: the tests
+    # deleted accounts whose runs had none, so this loop never executed and asserting
+    # `artifacts_deleted == 0` passed for the wrong reason.
     async for record in bucket.find({"metadata.run_id": {"$in": run_ids}}):
-        await bucket.delete(record["_id"])
+        await bucket.delete(record._id)
         deleted += 1
     return deleted
