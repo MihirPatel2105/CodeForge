@@ -81,10 +81,21 @@ async def run_one(graph, user_id: str, project_id: str, entry: dict) -> dict[str
 async def main() -> tuple[str, list[dict[str, Any]]]:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=0, help="run only the first N prompts")
+    parser.add_argument(
+        "--only",
+        default="",
+        help="comma-separated prompt ids, e.g. --only p09_posts_comments",
+    )
     parser.add_argument("--out", default="prompt_report.json")
     args = parser.parse_args()
 
     entries = json.loads(PROMPTS_FILE.read_text())["prompts"]
+    if args.only:
+        wanted = {name.strip() for name in args.only.split(",") if name.strip()}
+        entries = [e for e in entries if e["id"] in wanted]
+        missing = wanted - {e["id"] for e in entries}
+        if missing:
+            parser.error(f"no such prompt id(s): {', '.join(sorted(missing))}")
     if args.limit:
         entries = entries[: args.limit]
 
