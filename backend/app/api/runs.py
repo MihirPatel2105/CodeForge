@@ -4,7 +4,7 @@
 until then a created run stays `queued`.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Response, status
@@ -165,7 +165,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     approvals[payload.phase] = {
         "approved": payload.approved,
         "note": payload.note,
-        "at": datetime.now().isoformat(),
+        "at": datetime.now(UTC).isoformat(),
     }
     run.state = {**(run.state or {}), "approvals": approvals}
 

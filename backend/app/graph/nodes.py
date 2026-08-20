@@ -7,7 +7,7 @@ Each node returns only the keys it changed; LangGraph merges them into RunState.
 """
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from app.agents import ArchitectAgent, PMAgent, ReviewerAgent, SingleFileCoderAgent, TesterAgent
@@ -53,7 +53,7 @@ def _error(state: State, agent: str, exc: Exception) -> list[dict]:
             if isinstance(exc, ProviderExhaustedError)
             else type(exc).__name__,
             "message": str(exc)[:400],
-            "at": datetime.now().isoformat(),
+            "at": datetime.now(UTC).isoformat(),
         }
     )
     return errors
@@ -259,7 +259,7 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
         "blocking_findings": len(state["review"].blocking) if state.get("review") else 0,
         "failed_tests": state["tests"].failed if state.get("tests") else 0,
         "files_changed": changed,
-        "at": datetime.now().isoformat(),
+        "at": datetime.now(UTC).isoformat(),
     }
 
     return {
@@ -531,7 +531,7 @@ async def finalise_node(state: State) -> State:
                     "agent": None,
                     "code": "incomplete_pipeline",
                     "message": "; ".join(reasons),
-                    "at": datetime.now().isoformat(),
+                    "at": datetime.now(UTC).isoformat(),
                 }
             )
             update["errors"] = errors
