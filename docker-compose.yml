@@ -1,4 +1,8 @@
 services:
+  # Kept for the test suite, which deliberately stays on this local instance rather
+  # than following the app to Atlas (see conftest.py) — offline, fast, and immune to
+  # a real cluster's network latency or free-tier limits. The app itself no longer
+  # depends on this service; MONGO_URI in backend/.env now points at Atlas.
   mongo:
     image: mongo:7
     restart: unless-stopped
@@ -18,15 +22,16 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      MONGO_URI: mongodb://mongo:27017
       LANGFUSE_HOST: http://langfuse:3000
     ports:
       - "8000:8000"
-    depends_on:
-      mongo:
-        condition: service_healthy
     volumes:
       - ./backend/app:/app/app
+      # Docker-outside-of-Docker: the backend launches sandbox containers as
+      # siblings on the host's daemon (CLAUDE.md locked stack — "Docker SDK for
+      # Python, network_mode=none"). Grants the backend container root-equivalent
+      # access to the host Docker daemon.
+      - /var/run/docker.sock:/var/run/docker.sock
 
   # Langfuse's own storage (Postgres). Internal to this container only — not
   # exposed to the host and not used for any CodeForge application data,
