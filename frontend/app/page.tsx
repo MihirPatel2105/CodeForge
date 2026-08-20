@@ -1,103 +1,131 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { SiteHeader } from "@/components/marketing/site-header";
+import { RunWalkthrough } from "@/components/marketing/run-walkthrough";
+import { ClosingBanner, SiteFooter } from "@/components/marketing/marketing-actions";
+import { HeroPulse } from "@/components/marketing/hero-pulse";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "CodeForge — five AI agents build and test your API",
+  description:
+    "Describe an API in plain English. PM, Architect, Coder, Reviewer and Tester agents build it, review it, and run its tests for real in an isolated container.",
+};
+
+const STACK = [
+  { label: "generated_apps", value: "FastAPI · MongoDB · Beanie · pytest" },
+  { label: "orchestration", value: "LangGraph, durable checkpointer" },
+  { label: "execution", value: "Docker, networking disabled" },
+  { label: "cost", value: "$0 — free-tier providers only" },
+] as const;
+
+const TAG = "font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint";
+
+export default function LandingPage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-bg">
+      <SiteHeader />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
+      {/* The page opens where a run opens: at the prompt. The sentence in the frame is
+          the same one the walkthrough below then executes, so the hero is the first
+          step of the story rather than a banner sitting on top of it. */}
+      {/* Exactly one screen, so the prompt is all you see on arrival and the walkthrough
+          starts on a deliberate scroll rather than peeking in at the fold. `svh` rather
+          than `vh`: on mobile the retracting browser chrome makes `vh` overflow.
+          `min-h` rather than `h` so a short window grows instead of clipping. */}
+      <section className="cf-grid border-b border-rule">
+        {/* Centred with symmetric padding, so the space above the first line matches the
+            space below the last. The scroll cue is positioned absolutely rather than
+            sitting in the flow — otherwise it adds height to the bottom only and pulls
+            the block visibly off centre. */}
+        <div className="relative mx-auto flex min-h-[calc(100svh-58px)] w-full flex-col justify-center px-6 py-16 md:px-10 lg:px-14">
+          <span className={TAG}>[ multi-agent sdlc automation ]</span>
+
+          <h1 className="font-display mt-9 max-w-[24ch] text-[29px] font-[600] leading-[1.22] tracking-[-0.05em] text-fg sm:text-[36px] md:text-[42px]">
+            Describe an API. Watch a team build it.
+          </h1>
+
+          {/* No call to action here. The header already carries one — "Get started" when
+              signed out, "Go to projects" when signed in — and a second pair below the
+              prompt only duplicated it, while the signed-out wording ("Sign in") was
+              wrong for anyone already authenticated. */}
+          <div className="mt-11">
+            <div className="cf-frame border border-border bg-surface px-5 py-[18px]">
+              <span className={TAG}>your prompt</span>
+              <p className="cf-caret mt-3 font-mono text-[14.5px] leading-[1.6] text-fg">
+                I want an API to manage a personal library of books — title, author, ISBN,
+                genre, and whether I&apos;ve read it.
+              </p>
+            </div>
+            {/* Prompt on the left, the pipeline moving on the right. A static list of
+                the files it returns filled the space but sat there dead; the fold is
+                the first thing anyone sees, so it should have a pulse. */}
+            <div className="mt-8 grid gap-x-12 gap-y-10 md:grid-cols-[1fr_20rem]">
+              <p className="max-w-[54ch] text-[15.5px] leading-[1.65] text-fg-muted">
+                Five role-based agents take it from there — planning, writing, reviewing
+                and testing it, executed for real inside an isolated container, paused
+                twice for your approval.
+              </p>
+
+              <div className="md:border-l md:border-rule md:pl-12">
+                <HeroPulse label={TAG} />
+              </div>
+            </div>
+          </div>
+
+          {/* With the hero filling the screen there is no longer any content visible
+              below the fold to imply the page continues, so it has to say so. */}
           <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#how"
+            /* Left offset tracks the shell's responsive padding so the cue stays on the
+               same line as the copy above it rather than drifting into the gutter. */
+            className="absolute bottom-9 left-6 hidden items-center gap-[9px] font-mono text-[11px] font-[600] uppercase tracking-[0.14em] text-fg-faint transition-colors hover:text-fg md:left-10 md:inline-flex lg:left-14"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
+            <span aria-hidden>↓</span>
+            watch a run
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* One run, unfolded. */}
+      <section id="how" className="border-b border-rule py-20 md:py-24">
+        <RunWalkthrough />
+      </section>
+
+      {/* Constraints, set as a spec sheet */}
+      <section id="stack" className="border-b border-rule">
+        <div className="mx-auto w-full px-6 md:px-10 lg:px-14 py-20 md:py-24">
+          <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
+            <span className={TAG}>constraints</span>
+            <div>
+              <h2 className="font-display max-w-[24ch] text-[24px] font-[600] leading-[1.26] tracking-[-0.035em] text-fg md:text-[28px]">
+                What it runs on
+              </h2>
+              <dl className="mt-9 border-t border-rule">
+                {STACK.map((row) => (
+                  <div
+                    key={row.label}
+                    className="grid grid-cols-1 gap-x-10 gap-y-1 border-b border-rule py-[17px] sm:grid-cols-[13rem_1fr]"
+                  >
+                    <dt className="font-mono text-[12px] text-fg-faint">{row.label}</dt>
+                    <dd className="text-[15.5px] leading-[1.5] text-fg">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Close */}
+      <section>
+        <div className="mx-auto w-full px-6 py-20 md:px-10 md:py-24 lg:px-14">
+          <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
+            <div aria-hidden className="hidden lg:block" />
+            <ClosingBanner />
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
     </div>
   );
 }
