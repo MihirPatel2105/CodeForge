@@ -5,8 +5,9 @@ plain English and five role-based agents — PM, Architect, Coder, Reviewer, Tes
 through a LangGraph workflow to produce a working, tested CRUD REST API, executed live in a Docker
 sandbox and streamed to a dashboard.
 
-Architecture and stack decisions live in [CLAUDE.md](CLAUDE.md); build plan in
-[docs/PHASES.md](docs/PHASES.md); the dashboard's design brief in [docs/UI_BRIEF.md](docs/UI_BRIEF.md).
+Build plan in [docs/PHASES.md](docs/PHASES.md); the dashboard's design brief in
+[docs/UI_BRIEF.md](docs/UI_BRIEF.md). Architecture and stack decisions live in `CLAUDE.md` — kept
+out of this repo intentionally; ask a teammate for a copy.
 
 ## Prerequisites
 
@@ -42,7 +43,7 @@ fallback chains. Do not share keys between team members — free tiers are rate-
 | `GOOGLE_API_KEY` | [aistudio.google.com](https://aistudio.google.com) — AI Studio, **not** Google Cloud/Vertex, which is paid |
 
 `MONGO_URI` defaults to the local `mongo` service docker-compose brings up — nothing else to do. It
-can instead point at an Atlas M0 free-tier cluster (both are sanctioned in CLAUDE.md §3); the
+can instead point at an Atlas M0 free-tier cluster — both are fine, it's a project-approved choice; the
 connection-string form is commented above it in `.env.example`. Whichever you use, the test suite
 always runs against local Mongo regardless of `MONGO_URI` (`tests/conftest.py` pins it), so it stays
 fast and never touches a hosted cluster's free-tier limits.
