@@ -11,18 +11,45 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 | `docs/ACCEPTANCE.md` | Deciding what counts as success; metrics, failure categories, approvals |
 | `docs/SRS.md` | Checking whether a feature is actually required, in scope, or out of scope |
 | `docs/GENERATED_APP.md` | Writing Architect/Coder/Reviewer prompts, the sandbox image, or RAG snippets |
+| `docs/UI_BRIEF.md` | Building any dashboard screen — what must be on it and why |
 
 ---
 
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 6 — Implementation D: the feedback loop + RAG
-LAST DoD MET  : Phase 5 (2026-08-14) — generated code executes in a network-isolated
-                container, real pytest output captured, artifacts in GridFS, no leaks
-NEXT UP       : conditional edges reviewer->coder and tester->coder, MAX_LOOPS=3
-BLOCKED ON    : nothing (OpenRouter daily free quota was exhausted 2026-08-14; it
-                resets daily and only affects the Reviewer's first rung)
+CURRENT PHASE : 7 — Implementation E: dashboard + approvals
+LAST DoD MET  : Phase 5 (2026-08-14). Phase 6's loop is demonstrated two ways now: the
+                harness path (0/2 -> fix -> 7/7) and, as of 2026-08-15, the real
+                approval-gated API path too, repeatedly, across several live runs —
+                see docs/PHASES.md Phase 6 status for the two graph bugs that path
+                needed fixed first. RAG-comparison half is still deferred until
+                provider quotas reset.
+NEXT UP       : **First fully green end-to-end run on 2026-08-19** (run
+                6a85263d25cecdf4a534e8bc): prompt -> PM -> Architect -> Coder ->
+                Reviewer "0 findings, passed" -> Tester -> Sandbox "8 of 8 tests
+                passed" -> succeeded, and repeatably: a 3-run back-to-back batch went
+                0/3 before the last two fixes and 2/3 after, the remaining failure
+                being exhausted free-tier quota (Groq TPM + OpenRouter
+                free-models-per-day) rather than a pipeline defect. Nine defects stood
+                between the pipeline and that result; all are fixed and documented in
+                docs/PHASES.md Phase 7 status. The headline ones: the Ollama
+                last-resort rung was
+                unreachable from inside the backend container (localhost vs
+                host.docker.internal) and had no timeout, so the "always answers"
+                fallback never answered; Groq retired llama-3.3-70b-versatile out
+                from under the Tester and PM chains; the Reviewer and Sandbox loops
+                shared one MAX_LOOPS budget, so a slow review starved the sandbox of
+                every fix attempt; and all three of the Architect/Coder/Reviewer
+                prompts demanded a response_model on every endpoint, which FastAPI
+                forbids on a 204 — every generated DELETE was broken by construction.
+                The Tester truncation noted here previously is also resolved, and its
+                silent half (a suite cut off after its imports still parses, so pytest
+                collected zero tests) is now blocked structurally in
+                SingleFileOutput rather than by prompt text.
+                Still open: get an actual non-technical person to watch one run for
+                the literal DoD, then start Phase 8.
+BLOCKED ON    : nothing
 ```
 
 Before starting work, read the matching phase in `docs/PHASES.md` and confirm its Definition of
@@ -118,7 +145,8 @@ CodeForge/
 │   ├── STATE_AND_API.md     # state schema, REST + SSE contract, DB models
 │   ├── ACCEPTANCE.md        # success criteria, failure taxonomy, approval checkpoints
 │   ├── SRS.md               # requirements spec: FRs, NFRs, supported prompt domain
-│   └── GENERATED_APP.md     # file structure + rules for what the Coder produces
+│   ├── GENERATED_APP.md     # file structure + rules for what the Coder produces
+│   └── UI_BRIEF.md          # dashboard design brief: screens, states, vocabulary
 ├── docker-compose.yml
 ├── backend/
 │   ├── app/
@@ -237,8 +265,9 @@ the volatility is itself a finding, and it is what the fallback chain exists for
 3. Free-tier 429s are normal, not bugs. LiteLLM fallback must be tested deliberately, not assumed.
 4. Every sandbox container must be force-removed in a `finally` block. Leaked containers will
    eat the demo machine.
-5. Loop iterations must be hard-capped (`MAX_LOOPS = 3`). An uncapped review ↔ test cycle can
-   burn an entire day's free quota in minutes.
+5. Loop iterations must be hard-capped (`MAX_LOOPS = 3`, applied independently to the
+   Reviewer↔Coder loop and the Sandbox↔Coder loop — see `app/graph/routing.py`). An uncapped
+   review ↔ test cycle can burn an entire day's free quota in minutes.
 6. SSE connections drop. The frontend needs reconnect + replay from last event id.
 
 ---

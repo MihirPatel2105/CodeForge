@@ -28,9 +28,12 @@ class RunState(TypedDict, total=False):
     sandbox: SandboxResult | None
 
     # loop control
-    loop_count: int
-    max_loops: int                       # default 3
+    loop_count: int                      # total fix passes so far, either trigger
+    max_loops: int                       # default 3 — applies to each phase independently
     loop_history: list[LoopRecord]       # iteration, trigger, findings, outcome
+    # Reviewer and Sandbox each get their own MAX_LOOPS, counted from loop_history's
+    # `trigger` field (app/graph/routing.py:loop_count_for) — a slow-to-converge review
+    # can no longer spend the Sandbox's budget before it gets a single attempt.
 
     # human-in-the-loop
     awaiting_approval: str | None        # "pm" | "architect" | None

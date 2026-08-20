@@ -230,20 +230,27 @@ contribution. Both increment `loop_count`; neither is a silent retry, and each e
 
 ```python
 def after_reviewer(state) -> str:
-    if state["review"].passed:                 return "tester"
-    if state["loop_count"] >= MAX_LOOPS:       return "failed"
-    return "coder"                             # fix pass
+    if state["review"].passed:                        return "tester"
+    if loop_count_for(state, "reviewer") >= MAX_LOOPS: return "failed"
+    return "coder"                                     # fix pass
 
 def after_sandbox(state) -> str:
-    if state["tests"].passed:                  return "done"
-    if state["loop_count"] >= MAX_LOOPS:       return "failed"
-    return "coder"                             # fix pass
+    if state["tests"].passed:                          return "done"
+    if loop_count_for(state, "tester") >= MAX_LOOPS:    return "failed"
+    return "coder"                                      # fix pass
 ```
 
 Rules
-- `loop_count` increments on **every return to the Coder**, from either source.
-- `MAX_LOOPS = 3`. On exhaustion the run ends as `failed_max_loops` with the last file tree and
-  the outstanding findings preserved — a partial result, never a crash and never an infinite loop.
+- `loop_count` increments on **every return to the Coder**, from either source, and each
+  `loop_history` entry records which one (`trigger: "reviewer" | "tester"`).
+- **Each phase has its own budget** (split 2026-08-19): a slow-to-converge review used to be able
+  to spend the *entire* shared budget before the Sandbox — whose verdict is the authoritative one
+  — ever got a single attempt. `loop_count_for(state, trigger)` (`app/graph/routing.py`) counts
+  each phase's own fix passes from `loop_history`, so `after_reviewer` and `after_sandbox` each get
+  a full `MAX_LOOPS` independently rather than racing for one pool.
+- `MAX_LOOPS = 3` per phase. On exhaustion the run ends as `failed_max_loops` with the last file
+  tree and the outstanding findings preserved — a partial result, never a crash and never an
+  infinite loop.
 - Every node transition writes state via the `MongoDBSaver` checkpointer, so a crashed run resumes.
 - Approval nodes interrupt the graph (`interrupt_before`); the API resumes the graph with the
   stored thread id when the user approves.

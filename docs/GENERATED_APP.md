@@ -33,8 +33,10 @@ most often.
 These appear in the Architect prompt template and again on the Reviewer checklist.
 
 1. **Never return a Beanie `Document` from a route.** Every route declares an explicit
-   `response_model` drawn from `schemas.py`. Mongo's `_id` is an `ObjectId` and is not
-   JSON-serialisable.
+   `response_model` drawn from `schemas.py`, **except the 204 No Content delete route**,
+   which must set `response_model=None` (or omit it) — FastAPI rejects a `response_model`
+   paired with `status_code=204`. Every other route: Mongo's `_id` is an `ObjectId` and is
+   not JSON-serialisable, so a raw Document must never leak out.
 2. **Expose `id` as `str`.** Convert with `str(doc.id)` when building a response model.
 3. **The Mongo URI is always `mongodb://localhost:27017`.** `mongod` runs inside the sandbox
    container. No environment variables, no configuration files.

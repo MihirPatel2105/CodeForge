@@ -204,19 +204,51 @@ broken app honestly is Phase 5 working, not failing.)*
 **Goal:** the project's core differentiator. Highest risk — give it the most time.
 
 Tasks
-- [ ] Conditional edges: `reviewer → coder` when blocking findings exist; `tester → coder` when
+- [x] Conditional edges: `reviewer → coder` when blocking findings exist; `tester → coder` when
       tests fail; `→ done` when both pass.
-- [ ] Loop counter in state, `MAX_LOOPS = 3`, then fail gracefully with a partial result and a
+      *(`app/graph/routing.py`; demonstrated live — 0/2 tests → fix pass → 7/7 passing)*
+- [x] Loop counter in state, `MAX_LOOPS = 3`, then fail gracefully with a partial result and a
       clear reason — never crash, never loop forever.
-- [ ] Fix prompts carry **only the specific findings + affected files**, not the whole history.
-- [ ] Loop iteration count, per-iteration diff, and outcome recorded in state (feeds the metrics).
-- [ ] ChromaDB example library: 15–20 hand-written FastAPI + Beanie snippets (response-model
+      *(terminates as `failed_max_loops`, distinct from an agent dying)*
+- [x] Fix prompts carry **only the specific findings + affected files**, not the whole history.
+- [x] Loop iteration count, per-iteration diff, and outcome recorded in state (feeds the metrics).
+      *(`loop_history`: iteration, trigger, files changed, outcome)*
+- [x] ChromaDB example library: 15–20 hand-written FastAPI + Beanie snippets (response-model
       pattern, ObjectId handling, router structure, pytest+httpx setup).
-- [ ] Retrieval injected into the Coder prompt; a feature flag toggles RAG on/off so the
+      *(`app/rag/library.py` — 18 snippets, each targeting a measured failure)*
+- [x] Retrieval injected into the Coder prompt; a feature flag toggles RAG on/off so the
       with/without success-rate delta can be measured.
+      *(flag verified: prompt 369 chars off vs 2027 on; a leak would invalidate the metric)*
 
 **DoD:** a deliberately broken prompt is caught by the Reviewer, fixed by the Coder, and passes on
 iteration 2 — visible end to end in Langfuse traces. RAG on/off both run cleanly.
+
+*Status 2026-08-14: **half met, half deferred.***
+
+*Met — the loop. A to-do API produced code that failed in the sandbox (0/2, collection error),
+the graph routed back to the Coder, which rewrote only `main.py`, and the next execution passed
+**7/7**. First L5 result in the project, produced by the loop rather than by luck.*
+
+*Deferred — the RAG comparison. Both arms execute, but a clean measurement was impossible:
+Groq's daily budget hit its cap (199,858 / 200,000 tokens) and OpenRouter's free-model daily
+limit was already gone. Runs starved of quota produce nothing in seconds, which is noise, not a
+result. **Re-run on fresh quota before claiming any delta.***
+
+*Planning consequence: evaluation is quota-bound, not compute-bound. Phase 8 needs 10 prompts ×
+2 arms × 3 repetitions = 60 runs, which at ~20-40k tokens per run is **6-12 days** of Groq's
+daily budget. Collect continuously rather than in one batch, or add providers.*
+
+*Correction 2026-08-15: the "0/2 → 7/7" demo above ran with `with_approvals=False` (the
+evaluation harness), which compiles the graph with no `interrupt_before` at all — it never
+touched the approval-gated path real users go through. Wiring Phase 7's real Live Run screen to
+the actual API surfaced two bugs that only exist on that path: `events.approval_required()` was
+defined but never called, so the graph correctly paused at each checkpoint but nothing told the
+frontend; and `interrupt_before=["architect", "coder"]` re-paused on **every** entry to `coder`,
+including the loop's own autonomous return trips, which would have silently disabled the loop
+the instant approvals were turned on. Both fixed — see `app/graph/executor.py`'s `_after_invoke`
+and the new `coder_gate` passthrough node in `app/graph/build.py`. Re-verified live: a real
+approval-gated run looped twice on genuine Reviewer findings (`loop_count` reached 2) without
+ever re-pausing for approval.*
 
 ---
 
@@ -225,16 +257,124 @@ iteration 2 — visible end to end in Langfuse traces. RAG on/off both run clean
 **Goal:** the demo's wow factor.
 
 Tasks
-- [ ] SSE endpoint streaming agent lifecycle events (see `docs/STATE_AND_API.md`).
-- [ ] Frontend: prompt input page → live run dashboard.
-- [ ] Agent cards with idle / thinking / done / failed states.
-- [ ] Live message timeline; loop iterations rendered as a visible cycle, not a hidden retry.
-- [ ] Code viewer with file tree + syntax highlighting; sandbox output panel.
-- [ ] Approval checkpoints: run pauses, UI shows Approve / Reject + edit-notes, graph resumes from
+- [x] SSE endpoint streaming agent lifecycle events (see `docs/STATE_AND_API.md`).
+      *(`app/api/stream.py`; consumed by `frontend/lib/use-run-stream.ts` via `fetch`, not the
+      native `EventSource` — bearer-token auth means the browser API can't attach the
+      `Authorization` header, so SSE frames are parsed by hand)*
+- [x] Frontend: prompt input page → live run dashboard.
+      *(`/projects/[id]` → `POST /runs` → `/runs/[id]`)*
+- [x] Agent cards with idle / thinking / done / failed states.
+      *(all four confirmed against a real run: PM/Architect idle→working→done, Tester
+      done→failed on a genuine truncated-generation error)*
+- [x] Live message timeline; loop iterations rendered as a visible cycle, not a hidden retry.
+      *(the LOOP entry + pipeline return-arc animation, confirmed firing on two real Reviewer
+      findings in the same run)*
+- [x] Code viewer with file tree + syntax highlighting; sandbox output panel.
+      *(current-file view reads live from `GET /runs/{id}/files`; the Diff toggle intentionally
+      never appears for a live run — the backend stores per-iteration history as a zipped
+      artifact, not structured per-file content, so there is nothing cheap to diff against yet.
+      Fixing that needs either a backend endpoint returning structured history or a client-side
+      unzip step — not done)*
+- [x] Approval checkpoints: run pauses, UI shows Approve / Reject + edit-notes, graph resumes from
       the checkpoint on approve.
-- [ ] SSE reconnect with replay from last event id.
+      *(both the PM and Architect checkpoints verified live, including the two bug fixes noted
+      under Phase 6 above — this task was the one that surfaced them)*
+- [x] SSE reconnect with replay from last event id.
+      *(implemented — `Last-Event-ID` + exponential backoff in `use-run-stream.ts`, replayed by
+      `bus.replay()` server-side — but not yet exercised against a real dropped connection)*
 
 **DoD:** a non-technical person watches one run start to finish and can explain what happened.
+
+*Status 2026-08-15: functionally complete and verified against the real backend end to end —
+sign-up, project creation, a full run through both approvals, several real loop iterations on
+genuine Reviewer findings across multiple runs, a real Reject at the PM checkpoint, and clean,
+honest failures (`failed_llm` on invalid Tester output, `failed_max_loops` on findings that never
+cleared) instead of crashes. Every outcome — succeeded / partial / failed_max_loops / failed_llm /
+rejected / cancelled — renders in its correct tone with plain-English copy, confirmed in both
+themes. Polish pass added a persistent header (logo, working theme switcher, signed-in email,
+sign out) across Projects / Project detail / Live run, and a Cancel run control wired to the
+existing `POST /runs/{id}/cancel`. What's still open: the literal DoD wants an actual
+non-technical person's reaction, not just a technical run-through — get someone to watch one
+before calling this closed. Separately: the backend container had no Docker socket mount at all
+(docker-compose.yml) and a stale image missing the `docker` package, so no run had ever reached a
+real Sandbox execution before today — both fixed; what's left blocking an actual Sandbox pass is
+the Tester's own truncated-generation bug, tracked as a follow-up outside this phase.*
+
+*Status 2026-08-19 — first fully green run: run `6a85263d25cecdf4a534e8bc` finished `succeeded`
+with the Reviewer reporting "0 findings, 0 blocking — passed" and the Sandbox reporting **8 of 8
+tests passed** against real pytest in the container. Getting there took seven fixes, each found by
+driving live runs rather than reading code, and each verified by another live run:*
+
+1. ***The local fallback was unreachable.** `OLLAMA_API_BASE` was `http://localhost:11434`, which
+   inside the backend container means the container itself. The rung every chain ends at — the one
+   CLAUDE.md §5 promises "still answers when every free tier rate-limits at once" — had been dead
+   since the backend moved into Docker. Now `host.docker.internal`.*
+2. ***That same rung had no timeout**, the only rung in the registry without one. Once reachable, a
+   Tester call sat on it for 10+ minutes and needed a manual cancel. `_ollama()` now defaults to 120s.*
+3. ***Groq retired `llama-3.3-70b-versatile`.** Confirmed against the live catalogue; it was the
+   Tester's primary and PM's second rung, so both failed instantly on every call. Replaced with
+   `openai/gpt-oss-20b`; the dead id is kept as `_RETIRED_GROQ_LLAMA_70B` as a paper trail.*
+4. ***The Tester's cloud rungs had no timeouts and no token budgets**, though it emits a whole suite
+   in one call. Truncation followed, both loudly (invalid Python) and silently.*
+5. ***Fix passes were blind to sibling files.** `render_fix` sent only the file being fixed, so the
+   Coder invented names other files did not define and reviews never converged. It now also carries
+   the contract files (database/models/schemas, never main.py) — a narrow, deliberate exception to
+   the token-budget rule that docstring explains.*
+6. ***The two loops shared one budget.** `loop_count` was compared against `MAX_LOOPS` for both
+   edges, so a slow-converging review could spend the entire budget and leave the Sandbox — the
+   authoritative signal — zero attempts on a real, reproducible bug. `routing.py:loop_count_for`
+   now derives each phase's own count from `loop_history`, giving each a full `MAX_LOOPS`.*
+7. ***All three prompts contradicted FastAPI.** Architect, Coder and Reviewer each demanded an
+   explicit `response_model` on every endpoint while also specifying 204 on delete; FastAPI rejects
+   that pairing outright, so every generated DELETE was broken by construction. The `Endpoint`
+   schema had been correct about this all along — only the prompt text was wrong. Fixed in all
+   three, plus `docs/GENERATED_APP.md` §2.*
+
+8. ***Groq's `output_parse_failed` was treated as a fatal prompt bug.** When a model narrates the
+   schema instead of emitting it ("We need to output a structured object matching the Design
+   type..."), Groq returns a 400 that matched no retryable marker, so the chain aborted on rung 1
+   with two healthy fallbacks untried — killing a run in 18 seconds. Same reasoning as
+   `tool_use_failed`: it is a property of that model, not of the prompt.*
+9. ***An optional field nothing read was destroying valid generations.** `SingleFileOutput.notes`
+   had a default and was consumed by no code, but Groq validates tool arguments server-side and
+   demands every declared property regardless. A complete, correct 8-test suite came back and was
+   rejected outright with `missing properties: 'notes'`. The field is gone; the schema now carries
+   only the two fields that are actually read.*
+
+***Repeatability, measured rather than assumed:*** *a 3-run back-to-back batch through the real API
+(same path the dashboard drives, both checkpoints approved per run) scored **0/3** with defects 8
+and 9 still present — all three died in the Tester/Architect chains. With both fixed the same batch
+scored **2/3**, both winners passing 8/8 tests in the sandbox, and one of them needing a Sandbox fix
+loop to get there — the split budget from item 6 doing exactly its job. The third failure was
+exhausted free-tier quota (Groq TPM plus OpenRouter `free-models-per-day` after ~10 runs in one
+evening), not a pipeline defect: every rung was tried and the run degraded honestly. Treat the
+daily quota, not the pipeline, as the binding constraint on demo day — and see CLAUDE.md §8.3.*
+
+*Cancel, separately, turned out not to cancel. `cancel_run` short-circuited on any status in
+`_TERMINAL_STATUSES`, and `failed_llm` is in that set — but a node that exhausts its model chain
+records `failed_llm` while the graph **keeps running** (`after_reviewer` deliberately sends a failed
+review on to the Tester). So a live run could carry a terminal-looking status for minutes, and
+pressing Cancel returned a cheerful 200 having done nothing: confirmed live 2026-08-19, where a
+sandbox execution and a whole loop iteration ran after the click. An in-flight task is now the
+authoritative "still running" signal, checked before the stored status. Covered by
+`test_cancel_stops_a_live_run_whose_status_looks_terminal`, which was confirmed to fail against the
+old guard before the fix went in. The same investigation showed the dashboard left the interrupted
+agent's card pulsing on "working" forever; the reducer now settles any mid-flight stage to a new
+`stopped` state — deliberately not `failed`, since the stage produced no verdict and §5 says a
+designed stop must not look like an error.*
+
+*Worth carrying into Phase 8: because `run.status` can read `failed_llm` mid-run, **no metrics
+harness may treat that status as terminal**. The first repeatability harness did, and mis-recorded a
+run that went on to finish `failed_max_loops` after six loop iterations. Read `finished_at`, or the
+`run.completed`/`run.failed` event, instead.*
+
+*The silent half of the truncation problem is now blocked structurally rather than by prompt text,
+matching the rule stated at the top of `schemas/agents.py`: a `test_main.py` cut off after its
+imports still parses, so it passed the old validator and pytest then collected zero tests, which
+reads downstream as failing tests rather than as a Tester that wrote nothing. `SingleFileOutput`
+now rejects a `test_*.py` that defines no test function (AST walk, so `conftest.py` and
+`TestFoo`-class suites are both handled correctly), and `_RETRYABLE_MARKERS` carries the message so
+the chain falls through to a larger budget instead of failing the run. Backend suite: 124 passed.*
 
 ---
 
