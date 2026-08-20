@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { RunWalkthrough } from "@/components/marketing/run-walkthrough";
 import { ClosingBanner, SiteFooter } from "@/components/marketing/marketing-actions";
-import { HeroPulse } from "@/components/marketing/hero-pulse";
+import { HeroOutput } from "@/components/marketing/hero-output";
 
 export const metadata: Metadata = {
   title: "CodeForge — five AI agents build and test your API",
@@ -31,45 +31,42 @@ export default function LandingPage() {
           starts on a deliberate scroll rather than peeking in at the fold. `svh` rather
           than `vh`: on mobile the retracting browser chrome makes `vh` overflow.
           `min-h` rather than `h` so a short window grows instead of clipping. */}
+      {/* The page opens where a run opens: at the prompt on the left, and what the run
+          hands back on the right. */}
+      {/* Exactly one screen, so the prompt is all you see on arrival and the walkthrough
+          starts on a deliberate scroll rather than peeking in at the fold. `svh` rather
+          than `vh`: on mobile the retracting browser chrome makes `vh` overflow.
+          `min-h` rather than `h` so a short window grows instead of clipping. */}
       <section className="cf-grid border-b border-rule">
-        {/* Centred with symmetric padding, so the space above the first line matches the
-            space below the last. The scroll cue is positioned absolutely rather than
-            sitting in the flow — otherwise it adds height to the bottom only and pulls
-            the block visibly off centre. */}
-        <div className="relative mx-auto flex min-h-[calc(100svh-58px)] w-full flex-col justify-center px-6 py-16 md:px-10 lg:px-14">
-          <span className={TAG}>[ multi-agent sdlc automation ]</span>
+        <div className="relative mx-auto grid min-h-[calc(100svh-58px)] w-full items-center gap-x-14 gap-y-12 px-6 py-16 md:px-10 lg:grid-cols-[1fr_25rem] lg:px-14">
+          <div>
+            <span className={TAG}>[ multi-agent sdlc automation ]</span>
 
-          <h1 className="font-display mt-9 max-w-[24ch] text-[29px] font-[600] leading-[1.22] tracking-[-0.05em] text-fg sm:text-[36px] md:text-[42px]">
-            Describe an API. Watch a team build it.
-          </h1>
+            <h1 className="font-display mt-9 max-w-[24ch] text-[29px] font-[600] leading-[1.22] tracking-[-0.05em] text-fg sm:text-[36px] md:text-[42px]">
+              Describe an API. Watch a team build it.
+            </h1>
 
-          {/* No call to action here. The header already carries one — "Get started" when
-              signed out, "Go to projects" when signed in — and a second pair below the
-              prompt only duplicated it, while the signed-out wording ("Sign in") was
-              wrong for anyone already authenticated. */}
-          <div className="mt-11">
-            <div className="cf-frame border border-border bg-surface px-5 py-[18px]">
+            {/* No call to action here. The header already carries one — "Get started"
+                when signed out, "Go to projects" when signed in — and a second pair
+                below the prompt only duplicated it. */}
+            <div className="cf-frame mt-10 border border-border bg-surface px-5 py-[18px]">
               <span className={TAG}>your prompt</span>
               <p className="cf-caret mt-3 font-mono text-[14.5px] leading-[1.6] text-fg">
                 I want an API to manage a personal library of books — title, author, ISBN,
                 genre, and whether I&apos;ve read it.
               </p>
             </div>
-            {/* Prompt on the left, the pipeline moving on the right. A static list of
-                the files it returns filled the space but sat there dead; the fold is
-                the first thing anyone sees, so it should have a pulse. */}
-            <div className="mt-8 grid gap-x-12 gap-y-10 md:grid-cols-[1fr_20rem]">
-              <p className="max-w-[54ch] text-[15.5px] leading-[1.65] text-fg-muted">
-                Five role-based agents take it from there — planning, writing, reviewing
-                and testing it, executed for real inside an isolated container, paused
-                twice for your approval.
-              </p>
 
-              <div className="md:border-l md:border-rule md:pl-12">
-                <HeroPulse label={TAG} />
-              </div>
-            </div>
+            <p className="mt-8 max-w-[54ch] text-[15.5px] leading-[1.65] text-fg-muted">
+              Five role-based agents take it from there — planning, writing, reviewing and
+              testing it, executed for real inside an isolated container, paused twice for
+              your approval.
+            </p>
           </div>
+
+          {/* The payoff, not a second telling of the pipeline: real generated code
+              landing a line at a time, then the pytest verdict underneath it. */}
+          <HeroOutput label={TAG} />
 
           {/* With the hero filling the screen there is no longer any content visible
               below the fold to imply the page continues, so it has to say so. */}
