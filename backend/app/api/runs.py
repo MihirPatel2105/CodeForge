@@ -99,7 +99,13 @@ async def get_run(run_id: str, user: CurrentUser) -> RunResponse:
 @router.get("/runs/{run_id}/files", response_model=FileTreeResponse)
 async def get_run_files(run_id: str, user: CurrentUser) -> FileTreeResponse:
     run = await get_owned(Run, run_id, str(user.id), "Run")
-    raw = run.state.get("files") or []
+    # Both halves of what the run produced. `test_files` was previously omitted, which
+    # broke the dashboard's code viewer in a non-obvious way: the file rail is built
+    # from SSE `file.written` events (which do include the test suite) and auto-selects
+    # the most recent file, so it landed on `test_main.py` — whose content this endpoint
+    # never returned. The panel then fell through to its "No files yet" empty state
+    # while sitting next to a rail listing five files.
+    raw = (run.state.get("files") or []) + (run.state.get("test_files") or [])
     return FileTreeResponse(run_id=str(run.id), files=[GeneratedFile(**f) for f in raw])
 
 

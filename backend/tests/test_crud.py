@@ -133,6 +133,45 @@ def test_run_files_empty_before_generation(client, registered_user, project):
     assert body["files"] == []
 
 
+def test_run_files_includes_the_generated_test_suite(client, registered_user, project):
+    """The endpoint must return `test_files` as well as `files`.
+
+    It previously returned only the application files. That broke the dashboard's code
+    viewer in a way no unit test caught: the file rail is built from SSE `file.written`
+    events, which *do* include the test suite, and the panel auto-selects the newest
+    file — so it landed on `test_main.py`, found no content for it, and rendered its
+    "No files yet" empty state while the rail beside it listed five files. Only the
+    empty-tree case was covered here, so the omission was invisible.
+    """
+    from bson import ObjectId
+    from pymongo import MongoClient
+
+    from app.config import settings
+
+    run_id = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    ).json()["run_id"]
+
+    with MongoClient(settings.mongo_uri) as mongo:
+        mongo[settings.mongo_db].runs.update_one(
+            {"_id": ObjectId(run_id)},
+            {
+                "$set": {
+                    "state.files": [{"path": "main.py", "content": "app = FastAPI()"}],
+                    "state.test_files": [{"path": "test_main.py", "content": "def test_x(): ..."}],
+                }
+            },
+        )
+
+    body = client.get(f"/runs/{run_id}/files", headers=registered_user["headers"]).json()
+    paths = [f["path"] for f in body["files"]]
+    assert paths == ["main.py", "test_main.py"], paths
+    # Content must come back too — a path with no content is what broke the viewer.
+    assert all(f["content"] for f in body["files"])
+
+
 def test_project_run_history(client, registered_user, project):
     for prompt in ("books api", "tasks api"):
         client.post(
