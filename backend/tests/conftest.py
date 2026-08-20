@@ -1,12 +1,17 @@
 """Shared test fixtures.
 
 Tests run against a real Mongo (the one in docker-compose) but in a separate database,
-so a test run can never touch development data. `MONGO_DB` is set before any app import
-because `app.config.Settings` reads the environment at import time.
+so a test run can never touch development data. `MONGO_URI` is pinned to that local
+instance and `MONGO_DB` to a dedicated name — both set before any app import, because
+`app.config.Settings` reads the environment at import time — so the suite stays fast,
+offline-capable, and immune to a real cluster's latency or free-tier limits regardless
+of what `backend/.env` points the running app at (Atlas, as of this project's move off
+local-only Mongo).
 """
 
 import os
 
+os.environ["MONGO_URI"] = "mongodb://localhost:27017"
 os.environ["MONGO_DB"] = "codeforge_test"
 
 import pytest  # noqa: E402
@@ -16,7 +21,27 @@ from pymongo import MongoClient  # noqa: E402
 from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
 
-COLLECTIONS = ("users", "projects", "runs")
+COLLECTIONS = (
+    "users",
+    "pending_signups",
+    "password_reset_tokens",
+    "revoked_tokens",
+    "projects",
+    "runs",
+)
+
+
+@pytest.fixture(autouse=True)
+def no_outbound_email(monkeypatch):
+    """Sign-up does not verify email in the offline suite.
+
+    The developer's real SMTP credentials are in `.env`, which `Settings` reads at
+    import — so without this the suite would hand a live mail server a message for
+    every fake address a test registers. Verification is exercised deliberately in
+    `test_email_verification.py`, where the mailer is captured rather than called.
+    """
+    monkeypatch.setattr(settings, "smtp_user", None)
+    monkeypatch.setattr(settings, "smtp_password", None)
 
 
 @pytest.fixture(autouse=True)
@@ -70,7 +95,12 @@ def clean_database():
 @pytest.fixture
 def registered_user(client):
     """A registered account plus its auth header."""
-    payload = {"email": "tester@example.com", "password": "secret12345"}
+    payload = {
+        "first_name": "Tess",
+        "last_name": "Tester",
+        "email": "tester@example.com",
+        "password": "Secret12345",
+    }
     response = client.post("/auth/register", json=payload)
     assert response.status_code == 201
     token = response.json()["access_token"]

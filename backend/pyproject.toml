@@ -8,5 +8,10 @@ select = ["E", "F", "I", "UP", "B", "ASYNC"]
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 
+[tool.ruff.lint.per-file-ignores]
+# Embeds the mark as a base64 PNG data URI for the email templates — one legitimately
+# long line by nature, not a style lapse to fix.
+"app/core/email.py" = ["E501"]
+
 [tool.ruff.format]
 quote-style = "double"

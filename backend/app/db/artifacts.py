@@ -147,3 +147,23 @@ async def read_artifact(file_id: str) -> bytes:
     bucket = get_bucket()
     stream = await bucket.open_download_stream(ObjectId(file_id))
     return await stream.read()
+
+
+async def delete_run_artifacts(run_ids: list[str]) -> int:
+    """Remove every stored artifact belonging to these runs. Returns the file count.
+
+    GridFS is a separate pair of collections from `runs`, so deleting a run does not
+    take its artifacts with it. Without this, closing an account would leave the zipped
+    file trees behind, owned by a run id that no longer resolves to anything.
+    """
+    if not run_ids:
+        return 0
+
+    bucket = get_bucket()
+    deleted = 0
+    # `find` then delete one by one: GridFS has no bulk delete, because every file is
+    # a document plus its chunks.
+    async for record in bucket.find({"metadata.run_id": {"$in": run_ids}}):
+        await bucket.delete(record["_id"])
+        deleted += 1
+    return deleted
