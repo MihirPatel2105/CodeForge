@@ -33,21 +33,90 @@ export type LoopTrigger = "reviewer" | "tester";
 
 export type Severity = "blocking" | "warning" | "nit";
 
-/** Agent card state (FR-44). Derived from the event stream, not sent directly. */
-export type AgentCardState = "idle" | "working" | "done" | "failed";
+/** Agent card state (FR-44). Derived from the event stream, not sent directly.
+ *
+ * `stopped` is the fifth state the four in docs/UI_BRIEF.md §4.1 do not cover: the run
+ * ended (cancelled, or failed elsewhere) while this stage was still mid-flight. It is
+ * deliberately not `failed` — the stage produced no verdict of its own, and §5's rule
+ * that a designed stop "should not look like an error state" applies here too. */
+export type AgentCardState = "idle" | "working" | "done" | "failed" | "stopped";
 
 // --------------------------------------------------------------------------- //
 // REST
 // --------------------------------------------------------------------------- //
+
+export interface RegisterRequest {
+  first_name: string;
+  /** Optional: a required surname would lock out anyone with a single name. */
+  last_name?: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
 
 export interface TokenResponse {
   access_token: string;
   token_type: string;
 }
 
+/** Sign-up no longer always ends in a session: when the server has email verification
+ * configured there is a code to collect first, and `access_token` is null until it is. */
+export interface RegisterResponse {
+  email: string;
+  verification_required: boolean;
+  access_token: string | null;
+  /** When the current code stops being accepted. Drives the resend countdown. */
+  expires_at: string | null;
+}
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+/** Typed, not clicked: a dialog you can dismiss with one button is too easy to get
+ * through by reflex, and closing an account cannot be undone. */
+export const DELETE_CONFIRMATION = "DELETE";
+
+export interface DeleteAccountRequest {
+  password: string;
+  confirmation: string;
+}
+
+export interface DeleteAccountResponse {
+  projects_deleted: number;
+  runs_deleted: number;
+  artifacts_deleted: number;
+}
+
 export interface UserResponse {
   id: string;
   email: string;
+  /** Empty for accounts created before sign-up collected names. */
+  first_name: string;
+  last_name: string;
   created_at: string;
 }
 
@@ -146,6 +215,22 @@ export interface ApprovalResponse {
 
 export interface ErrorResponse {
   error: { code: string; message: string; run_id: string | null };
+}
+
+export type ArtifactKind = "file_tree" | "sandbox_log" | "pytest_report";
+
+export interface ArtifactRef {
+  file_id: string;
+  filename: string;
+  kind: ArtifactKind;
+  iteration: number;
+  length: number;
+  created_at: string;
+}
+
+export interface ArtifactListResponse {
+  run_id: string;
+  artifacts: ArtifactRef[];
 }
 
 // --------------------------------------------------------------------------- //

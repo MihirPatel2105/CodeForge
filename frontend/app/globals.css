@@ -2,119 +2,215 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Kept deliberately even though the product is light-only. This redefines `dark:` to
+   mean "inside a .dark ancestor" — a class nothing sets any more — which neutralises
+   the `dark:` utilities baked into the shadcn primitives. Delete this line and `dark:`
+   reverts to its built-in `prefers-color-scheme` meaning, and every visitor whose OS is
+   in dark mode would get half-dark controls on a light page. */
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Design tokens from the CodeForge dashboard handoff
+ * (docs/UI_BRIEF.md -> design_handoff_codeforge_dashboard/README.md).
+ *
+ * Two rules that matter more than any single value:
+ *  - `--loop` is spent only on the loop: the return arc, the travelling finding chip,
+ *    the LOOP timeline entry, the iteration badge. Never a button, link or heading.
+ *    That reservation is what makes the loop moment read from the back of a room.
+ *  - `failed_max_loops` renders in `--warn`, never `--danger` — it is a designed stop
+ *    after three attempts with the work kept, not a crash.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  /* Bare aliases: `bg-fg` / `text-bg` etc. need their own `--color-*` token to be
+     valid Tailwind utilities — without these, non-inheriting properties like a
+     button's background silently no-op (see the Approve button investigation). */
+  --color-fg: var(--fg);
+  --color-bg: var(--bg);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--fg);
+  /* Primary actions (Approve, Start run, submit) fill with --fg, not --accent — accent
+     is reserved for the "working" pipeline state and the retrieval switch. */
+  --color-primary: var(--fg);
+  --color-primary-foreground: var(--surface);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--fg);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--fg-muted);
   --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --color-accent-foreground: var(--surface);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--surface);
+  --color-border: var(--border);
+  --color-input: var(--border-strong);
+  --color-ring: var(--accent);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+  --color-border-strong: var(--border-strong);
+
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-bd: var(--accent-bd);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-bd: var(--ok-bd);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-bd: var(--warn-bd);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-bd: var(--danger-bd);
+  --color-loop: var(--loop);
+  --color-loop-soft: var(--loop-soft);
+  --color-loop-bd: var(--loop-bd);
+
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --color-code-kw: var(--code-kw);
+  --color-code-str: var(--code-str);
+  --color-code-com: var(--code-com);
+  --color-code-fn: var(--code-fn);
+  --color-code-num: var(--code-num);
+
+  --color-term-bg: var(--term-bg);
+  --color-term-fg: var(--term-fg);
+  --color-term-stderr: var(--term-stderr);
+  --color-term-pass: var(--term-pass);
+  --color-term-dim: var(--term-dim);
+
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono-stack);
+  --font-display: var(--font-display-stack);
+
+  --color-ink-accent: var(--ink-accent);
+  --color-rule: var(--rule);
+
+  --radius-sm: calc(var(--radius) * 0.67);
+  --radius-md: calc(var(--radius) * 0.78);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.22);
+  --radius-2xl: calc(var(--radius) * 1.44);
+  --radius-full: 999px;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* No webfonts (UI_BRIEF §8) — system stacks only.
+     Display is monospace, not a serif. Everything this product handles is code, logs,
+     file names, timings and ids; setting the headings in the same voice as the output
+     makes the interface read as an instrument rather than as a brochure — and it is
+     the one typographic choice that could not be lifted onto a different product. */
+  --font-ui: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-2: #f3f2ee;
+  --fg: #16181c;
+  --fg-muted: #5c6169;
+  --fg-faint: #8a9099;
+  --border: #e3e1db;
+  --border-strong: #cdcac2;
+
+  --accent: #4338ca;
+  --accent-soft: #edefff;
+  --accent-bd: #c7cbf7;
+
+  --ok: #0f7a55;
+  --ok-soft: #e7f5ee;
+  --ok-bd: #b4decb;
+
+  --warn: #9c5605;
+  --warn-soft: #fbf0e0;
+  --warn-bd: #e8cda1;
+
+  --danger: #b4231f;
+  --danger-soft: #fcedec;
+  --danger-bd: #f0c3c0;
+
+  /* Reserved. See the discipline note above the @theme block. */
+  --loop: #6d28d9;
+  --loop-soft: #f3edff;
+  --loop-bd: #d6c4fa;
+
+  --code-bg: #fcfbf9;
+  --code-fg: #24272c;
+  --code-kw: #7c3aed;
+  --code-str: #0f7a55;
+  --code-com: #95999f;
+  --code-fn: #1d4ed8;
+  --code-num: #9c5605;
+
+  /* The terminal panel stays dark whatever the page does — it is showing real console
+     output, and a light-on-white terminal would misrepresent what the sandbox printed. */
+  --term-fg: #e2e5ea;
+  --term-stderr: #f87171;
+  --term-pass: #7fd8ae;
+  --term-dim: #6b727c;
+  --term-bg: #14161a;
+
+  /* Chrome is monochrome on purpose. This app already spends five colours on meaning —
+     accent = working, ok = passed, warn = designed stop, danger = failed, loop = the
+     feedback cycle — so any sixth colour used for decoration would compete with a
+     status the viewer is supposed to read across a room. Links are weight and rule,
+     not hue; colour in this interface always means something. */
+  --ink-accent: #16181c;
+  --rule: #dcd8cf;
+
+  /* Near-square. The 9px default is the single biggest reason the old screens read as
+     a generic template; at 3px the same components read as drawn rather than defaulted. */
+  --radius: 3px;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/*
+ * A permanently dark region inside a light-only product.
+ *
+ * Not a theme and not a return of dark mode: it is a panel that is dark the way the
+ * terminal panel is dark, chosen per surface rather than per user. It works by
+ * re-declaring the palette on one element — because `@theme inline` compiles utilities
+ * down to `var(--fg)` and friends rather than to fixed values, every `text-fg`,
+ * `border-border` or `bg-surface` inside simply resolves against these instead. No
+ * component needs to know it is being rendered on a dark ground.
+ *
+ * The state colours are re-stated too, and must be: the replayed run inside shows
+ * `--warn` for a pause, `--ok` for a pass and `--loop` for the loop moment, and the
+ * light-ground versions of those are unreadable here.
+ */
+.cf-invert {
+  --bg: #0d0f12;
+  --surface: #15181d;
+  --surface-2: #1c2027;
+  --fg: #f1f3f5;
+  --fg-muted: #9aa1ab;
+  --fg-faint: #6b727c;
+  --border: #262b33;
+  --border-strong: #3a414b;
+  --rule: #2a2f37;
+
+  --accent: #8b93f8;
+  --accent-soft: #1e2145;
+  --accent-bd: #39408a;
+
+  --ok: #4fd1a0;
+  --ok-soft: #0f2a20;
+  --ok-bd: #215943;
+
+  --warn: #f0a860;
+  --warn-soft: #2b2013;
+  --warn-bd: #5c4322;
+
+  --danger: #f87171;
+  --danger-soft: #2d1616;
+  --danger-bd: #5e2a28;
+
+  --loop: #b794ff;
+  --loop-soft: #241738;
+  --loop-bd: #4a2e80;
 }
 
 @layer base {
@@ -124,7 +220,260 @@
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+}
+
+/*
+ * Motion primitives (design_handoff/README.md "Motion"). Applied via Tailwind's
+ * arbitrary `animate-[name_duration_timing_iteration]` utilities at the call site,
+ * gated with `motion-safe:` so `prefers-reduced-motion` drops travel/sweep/pulses
+ * automatically — state colours and the badge pop (cfPop) are exempt and always play.
+ */
+
+/*
+ * Instrument motifs. The interface this product deserves is a panel you read, not a
+ * page you browse — these three utilities carry that without spending any colour.
+ */
+
+/* Graph-paper ground behind the hero.
+   Painted by a pseudo-element rather than on the section itself: `mask-image` applies
+   to an element's children too, so masking the container faded the headline and the
+   buttons along with the grid. The mask belongs to the grid layer alone. */
+.cf-grid {
+  position: relative;
+}
+.cf-grid > * {
+  position: relative;
+  z-index: 1;
+}
+.cf-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.55;
+  /* Fades out downward so the grid never competes with body copy. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 82%);
+}
+
+/* Corner ticks instead of a boxed card — a registration mark, the way a technical
+   drawing or a camera frame indicates an area rather than fencing it in. */
+.cf-frame {
+  position: relative;
+}
+.cf-frame::before,
+.cf-frame::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--fg-faint);
+  border-style: solid;
+  pointer-events: none;
+}
+.cf-frame::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1.5px 0 0 1.5px;
+}
+.cf-frame::after {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+/* A soft lift behind the top of a dark panel, so near-black reads as a lit surface
+   rather than as an unpainted rectangle. Monochrome deliberately: the five state
+   colours carry meaning here, and an ambient wash in any of them would dilute that. */
+.cf-lift {
+  background-image: radial-gradient(
+    110% 70% at 12% -10%,
+    rgba(255, 255, 255, 0.07),
+    transparent 62%
+  );
+}
+
+/* Lets a scrolling feed lose its oldest lines to a fade instead of a hard slice.
+   Cropping mid-sentence reads as a layout bug; fading reads as history moving out of
+   view, which is what is actually happening. */
+.cf-fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 38px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 38px);
+}
+
+/*
+ * Smooth disclosure for the FAQ.
+ *
+ * A native <details> snaps open, because the browser toggles its content between
+ * rendered and not — there is no intermediate height to animate. `::details-content`
+ * gives that hidden box a handle, and `interpolate-size` makes `auto` a legal endpoint
+ * for a height transition, so the panel can grow to whatever its text needs without a
+ * hard-coded max-height that would clip a long answer or drag on a short one.
+ *
+ * Deliberately NOT transitioning `content-visibility` with `allow-discrete`, which is the
+ * usual recipe for keeping the text painted through a close. Measured here, it wedges:
+ * content-visibility sticks at `hidden` after a toggle, block-size never leaves 0, and
+ * the panel stops opening at all. Animating block-size alone is the behaviour that
+ * actually holds up — the trade is that a close cuts rather than fades, which is a far
+ * smaller flaw than a disclosure that silently stops disclosing.
+ *
+ * Progressive enhancement throughout: where any of this is unsupported the panel simply
+ * opens instantly, which is the behaviour it had before. Nothing depends on it, and no
+ * JavaScript is involved — the <details> keeps its native keyboard and screen-reader
+ * semantics either way.
+ */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+.cf-disclose::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 320ms cubic-bezier(0.22, 0.7, 0.28, 1);
+}
+
+.cf-disclose[open]::details-content {
+  block-size: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-disclose::details-content {
+    transition: none;
+  }
+}
+
+/* A live caret, for the one place the product speaks in the first person: the prompt.
+   Steps rather than eases, because a terminal cursor does not fade. */
+.cf-caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.92em;
+  margin-left: 0.14em;
+  vertical-align: -0.1em;
+  background: var(--fg);
+  animation: cfBlink 1.15s steps(1) infinite;
+}
+
+@keyframes cfBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes cfDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes cfBar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@keyframes cfPop {
+  0% {
+    transform: scale(0.6);
+  }
+  55% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cfFade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The loop moment (design_handoff/README.md "The loop moment") — the one animation
+   the whole demo is built around. cfDash marches the firing arc's dashes; cfChipRev /
+   cfChipSbx carry the travelling finding chip backwards from the Reviewer or the
+   Sandbox to the Coder, dipping into the arc and settling with a small overshoot. */
+
+@keyframes cfDash {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -56;
+  }
+}
+
+@keyframes cfChipRev {
+  0% {
+    left: 58.6%;
+    top: 0px;
+  }
+  45% {
+    top: 26px;
+  }
+  85% {
+    left: 41.4%;
+    top: 4px;
+  }
+  100% {
+    left: 41.4%;
+    top: 0px;
+  }
+}
+
+@keyframes cfChipSbx {
+  0% {
+    left: 92.9%;
+    top: 0px;
+  }
+  45% {
+    top: 44px;
+  }
+  85% {
+    left: 41.4%;
+    top: 4px;
+  }
+  100% {
+    left: 41.4%;
+    top: 0px;
+  }
+}
+
+/* Approval bar hazard band (design_handoff/README.md "Approval bar") — a drifting
+   diagonal stripe that says "stopped" without competing with the loop's violet. */
+@keyframes cfShift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
   }
 }
