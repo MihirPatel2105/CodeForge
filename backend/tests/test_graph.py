@@ -160,7 +160,7 @@ def test_failing_tests_after_loop_cap_report_max_loops(design_with_four_files):
         ["database.py", "models.py", "schemas.py", "main.py"],
         test_files=[GeneratedFile(path="test_main.py", content="x")],
         tests=TestResult(passed=False, total=4, failed=2),
-        loop_count=3,
+        loop_history=[{"trigger": "tester"}] * 3,
         max_loops=3,
     )
     result = asyncio.run(_finalise(state))

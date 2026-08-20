@@ -56,6 +56,38 @@ def test_payment_required_is_retryable():
     assert _is_retryable(exc)
 
 
+def test_truncated_single_file_output_is_retryable():
+    """`SingleFileOutput`'s own validator (schemas/agents.py) raises this once Instructor's
+    in-rung reasks are exhausted on a file that still won't parse — almost always the
+    model hitting its token ceiling mid-file. Without this marker the chain raised on
+    rung 1 and never reached a rung with a larger budget, which happened for real: every
+    live Tester run that hit this error failed after exactly one rung (2026-08-15)."""
+    exc = FakeInstructorWrapper(
+        "1 validation error for SingleFileOutput\n  Value error, test_main.py is not "
+        "valid Python. Return the complete file; if it was cut short, write a shorter "
+        "implementation rather than a truncated one."
+    )
+    assert _is_retryable(exc)
+
+
+def test_prose_instead_of_a_tool_call_is_retryable():
+    """Groq reports a model narrating the schema instead of emitting it as a 400
+    `output_parse_failed`, which is otherwise the one error worth failing fast on. It is
+    a property of that model, not of the prompt, so the chain must fall through. Observed
+    live 2026-08-19: the Architect died on rung 1 — with an OpenRouter rung and a local
+    rung below it untried — and took the whole run down in 18 seconds."""
+    exc = litellm.BadRequestError(
+        'GroqException - {"error":{"message":"Parsing failed. The model generated output '
+        'that could not be parsed. Please adjust your prompt.","type":"invalid_request_error",'
+        '"code":"output_parse_failed","failed_generation":"We need to output a structured '
+        'object matching the Design type"}}',
+        llm_provider="groq",
+        model="m",
+    )
+    assert _is_retryable(exc)
+    assert _is_retryable(_wrapped(exc))
+
+
 def test_genuine_bad_request_is_not_retryable():
     """A malformed prompt fails identically everywhere, so it must fail fast and stay
     visible instead of burning the whole chain."""

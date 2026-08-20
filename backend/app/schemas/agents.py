@@ -132,6 +132,33 @@ def _strip_banner(source: str) -> str:
     return source
 
 
+def _is_pytest_module(path: str) -> bool:
+    """Whether pytest would collect `path` as a test module.
+
+    `conftest.py` is support code and legitimately defines no tests, so it is excluded.
+    """
+    name = path.rsplit("/", 1)[-1]
+    return name.startswith("test_") and name.endswith(".py")
+
+
+def _defines_a_test(source: str) -> bool:
+    """Whether the module defines at least one function pytest would collect.
+
+    Walks the tree rather than scanning text, so a `test_` mentioned in a comment or a
+    string never counts, and methods on a `TestFoo` class do.
+    """
+    import ast
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return False
+    return any(
+        isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) and node.name.startswith("test")
+        for node in ast.walk(tree)
+    )
+
+
 class GeneratedFile(AgentSchema):
     """One file in a generated application. Content is complete and runnable as written."""
 
@@ -310,6 +337,14 @@ class SingleFileOutput(AgentSchema):
     tool call — Groq's gpt-oss-120b repeatedly emits `name` instead of `path`, and the
     provider rejects the whole call server-side before Instructor can re-ask. A flat
     schema removes that failure mode, so the Coder emits one file per call.
+
+    Kept to exactly the two fields that are actually consumed. There was a third,
+    `notes`, optional and read by nothing: Groq validates tool arguments server-side and
+    demands every declared property regardless of whether it has a default, so a model
+    that omitted it had its entire call rejected. Observed live 2026-08-19: a complete,
+    correct 8-test suite was discarded with "missing properties: 'notes'" — a perfect
+    generation thrown away over a field no code ever read. Every property here is one
+    more thing a free-tier model can omit, so this schema stays minimal.
     """
 
     path: str = Field(description="File name including extension, e.g. 'main.py'")
@@ -318,7 +353,6 @@ class SingleFileOutput(AgentSchema):
             "Complete file contents. Raw source only: no markdown fences, no filename header"
         )
     )
-    notes: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _repair_then_require_valid_python(self) -> "SingleFileOutput":
@@ -343,6 +377,19 @@ class SingleFileOutput(AgentSchema):
             raise ValueError(
                 f"{self.path} is not valid Python. Return the complete file; if it was cut "
                 "short, write a shorter implementation rather than a truncated one."
+            )
+
+        # Truncation does not always produce a syntax error. A file cut off after its
+        # imports still parses perfectly and yields a suite pytest collects zero tests
+        # from — which reads downstream as "the code failed its tests" rather than "the
+        # Tester wrote nothing". Observed live 2026-08-19: a test_main.py consisting of
+        # exactly `from fastapi.testclient import TestClient` passed this validator and
+        # the sandbox reported "no tests ran in 0.09s".
+        if _is_pytest_module(self.path) and not _defines_a_test(self.content):
+            raise ValueError(
+                f"{self.path} contains no test functions. Return a complete suite in which "
+                "every test is a `def test_...` function; if the file was cut short, write "
+                "fewer tests rather than a truncated one."
             )
         return self
 

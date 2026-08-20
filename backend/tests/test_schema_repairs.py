@@ -8,6 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.schemas.agents import (
+    CodeOutput,
     Collection,
     Design,
     Endpoint,
@@ -64,6 +65,39 @@ def test_non_python_files_are_not_parsed():
     assert SingleFileOutput(path="notes.md", content="# not python {").content.startswith("#")
 
 
+def test_test_module_without_tests_is_rejected():
+    """The silent half of truncation: a suite cut off after its imports still parses, and
+    pytest then collects zero tests — which reads downstream as failing tests rather than
+    as a Tester that wrote nothing. Observed live 2026-08-19, when a test_main.py of
+    exactly this shape produced "no tests ran in 0.09s"."""
+    with pytest.raises(ValidationError):
+        SingleFileOutput(path="test_main.py", content="from fastapi.testclient import TestClient\n")
+
+
+def test_test_module_with_a_test_is_accepted():
+    source = "from main import app\n\n\ndef test_health():\n    assert app is not None\n"
+    assert SingleFileOutput(path="test_main.py", content=source).content == source
+
+
+def test_test_class_methods_count_as_tests():
+    """Walking the tree, not scanning text, so a suite grouped into a TestFoo class is
+    still recognised."""
+    source = "class TestBooks:\n    def test_create(self):\n        assert True\n"
+    assert SingleFileOutput(path="test_main.py", content=source).content == source
+
+
+def test_conftest_may_define_no_tests():
+    """conftest.py is support code; requiring tests there would reject a valid file."""
+    source = "import pytest\n\n\n@pytest.fixture\ndef client():\n    return None\n"
+    assert SingleFileOutput(path="conftest.py", content=source).content == source
+
+
+def test_a_test_named_in_a_comment_does_not_count():
+    """Text scanning would pass this; an AST walk correctly rejects it."""
+    with pytest.raises(ValidationError):
+        SingleFileOutput(path="test_main.py", content="# def test_create() goes here\nX = 1\n")
+
+
 # --------------------------------------------------------------------------- #
 # Shape leniency
 # --------------------------------------------------------------------------- #
@@ -77,9 +111,16 @@ def test_stringified_json_list_is_decoded():
 
 
 def test_bare_string_becomes_a_single_item_list():
-    """Cost a whole generation: a model wrote "notes": "text" instead of ["text"]."""
-    out = SingleFileOutput(path="m.py", content="X = 1", notes="just one note")
-    assert out.notes == ["just one note"]
+    """Cost a whole generation: a model wrote a bare string where a list was declared.
+
+    Exercised on `CodeOutput.changelog` because the coercion lives on `AgentSchema` and
+    applies to every list field. It used to be exercised on `SingleFileOutput.notes`,
+    which no longer exists — see that class's docstring for why.
+    """
+    out = CodeOutput.model_validate(
+        {"files": [{"path": "m.py", "content": "X = 1"}], "changelog": "just one entry"}
+    )
+    assert out.changelog == ["just one entry"]
 
 
 def test_name_is_recovered_as_path():

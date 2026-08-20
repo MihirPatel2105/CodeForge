@@ -23,6 +23,12 @@ def _tests(passed: bool, failed: int = 0) -> TestResult:
     )
 
 
+def _history(trigger: str, n: int) -> list[dict]:
+    """`n` prior fix passes attributed to `trigger` — each phase's budget is counted
+    from `loop_history`, not a shared counter (routing.py, split 2026-08-19)."""
+    return [{"trigger": trigger} for _ in range(n)]
+
+
 # --------------------------------------------------------------------------- #
 # reviewer -> ?
 # --------------------------------------------------------------------------- #
@@ -43,8 +49,23 @@ def test_warnings_and_nits_never_loop():
 
 
 def test_blocking_finding_at_the_cap_gives_up_gracefully():
-    state = {"review": _review("blocking"), "loop_count": 3, "max_loops": 3}
+    state = {
+        "review": _review("blocking"),
+        "loop_history": _history("reviewer", 3),
+        "max_loops": 3,
+    }
     assert after_reviewer(state) == "finalise", "must not loop past the cap"
+
+
+def test_reviewer_budget_is_independent_of_the_sandbox_budget():
+    """A sandbox loop that already spent the whole cap must not starve the reviewer's
+    own budget — each phase gets its own (routing.py, split 2026-08-19)."""
+    state = {
+        "review": _review("blocking"),
+        "loop_history": _history("tester", 3),
+        "max_loops": 3,
+    }
+    assert after_reviewer(state) == "coder"
 
 
 def test_missing_review_still_gets_tested():
@@ -67,8 +88,25 @@ def test_failing_tests_send_code_back():
 
 
 def test_failing_tests_at_the_cap_give_up_gracefully():
-    state = {"tests": _tests(False, failed=2), "loop_count": 3, "max_loops": 3}
+    state = {
+        "tests": _tests(False, failed=2),
+        "loop_history": _history("tester", 3),
+        "max_loops": 3,
+    }
     assert after_sandbox(state) == "finalise"
+
+
+def test_sandbox_budget_is_independent_of_the_reviewer_budget():
+    """A reviewer loop that already spent the whole cap must not starve the sandbox's
+    own budget — this is the exact failure a live run hit before the split
+    (routing.py, 2026-08-19): the review alone used all 3 iterations, leaving the
+    sandbox's own genuine, authoritative failure with zero budget to act on."""
+    state = {
+        "tests": _tests(False, failed=1),
+        "loop_history": _history("reviewer", 3),
+        "max_loops": 3,
+    }
+    assert after_sandbox(state) == "coder"
 
 
 def test_no_execution_means_nothing_to_fix_against():
@@ -77,7 +115,8 @@ def test_no_execution_means_nothing_to_fix_against():
 
 def test_default_cap_applies_when_state_omits_it():
     """A state missing max_loops must not be treated as unbounded."""
-    assert after_sandbox({"tests": _tests(False, failed=1), "loop_count": 3}) == "finalise"
+    state = {"tests": _tests(False, failed=1), "loop_history": _history("tester", 3)}
+    assert after_sandbox(state) == "finalise"
 
 
 # --------------------------------------------------------------------------- #

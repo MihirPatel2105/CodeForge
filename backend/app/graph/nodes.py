@@ -15,7 +15,7 @@ from app.core.exceptions import ProviderExhaustedError
 from app.db.artifacts import store_run_artifacts
 from app.events import events
 from app.graph.persistence import save_state
-from app.graph.routing import loop_trigger
+from app.graph.routing import loop_count_for, loop_trigger
 from app.graph.state import DEFAULT_MAX_LOOPS
 from app.sandbox import SANDBOX_IMAGE, parse_pytest, run_in_sandbox
 from app.sandbox.runner import SandboxUnavailableError
@@ -27,6 +27,21 @@ State = dict[str, Any]
 
 def _elapsed_ms(started: float) -> int:
     return int((time.monotonic() - started) * 1000)
+
+
+# The files other files' names and types get checked against. Never main.py: nothing
+# imports from it, and it is usually the largest file, so including it would blow the
+# same token budget this selective-context exception exists to protect.
+_CONTRACT_FILES = ("database.py", "models.py", "schemas.py")
+
+
+def _sibling_context(by_path: dict[str, GeneratedFile], exclude: str) -> str:
+    parts = [
+        f"# {name}\n{by_path[name].content}"
+        for name in _CONTRACT_FILES
+        if name != exclude and name in by_path
+    ]
+    return "\n\n".join(parts)
 
 
 def _error(state: State, agent: str, exc: Exception) -> list[dict]:
@@ -110,6 +125,19 @@ async def architect_node(state: State) -> State:
 
     await save_state({**state, **update})
     return update
+
+
+async def coder_gate_node(state: State) -> State:
+    """No-op passthrough.
+
+    `interrupt_before` in LangGraph fires on every entry to the named node, not just
+    the first. Putting it directly on "coder" would re-pause for human approval on
+    every autonomous review/test loop-back too, defeating the loop's entire purpose
+    (CLAUDE.md's "core technical contribution"). This node exists purely so the
+    interrupt has something to target that only the Architect's edge passes through —
+    the Reviewer's and Sandbox's loop-back edges go straight to "coder", bypassing it.
+    """
+    return {}
 
 
 async def coder_node(state: State) -> State:
@@ -214,7 +242,11 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
             continue
         try:
             result = await coder.run_fix(
-                state, path=path, current=current.content, problems="\n".join(issues)
+                state,
+                path=path,
+                current=current.content,
+                problems="\n".join(issues),
+                siblings=_sibling_context(by_path, exclude=path),
             )
             by_path[path] = result.value.as_generated_file()
             changed.append(path)
@@ -455,8 +487,15 @@ async def finalise_node(state: State) -> State:
     # A run that used up its fix passes and still fails gets its own status: the loop
     # cap working as designed is a different outcome from an agent dying, and Phase 8's
     # failure taxonomy separates them (docs/ACCEPTANCE.md §4).
+    # Each phase has its own budget (routing.py, split 2026-08-19), so exhaustion means
+    # either one ran out — whichever was actually blocking progress when the graph
+    # stopped routing back to the Coder.
     tests = state.get("tests")
-    exhausted = state.get("loop_count", 0) >= (state.get("max_loops") or DEFAULT_MAX_LOOPS)
+    max_loops = state.get("max_loops") or DEFAULT_MAX_LOOPS
+    exhausted = (
+        loop_count_for(state, "reviewer") >= max_loops
+        or loop_count_for(state, "tester") >= max_loops
+    )
     still_failing = tests is None or not tests.passed
 
     if complete and tests is not None and tests.passed:

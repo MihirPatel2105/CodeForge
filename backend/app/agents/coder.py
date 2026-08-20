@@ -89,13 +89,16 @@ class SingleFileCoderAgent(CoderAgent):
             iteration=state.get("loop_count", 0),
         )
 
-    async def run_fix(self, state: dict, path: str, current: str, problems: str) -> LLMResult:
+    async def run_fix(
+        self, state: dict, path: str, current: str, problems: str, siblings: str = ""
+    ) -> LLMResult:
         """Regenerate one file to address specific problems."""
         return await self.call(
             prompt.render_fix(
                 path=path,
                 current=current,
                 problems=problems,
+                siblings=siblings,
                 # The problem text is the best possible query: it describes exactly what
                 # went wrong, which is what the snippets are indexed against.
                 reference=context_for(problems, enabled=state.get("rag_enabled", False)),

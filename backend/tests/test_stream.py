@@ -220,7 +220,12 @@ def test_stream_requires_ownership(client, registered_user):
     ).json()["run_id"]
 
     other = client.post(
-        "/auth/register", json={"email": "stream-other@example.com", "password": "secret12345"}
+        "/auth/register",
+        json={
+            "first_name": "Otto",
+            "email": "stream-other@example.com",
+            "password": "Secret12345",
+        },
     ).json()
     other_headers = {"Authorization": f"Bearer {other['access_token']}"}
 

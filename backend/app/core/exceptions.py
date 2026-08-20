@@ -44,3 +44,10 @@ class ProviderExhaustedError(CodeForgeError):
 
     status_code = 503
     code = "llm_exhausted"
+
+
+class RateLimitError(CodeForgeError):
+    """Too many attempts, or too soon after the last one."""
+
+    status_code = 429
+    code = "rate_limited"

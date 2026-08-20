@@ -18,6 +18,7 @@ from pymongo import MongoClient
 from app.config import settings
 from app.graph.nodes import (
     architect_node,
+    coder_gate_node,
     coder_node,
     finalise_node,
     pm_node,
@@ -36,6 +37,7 @@ def build_graph() -> StateGraph:
 
     graph.add_node("pm", pm_node)
     graph.add_node("architect", architect_node)
+    graph.add_node("coder_gate", coder_gate_node)
     graph.add_node("coder", coder_node)
     graph.add_node("reviewer", reviewer_node)
     graph.add_node("tester", tester_node)
@@ -44,7 +46,11 @@ def build_graph() -> StateGraph:
 
     graph.add_edge(START, "pm")
     graph.add_edge("pm", "architect")
-    graph.add_edge("architect", "coder")
+    # The Architect's design goes through the gate (so it can be interrupted for
+    # approval); the Reviewer's and Sandbox's loop-back edges below go straight to
+    # "coder" instead, so a fix pass never re-triggers that same interrupt.
+    graph.add_edge("architect", "coder_gate")
+    graph.add_edge("coder_gate", "coder")
     graph.add_edge("coder", "reviewer")
 
     # The feedback loop. Blocking findings and failing tests both send work back to the
@@ -105,7 +111,7 @@ def compile_graph(*, with_approvals: bool = True):
     `with_approvals=False` is for the evaluation harness, which runs unattended and would
     otherwise stall forever at the first interrupt (docs/ACCEPTANCE.md §3).
     """
-    interrupts = ["architect", "coder"] if with_approvals else []
+    interrupts = ["architect", "coder_gate"] if with_approvals else []
     return build_graph().compile(
         checkpointer=_checkpointer(),
         interrupt_before=interrupts,

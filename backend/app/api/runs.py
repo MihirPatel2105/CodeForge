@@ -149,8 +149,12 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     """
     run = await get_owned(Run, run_id, str(user.id), "Run")
 
-    await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
-
+    # `run` is a snapshot read before any of the emits below, each of which persists via
+    # an atomic `$push` (bus.py). `run.save()` further down writes this whole in-memory
+    # document back, so it MUST come first — saving it after an emit would silently
+    # overwrite that emit's push with the pre-emit snapshot, dropping the event from the
+    # durable log even though its id was already consumed (a real bug this order fixes:
+    # `approval.resolved` was vanishing from replay while still delivering live).
     approvals = dict((run.state or {}).get("approvals") or {})
     approvals[payload.phase] = {
         "approved": payload.approved,
@@ -163,6 +167,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
         run.status = "rejected"
         run.updated_at = datetime.now()
         await run.save()
+        await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
         await events.run_failed(str(run.id), "rejected", payload.note or "rejected by the user")
         return ApprovalResponse(
             run_id=str(run.id), phase=payload.phase, approved=False, status="rejected"
@@ -171,6 +176,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     run.status = "running"
     run.updated_at = datetime.now()
     await run.save()
+    await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
     await executor.resume_run(str(run.id))
 
     return ApprovalResponse(
@@ -178,11 +184,43 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     )
 
 
+_TERMINAL_STATUSES = {
+    "succeeded",
+    "failed_max_loops",
+    "failed_sandbox",
+    "failed_llm",
+    "rejected",
+    "cancelled",
+}
+
+
 @router.post("/runs/{run_id}/cancel", response_model=RunCreateResponse)
 async def cancel_run(run_id: str, user: CurrentUser) -> RunCreateResponse:
     run = await get_owned(Run, run_id, str(user.id), "Run")
-    executor.cancel(str(run.id))
+
+    # `run.status` alone cannot decide whether there is anything left to cancel. A node
+    # whose model chain is exhausted records `failed_llm` and the graph *keeps going* —
+    # `after_reviewer` deliberately sends a failed review on to the Tester — so a run
+    # that is still executing can carry a terminal-looking status for minutes. Trusting
+    # it made Cancel a no-op that still answered 200: confirmed live 2026-08-19, where
+    # the graph ran on through a sandbox execution and a whole loop iteration after the
+    # user pressed Cancel. A live task is the authoritative "still running" signal.
+    had_active_task = executor.cancel(str(run.id))
+    if not had_active_task and run.status in _TERMINAL_STATUSES:
+        return RunCreateResponse(run_id=str(run.id), status=run.status)
+
     run.status = "cancelled"
     run.updated_at = datetime.now()
     await run.save()
+
+    # A run mid-node has an asyncio task; cancelling it raises CancelledError inside
+    # `_execute`, whose own handler emits `run.failed` once that unwinds. A run paused
+    # at an approval checkpoint has no task at all by then — LangGraph's `ainvoke`
+    # already returned when it hit the interrupt — so nothing else will ever emit the
+    # event that tells a connected client this happened. Emit it here for that case
+    # only, or a live SSE view sits on "awaiting approval" forever even though the
+    # database already says cancelled.
+    if not had_active_task:
+        await events.run_failed(str(run.id), "cancelled", "cancelled by the user")
+
     return RunCreateResponse(run_id=str(run.id), status="cancelled")

@@ -1,4 +1,8 @@
 import pytest
+from bson import ObjectId
+from pymongo import MongoClient
+
+from app.config import settings
 
 
 @pytest.fixture
@@ -16,7 +20,12 @@ def project(client, registered_user):
 def other_user(client):
     """A second account, for ownership-isolation checks."""
     response = client.post(
-        "/auth/register", json={"email": "other@example.com", "password": "secret12345"}
+        "/auth/register",
+        json={
+            "first_name": "Otto",
+            "email": "other@example.com",
+            "password": "Secret12345",
+        },
     )
     assert response.status_code == 201
     token = response.json()["access_token"]
@@ -147,3 +156,76 @@ def test_get_another_users_run_is_404(client, registered_user, project, other_us
     ).json()["run_id"]
 
     assert client.get(f"/runs/{run_id}", headers=other_user["headers"]).status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Cancellation
+# --------------------------------------------------------------------------- #
+
+
+def _force_status(run_id: str, status: str) -> None:
+    """Write a run's status directly.
+
+    There is deliberately no route that sets an arbitrary status, and the app's own
+    Mongo client belongs to the TestClient's event loop, so this reaches the document
+    the same way `clean_database` does — synchronously, from outside the app.
+    """
+    with MongoClient(settings.mongo_uri) as mongo:
+        result = mongo[settings.mongo_db]["runs"].update_one(
+            {"_id": ObjectId(run_id)}, {"$set": {"status": status}}
+        )
+    assert result.matched_count == 1
+
+
+def _start_run(client, registered_user, project) -> str:
+    return client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    ).json()["run_id"]
+
+
+def test_cancel_stops_a_live_run_whose_status_looks_terminal(
+    client, registered_user, project, monkeypatch
+):
+    """`failed_llm` does not mean the run stopped.
+
+    A node whose model chain is exhausted records that status and the graph keeps
+    going — `after_reviewer` deliberately sends a failed review on to the Tester. The
+    endpoint used to trust the stored status and return 200 without cancelling
+    anything, so Cancel silently did nothing on exactly the runs a user most wants to
+    stop. Observed live 2026-08-19: a sandbox execution and a whole loop iteration ran
+    *after* the user pressed Cancel.
+    """
+    run_id = _start_run(client, registered_user, project)
+    _force_status(run_id, "failed_llm")
+
+    cancelled: list[str] = []
+
+    def fake_cancel(rid: str) -> bool:
+        cancelled.append(rid)
+        return True  # a task is genuinely in flight
+
+    monkeypatch.setattr("app.graph.executor.cancel", fake_cancel)
+
+    response = client.post(f"/runs/{run_id}/cancel", headers=registered_user["headers"])
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "cancelled"
+    assert cancelled == [run_id], "the in-flight task was never cancelled"
+
+
+def test_cancel_leaves_a_genuinely_finished_run_alone(
+    client, registered_user, project, monkeypatch
+):
+    """With no task in flight, a terminal status is authoritative: it must be reported
+    back untouched rather than overwritten with `cancelled`."""
+    run_id = _start_run(client, registered_user, project)
+    _force_status(run_id, "succeeded")
+
+    monkeypatch.setattr("app.graph.executor.cancel", lambda rid: False)
+
+    response = client.post(f"/runs/{run_id}/cancel", headers=registered_user["headers"])
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "succeeded"

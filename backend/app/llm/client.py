@@ -123,6 +123,24 @@ _RETRYABLE_MARKERS = (
     # Instructor's wording when a model answers in prose instead of calling the tool.
     # Another model usually complies, so it is worth one rung down.
     "no tool calls",
+    # Groq's wording for the same thing, returned as a 400 rather than a tool error:
+    # the model narrates the schema instead of emitting it ("We need to output a
+    # structured object matching the Design type..."). Confirmed live 2026-08-19 — the
+    # Architect died on rung 1 with two healthy fallbacks below it untried, failing the
+    # whole run in 18 seconds.
+    "output_parse_failed",
+    "could not be parsed",
+    # `SingleFileOutput`'s own validator (schemas/agents.py) raises this when a model's
+    # generated file won't parse as Python after Instructor has already re-asked within
+    # the rung — almost always the same truncation-at-the-ceiling failure as the two
+    # markers above, just phrased by our own code instead of the provider's. Without
+    # this marker the chain raised immediately on rung 1 and never reached a rung with a
+    # larger budget, which is the exact fallback this validator's docstring promises.
+    "is not valid python",
+    # The silent half of the same truncation failure: a test file cut off after its
+    # imports still parses, so only the "no tests defined" check catches it. Same
+    # remedy — the next rung has a different budget (schemas/agents.py).
+    "contains no test functions",
 )
 
 

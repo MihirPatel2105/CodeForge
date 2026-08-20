@@ -18,14 +18,25 @@ from pydantic import BaseModel
 # --- provider model ids ---------------------------------------------------- #
 
 GROQ_GPT_OSS = "groq/openai/gpt-oss-120b"
-GROQ_LLAMA_70B = "groq/llama-3.3-70b-versatile"
+GROQ_GPT_OSS_20B = "groq/openai/gpt-oss-20b"
+# Retired from Groq's catalogue as of 2026-08-18 — confirmed live via
+# GET https://api.groq.com/openai/v1/models, which no longer lists it at all. Every
+# rung that named it (pm's 2nd rung, tester's 1st) failed instantly with
+# NotFoundError on every single call. Kept here, unused, as a paper trail; do not
+# reintroduce it.
+_RETIRED_GROQ_LLAMA_70B = "groq/llama-3.3-70b-versatile"
 
 OPENROUTER_NEMOTRON_SUPER = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
 OPENROUTER_NEMOTRON_NANO = "openrouter/nvidia/nemotron-3-nano-30b-a3b:free"
 OPENROUTER_NORTH_CODE = "openrouter/cohere/north-mini-code:free"
 
 OLLAMA_LOCAL = "ollama/qwen2.5:3b"
-OLLAMA_API_BASE = "http://localhost:11434"
+# The backend runs inside the compose network, where "localhost" means the container
+# itself, not the host running Ollama. Docker Desktop's host-side DNS name reaches it
+# instead. Discovered 2026-08-18: this made the local fallback — the rung every chain is
+# supposed to end at, the one meant to answer when every free tier is down at once —
+# unreachable, so a bad cloud-provider moment failed runs outright instead of degrading.
+OLLAMA_API_BASE = "http://host.docker.internal:11434"
 
 
 class ModelSpec(BaseModel):
@@ -45,8 +56,18 @@ class ModelSpec(BaseModel):
     timeout: int | None = None
 
 
-def _ollama(max_tokens: int | None = None) -> ModelSpec:
-    return ModelSpec(model=OLLAMA_LOCAL, extra={"api_base": OLLAMA_API_BASE}, max_tokens=max_tokens)
+def _ollama(max_tokens: int | None = None, timeout: int = 120) -> ModelSpec:
+    # Every cloud rung in every chain has an explicit timeout except this one — the rung
+    # every chain falls back to last, the one meant to always answer. Confirmed live
+    # 2026-08-18: with connectivity fixed (see OLLAMA_API_BASE above) a Tester call
+    # reached this rung and then sat for 10+ minutes with no bound at all, needing a
+    # manual cancel. 120s is generous for a 3B local model's slowest realistic case.
+    return ModelSpec(
+        model=OLLAMA_LOCAL,
+        extra={"api_base": OLLAMA_API_BASE},
+        max_tokens=max_tokens,
+        timeout=timeout,
+    )
 
 
 # --- per-agent chains, tried in order -------------------------------------- #
@@ -54,7 +75,7 @@ def _ollama(max_tokens: int | None = None) -> ModelSpec:
 CHAINS: dict[str, list[ModelSpec]] = {
     "pm": [
         ModelSpec(model=GROQ_GPT_OSS),
-        ModelSpec(model=GROQ_LLAMA_70B),
+        ModelSpec(model=GROQ_GPT_OSS_20B),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
         _ollama(),
     ],
@@ -88,10 +109,18 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=GROQ_GPT_OSS, timeout=60),
         _ollama(),
     ],
+    # Groq rung had no timeout until 2026-08-18 (see `_ollama`'s comment for the fuller
+    # story of that live-run diagnosis) — every other chain already had one on its cloud
+    # rungs, this one just got missed.
+    # Budgets added 2026-08-19: this agent emits a whole suite in a single call, and with
+    # no ceiling at all Groq truncated it mid-file — twice visibly (invalid Python) and
+    # once silently, returning a file that parsed but defined zero tests. Groq counts
+    # prompt + max_tokens against its 8000 TPM ceiling and this prompt carries the whole
+    # app, so 3000 leaves room for it; the OpenRouter rung has no such shared budget.
     "tester": [
-        ModelSpec(model=GROQ_LLAMA_70B),
-        ModelSpec(model=OPENROUTER_NEMOTRON_NANO),
-        _ollama(),
+        ModelSpec(model=GROQ_GPT_OSS_20B, max_tokens=3000, timeout=60),
+        ModelSpec(model=OPENROUTER_NEMOTRON_NANO, max_tokens=8000, timeout=90),
+        _ollama(max_tokens=4000),
     ],
 }
 

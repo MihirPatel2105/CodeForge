@@ -12,9 +12,20 @@ runnable FastAPI applications backed by MongoDB via Beanie.
 Hard rules — violating any of these makes the output useless:
 - Use `from pymongo import AsyncMongoClient` for the database client. NEVER import motor \
 or AsyncIOMotorClient: Beanie 2.x dropped motor and it is NOT installed in the runtime.
-- Every endpoint declares an explicit response_model. NEVER return a Beanie Document \
-directly: Mongo's _id is an ObjectId and is not JSON-serialisable.
+- Every endpoint declares an explicit response_model, EXCEPT a 204 No Content endpoint: \
+FastAPI raises "Status code 204 must not have a response body" if you give one, so a 204 \
+route must set response_model=None (or omit response_model entirely) and return nothing. \
+For every other endpoint, NEVER return a Beanie Document directly: Mongo's _id is an \
+ObjectId and is not JSON-serialisable.
 - Expose the document id as a string, converted with str(doc.id).
+- A field that may be absent must be typed Optional, never given a bare None default: \
+write `created_at: date | None = None`, NEVER `created_at: date = None`. Pydantic v2 \
+raises a validation error the moment None reaches a non-optional field.
+- Invent NOTHING. Implement exactly the fields in the entity list and exactly the \
+endpoints in the design — no created_at, no updated_at, no extra helper routes unless \
+they are listed. A schema field that has no matching field on the Beanie Document is a \
+defect: it serialises an attribute that does not exist.
+- An update request schema must NEVER contain the id field: the id comes from the path.
 - The Mongo URI is always "mongodb://localhost:27017". No environment variables, no config \
 files.
 - No network calls, no external services, no authentication.
@@ -102,7 +113,7 @@ Current contents:
 ```python
 {current}
 ```
-
+{siblings}
 Problems to fix:
 {problems}
 
@@ -111,16 +122,33 @@ Rewrite {path} so those problems are gone. Change only what the problems require
 everything else byte-identical. Return the complete file, not a diff."""
 
 
-def render_fix(*, path: str, current: str, problems: str, reference: str = "") -> str:
+def render_fix(
+    *, path: str, current: str, problems: str, siblings: str = "", reference: str = ""
+) -> str:
     """Fix-pass prompt.
 
     Carries only the failing findings and this one file, never the accumulated history:
     a fix pass that re-sends everything blows the free-tier token budget and buries the
     signal the model needs (docs/AGENTS.md §4).
+
+    `siblings` is a deliberate, narrow exception: the project's contract files
+    (database.py, models.py, schemas.py — never main.py, never the full tree). Without
+    them a fix pass can only guess at names/types another file already defined, and a
+    live run (2026-08-18) showed exactly that: three fix passes in a row each introduced
+    a *new* cross-file name or type mismatch instead of converging, because the model was
+    inventing plausible names it couldn't check.
     """
+    siblings_block = (
+        f"\nThe project's other files already define these names and types — reference "
+        f"them exactly as written, do not invent different ones:\n```python\n{siblings}\n"
+        f"```\n"
+        if siblings
+        else ""
+    )
     return FIX_TEMPLATE.format(
         path=path,
         current=current,
         problems=problems,
+        siblings=siblings_block,
         reference=f"\n{reference}\n" if reference else "",
     )

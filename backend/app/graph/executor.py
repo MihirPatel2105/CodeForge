@@ -11,6 +11,7 @@ reference to it — an un-referenced asyncio task can be garbage collected mid-f
 import asyncio
 import contextlib
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from app.events import events
@@ -19,6 +20,64 @@ from app.graph.state import new_run_state
 from app.models import Run
 
 _running: dict[str, asyncio.Task] = {}
+
+# `interrupt_before=["architect", "coder_gate"]` (graph/build.py) pauses the graph
+# right before the named node runs — which is one step later than the approval it
+# represents. Paused before "architect" means the PM's requirements are awaiting
+# approval; paused before "coder_gate" means the Architect's design is. (The gate node
+# exists so this never fires again on the loop's autonomous returns to "coder".)
+_PHASE_BEFORE_NODE = {"architect": "pm", "coder_gate": "architect"}
+
+
+def _approval_payload(phase: str, state: dict[str, Any]) -> dict[str, Any]:
+    """Renders the paused step's output as the labelled facts the approval bar shows
+    (design_handoff/README.md "Approval bar") — never the raw agent output."""
+    if phase == "pm":
+        req = state.get("requirements")
+        if req is None:
+            return {}
+        if len(req.entities) == 1:
+            entity = req.entities[0]
+            entity_detail = f"{entity.name} — {', '.join(f.name for f in entity.fields)}"
+        else:
+            entity_detail = ", ".join(e.name for e in req.entities)
+        return {
+            "project_name": req.project_name,
+            "entity": entity_detail,
+            "operations": ", ".join(req.operations),
+        }
+    if phase == "architect":
+        design = state.get("design")
+        if design is None:
+            return {}
+        return {
+            "endpoints": str(len(design.endpoints)),
+            "collection": ", ".join(c.name for c in design.collections),
+            "files_planned": ", ".join(Path(f.path).stem for f in design.files if f.path),
+        }
+    return {}
+
+
+async def _after_invoke(run_id: str, graph, config: dict) -> None:
+    """`graph.ainvoke` returns normally both when a run finishes and when it pauses at
+    an `interrupt_before` node — nothing raises to tell the two apart. This is the only
+    place that distinguishes them, and for a pause it does the two things the frontend
+    needs: emits `approval.required` and marks the run paused so a reload reflects it."""
+    snapshot = await graph.aget_state(config)
+    if not snapshot.next:
+        return  # reached END — finalise_node already emitted run.completed
+
+    phase = _PHASE_BEFORE_NODE.get(snapshot.next[0])
+    if phase is None:
+        return
+
+    run = await Run.get(run_id)
+    if run is not None:
+        run.status = "awaiting_approval"
+        run.updated_at = datetime.now()
+        await run.save()
+
+    await events.approval_required(run_id, phase, _approval_payload(phase, snapshot.values))
 
 
 def is_running(run_id: str) -> bool:
@@ -45,8 +104,11 @@ async def _finish(run_id: str, status: str, reason: str) -> None:
 
 async def _execute(run_id: str, state: dict[str, Any], with_approvals: bool) -> None:
     graph = compile_graph(with_approvals=with_approvals)
+    config = thread_config(run_id)
     try:
-        await graph.ainvoke(state, config=thread_config(run_id))
+        await graph.ainvoke(state, config=config)
+        if with_approvals:
+            await _after_invoke(run_id, graph, config)
     except asyncio.CancelledError:
         await _finish(run_id, "cancelled", "cancelled by the user")
         raise
@@ -90,10 +152,12 @@ async def resume_run(run_id: str) -> None:
         return
 
     graph = compile_graph(with_approvals=True)
+    config = thread_config(run_id)
 
     async def _continue() -> None:
         try:
-            await graph.ainvoke(None, config=thread_config(run_id))
+            await graph.ainvoke(None, config=config)
+            await _after_invoke(run_id, graph, config)
         except asyncio.CancelledError:
             await _finish(run_id, "cancelled", "cancelled by the user")
             raise
