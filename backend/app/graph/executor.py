@@ -10,6 +10,7 @@ reference to it — an un-referenced asyncio task can be garbage collected mid-f
 
 import asyncio
 import contextlib
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,8 @@ from app.events import events
 from app.graph.build import compile_graph, thread_config
 from app.graph.state import new_run_state
 from app.models import Run
+
+logger = logging.getLogger(__name__)
 
 _running: dict[str, asyncio.Task] = {}
 
@@ -94,12 +97,59 @@ def cancel(run_id: str) -> bool:
 
 
 async def _finish(run_id: str, status: str, reason: str) -> None:
-    run = await Run.get(run_id)
-    if run is not None:
-        run.status = status
-        run.updated_at = datetime.now()
-        await run.save()
-    await events.run_failed(run_id, status, reason)
+    """Record a terminal status. Must not raise, and must not give up on one failure.
+
+    This is the only thing standing between a crashed run and a run that says `running`
+    for ever. It used to be a plain `get` + `save`: if either threw — and since the
+    database moved to Atlas that is a live network call, not a local socket — the
+    exception escaped the caller's `except` block, the `finally` still dropped the task
+    from `_running`, and nothing ever wrote a terminal status. Observed exactly once in
+    the wild, on a two-entity run: `status: running`, `finished_at: None`, no live task.
+
+    So the write is retried, and every failure path is swallowed and logged rather than
+    propagated. A run that cannot be marked is still recoverable by
+    `reconcile_interrupted_runs` on the next boot; an exception here is not.
+    """
+    for attempt in range(3):
+        try:
+            run = await Run.get(run_id)
+            if run is not None:
+                run.status = status
+                run.updated_at = datetime.now()
+                await run.save()
+            break
+        except Exception:  # noqa: BLE001 — nothing here is worth stranding a run over
+            if attempt == 2:
+                logger.exception("could not record terminal status %r for run %s", status, run_id)
+            else:
+                await asyncio.sleep(0.5 * (attempt + 1))
+
+    # Emitted separately and defensively: a dropped SSE frame must not cost the status
+    # write above, which is the part that actually matters.
+    try:
+        await events.run_failed(run_id, status, reason)
+    except Exception:  # noqa: BLE001
+        logger.exception("could not emit terminal event for run %s", run_id)
+
+
+async def reconcile_interrupted_runs() -> int:
+    """Fail any run left mid-flight by a process that stopped. Called once on startup.
+
+    `_running` lives in memory, so after a restart nothing is driving a run that still
+    says `running` — the checkpoint survives but no task will ever pick it up. Left
+    alone it shows a spinner for ever. `awaiting_approval` is deliberately excluded:
+    that state is *meant* to have no task, and resumes when somebody approves.
+    """
+    stranded = await Run.find(Run.status == "running").to_list()
+    for run in stranded:
+        await _finish(
+            str(run.id),
+            "failed_llm",
+            "interrupted before it finished — the server restarted mid-run",
+        )
+    if stranded:
+        logger.warning("marked %d interrupted run(s) as failed on startup", len(stranded))
+    return len(stranded)
 
 
 async def _execute(run_id: str, state: dict[str, Any], with_approvals: bool) -> None:

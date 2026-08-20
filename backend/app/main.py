@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await connect()
+    # A run in flight when the process stopped has no task to resume it — the in-memory
+    # registry did not survive the restart. Without this it shows `running` for ever.
+    from app.graph.executor import reconcile_interrupted_runs
+
+    await reconcile_interrupted_runs()
     if not settings.email_verification_enabled:
         # Verification failing open is a deliberate choice (see `config.py`), but a
         # security control that is off must never be off quietly.
