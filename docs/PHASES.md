@@ -376,6 +376,62 @@ now rejects a `test_*.py` that defines no test function (AST walk, so `conftest.
 `TestFoo`-class suites are both handled correctly), and `_RETRYABLE_MARKERS` carries the message so
 the chain falls through to a larger budget instead of failing the run. Backend suite: 124 passed.*
 
+*Status 2026-08-20 — everything around the pipeline, not the pipeline itself. None of this was on
+Phase 7's original task list above; it is platform work that landed during the phase because the
+literal DoD (a non-technical person watching a run) needs somewhere demo-safe to point them at, and
+the gaps below would have undermined that the moment anyone touched the app off the happy path.*
+
+***Auth stopped being a toy.*** *Sign-up now mails a six-digit OTP and creates no `User` document
+until it is verified — an abandoned sign-up leaves nothing behind, and Mongo's own TTL index sweeps
+the pending row once it expires, so there is no cleanup job to remember. "Forgot password" mails a
+single-use, 10-minute link (a random token, hashed at rest — SHA-256, not bcrypt, since the token is
+already unguessable and the point of hashing here is a leaked database, not brute-force resistance).
+Deleting an account cascades for real: runs, projects, and — easy to miss, since it is a separate
+pair of collections from `runs` — the GridFS artifacts each run produced. Sign-out, sign-out-
+everywhere, and a changed password all revoke sessions server-side now: every JWT carries a `jti`
+and the account a `token_version`; sign-out denylists that one token's `jti` (so a copy of it lifted
+from local storage dies too, proven live by re-presenting the same token after signing out), while
+sign-out-everywhere and a password change bump `token_version`, invalidating every token at once.
+Before this, "sign out" only ever cleared the browser's local storage — the token itself stayed
+valid for its full 24-hour life no matter what the UI showed.*
+
+***The frontend was rebuilt, not iterated on.*** *The first full pass — landing, auth, dashboard —
+was functionally complete but was pointed out (correctly) to be visually identical to an unrelated
+project's UI, because both had been built from the same generic template instinct. It was replaced
+with an instrument-style system specific to what this product actually is: monospace display type
+throughout (the one deliberate signature), near-square geometry (`--radius: 3px`), and colour spent
+on exactly one thing — five tokens, each meaning one run state, never decoration. Landing, about,
+how-it-works, FAQ, a dark footer, the entire auth flow (sign in/up with an OTP step, forgot/reset
+password, profile, settings), and the dashboard all carry it now, plus a brand mark built from the
+same idea the product is about: a "C" drawn open on purpose, because the pipeline runs almost the
+full circuit but never quite closes without the loop back to the Coder.*
+
+***The platform database moved to Atlas.*** *`MONGO_URI` in each developer's own `.env` now points
+at an Atlas M0 cluster; local Docker Mongo stays in `docker-compose.yml` only for the test suite,
+which pins `MONGO_URI` to it explicitly (`tests/conftest.py`) regardless of what the app itself is
+configured to use — so tests stay fast and offline instead of spending a free tier's connection
+budget on every run. The migration itself was a real `mongodump`/`mongorestore`, not a fresh start:
+366 documents, verified by an exact per-collection count match on both sides before the app was
+pointed at the new cluster, then proven live by stopping the local instance entirely and confirming
+the running app still answered real requests.*
+
+***Two bugs worth remembering, because they were the same mistake twice.*** *The reset-password
+resend cooldown silently never expired on this host: `PasswordResetToken.created_at` used a naive
+`datetime.now()`, and on a UTC+5:30 machine that gets compared against an aware `_now()` as though
+it were already UTC — 5.5 hours in the future, so the elapsed time came out negative and the
+cooldown looked permanently unexpired. This was a repeat of an earlier bug in the same session (an
+OTP resend timer that displayed as already-expired for the identical naive-vs-aware reason), caught
+this time by a failing test rather than by inspection. Separately, the brand mark's first shipped
+version rendered correctly everywhere it was checked except the one place that mattered — the actual
+email, which used a hand-rolled Pillow rasteriser instead of the already-verified SVG, and it shipped
+a visibly broken, "toothed" icon. The fix was not a fourth patch to that rasteriser: the loop-stroke
+element causing every prior bug in the mark was cut outright, and the email asset is now rendered by
+loading the real SVG into a browser canvas and exporting *that* — the verified shape, not a second,
+divergent implementation of it.*
+
+*Backend suite: 201 passed, 18 skipped. Still open, unchanged from the note above: get an actual
+non-technical person to watch one run for the literal DoD, then start Phase 8.*
+
 ---
 
 ## Phase 8 — Testing & evaluation

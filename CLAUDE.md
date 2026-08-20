@@ -18,37 +18,40 @@ repo is built. Deeper detail lives in `docs/` — load those files when the task
 ## 0. Current status — update this after every phase
 
 ```
-CURRENT PHASE : 7 — Implementation E: dashboard + approvals
-LAST DoD MET  : Phase 5 (2026-08-14). Phase 6's loop is demonstrated two ways now: the
-                harness path (0/2 -> fix -> 7/7) and, as of 2026-08-15, the real
-                approval-gated API path too, repeatedly, across several live runs —
-                see docs/PHASES.md Phase 6 status for the two graph bugs that path
-                needed fixed first. RAG-comparison half is still deferred until
-                provider quotas reset.
-NEXT UP       : **First fully green end-to-end run on 2026-08-19** (run
-                6a85263d25cecdf4a534e8bc): prompt -> PM -> Architect -> Coder ->
-                Reviewer "0 findings, passed" -> Tester -> Sandbox "8 of 8 tests
-                passed" -> succeeded, and repeatably: a 3-run back-to-back batch went
-                0/3 before the last two fixes and 2/3 after, the remaining failure
-                being exhausted free-tier quota (Groq TPM + OpenRouter
-                free-models-per-day) rather than a pipeline defect. Nine defects stood
-                between the pipeline and that result; all are fixed and documented in
-                docs/PHASES.md Phase 7 status. The headline ones: the Ollama
-                last-resort rung was
-                unreachable from inside the backend container (localhost vs
-                host.docker.internal) and had no timeout, so the "always answers"
-                fallback never answered; Groq retired llama-3.3-70b-versatile out
-                from under the Tester and PM chains; the Reviewer and Sandbox loops
-                shared one MAX_LOOPS budget, so a slow review starved the sandbox of
-                every fix attempt; and all three of the Architect/Coder/Reviewer
-                prompts demanded a response_model on every endpoint, which FastAPI
-                forbids on a 204 — every generated DELETE was broken by construction.
-                The Tester truncation noted here previously is also resolved, and its
-                silent half (a suite cut off after its imports still parses, so pytest
-                collected zero tests) is now blocked structurally in
-                SingleFileOutput rather than by prompt text.
-                Still open: get an actual non-technical person to watch one run for
-                the literal DoD, then start Phase 8.
+CURRENT PHASE : 7 — Implementation E: dashboard + human checkpoints
+LAST DoD MET  : Phase 6 (2026-08-15). Phase 7's own DoD — a non-technical person
+                watches one run start to finish and can explain what happened — is
+                still open; the pipeline itself has run cleanly end to end since
+                2026-08-19 (run 6a85263d25cecdf4a534e8bc, 8/8 sandbox tests passed,
+                repeatable — nine defects fixed to get there, detailed in
+                docs/PHASES.md Phase 7 status). What was missing was everything
+                *around* the pipeline, not the pipeline.
+NEXT UP       : The literal DoD: get a non-technical person to watch one full run,
+                now against something demo-ready rather than a bare dev setup. Since
+                the last note, none of it on Phase 7's original task checklist but all
+                of it now landed and verified live (not just unit-tested):
+                - **Auth is real.** Sign-up requires a mailed OTP before an account
+                  exists; "forgot password" mails a single-use, 10-minute link;
+                  accounts can be deleted with a real cascade (projects, runs, GridFS
+                  artifacts); sign-out, sign-out-everywhere, and password change all
+                  revoke sessions server-side (JWT `jti` denylist + a `token_version`
+                  bump) rather than just clearing local storage — a plain client-side
+                  sign-out was proven to leave a copied token live for 24h before this.
+                - **The frontend was rebuilt from scratch.** The first pass was
+                  visually identical to an unrelated project's UI (caught by direct
+                  user comparison, not by me) and has been replaced with an original
+                  instrument-style system — monospace display type, near-square
+                  geometry, colour reserved for run state — across landing, about,
+                  how-it-works, FAQ, the full auth flow, and the dashboard, plus a
+                  from-scratch brand mark (an open "C," closed by the loop).
+                - **The platform database moved to Atlas.** Local Docker Mongo is kept
+                  only for the test suite, which is pinned to it explicitly so tests
+                  stay fast and never touch the free tier.
+                See docs/PHASES.md Phase 7 status for the dated detail, including the
+                real bugs this surfaced (a naive-UTC timestamp bug that silently broke
+                a resend cooldown; a hand-rolled email rasteriser that shipped a
+                visibly broken logo before being replaced with the browser's own
+                renderer). Backend suite: 201 passed.
 BLOCKED ON    : nothing
 ```
 
