@@ -7,7 +7,7 @@ frontend can generate matching types from one source.
 Agents and the sandbox never build these directly; `events/bus.py` is the only writer.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
@@ -32,7 +32,12 @@ EventName = Literal[
 
 class BaseEvent(BaseModel):
     event: EventName
-    at: datetime = Field(default_factory=datetime.now)
+    # UTC-aware, not a bare `datetime.now()`. Every SSE event's timestamp is rendered
+    # directly in the dashboard's live timeline, and a naive value serialises without
+    # an offset — which JavaScript then parses as *local* time, shifting every row by
+    # the viewer's UTC offset (5h30m on an IST machine). Same class of bug as the OTP
+    # countdown and the password-reset cooldown before it.
+    at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class RunStarted(BaseEvent):
