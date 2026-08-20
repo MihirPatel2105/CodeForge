@@ -1,7 +1,16 @@
-/** UTC HH:MM:SS — matches the recorded tape regardless of the viewer's timezone
- * (design_handoff/README.md "Durations come from ... timestamps render as UTC"). */
+/** HH:MM:SS in the viewer's own timezone.
+ *
+ * Was UTC, on the reasoning that a recorded tape should read the same for everyone.
+ * That is right for a fixed replay and wrong for a live run: someone watching a run
+ * happen compares the timeline against the clock on their wall, and a demo audience
+ * seeing 07:11 while their phone says 12:41 assumes the product is broken.
+ *
+ * Note this is only readable because the backend now sends an explicit offset. While
+ * event times were emitted naive, this same call rendered them shifted by the viewer's
+ * offset — a naive string is parsed as local, and `toISOString()` then converted it
+ * back to UTC, subtracting 5h30m on an IST machine. */
 export function formatTime(iso: string): string {
-  return new Date(iso).toISOString().slice(11, 19);
+  return new Date(iso).toLocaleTimeString("en-GB", { hour12: false });
 }
 
 /** "5.1s" — per-agent duration, from `duration_ms`. */
