@@ -6,11 +6,18 @@ this file and nothing else.
 Every id below was probed against the live provider APIs on 2026-08-13; see
 `scripts/probe_models.py` to re-verify after a provider changes its catalogue.
 
-Deviation from CLAUDE.md §5 as originally written: the Coder was specified as
-Cerebras-primary for its token headroom, but Cerebras' free tier now returns
-"Payment required" for every model in the account catalogue, which conflicts with the
-$0 constraint. Groq is primary for all agents, with OpenRouter `:free` as the cloud
-fallback and a local model as last resort.
+Two deviations from CLAUDE.md §5 as originally written:
+
+1. The Coder was specified as Cerebras-primary for its token headroom, but Cerebras'
+   free tier now returns "Payment required" for every model in the account catalogue,
+   which conflicts with the $0 constraint. Groq is primary for all agents instead.
+2. Every chain used to end at a local Ollama model, on the reasoning that it is the one
+   rung no third party can rate-limit. Removed 2026-08-20: it required every contributor
+   to install Ollama and pull a 2GB model before the project would run, which is a real
+   barrier for a team, and its worst case was a ~10-minute crawl through 120s timeouts
+   producing output a 3B model could rarely use anyway (for the Reviewer it was measured
+   to emit no tool call at all). Chains now end at OpenRouter. The trade is explicit: a
+   run that exhausts every free tier now fails honestly and fast instead of degrading.
 """
 
 from pydantic import BaseModel
@@ -30,20 +37,12 @@ OPENROUTER_NEMOTRON_SUPER = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
 OPENROUTER_NEMOTRON_NANO = "openrouter/nvidia/nemotron-3-nano-30b-a3b:free"
 OPENROUTER_NORTH_CODE = "openrouter/cohere/north-mini-code:free"
 
-OLLAMA_LOCAL = "ollama/qwen2.5:3b"
-# The backend runs inside the compose network, where "localhost" means the container
-# itself, not the host running Ollama. Docker Desktop's host-side DNS name reaches it
-# instead. Discovered 2026-08-18: this made the local fallback — the rung every chain is
-# supposed to end at, the one meant to answer when every free tier is down at once —
-# unreachable, so a bad cloud-provider moment failed runs outright instead of degrading.
-OLLAMA_API_BASE = "http://host.docker.internal:11434"
-
 
 class ModelSpec(BaseModel):
     """One rung of a fallback chain."""
 
     model: str
-    # Extra kwargs LiteLLM needs for this model; Ollama requires an explicit api_base.
+    # Extra kwargs LiteLLM needs for this model.
     extra: dict = {}
 
     # Groq reserves `prompt + max_tokens` against its 8000 TPM budget, so an inflated
@@ -56,20 +55,6 @@ class ModelSpec(BaseModel):
     timeout: int | None = None
 
 
-def _ollama(max_tokens: int | None = None, timeout: int = 120) -> ModelSpec:
-    # Every cloud rung in every chain has an explicit timeout except this one — the rung
-    # every chain falls back to last, the one meant to always answer. Confirmed live
-    # 2026-08-18: with connectivity fixed (see OLLAMA_API_BASE above) a Tester call
-    # reached this rung and then sat for 10+ minutes with no bound at all, needing a
-    # manual cancel. 120s is generous for a 3B local model's slowest realistic case.
-    return ModelSpec(
-        model=OLLAMA_LOCAL,
-        extra={"api_base": OLLAMA_API_BASE},
-        max_tokens=max_tokens,
-        timeout=timeout,
-    )
-
-
 # --- per-agent chains, tried in order -------------------------------------- #
 
 CHAINS: dict[str, list[ModelSpec]] = {
@@ -77,12 +62,10 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=GROQ_GPT_OSS),
         ModelSpec(model=GROQ_GPT_OSS_20B),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
-        _ollama(),
     ],
     "architect": [
         ModelSpec(model=GROQ_GPT_OSS),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
-        _ollama(),
     ],
     # Writes the most tokens per turn, so it gets the largest budget and a
     # code-specialised cloud fallback.
@@ -96,22 +79,21 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=GROQ_GPT_OSS, max_tokens=2500, timeout=90),
         ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=8000, timeout=120),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=8000, timeout=120),
-        _ollama(max_tokens=4000),
     ],
     # OpenRouter first, unlike every other agent. Groq fails this one predictably: a
     # review's findings quote code, and long strings full of quotes and newlines break
     # Groq's tool-call JSON parsing ("Failed to parse tool call arguments as JSON").
-    # Measured 2026-08-14: Groq fails, OpenRouter returns findings, local 3B emits no
-    # tool call at all.
+    # Measured 2026-08-14: Groq fails, OpenRouter returns findings. (A local 3B model
+    # was also tried as a last rung and emitted no tool call at all — one of the
+    # reasons the local fallback was dropped; see the module docstring.)
     "reviewer": [
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, timeout=90),
         ModelSpec(model=OPENROUTER_NEMOTRON_NANO, timeout=90),
         ModelSpec(model=GROQ_GPT_OSS, timeout=60),
-        _ollama(),
     ],
-    # Groq rung had no timeout until 2026-08-18 (see `_ollama`'s comment for the fuller
-    # story of that live-run diagnosis) — every other chain already had one on its cloud
-    # rungs, this one just got missed.
+    # Groq rung had no timeout until 2026-08-18 — every other chain already had one on
+    # its cloud rungs, this one just got missed. A rung that hangs is worse than one
+    # that fails: the chain cannot move on until it returns.
     # Budgets added 2026-08-19: this agent emits a whole suite in a single call, and with
     # no ceiling at all Groq truncated it mid-file — twice visibly (invalid Python) and
     # once silently, returning a file that parsed but defined zero tests. Groq counts
@@ -120,7 +102,6 @@ CHAINS: dict[str, list[ModelSpec]] = {
     "tester": [
         ModelSpec(model=GROQ_GPT_OSS_20B, max_tokens=3000, timeout=60),
         ModelSpec(model=OPENROUTER_NEMOTRON_NANO, max_tokens=8000, timeout=90),
-        _ollama(max_tokens=4000),
     ],
 }
 

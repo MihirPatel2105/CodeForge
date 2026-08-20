@@ -27,6 +27,10 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
+      # Operational scripts (preflight, smoke tests) are run with `compose exec` and
+      # need the in-container view of the world — Ollama in particular is only at
+      # `host.docker.internal` from in here.
+      - ./backend/scripts:/app/scripts
       # Docker-outside-of-Docker: the backend launches sandbox containers as
       # siblings on the host's daemon (CLAUDE.md locked stack — "Docker SDK for
       # Python, network_mode=none"). Grants the backend container root-equivalent

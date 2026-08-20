@@ -112,12 +112,21 @@ def test_unknown_agent_raises():
         chain_for("nonexistent")
 
 
-def test_every_chain_ends_at_a_local_model():
-    """The last rung must be local: it is the only one that still answers when every
-    free tier is rate limited at once."""
+def test_every_chain_spans_more_than_one_provider():
+    """No agent may depend on a single provider.
+
+    This replaces an earlier rule that every chain must end at a local Ollama model.
+    That guaranteed a rung nobody could rate-limit, but it also made a 2GB local model a
+    setup prerequisite for every contributor (removed 2026-08-20 — see the registry
+    docstring). What still has to hold is the reason the rule existed: one provider
+    having a bad minute must never take an agent down with it.
+    """
     for agent, chain in CHAINS.items():
-        assert chain[-1].model.startswith("ollama/"), f"{agent} has no local last resort"
-        assert "api_base" in chain[-1].extra, f"{agent} local rung needs an api_base"
+        providers = {spec.model.split("/", 1)[0] for spec in chain}
+        assert len(chain) >= 2, f"{agent} has only one rung — no fallback at all"
+        assert len(providers) >= 2, (
+            f"{agent} depends on a single provider ({providers}) — one outage kills it"
+        )
 
 
 def test_no_duplicate_models_within_a_chain():

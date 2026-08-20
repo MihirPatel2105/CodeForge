@@ -493,7 +493,7 @@ A rough dashboard with a working loop passes. A beautiful dashboard with a fake 
 | Agents produce incorrect code | Review ↔ test loop + retry cap + narrow domain + RAG examples |
 | Scope creep | MVP is CRUD APIs only; everything else is an upgrade, not a dependency |
 | Unsafe generated code | `network_mode="none"`, resource limits, hard timeout, container destroyed after run |
-| Free-tier quota cuts / 429s | LiteLLM fallback chain, Ollama local last resort, cached example runs |
+| Free-tier quota cuts / 429s | LiteLLM fallback chain spanning two providers, `scripts/preflight.py` before a demo, cached example runs |
 | Live demo failure | Recorded video + saved runs + cold-start rehearsal |
 | Loop burns quota | `MAX_LOOPS = 3`, small prompts during dev, RAG to reduce iterations |
 | Beanie generation unreliable | Fallback to sync `pymongo` in generated apps — decide by end of Month 2 |

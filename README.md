@@ -111,6 +111,17 @@ PYTHONPATH=. python scripts/smoke_llm.py              # completion + Langfuse tr
 The smoke script makes one LiteLLM call through Groq and traces it to Langfuse — it verifies keys,
 routing, and observability in one shot. Check the trace appears in the Langfuse UI.
 
+To check quota and reachability for every rung of every chain — worth doing before a demo, since
+free-tier limits are the usual reason a run dies mid-way:
+
+```bash
+docker compose exec backend python scripts/preflight.py
+```
+
+It exits non-zero if any agent has no working rung, so it can gate a script as well as inform a
+human. Note that OpenRouter's free-models-per-day cap is the one number no endpoint exposes — the
+script says so rather than printing a reassuring figure that measures something else.
+
 ## Notes
 
 - **No hot-reload in the backend container.** `uvicorn` runs without `--reload`, so changes to
@@ -120,10 +131,6 @@ routing, and observability in one shot. Check the trace appears in the Langfuse 
   mounts `backend/app` but bakes dependencies into the image, so new code arrives without its
   new packages and the container crash-loops on `ModuleNotFoundError`.
 - `docker compose down` stops the stack; add `-v` to also wipe the Mongo and Langfuse volumes.
-- Ollama is the last-resort fallback in every model chain — the one rung that still answers when
-  every free tier rate-limits at once. Install it and pull one small model
-  (`ollama pull qwen2.5:3b`) before running a full pipeline; from inside the backend container it's
-  reachable at `host.docker.internal:11434`, not `localhost`.
 
 ## Contributing
 
