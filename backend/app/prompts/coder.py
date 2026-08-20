@@ -26,6 +26,10 @@ endpoints in the design — no created_at, no updated_at, no extra helper routes
 they are listed. A schema field that has no matching field on the Beanie Document is a \
 defect: it serialises an attribute that does not exist.
 - An update request schema must NEVER contain the id field: the id comes from the path.
+- In an update request schema EVERY field is optional, because a partial update sends \
+only what changed. Type each one `T | None = None` — `title: str | None = None`, \
+`publish_date: datetime | None = None`. Writing `publish_date: datetime = None` is the \
+same defect as above and is the single most common way a generated update schema fails.
 - The Mongo URI is always "mongodb://localhost:27017". No environment variables, no config \
 files.
 - No network calls, no external services, no authentication.

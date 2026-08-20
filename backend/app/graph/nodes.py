@@ -239,6 +239,15 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
     for path, issues in problems.items():
         current = by_path.get(path)
         if current is None:
+            # The Reviewer named a file that was never generated — a typo, a path
+            # prefix, or a file it imagined. Skipping silently spends a whole loop
+            # iteration doing nothing and looks identical to a fix that did not work,
+            # so it is recorded instead.
+            errors = _error(
+                {"errors": errors},
+                "coder",
+                RuntimeError(f"review names {path!r}, which this run never generated"),
+            )
             continue
         try:
             result = await coder.run_fix(

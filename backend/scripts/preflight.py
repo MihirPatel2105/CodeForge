@@ -143,6 +143,33 @@ async def check_openrouter() -> tuple[bool, list[str]]:
         else:
             lines.append(f"  {OK} $0 billable usage {DIM}(nothing paid in any chain){RESET}")
 
+        # The check that actually matters, and the one this script was missing: a real
+        # call against a `:free` model. `/auth/key` answers 200 on a key whose daily
+        # free-model allowance is spent, so key validity alone reported "healthy" while
+        # every run died on 429 — the same trap Cerebras sets by serving its catalogue
+        # while refusing inference.
+        probe = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.openrouter_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+                "messages": [{"role": "user", "content": "hi"}],
+                "max_tokens": 1,
+            },
+        )
+        if probe.status_code == 429:
+            lines.append(f"  {FAIL} :free models are RATE LIMITED right now")
+            detail = probe.json().get("error", {}).get("message", "")[:80]
+            lines.append(f"     {DIM}{detail}{RESET}")
+            return False, lines
+        if probe.status_code != 200:
+            lines.append(f"  {FAIL} :free completion returned {probe.status_code}")
+            return False, lines
+        lines.append(f"  {OK} :free completion succeeded {DIM}(not just a valid key){RESET}")
+
     return True, lines
 
 
