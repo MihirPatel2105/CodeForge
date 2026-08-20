@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     cerebras_api_key: str | None = None
     openrouter_api_key: str | None = None
     google_api_key: str | None = None
+    mistral_api_key: str | None = None
 
     langfuse_public_key: str | None = None
     langfuse_secret_key: str | None = None

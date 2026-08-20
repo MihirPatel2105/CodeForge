@@ -146,6 +146,44 @@ async def check_openrouter() -> tuple[bool, list[str]]:
     return True, lines
 
 
+async def check_mistral() -> tuple[bool, list[str]]:
+    """The third provider, and the last rung of every chain.
+
+    Deliberately attempts a real completion rather than just listing models. Cerebras
+    demonstrates why: its catalogue endpoint answers 200 while every inference call
+    returns 402, so a list-only check reports a dead provider as healthy.
+    """
+    lines: list[str] = []
+    if not settings.mistral_api_key:
+        return False, [f"  {FAIL} no MISTRAL_API_KEY set"]
+
+    headers = {"Authorization": f"Bearer {settings.mistral_api_key}"}
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            probe = await client.post(
+                "https://api.mistral.ai/v1/chat/completions",
+                headers=headers,
+                json={
+                    "model": "mistral-medium-latest",
+                    "messages": [{"role": "user", "content": "hi"}],
+                    "max_tokens": 1,
+                },
+            )
+        except Exception as exc:  # noqa: BLE001
+            return False, [f"  {FAIL} unreachable: {exc}"]
+
+        if probe.status_code == 429:
+            return True, [f"  {WARN} rate limited right now {DIM}(key valid, quota tight){RESET}"]
+        if probe.status_code != 200:
+            return False, [f"  {FAIL} inference returned {probe.status_code}: {probe.text[:120]}"]
+
+        lines.append(
+            f"  {OK} mistral-medium-latest {DIM}(real completion, not just a listing){RESET}"
+        )
+
+    return True, lines
+
+
 async def main() -> int:
     print(f"\n{DIM}pre-flight — quota and reachability for every rung{RESET}\n")
 
@@ -153,6 +191,7 @@ async def main() -> int:
     for name, check in (
         ("groq", check_groq),
         ("openrouter", check_openrouter),
+        ("mistral", check_mistral),
     ):
         healthy, lines = await check()
         results[name] = healthy

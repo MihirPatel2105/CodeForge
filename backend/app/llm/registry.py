@@ -16,8 +16,16 @@ Two deviations from CLAUDE.md §5 as originally written:
    to install Ollama and pull a 2GB model before the project would run, which is a real
    barrier for a team, and its worst case was a ~10-minute crawl through 120s timeouts
    producing output a 3B model could rarely use anyway (for the Reviewer it was measured
-   to emit no tool call at all). Chains now end at OpenRouter. The trade is explicit: a
-   run that exhausts every free tier now fails honestly and fast instead of degrading.
+   to emit no tool call at all). Mistral took its place as the last rung the same day,
+   restoring a third independent provider without any local setup.
+
+Providers probed and rejected on 2026-08-20, recorded so nobody re-tries them blind:
+GitHub Models returns 410 `github_models_retirement_brownout` (the service is being
+retired); Google AI Studio still 401s on every auth method because the account can only
+issue `AQ.`-prefixed keys, which `generativelanguage.googleapis.com` does not accept;
+Cerebras still answers 402 on inference. Note that Cerebras' *catalogue* endpoint returns
+200 — a health check that only lists models would call it healthy, so any probe has to
+attempt a real completion.
 """
 
 from pydantic import BaseModel
@@ -36,6 +44,12 @@ _RETIRED_GROQ_LLAMA_70B = "groq/llama-3.3-70b-versatile"
 OPENROUTER_NEMOTRON_SUPER = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
 OPENROUTER_NEMOTRON_NANO = "openrouter/nvidia/nemotron-3-nano-30b-a3b:free"
 OPENROUTER_NORTH_CODE = "openrouter/cohere/north-mini-code:free"
+
+# The third provider, and the last rung of every chain. Verified 2026-08-20 through
+# the real structured()/Instructor path: it returns a valid ReviewResult for code
+# containing quotes and newlines — the exact payload that breaks Groq's tool-call
+# JSON parsing — so it is a genuine independent fallback, not a nominal one.
+MISTRAL_MEDIUM = "mistral/mistral-medium-latest"
 
 
 class ModelSpec(BaseModel):
@@ -62,10 +76,12 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=GROQ_GPT_OSS),
         ModelSpec(model=GROQ_GPT_OSS_20B),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
+        ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
     "architect": [
         ModelSpec(model=GROQ_GPT_OSS),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
+        ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
     # Writes the most tokens per turn, so it gets the largest budget and a
     # code-specialised cloud fallback.
@@ -79,6 +95,7 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=GROQ_GPT_OSS, max_tokens=2500, timeout=90),
         ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=8000, timeout=120),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=8000, timeout=120),
+        ModelSpec(model=MISTRAL_MEDIUM, max_tokens=8000, timeout=120),
     ],
     # OpenRouter first, unlike every other agent. Groq fails this one predictably: a
     # review's findings quote code, and long strings full of quotes and newlines break
@@ -90,6 +107,7 @@ CHAINS: dict[str, list[ModelSpec]] = {
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, timeout=90),
         ModelSpec(model=OPENROUTER_NEMOTRON_NANO, timeout=90),
         ModelSpec(model=GROQ_GPT_OSS, timeout=60),
+        ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
     # Groq rung had no timeout until 2026-08-18 — every other chain already had one on
     # its cloud rungs, this one just got missed. A rung that hangs is worse than one
@@ -102,6 +120,7 @@ CHAINS: dict[str, list[ModelSpec]] = {
     "tester": [
         ModelSpec(model=GROQ_GPT_OSS_20B, max_tokens=3000, timeout=60),
         ModelSpec(model=OPENROUTER_NEMOTRON_NANO, max_tokens=8000, timeout=90),
+        ModelSpec(model=MISTRAL_MEDIUM, max_tokens=8000, timeout=90),
     ],
 }
 

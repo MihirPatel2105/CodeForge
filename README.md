@@ -40,6 +40,7 @@ fallback chains. Do not share keys between team members — free tiers are rate-
 | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
 | `CEREBRAS_API_KEY` | [cloud.cerebras.ai](https://cloud.cerebras.ai) |
 | `OPENROUTER_API_KEY` | [openrouter.ai](https://openrouter.ai) |
+| `MISTRAL_API_KEY` | [console.mistral.ai](https://console.mistral.ai) — free tier, the last rung of every chain |
 | `GOOGLE_API_KEY` | [aistudio.google.com](https://aistudio.google.com) — AI Studio, **not** Google Cloud/Vertex, which is paid |
 
 `MONGO_URI` defaults to the local `mongo` service docker-compose brings up — nothing else to do. It
