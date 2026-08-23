@@ -57,3 +57,13 @@ tmp/
 temp/
 .cache/
 CLAUDE.md
+
+# Onboarding guide for new contributors. Deliberately untracked: setup notes
+# go stale faster than code, and a stale guide is worse than none.
+CodeForge-Setup-Guide.pdf
+
+# Demo runsheet for the 30% review. Personal presentation notes, not project source.
+CodeForge-Demo-Runsheet.pdf
+
+# Faculty-review briefing for the 22 Aug 2026 demo. Presentation notes, not source.
+CodeForge-Faculty-Review.pdf
