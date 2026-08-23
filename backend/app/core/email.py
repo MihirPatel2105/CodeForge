@@ -12,6 +12,8 @@ sits inside a request path (CLAUDE.md §6).
 import logging
 from datetime import UTC, datetime
 from email.message import EmailMessage
+from email.utils import formatdate
+from html import escape as html_escape
 
 import aiosmtplib
 
@@ -50,9 +52,30 @@ _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 
-# The mark, rasterised once and embedded inline — see send() docstring below for why
-# this is a PNG data URI rather than inline SVG.
-_MARK_B64 = "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACwUlEQVR4AeRYO04cQRAd7wFMZq8lr0PLslPLgS9g+wAGQpDIQVwAuACCHAlCPgcALkCASEGIkEViIYMDAPNGequepqunumebbcRqSzVd3/f6t6vpFK/8IxLodr98/9D9vJyDAIs0z88IlIAfIQ/Fw2mZtJSDAAswQUo8tW+NgCugFp3BwMY4JGA7MsAqQjCxDgmI0Zk7KgK+Q5IrfmKuCJSHZDIU6PraanFz3R+JbG1uhLYviLkiEJoN4NNT/0PTxPh/f/9UEyEGeBzBBADeU6+VK6Z2MIFWCBMkvw0CWFpKgkmslWQf6JpDGDSugLaQUL+VWdPbS0B7vf389bv4+KkXJF+//VCRw3XtC/QSwPXmS6av3+/zUa3v7u5VsU3XtZeApgNmXhPnimmTy3rRBLAFRgEANbAFCShURxPQbgENoJgtyLrRBFhg3DobAvMLi865kOwMDiDAFJ3GHW5KU9b2zp4zRLIzOAkBAGcDapeNPmocaM44NMb0SToJAamZxo4ZB3BoTXx2BDSgzZjsCOCXF9sN2gQqPSchgC1gN3TZ7BgA538faIztGHuchACaALApsPlEmnHJzlrJCLCBVmPGXbGSnbHZECCgUB1NoNfrhfYS4ycm3ou+Jkc0gZPjo+hXISYoHNSLc7xHNq3652gCbAEAfA7VbXLZy0tA+2sYswW0W3D/4JBYndpLAP9HnFmWEVsAsxki2IJWGedwZnbOaafRSwBBuMuhxyGa3o0EAByFKBinFPaB1vRREdAUGlfM2yOgXdqYFYmpHbUCaNR0vYUQwHWNmiE5jK0IdIrOLg1ajesNTUch2uvaxEbMFYHB4PLMdLZ+foECxFwReIF+yVoMCdwOrt4l6zLiwibWIQH0MB0Y5yg2xhoBAEYApDwkeIG/UtrGLsACTJAST+37jAC9OCRlwnIOAizEZesnAAAA//+e6MCfAAAABklEQVQDAMd903D7waEyAAAAAElFTkSuQmCC"
+# The mark is drawn with a table cell and inline CSS — a dark rounded tile with a white
+# "C" — rather than being an image. Both image techniques were tried against real Gmail
+# delivery and both failed, so do not reach for either again:
+#
+#   data: URI  — Gmail, Outlook and Yahoo refuse to render one in an <img src>. The mark
+#                arrived as a broken-image icon in every client that matters.
+#   cid: part  — renders correctly, but Gmail *silently drops the whole message* when it
+#                crosses accounts. Proved twice on 2026-08-20. First with three variants
+#                to one inbox: plain text arrived, HTML without an image arrived, the
+#                identical HTML with the PNG attached never appeared — not in the inbox,
+#                not in spam. Then again with that last variant sent on its own, in case
+#                the first run had merely been throttled as a burst. It did not arrive
+#                either. SMTP returned 2.0.0 OK every time.
+#
+# Note the asymmetry that makes this easy to misread: a message from this address *to
+# itself* is delivered with the attachment intact and the logo rendering perfectly. Only
+# the copy sent to a different account disappears. So "the logo works, I can see it" is
+# consistent with every recipient outside the sending account receiving nothing at all.
+#
+# A remote https:// image would work — Gmail proxies and caches those — but it needs
+# public hosting the backend does not have. Worth revisiting once the frontend is on
+# Vercel: an <img> pointing at a deployed asset would restore the real mark for everyone.
+# Until then, type and a coloured tile survive everywhere and need nothing.
+_MARK_LETTER = "C"
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
@@ -75,18 +98,19 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
            style="max-width:480px;background:{_SURFACE};border:1px solid {_RULE};
                   border-radius:{_RADIUS};">
 
-      <!-- Wordmark, matching the header's mark. A raster <img>, not inline <svg>:
-           Outlook has no SVG support at all and Gmail's is unreliable, while an
-           embedded PNG is the one technique every major mail client renders — the
-           oldest, most boring choice, which is exactly the point in email. -->
+      <!-- Wordmark. The tile is a styled table cell, not an image — see the note above
+           `_MARK_LETTER` for why every image technique was abandoned. Outlook ignores
+           border-radius and renders a square tile, which is a fine degradation. -->
       <tr><td style="padding:26px 30px 0 30px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td style="padding-right:9px;">
-            <img src="data:image/png;base64,{_MARK_B64}" width="24" height="24"
-                 alt="CF" style="display:block;border-radius:2px;">
+          <td width="24" height="24" align="center" valign="middle"
+              style="width:24px;height:24px;background:{_FG};border-radius:5px;
+                     font-family:{_MONO};font-size:14px;font-weight:700;line-height:24px;
+                     color:{_SURFACE};text-align:center;">{_MARK_LETTER}</td>
+          <td style="padding-left:9px;">
+            <span style="font-family:{_MONO};font-size:15px;font-weight:700;
+                         color:{_FG};letter-spacing:-0.02em;">codeforge</span>
           </td>
-          <td style="font-family:{_MONO};font-size:15px;
-                     font-weight:700;color:{_FG};letter-spacing:-0.02em;">codeforge</td>
         </tr></table>
       </td></tr>
 
@@ -275,11 +299,27 @@ def _security_rows(*, when: str, body: str, warning: str) -> str:
 {_footnote(warning)}"""
 
 
-def _build(to: str, subject: str, text: str, html: str | None = None) -> EmailMessage:
+def _build(
+    to: str,
+    subject: str,
+    text: str,
+    html: str | None = None,
+    reply_to: str | None = None,
+) -> EmailMessage:
     message = EmailMessage()
     message["From"] = f"{settings.smtp_from_name} <{settings.smtp_user}>"
     message["To"] = to
     message["Subject"] = subject
+    # Date is ours to set and costs nothing. Message-ID deliberately is not: we relay
+    # through Gmail, and a Message-ID we invent claiming `@gmail.com` is a domain we do
+    # not actually generate ids for — which reads as spoofing to a receiving server.
+    # Gmail stamps a correct one on submission, so letting it do that is both simpler
+    # and more trustworthy than forging one.
+    message["Date"] = formatdate(localtime=True)
+    # Contact messages are sent *by* the server but are *from* a person. Reply-To makes
+    # hitting reply answer the person who wrote in, rather than mailing ourselves.
+    if reply_to:
+        message["Reply-To"] = reply_to
     # Plain text first, HTML as the alternative. Both are sent: a client that refuses
     # HTML, or a person reading in a terminal, still gets a usable code.
     message.set_content(text)
@@ -288,14 +328,21 @@ def _build(to: str, subject: str, text: str, html: str | None = None) -> EmailMe
     return message
 
 
-async def send_email(*, to: str, subject: str, text: str, html: str | None = None) -> None:
+async def send_email(
+    *,
+    to: str,
+    subject: str,
+    text: str,
+    html: str | None = None,
+    reply_to: str | None = None,
+) -> None:
     """Deliver one message, or raise `EmailDeliveryError`."""
     if not settings.email_verification_enabled:
         raise EmailDeliveryError("Email is not configured on this server")
 
     try:
         await aiosmtplib.send(
-            _build(to, subject, text, html),
+            _build(to, subject, text, html, reply_to),
             hostname=settings.smtp_host,
             port=settings.smtp_port,
             username=settings.smtp_user,
@@ -450,5 +497,141 @@ async def send_account_deleted_email(
             eyebrow="account deleted",
             heading=heading,
             rows=_security_rows(when=when, body=body, warning=warning),
+        ),
+    )
+
+
+def _quote_block(text: str, *, top: int = 16) -> str:
+    """User-supplied text in a framed block.
+
+    Escaped, with newlines turned into breaks. This is the only place a stranger's
+    keystrokes become HTML, in a message we send to ourselves *and* back to them, so the
+    escaping lives here rather than at each call site.
+    """
+    body = html_escape(text).replace("\n", "<br>")
+    return f"""      <tr><td style="padding:{top}px 30px 0 30px;">
+        <div style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
+                    padding:16px 18px;font-family:{_SANS};font-size:14px;
+                    line-height:1.65;color:{_FG};">{body}</div>
+      </td></tr>"""
+
+
+def _notice(text: str) -> str:
+    """A quiet tinted panel for something reassuring rather than actionable."""
+    return f"""      <tr><td style="padding:16px 30px 0 30px;">
+        <div style="background:{_BG};border:1px solid {_RULE};border-radius:{_RADIUS};
+                    padding:14px 16px;font-family:{_SANS};font-size:13.5px;
+                    line-height:1.6;color:{_FG_MUTED};">{text}</div>
+      </td></tr>"""
+
+
+def _contact_rows(*, name: str, email: str, phone: str, message: str, when: str) -> str:
+    """Sender details as a labelled table, then the message itself in a framed block."""
+    details = [("from", name), ("email", email)]
+    if phone:
+        details.append(("phone", phone))
+    details.append(("sent", when))
+
+    rows = "".join(
+        f"""        <tr>
+          <td style="padding:0 12px 7px 0;font-family:{_MONO};font-size:10px;
+                     font-weight:700;text-transform:uppercase;letter-spacing:0.14em;
+                     color:{_FG_FAINT};white-space:nowrap;vertical-align:top;">{label}</td>
+          <td style="padding:0 0 7px 0;font-family:{_SANS};font-size:13.5px;
+                     color:{_FG};">{html_escape(value)}</td>
+        </tr>"""
+        for label, value in details
+    )
+
+    return f"""      <tr><td style="padding:18px 30px 0 30px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+{rows}
+        </table>
+      </td></tr>
+
+{_quote_block(message)}
+
+{_footnote("Reply to this email and your answer goes straight to the sender.")}"""
+
+
+async def send_contact_message(*, name: str, email: str, phone: str, message: str) -> None:
+    """Forward a contact-form submission to whoever runs this instance.
+
+    Delivered to `SMTP_USER` — the same mailbox the app sends from — so no extra
+    configuration is needed to receive it. `reply_to` carries the sender's address, so
+    answering is one click and does not require copying anything out of the body.
+    """
+    when = _stamp()
+    heading = f"{name} sent a message"
+    text_lines = [
+        heading,
+        "",
+        f"From:  {name}",
+        f"Email: {email}",
+    ]
+    if phone:
+        text_lines.append(f"Phone: {phone}")
+    text_lines += ["", message, "", f"Sent: {when}"]
+
+    await send_email(
+        to=settings.smtp_user or email,
+        subject=f"CodeForge contact — {name}",
+        text="\n".join(text_lines) + "\n",
+        html=_shell(
+            eyebrow="contact form",
+            heading=heading,
+            rows=_contact_rows(name=name, email=email, phone=phone, message=message, when=when),
+        ),
+        reply_to=email,
+    )
+
+
+def _contact_ack_rows(*, name: str, message: str) -> str:
+    greeting = f"Hi {html_escape(name)}, we" if name else "We"
+    return f"""{
+        _prose(
+            f"{greeting} received your message, and someone will reply within one or two "
+            "working days."
+        )
+    }
+{_prose("For reference, here is what you sent:", top=14)}
+{_quote_block(message, top=12)}
+{
+        _notice(
+            "No action is needed from you. If it becomes urgent, just reply to this "
+            "email &mdash; it reaches the same place."
+        )
+    }
+{
+        _footnote(
+            "You are getting this because this address was used on the CodeForge contact "
+            "form. If that was not you, ignore it &mdash; nothing was created or changed."
+        )
+    }"""
+
+
+async def send_contact_ack(*, to: str, name: str, message: str) -> None:
+    """Confirm to the sender that their message arrived.
+
+    Sent after the message to the team, and never allowed to fail the request — see the
+    route. The copy of what they wrote is deliberate: it is the only record they have,
+    since the form clears, and it is how they notice they sent the wrong thing.
+    """
+    heading = "Thanks for getting in touch"
+    intro = f"Hi {name}, we received your message" if name else "We received your message"
+    await send_email(
+        to=to,
+        subject="We received your message — CodeForge",
+        text=(
+            f"{heading}\n\n"
+            f"{intro}, and someone will reply within one or two working days.\n\n"
+            f"For reference, here is what you sent:\n\n{message}\n\n"
+            "No action is needed from you. If it becomes urgent, just reply to this "
+            "email — it reaches the same place.\n"
+        ),
+        html=_shell(
+            eyebrow="contact",
+            heading=heading,
+            rows=_contact_ack_rows(name=name, message=message),
         ),
     )

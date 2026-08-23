@@ -86,6 +86,21 @@ export interface ForgotPasswordResponse {
   message: string;
 }
 
+export interface ProjectDeleteResponse {
+  runs_deleted: number;
+  artifacts_deleted: number;
+}
+
+export interface ContactRequest {
+  /** Dial code included, exactly as typed. Empty string when not given. */
+  phone: string;
+  message: string;
+}
+
+export interface ContactResponse {
+  message: string;
+}
+
 export interface ResetPasswordRequest {
   token: string;
   new_password: string;

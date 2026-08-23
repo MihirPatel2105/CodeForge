@@ -104,7 +104,21 @@ export default function FaqPage() {
           </dl>
         </div>
 
-        <div className="mt-12 flex flex-wrap gap-3">
+        {/* The end of an FAQ is exactly where an unanswered question is felt, so it is
+            where the route to a person belongs. */}
+        <p className="mt-12 max-w-[62ch] text-[15px] leading-[1.7] text-fg-muted">
+          Question not here?{" "}
+          <Link
+            href="/contact"
+            className="font-[600] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
+          >
+            Send it to us
+          </Link>{" "}
+          — bug reports and things that failed in a surprising way are the most useful
+          messages we get.
+        </p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/how-it-works"
             className="inline-flex items-center justify-center rounded-[2px] bg-fg px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
@@ -116,6 +130,12 @@ export default function FaqPage() {
             className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
           >
             About the project
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
+          >
+            Contact
           </Link>
         </div>
       </div>

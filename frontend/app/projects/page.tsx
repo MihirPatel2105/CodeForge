@@ -48,9 +48,19 @@ export default function ProjectsPage() {
       // whole history is kept now, not just its length — it is what every figure on
       // this page is derived from, at no extra request cost.
       const histories = await Promise.all(list.map((p) => api.listProjectRuns(p.id)));
-      setProjects(
-        list.map((p, i) => ({ ...p, runs: histories[i], stats: runStats(histories[i]) })),
-      );
+      const rows = list.map((p, i) => ({
+        ...p,
+        runs: histories[i],
+        stats: runStats(histories[i]),
+      }));
+      // Most recently active first. A list ordered by creation buries the project you
+      // were just working in as soon as there are more than a few.
+      rows.sort((a, b) => {
+        const at = a.stats.last ? Date.parse(a.stats.last.created_at) : 0;
+        const bt = b.stats.last ? Date.parse(b.stats.last.created_at) : 0;
+        return bt - at;
+      });
+      setProjects(rows);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         router.replace("/login");
@@ -83,10 +93,16 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-bg">
       <AppHeader />
       <div className="mx-auto max-w-[1120px] px-6 py-12">
-        <div className="flex items-center justify-between">
-          <h1 className="font-display text-[22px] font-[600] tracking-[-0.035em] text-fg">
-            projects
-          </h1>
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <h1 className="font-display text-[22px] font-[600] tracking-[-0.035em] text-fg">
+              projects
+            </h1>
+            <p className="mt-[6px] max-w-[52ch] text-[13.5px] leading-[1.5] text-fg-muted">
+              One project per API. Each run inside it is a full pass through the agents,
+              kept with its code and test output.
+            </p>
+          </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger render={<Button />}>New project</DialogTrigger>
             <NewProjectDialogContent
@@ -123,12 +139,17 @@ export default function ProjectsPage() {
         ) : projects.length === 0 ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
-          <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {projects.map((project) => (
               <li key={project.id}>
                 <ProjectCard project={project} />
               </li>
             ))}
+            {/* Fills the row rather than leaving a hole beside a lone project, and puts
+                the action next to the thing it acts on instead of only in the corner. */}
+            <li>
+              <NewProjectCard onClick={() => setOpen(true)} />
+            </li>
           </ul>
         )}
       </div>
@@ -193,20 +214,28 @@ function ProjectCard({ project }: { project: ProjectRow }) {
         />
       </div>
 
-      {/* Outcome strip — one segment per run, newest at the right. Gives the shape of a
-          project's history at a glance without adding another number to read. */}
+      {/* Outcome strip — one tick per run, newest at the right. Gives the shape of a
+          project's history at a glance without adding another number to read.
+
+          Ticks are a fixed width rather than `flex-1`. Stretching them made a project
+          with a single successful run render as one full-width green bar, which reads
+          as a progress meter sitting at 100% — a completely different claim from "one
+          run, and it passed". */}
       {strip.length > 0 && (
-        <div className="mt-5 flex gap-[3px]" aria-hidden>
+        <div className="mt-5 flex items-center gap-[3px]" aria-hidden>
           {strip.map((run) => (
             <span
               key={run.id}
               title={run.status}
               className={cn(
-                "h-[4px] flex-1 rounded-[1px]",
+                "h-[5px] w-[15px] rounded-[1px]",
                 OUTCOME_FILL[run.status] ?? "bg-border-strong",
               )}
             />
           ))}
+          <span className="ml-[6px] font-mono text-[10.5px] text-fg-faint">
+            {strip.length === 1 ? "1 run" : `last ${strip.length}`}
+          </span>
         </div>
       )}
 
@@ -234,6 +263,27 @@ function ProjectCard({ project }: { project: ProjectRow }) {
         )}
       </div>
     </Link>
+  );
+}
+
+/** The empty cell at the end of the grid.
+ *
+ * Deliberately quiet — dashed, no fill, muted type. It is an invitation sitting in the
+ * gap a short list leaves, not a card competing with the real ones beside it. */
+function NewProjectCard({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex h-full min-h-[168px] w-full flex-col items-center justify-center gap-3 border border-dashed border-border-strong bg-transparent p-5 transition-colors hover:border-fg hover:bg-surface"
+    >
+      <span className="flex h-9 w-9 items-center justify-center border border-border-strong text-fg-faint transition-colors group-hover:border-fg group-hover:text-fg">
+        <FolderPlus className="h-[17px] w-[17px]" aria-hidden />
+      </span>
+      <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.13em] text-fg-muted transition-colors group-hover:text-fg">
+        new project
+      </span>
+    </button>
   );
 }
 

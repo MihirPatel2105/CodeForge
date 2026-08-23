@@ -19,6 +19,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from pymongo import MongoClient  # noqa: E402
 
 from app.config import settings  # noqa: E402
+from app.core import email as email_module  # noqa: E402
 from app.main import app  # noqa: E402
 
 COLLECTIONS = (
@@ -47,6 +48,17 @@ def no_outbound_email(monkeypatch):
     """
     monkeypatch.setattr(settings, "smtp_user", None)
     monkeypatch.setattr(settings, "smtp_password", None)
+
+    # Belt and braces. A test that deliberately re-enables SMTP — to exercise a path
+    # that needs `email_verification_enabled` — would otherwise let any *other* mail
+    # sent during that test reach a real server. This was not hypothetical: enabling it
+    # for the contact tests made account registration attempt a live send to Gmail.
+    async def _no_smtp(*args, **kwargs):
+        raise AssertionError(
+            "A test tried to open a real SMTP connection. Patch the sender it uses."
+        )
+
+    monkeypatch.setattr(email_module.aiosmtplib, "send", _no_smtp)
 
 
 @pytest.fixture(autouse=True)

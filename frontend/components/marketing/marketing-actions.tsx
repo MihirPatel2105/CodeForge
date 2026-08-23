@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { CONTACT_ADDRESS, CONTACT_EMAIL } from "@/lib/contact-details";
 
 /**
  * The two auth-sensitive blocks at the foot of the landing page.
@@ -52,25 +53,39 @@ export function SiteFooter() {
               Five role-based AI agents mapped onto the software development lifecycle,
               with a feedback loop between review, testing and code.
             </p>
-            <p className="mt-4 font-mono text-[11.5px] text-fg-faint">
-              $0 — free-tier providers only
-            </p>
+
+            {/* Address in the footer as well as on the contact page: it is the one
+                detail someone looks for without wanting to navigate for it. */}
+            <address className="mt-6 flex flex-col gap-[3px] font-mono text-[12.5px] not-italic leading-[1.7] text-fg-faint">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="w-fit transition-colors hover:text-fg-muted"
+              >
+                {CONTACT_EMAIL}
+              </a>
+              {CONTACT_ADDRESS.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </address>
           </div>
 
           <FooterColumn
             heading="product"
             links={[
               { href: "/how-it-works", label: "how it works" },
-              { href: "/faq", label: "faq" },
-              { href: "/about", label: "about" },
+              { href: "/#how", label: "watch a run" },
+              { href: "/#stack", label: "what it runs on" },
             ]}
           />
 
+          {/* The two "I need a person" destinations, grouped as such. An FAQ answers the
+              question when it is common; the form exists for when it is not. */}
           <FooterColumn
-            heading="explore"
+            heading="support"
             links={[
-              { href: "/#how", label: "watch a run" },
-              { href: "/#stack", label: "what it runs on" },
+              { href: "/faq", label: "faq" },
+              { href: "/contact", label: "contact" },
+              { href: "/about", label: "about" },
             ]}
           />
 
@@ -96,9 +111,12 @@ export function SiteFooter() {
           />
         </div>
 
-        <div className="mt-14 border-t border-rule pt-7">
+        <div className="mt-14 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 border-t border-rule pt-7">
+          <p className="font-mono text-[11.5px] uppercase tracking-[0.1em] text-fg-faint">
+            © {new Date().getFullYear()} CodeForge
+          </p>
           <p className="font-mono text-[11.5px] text-fg-faint">
-            codeforge — multi-agent platform for the software development lifecycle
+            $0 — free-tier providers only
           </p>
         </div>
       </div>

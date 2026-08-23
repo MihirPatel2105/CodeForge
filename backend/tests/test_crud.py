@@ -268,3 +268,104 @@ def test_cancel_leaves_a_genuinely_finished_run_alone(
 
     assert response.status_code == 200
     assert response.json()["status"] == "succeeded"
+
+
+# --------------------------------------------------------------------------- #
+# Deleting a project
+# --------------------------------------------------------------------------- #
+
+
+def test_delete_project_removes_it(client, registered_user, project):
+    response = client.delete(f"/projects/{project['id']}", headers=registered_user["headers"])
+    assert response.status_code == 200
+
+    gone = client.get(f"/projects/{project['id']}", headers=registered_user["headers"])
+    assert gone.status_code == 404
+
+
+def test_delete_project_requires_auth(client, project):
+    response = client.delete(f"/projects/{project['id']}")
+    assert response.status_code == 401
+
+
+def test_cannot_delete_another_users_project(client, project, other_user, registered_user):
+    """404 rather than 403 — a stranger should not learn the project exists."""
+    response = client.delete(f"/projects/{project['id']}", headers=other_user["headers"])
+    assert response.status_code == 404
+
+    # And it really is still there for its owner.
+    still = client.get(f"/projects/{project['id']}", headers=registered_user["headers"])
+    assert still.status_code == 200
+
+
+def test_delete_project_takes_its_runs_with_it(
+    client, registered_user, project, no_background_runs
+):
+    created = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "An API for books"},
+        headers=registered_user["headers"],
+    )
+    assert created.status_code == 202
+    run_id = created.json()["run_id"]
+
+    response = client.delete(f"/projects/{project['id']}", headers=registered_user["headers"])
+    assert response.status_code == 200
+    assert response.json()["runs_deleted"] == 1
+
+    orphan = client.get(f"/runs/{run_id}", headers=registered_user["headers"])
+    assert orphan.status_code == 404
+
+
+def test_delete_project_removes_stored_artifacts(
+    client, registered_user, project, no_background_runs
+):
+    """GridFS is the easy thing to leave behind.
+
+    Artifacts live in their own pair of collections, so removing a run does not remove
+    the file trees stored against it. Asserting the reported count is not enough on its
+    own — an earlier bug in this cascade passed its tests because the accounts under
+    test had no artifacts, so the loop never ran. This writes real ones first.
+    """
+    created = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "An API for books"},
+        headers=registered_user["headers"],
+    )
+    run_id = created.json()["run_id"]
+
+    # Write two GridFS files against the run, the way a real run's artifacts are stored.
+    mongo = MongoClient(settings.mongo_uri)
+    db = mongo[settings.mongo_db]
+    bucket_files = db["artifacts.files"]
+    for kind in ("file_tree", "pytest_report"):
+        db["artifacts.chunks"].insert_one({"files_id": ObjectId(), "n": 0, "data": b"x"})
+        bucket_files.insert_one(
+            {
+                "filename": f"{run_id}_{kind}",
+                "length": 1,
+                "chunkSize": 261120,
+                "uploadDate": None,
+                "metadata": {"run_id": run_id, "kind": kind, "iteration": 0},
+            }
+        )
+    assert bucket_files.count_documents({"metadata.run_id": run_id}) == 2
+
+    response = client.delete(f"/projects/{project['id']}", headers=registered_user["headers"])
+    assert response.status_code == 200
+    assert response.json()["artifacts_deleted"] == 2
+    assert bucket_files.count_documents({"metadata.run_id": run_id}) == 0
+    mongo.close()
+
+
+def test_delete_project_leaves_other_projects_alone(client, registered_user, project):
+    other = client.post(
+        "/projects",
+        json={"name": "Untouched"},
+        headers=registered_user["headers"],
+    ).json()
+
+    client.delete(f"/projects/{project['id']}", headers=registered_user["headers"])
+
+    survivor = client.get(f"/projects/{other['id']}", headers=registered_user["headers"])
+    assert survivor.status_code == 200

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
+import { filterName } from "@/lib/input-filters";
 import { AuthAside } from "@/components/auth/auth-aside";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { VerifyStep } from "@/components/auth/verify-step";
@@ -167,7 +168,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       autoFocus
                       required
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => setFirstName(filterName(e.target.value))}
                       className={FIELD}
                     />
                   </div>
@@ -179,7 +180,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       id="last_name"
                       autoComplete="family-name"
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => setLastName(filterName(e.target.value))}
                       className={FIELD}
                     />
                   </div>

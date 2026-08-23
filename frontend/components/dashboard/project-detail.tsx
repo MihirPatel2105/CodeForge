@@ -6,6 +6,14 @@ import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
 import { formatElapsed, formatWhen } from "@/lib/format";
 import { runStats } from "@/lib/run-stats";
@@ -32,6 +40,7 @@ export function ProjectDetail({
   const [ragEnabled, setRagEnabled] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const stats = runStats(history);
 
@@ -208,8 +217,128 @@ export function ProjectDetail({
             )}
           </div>
         </div>
+
+        {/* Deleting sits at the very bottom, well past the things you came here to do.
+            It is irreversible and takes the run history and stored code with it, so it
+            should never be the thing your hand lands on. */}
+        <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-6">
+          <div>
+            <p className="font-mono text-[11px] font-[600] uppercase tracking-[0.13em] text-fg-faint">
+              delete project
+            </p>
+            <p className="mt-[6px] max-w-[62ch] text-[13px] leading-[1.5] text-fg-muted">
+              Removes this project, its {stats.total === 1 ? "run" : "runs"} and every
+              generated file stored against{" "}
+              {stats.total === 1 ? "it" : "them"}. This cannot be undone.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="shrink-0 rounded-[2px] border border-danger-bd bg-surface px-5 py-[11px] font-mono text-[11.5px] font-[600] uppercase tracking-[0.12em] text-danger transition-colors hover:bg-danger-soft"
+          >
+            Delete project
+          </button>
+        </div>
+
+        <DeleteProjectDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          project={project}
+          runCount={stats.total}
+        />
       </div>
     </div>
+  );
+}
+
+/**
+ * Confirming a project deletion.
+ *
+ * Typing the name is deliberate friction, matching the account-deletion dialog. A plain
+ * "are you sure?" is dismissed reflexively; having to reproduce the name makes you look
+ * at which project you are about to destroy — which is the actual failure mode when two
+ * projects are called something similar.
+ */
+function DeleteProjectDialog({
+  open,
+  onOpenChange,
+  project,
+  runCount,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  project: ProjectResponse;
+  runCount: number;
+}) {
+  const router = useRouter();
+  const [confirmation, setConfirmation] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const matches = confirmation.trim() === project.name;
+
+  async function handleDelete() {
+    if (!matches || deleting) return;
+    setError(null);
+    setDeleting(true);
+    try {
+      await api.deleteProject(project.id);
+      // `replace`, so Back cannot return to a project that no longer exists.
+      router.replace("/projects");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't delete the project.");
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete this project?</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <p className="text-[14px] leading-[1.6] text-fg-muted">
+            <span className="font-[600] text-fg">{project.name}</span> and{" "}
+            {runCount === 0
+              ? "everything stored against it"
+              : `its ${runCount} ${runCount === 1 ? "run" : "runs"}, including the generated code and test output`}{" "}
+            will be permanently removed. There is no undo.
+          </p>
+          <div className="flex flex-col gap-[6px]">
+            <label htmlFor="confirm-project" className={LABEL}>
+              Type <span className="text-fg">{project.name}</span> to confirm
+            </label>
+            <Input
+              id="confirm-project"
+              value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)}
+              autoComplete="off"
+              className="h-11 rounded-[2px] border-border-strong bg-surface text-[14.5px] focus-visible:border-fg focus-visible:ring-0"
+            />
+          </div>
+          {error && (
+            <p
+              role="alert"
+              className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+            >
+              {error}
+            </p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            onClick={handleDelete}
+            disabled={!matches || deleting}
+            className="bg-danger text-surface hover:bg-danger disabled:opacity-45"
+          >
+            {deleting ? "Deleting…" : "Delete project"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

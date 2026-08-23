@@ -41,6 +41,25 @@ def password_failures(value: str) -> list[str]:
     return [label for key, label in PASSWORD_RULES if not checks[key]]
 
 
+# Shared field rules. Enforced here as well as in the browser: the frontend filters as
+# you type, but that is a courtesy the client can simply not run.
+_NAME_EXTRAS = " -'\u2019"
+
+
+def validated_name(value: str) -> str:
+    """Letters, spaces, hyphens and apostrophes.
+
+    `str.isalpha()` is Unicode-aware, so non-Latin alphabets and accented characters
+    pass. Hyphen and apostrophe are allowed because they appear in real names and
+    rejecting them would lock people out of an account over punctuation; digits and
+    every other symbol are refused.
+    """
+    cleaned = " ".join(value.split())
+    if cleaned and any(not (char.isalpha() or char in _NAME_EXTRAS) for char in cleaned):
+        raise ValueError("Names use letters only — no numbers or symbols.")
+    return cleaned
+
+
 class RegisterRequest(BaseModel):
     # Required, because an account with no name gives the dashboard nothing to greet.
     first_name: str = Field(max_length=80)
@@ -52,8 +71,8 @@ class RegisterRequest(BaseModel):
 
     @field_validator("first_name", "last_name")
     @classmethod
-    def _trimmed(cls, value: str) -> str:
-        return value.strip()
+    def _letters_only(cls, value: str) -> str:
+        return validated_name(value)
 
     @field_validator("first_name")
     @classmethod
@@ -223,6 +242,17 @@ class ProjectResponse(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
+class ProjectDeleteResponse(BaseModel):
+    """What the cascade actually removed.
+
+    Reported rather than returning 204, for the same reason `DeleteAccountResponse`
+    does: a deletion that silently removed nothing looks identical to one that worked.
+    """
+
+    runs_deleted: int
+    artifacts_deleted: int
+
+
 class RunCreate(BaseModel):
     project_id: str
     prompt: str = Field(min_length=1)
@@ -295,3 +325,49 @@ class ErrorDetail(BaseModel):
 
 class ErrorResponse(BaseModel):
     error: ErrorDetail
+
+
+# --------------------------------------------------------------------------- #
+# Contact
+# --------------------------------------------------------------------------- #
+class ContactRequest(BaseModel):
+    """One message from the contact form.
+
+    Carries no name or email. The route reads both from the authenticated account, so a
+    sender cannot claim to be someone else, and the reply address is one the server has
+    already verified. An earlier version accepted them in the body and pre-filled the
+    form from the profile — which meant anyone could type any address into a mail our
+    server would then send.
+    """
+
+    # Stored and forwarded as typed, dial code included. Optional: the form asks for it
+    # only in case a reply by phone would be quicker.
+    phone: str = Field(default="", max_length=24)
+    message: str = Field(min_length=1, max_length=500)
+
+    @field_validator("phone", "message")
+    @classmethod
+    def _trimmed(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("phone")
+    @classmethod
+    def _digits_and_dial_code(cls, value: str) -> str:
+        """Digits, with the dial code the form sends in front of them.
+
+        The number field itself accepts nothing but digits; what arrives here is that
+        joined to its dial code, so a leading `+` and the separating space are the only
+        non-digits allowed. No letters, which is what stops the field being used as a
+        second message box.
+        """
+        if not value:
+            return value
+        if not all(char.isdigit() or char in "+ -" for char in value):
+            raise ValueError("Phone numbers use digits only.")
+        if sum(char.isdigit() for char in value) < 8:
+            raise ValueError("That phone number looks too short.")
+        return value
+
+
+class ContactResponse(BaseModel):
+    message: str = "Thanks — your message is on its way. We reply to the address you gave."

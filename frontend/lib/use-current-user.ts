@@ -36,11 +36,30 @@ function initialsFor(user: UserResponse): string {
  * does not exist during the server render, so returning a signed-in value on the first
  * client pass would guarantee a hydration mismatch against the server's markup.
  */
-export function useCurrentUser(): CurrentUser | null {
+export interface Session {
+  user: CurrentUser | null;
+  /** True until the token has been checked. See `useSession` for why this matters. */
+  loading: boolean;
+}
+
+/**
+ * The session, including whether it is still being resolved.
+ *
+ * `user === null` is ambiguous on its own: it means both "signed out" and "we have not
+ * looked yet", and the second is always true for one render because the token lives in
+ * localStorage. Anything that *gates* on being signed in needs to tell those apart, or
+ * it shows a signed-in visitor a "please sign in" screen for a moment before correcting
+ * itself. Surfaces that merely swap a label can keep using `useCurrentUser`.
+ */
+export function useSession(): Session {
   const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!getToken()) return;
+    if (!getToken()) {
+      setLoading(false);
+      return;
+    }
     api
       .me()
       .then((u) => {
@@ -51,8 +70,13 @@ export function useCurrentUser(): CurrentUser | null {
         // Expired or revoked: drop it rather than leave the UI in a signed-in state
         // that no longer works.
         clearToken();
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  return user;
+  return { user, loading };
+}
+
+export function useCurrentUser(): CurrentUser | null {
+  return useSession().user;
 }

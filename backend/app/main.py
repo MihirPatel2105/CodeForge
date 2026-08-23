@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.auth import router as auth_router
+from app.api.contact import router as contact_router
 from app.api.health import router as health_router
 from app.api.projects import router as projects_router
 from app.api.runs import router as runs_router
@@ -46,7 +47,32 @@ async def codeforge_error_handler(request: Request, exc: CodeForgeError) -> JSON
     )
 
 
+def _configure_logging() -> None:
+    """Give the app's own loggers a handler.
+
+    Uvicorn configures `uvicorn.*` and leaves the root logger alone, so until this
+    existed every `logger.info` in the codebase went nowhere and every `logger.warning`
+    fell through to Python's last-resort handler with no timestamp or logger name. That
+    is how a swallowed failure in a background courtesy email stays invisible: the code
+    is written to log it, and the log has nowhere to go.
+    """
+    root = logging.getLogger()
+    if any(getattr(h, "_codeforge", False) for h in root.handlers):
+        return
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)-8s %(name)s: %(message)s"))
+    handler._codeforge = True  # type: ignore[attr-defined]
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
+
+    # These two are conversational at INFO and drown everything else.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+
+
 def create_app() -> FastAPI:
+    _configure_logging()
     app = FastAPI(title="CodeForge", lifespan=lifespan)
     app.add_exception_handler(CodeForgeError, codeforge_error_handler)
     # The frontend authenticates with a bearer token, not cookies, so credentials don't
@@ -59,6 +85,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(contact_router)
     app.include_router(projects_router)
     app.include_router(runs_router)
     app.include_router(stream_router)

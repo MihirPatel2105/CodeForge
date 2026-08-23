@@ -144,3 +144,26 @@ def test_expired_token_is_rejected(client, registered_user):
     expired = create_access_token("someone", expires_minutes=-1)
     response = client.get("/auth/me", headers={"Authorization": f"Bearer {expired}"})
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize("name", ["Tanmay1", "Tanmay!", "R2D2", "Ada <script>"])
+def test_register_rejects_names_with_digits_or_symbols(client, name):
+    response = client.post("/auth/register", json=_registration(first_name=name))
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize("name", ["Anne-Marie", "O'Brien", "José", "Tanmay Patel"])
+def test_register_accepts_real_names(client, name):
+    # Hyphens, apostrophes and accents all appear in real names; rejecting them would
+    # lock people out of an account over punctuation.
+    response = client.post(
+        "/auth/register", json=_registration(first_name=name, email=f"{abs(hash(name))}@x.com")
+    )
+    assert response.status_code == 201
+
+
+def test_register_still_allows_an_empty_last_name(client):
+    # Plenty of people have one name — the character rule must not make the optional
+    # field effectively required.
+    response = client.post("/auth/register", json=_registration(last_name=""))
+    assert response.status_code == 201

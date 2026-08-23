@@ -23,6 +23,7 @@ import type {
   DeleteAccountResponse,
   ProjectCreate,
   ProjectResponse,
+  ProjectDeleteResponse,
   RunCreate,
   RunCreateResponse,
   RunResponse,
@@ -31,6 +32,8 @@ import type {
   ApprovalRequest,
   ApprovalResponse,
   ArtifactListResponse,
+  ContactRequest,
+  ContactResponse,
   ErrorResponse,
 } from "./types";
 
@@ -128,10 +131,15 @@ export const api = {
     request<TokenResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
   me: () => request<UserResponse>("/auth/me"),
 
+  sendContactMessage: (payload: ContactRequest) =>
+    request<ContactResponse>("/contact", { method: "POST", body: JSON.stringify(payload) }),
+
   listProjects: () => request<ProjectResponse[]>("/projects"),
   createProject: (payload: ProjectCreate) =>
     request<ProjectResponse>("/projects", { method: "POST", body: JSON.stringify(payload) }),
   getProject: (id: string) => request<ProjectResponse>(`/projects/${id}`),
+  deleteProject: (id: string) =>
+    request<ProjectDeleteResponse>(`/projects/${id}`, { method: "DELETE" }),
   listProjectRuns: (projectId: string) => request<RunSummary[]>(`/projects/${projectId}/runs`),
 
   createRun: (payload: RunCreate) =>
