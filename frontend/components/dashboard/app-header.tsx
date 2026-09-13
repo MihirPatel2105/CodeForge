@@ -34,10 +34,10 @@ export function AppHeader() {
         <Link
           href="/"
           aria-label="CodeForge home"
-          className="flex items-center gap-[9px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-[6px] transition-opacity hover:opacity-80"
         >
-          <LogoMark className="h-6 w-6 rounded-[2px]" />
-          <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
+          <LogoMark className="h-8 w-8" />
+          <span className="cf-wordmark text-fg">
             codeforge
           </span>
         </Link>

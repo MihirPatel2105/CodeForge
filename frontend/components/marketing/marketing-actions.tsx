@@ -43,9 +43,9 @@ export function SiteFooter() {
       <div className="mx-auto w-full px-6 py-14 md:px-10 lg:px-14">
         <div className="grid gap-x-12 gap-y-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-[9px]">
-              <LogoMark className="h-6 w-6 rounded-[2px]" />
-              <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
+            <Link href="/" className="inline-flex items-center gap-[6px]">
+              <LogoMark className="h-8 w-8" />
+              <span className="cf-wordmark text-fg">
                 codeforge
               </span>
             </Link>

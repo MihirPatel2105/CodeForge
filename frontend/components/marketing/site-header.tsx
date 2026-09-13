@@ -15,9 +15,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-rule bg-bg/90 backdrop-blur">
       <div className="flex h-[58px] items-center justify-between mx-auto w-full px-6 md:px-10 lg:px-14">
-        <Link href="/" className="flex items-center gap-[9px]">
-          <LogoMark className="h-6 w-6 rounded-[2px]" />
-          <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">codeforge</span>
+        <Link href="/" className="flex items-center gap-[6px]">
+          <LogoMark className="h-8 w-8" />
+          <span className="cf-wordmark text-fg">codeforge</span>
         </Link>
 
         <div className="flex items-center gap-3">

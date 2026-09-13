@@ -167,6 +167,17 @@
   --radius: 3px;
 }
 
+/* The product UI stays monospaced; the brand lockup uses the rounded, heavy
+   construction of the approved logo artwork. */
+.cf-wordmark {
+  display: inline-block;
+  font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
 /*
  * A permanently dark region inside a light-only product.
  *

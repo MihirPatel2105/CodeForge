@@ -71,9 +71,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
         <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
-          <Link href="/" className="mb-8 flex items-center gap-[9px] lg:hidden">
-            <LogoMark className="h-6 w-6 rounded-[2px]" />
-            <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
+          <Link href="/" className="mb-8 flex items-center gap-[6px] lg:hidden">
+            <LogoMark className="h-8 w-8" />
+            <span className="cf-wordmark text-fg">
               codeforge
             </span>
           </Link>
