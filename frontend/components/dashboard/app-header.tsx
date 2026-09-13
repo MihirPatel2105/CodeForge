@@ -20,7 +20,10 @@ export function AppHeader() {
   const pathname = usePathname();
   const user = useCurrentUser();
 
-  const onProjects = pathname === "/projects";
+  const onProjects =
+    pathname === "/projects" ||
+    pathname.startsWith("/projects/") ||
+    pathname.startsWith("/runs/");
 
   return (
     <header className="sticky top-0 z-20 flex h-[58px] shrink-0 items-center justify-between border-b border-rule bg-bg px-4">

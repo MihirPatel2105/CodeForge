@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Clock3, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
@@ -149,21 +150,31 @@ export function VerifyStep({
   }
 
   return (
-    <div className="w-full max-w-[380px]">
-      <span className={LABEL}>[ step 2 of 2 ]</span>
+    <div className="w-full">
+      <span className="grid h-12 w-12 place-items-center rounded-[5px] border border-accent/20 bg-accent-soft text-accent">
+        <MailCheck className="h-5 w-5" aria-hidden />
+      </span>
+      <span className="mt-6 inline-flex rounded-full border border-accent/20 bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
+        step 2 of 2
+      </span>
 
-      <h1 className="font-display mt-5 text-[30px] font-[600] leading-[1.15] tracking-[-0.04em] text-fg">
+      <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
         Check your email
       </h1>
-      <p className="mt-[18px] text-[14.5px] leading-[1.55] text-fg-muted">
-        We sent a {LENGTH}-digit code to{" "}
-        <span className="font-mono text-[13.5px] text-fg">{email}</span>. It expires in{" "}
-        <ExpiryCountdown expiresAt={expiry} />.
+      <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+        Enter the {LENGTH}-digit code we sent to finish creating your account.
       </p>
+      <div className="mt-5 flex items-center justify-between gap-4 rounded-[4px] border border-rule bg-bg/70 px-4 py-3">
+        <span className="min-w-0 truncate font-mono text-[11.5px] text-fg">{email}</span>
+        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10.5px] text-fg-faint">
+          <Clock3 className="h-3.5 w-3.5" aria-hidden />
+          <ExpiryCountdown expiresAt={expiry} />
+        </span>
+      </div>
 
-      <div className="mt-8 flex flex-col gap-[6px]">
+      <div className="mt-7 flex flex-col gap-2">
         <span className={LABEL}>VERIFICATION CODE</span>
-        <div className="flex gap-[9px]" role="group" aria-label="Verification code">
+        <div className="flex gap-2 sm:gap-[9px]" role="group" aria-label="Verification code">
           {digits.map((digit, i) => (
             <input
               key={i}
@@ -182,9 +193,9 @@ export function VerifyStep({
               aria-label={`Digit ${i + 1}`}
               maxLength={LENGTH}
               className={cn(
-                "h-[54px] w-full min-w-0 rounded-[2px] border bg-surface text-center",
+                "h-14 w-full min-w-0 rounded-[4px] border bg-bg text-center",
                 "font-mono text-[20px] font-[600] text-fg outline-none transition-colors",
-                "focus:border-fg disabled:opacity-60",
+                "focus:border-accent focus:shadow-[0_0_0_3px_rgba(89,56,244,0.08)] disabled:opacity-60",
                 error ? "border-danger-bd" : "border-border-strong",
               )}
             />
@@ -214,7 +225,7 @@ export function VerifyStep({
         type="button"
         disabled={submitting || code.length < LENGTH}
         onClick={() => void submit(code)}
-        className="mt-6 h-[52px] w-full rounded-[2px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em]"
+        className="mt-6 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
       >
         {submitting ? "Verifying…" : "Verify and continue"}
       </Button>
@@ -231,8 +242,9 @@ export function VerifyStep({
         <button
           type="button"
           onClick={onStartOver}
-          className="text-[13px] text-fg-muted underline decoration-1 decoration-border-strong underline-offset-[4px] transition-colors hover:decoration-fg hover:text-fg"
+          className="inline-flex items-center gap-1.5 text-[13px] text-fg-muted underline decoration-1 decoration-border-strong underline-offset-[4px] transition-colors hover:decoration-fg hover:text-fg"
         >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Use a different email
         </button>
       </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, KeyRound, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,8 @@ import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { LogoMark } from "@/components/brand/logo-mark";
 
 const FIELD =
-  "h-11 rounded-[2px] border-border-strong bg-surface px-[13px] text-[14.5px] " +
-  "focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0";
+  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
 
@@ -66,11 +66,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="relative flex min-h-screen bg-bg">
+    <div className="cf-auth relative flex min-h-screen bg-bg">
       <ResetPasswordAside />
 
-      <main className="flex flex-1 items-center justify-center p-6 py-12">
-        <div className="w-full max-w-[380px]">
+      <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
+        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-[9px] lg:hidden">
             <LogoMark className="h-6 w-6 rounded-[2px]" />
             <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
@@ -78,10 +78,19 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </span>
           </Link>
 
-          <h1 className="font-display text-[30px] font-[600] leading-[1.15] tracking-[-0.04em] text-fg">
+          <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+            secure reset
+          </span>
+
+          <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
             Set a new password
           </h1>
-          <p className="mt-[18px] text-[14.5px] leading-[1.5] text-fg-muted">
+          <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+            Choose a strong password you have not used here before. You&apos;ll be
+            signed in when the reset succeeds.
+          </p>
+          <p className="mt-3 text-[13px] leading-[1.5] text-fg-muted">
             Remembered it?{" "}
             <Link
               href="/login"
@@ -91,7 +100,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </Link>
           </p>
 
-          <form className="mt-7 flex flex-col gap-4" onSubmit={handleSubmit}>
+          <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-[6px]">
               <Label htmlFor="new_password" className={LABEL}>
                 NEW PASSWORD
@@ -117,7 +126,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
               </div>
             </div>
 
-            <ul className="flex flex-col gap-[7px]" aria-live="polite">
+            <ul
+              className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-[4px] border border-rule bg-bg/70 p-4 sm:grid-cols-2"
+              aria-live="polite"
+            >
               {PASSWORD_RULES.map((rule) => {
                 const met = rule.test(password);
                 return (
@@ -132,7 +144,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                     </span>
                     <span
                       className={cn(
-                        "text-[13px] transition-colors",
+                        "text-[12px] leading-[1.35] transition-colors",
                         met ? "text-fg" : touched ? "text-fg-muted" : "text-fg-faint",
                       )}
                     >
@@ -183,15 +195,20 @@ export function ResetPasswordForm({ token }: { token: string }) {
             <Button
               type="submit"
               disabled={submitting}
-              className="mt-2 h-[52px] w-full rounded-[2px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em]"
+              className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
             >
               {submitting ? "Saving…" : "Save new password"}
             </Button>
           </form>
 
-          <p className="mt-6 text-[12.5px] text-fg-faint">
-            This link can be used once and expires ten minutes after it was sent.
-          </p>
+          <div className="mt-6 flex items-start gap-3 border-t border-rule pt-5">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[3px] border border-border bg-bg text-fg-faint">
+              <KeyRound className="h-3.5 w-3.5" aria-hidden />
+            </span>
+            <p className="pt-0.5 text-[12.5px] leading-[1.55] text-fg-faint">
+              This link can be used once and expires ten minutes after it was sent.
+            </p>
+          </div>
         </div>
       </main>
     </div>

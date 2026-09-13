@@ -3,45 +3,37 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * The landing page's spine: one real run, unfolded down the page, with the pipeline
- * pinned beside it tracking where you are.
- *
- * The structure is the argument. A hero followed by three feature panels is the shape
- * every product site has, and it says nothing about this one — whereas scrolling
- * *through* a run, watching the rail advance and then jump backwards when the Reviewer
- * finds a defect, is the product. By the time a visitor reaches the bottom they have
- * seen the loop happen rather than read a claim that it exists.
- *
- * Every line is from the recorded run in docs/UI_BRIEF.md §4.2 — including the
- * ObjectId/response-model defect CLAUDE.md §8 names as the predicted #1 failure mode,
- * and the pytest output the sandbox actually printed.
- */
-
 type Line = { text: string; kind?: "plain" | "blocking" | "pass" | "meta" };
 
 type Step = {
   id: string;
-  /** Index into STAGES; the rail highlights this while the step is in view. */
   stage: number;
   eyebrow: string;
   title: string;
   body: string;
-  lines?: Line[];
-  code?: { caption: string; content: string };
-  terminal?: string;
+  lines: Line[];
   loop?: boolean;
+  iteration?: number;
 };
 
-const STAGES = ["pm", "architect", "coder", "reviewer", "tester", "sandbox"] as const;
+type AgentState = "queued" | "working" | "done" | "returned";
+
+const AGENTS = [
+  { name: "PM", role: "Structures the request", output: "1 entity · 4 operations", position: "sm:col-start-1 sm:row-start-1" },
+  { name: "Architect", role: "Designs endpoints and models", output: "5 endpoints designed", position: "sm:col-start-2 sm:row-start-1" },
+  { name: "Coder", role: "Writes the application", output: "4 files written", position: "sm:col-start-3 sm:row-start-1" },
+  { name: "Reviewer", role: "Checks a fixed checklist", output: "1 finding · 0 blocking", position: "sm:col-start-3 sm:row-start-2" },
+  { name: "Tester", role: "Writes the test suite", output: "8 tests collected", position: "sm:col-start-2 sm:row-start-2" },
+  { name: "Sandbox", role: "Runs code in isolation", output: "8 of 8 tests passed", position: "sm:col-start-1 sm:row-start-2" },
+] as const;
 
 const STEPS: Step[] = [
   {
     id: "pm",
     stage: 0,
-    eyebrow: "01 · pm",
-    title: "It reads the request like a product manager",
-    body: "The prompt becomes structured requirements — entities, fields and operations — validated against a schema before anything downstream sees it.",
+    eyebrow: "01 · PM agent",
+    title: "The request becomes a buildable specification.",
+    body: "The PM reads the prompt, finds the product scope, and turns plain English into validated entities, fields, operations, and user stories.",
     lines: [
       { text: "Identified entity: Book (title, author, year, genres)" },
       { text: "Completed — 1 entity, 4 operations", kind: "meta" },
@@ -50,228 +42,396 @@ const STEPS: Step[] = [
   {
     id: "architect",
     stage: 1,
-    eyebrow: "02 · architect",
-    title: "Then designs the API surface",
-    body: "Endpoints, collections and response models. This is where the run pauses the first time and waits for you.",
+    eyebrow: "02 · Architect agent",
+    title: "The specification becomes an API design.",
+    body: "The Architect maps the approved requirements into endpoints, collections, response models, and a file plan before any code is written.",
     lines: [
-      { text: "5 endpoints designed, all with explicit response models" },
-      { text: "Waiting for your approval", kind: "meta" },
+      { text: "5 endpoints designed with explicit response models" },
+      { text: "Requirements approved — design accepted", kind: "meta" },
     ],
   },
   {
     id: "coder",
     stage: 2,
-    eyebrow: "03 · coder",
-    title: "The Coder writes the tree, one file at a time",
-    body: "Four files, each generated on its own call — a whole-tree request breaches the free tier's token ceiling.",
+    eyebrow: "03 · Coder agent",
+    title: "The design becomes a complete file tree.",
+    body: "The Coder generates each file separately, preserving enough context to keep imports, models, routes, and database setup consistent.",
     lines: [
       { text: "Wrote database.py (289 bytes)" },
       { text: "Wrote models.py (542 bytes)" },
-      { text: "Wrote main.py (2,318 bytes)" },
+      { text: "Wrote main.py (2,318 bytes)", kind: "meta" },
     ],
-    code: {
-      caption: "main.py",
-      content: `@app.delete("/books/{book_id}", status_code=204)
-async def delete_book(book_id: str):
-    book = await Book.get(book_id)
-    if book is None:
-        raise HTTPException(404, "Book not found")
-    await book.delete()`,
-    },
   },
   {
     id: "reviewer",
     stage: 3,
-    eyebrow: "04 · reviewer",
-    title: "The Reviewer reads it against a fixed checklist",
-    body: "Same checks, every run — so the review is comparable rather than a matter of mood. Here it finds a real defect.",
+    eyebrow: "04 · Reviewer agent",
+    title: "A fixed checklist catches a real defect.",
+    body: "The Reviewer checks the generated tree against the design and runtime rules. It finds that a database ObjectId would escape into the API response.",
     lines: [
-      {
-        text: "DELETE /books/{id} returns the Document directly — ObjectId is not serialisable",
-        kind: "blocking",
-      },
-      { text: "3 findings, 2 blocking", kind: "meta" },
+      { text: "DELETE /books/{id} returns a Document with a non-serialisable ObjectId", kind: "blocking" },
+      { text: "3 findings — 2 blocking", kind: "meta" },
     ],
   },
   {
     id: "loop",
     stage: 2,
-    eyebrow: "⟳ the loop",
-    title: "So the work goes back",
-    body: "This is the part that makes it more than code generation. The finding travels back to the Coder with the specific problem attached, and the pipeline runs again from there. The cycle is capped, so a run always ends with something to show.",
-    lines: [{ text: "Iteration 1 — sending 2 blocking findings back to the Coder" }],
+    eyebrow: "⟳ · Feedback loop",
+    title: "The finding travels back to the Coder.",
+    body: "CodeForge sends the exact blocking findings and affected files back for another pass. The rest of the working tree stays untouched.",
+    lines: [{ text: "Iteration 1 — returning 2 blocking findings", kind: "blocking" }],
     loop: true,
+    iteration: 2,
   },
   {
     id: "fix",
     stage: 2,
-    eyebrow: "05 · coder, second pass",
-    title: "The Coder fixes only what was flagged",
-    body: "One file, rewritten against the finding — not a fresh tree that would discard the three files already working.",
+    eyebrow: "05 · Coder, pass 2",
+    title: "The Coder repairs only what failed review.",
+    body: "The second pass rewrites main.py with an explicit response model, then hands the focused change back for review.",
     lines: [
-      { text: "Rewrote main.py — added BookResponse to the DELETE route" },
-      { text: "1 finding, 0 blocking — passed", kind: "pass" },
+      { text: "Rewrote main.py — added BookResponse to DELETE" },
+      { text: "Second review — 0 blocking findings", kind: "pass" },
     ],
+    iteration: 2,
+  },
+  {
+    id: "tester",
+    stage: 4,
+    eyebrow: "06 · Tester agent",
+    title: "The behaviour becomes an executable test suite.",
+    body: "The Tester writes one test for every endpoint plus the important failure paths, using the generated application exactly as a client would.",
+    lines: [
+      { text: "Created test_main.py" },
+      { text: "Collected 8 endpoint and 404-path tests", kind: "meta" },
+    ],
+    iteration: 2,
   },
   {
     id: "sandbox",
     stage: 5,
-    eyebrow: "06 · tester + sandbox",
-    title: "Then it runs for real",
-    body: "The Tester writes a pytest suite and the Sandbox executes it inside a container with networking disabled. The Reviewer has an opinion; the interpreter has a result.",
-    terminal: `$ pytest -q
-collected 8 items
-
-test_main.py ........                    [100%]
-
-8 passed in 1.42s`,
+    eyebrow: "07 · Sandbox",
+    title: "The generated API runs for real.",
+    body: "A locked-down container starts the application and executes pytest with networking disabled. The result comes from the runtime, not an AI prediction.",
+    lines: [
+      { text: "test_main.py ........ [100%]" },
+      { text: "8 passed in 1.42s", kind: "pass" },
+    ],
+    iteration: 2,
+  },
+  {
+    id: "complete",
+    stage: 6,
+    eyebrow: "08 · Run complete",
+    title: "A tested API is ready to inspect and download.",
+    body: "Every agent leaves behind structured output, generated files, review findings, and real test evidence, so the final result stays understandable.",
+    lines: [
+      { text: "Run succeeded after 2 passes" },
+      { text: "5 agents complete · 8 of 8 tests passed", kind: "pass" },
+    ],
+    iteration: 2,
   },
 ];
 
+function stateForAgent(agent: number, activeStep: number): AgentState {
+  const step = STEPS[activeStep];
+
+  if (step.id === "loop") {
+    if (agent < 2) return "done";
+    if (agent === 2) return "working";
+    if (agent === 3) return "returned";
+    return "queued";
+  }
+
+  if (step.id === "fix") {
+    if (agent < 2) return "done";
+    if (agent === 2) return "working";
+    return "queued";
+  }
+
+  if (step.stage === 6) return "done";
+  if (agent < step.stage) return "done";
+  if (agent === step.stage) return "working";
+  return "queued";
+}
+
+const STATE_LABEL: Record<AgentState, string> = {
+  queued: "queued",
+  working: "running",
+  done: "done",
+  returned: "2 blocking",
+};
+
+function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[number]; index: number; state: AgentState; iteration: number }) {
+  return (
+    <li
+      className={cn(
+        "relative min-h-[140px] border bg-surface p-4 transition-[border-color,background-color,opacity,transform] duration-500",
+        agent.position,
+        state === "working" && "border-accent-bd bg-accent-soft/55 shadow-[0_12px_34px_rgba(67,56,202,0.08)]",
+        state === "done" && "border-ok-bd",
+        state === "returned" && "border-danger-bd bg-danger-soft/45",
+        state === "queued" && "border-border opacity-55",
+      )}
+    >
+      {state === "working" && (
+        <span className="absolute inset-x-0 top-0 h-[2px] overflow-hidden bg-accent-bd" aria-hidden>
+          <span className="block h-full w-1/3 bg-accent motion-safe:animate-[cfBar_1.35s_ease-in-out_infinite]" />
+        </span>
+      )}
+
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className={cn(
+            "grid h-6 w-6 place-items-center font-mono text-[10px] font-[700]",
+            state === "working" && "bg-accent-soft text-accent",
+            state === "done" && "bg-ok-soft text-ok",
+            state === "returned" && "bg-danger-soft text-danger",
+            state === "queued" && "bg-surface-2 text-fg-faint",
+          )}>
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="font-display text-[13px] font-[700] tracking-[-0.025em] text-fg">{agent.name}</span>
+        </div>
+
+        <span className={cn(
+          "inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-[9px] font-[700] uppercase tracking-[0.09em]",
+          state === "working" && "text-accent",
+          state === "done" && "text-ok",
+          state === "returned" && "text-danger",
+          state === "queued" && "text-fg-faint",
+        )}>
+          <span className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            state === "working" && "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]",
+            state === "done" && "bg-ok",
+            state === "returned" && "bg-danger",
+            state === "queued" && "bg-border-strong",
+          )} aria-hidden />
+          {STATE_LABEL[state]}
+        </span>
+      </div>
+
+      <p className="mt-4 text-[12px] leading-[1.45] text-fg-muted">{agent.role}</p>
+
+      <div className="absolute inset-x-4 bottom-3.5 flex items-center justify-between gap-3 border-t border-rule pt-2.5">
+        <span className="truncate font-mono text-[9.5px] text-fg-faint">
+          {state === "done" ? agent.output : state === "working" ? "processing…" : "waiting"}
+        </span>
+        {agent.name === "Coder" && iteration > 1 && (
+          <span className="shrink-0 rounded-full bg-loop-soft px-2 py-0.5 font-mono text-[9px] font-[700] text-loop">pass {iteration}</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function AgentWorkspace({ activeStep }: { activeStep: number }) {
+  const step = STEPS[activeStep];
+  const iteration = step.iteration ?? 1;
+  const loopFiring = step.id === "loop";
+  const complete = step.id === "complete";
+
+  return (
+    <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-[6px] border border-border bg-bg p-4 shadow-[0_30px_90px_rgba(18,20,24,0.16)] sm:p-5">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-4">
+        <div>
+          <span className="font-mono text-[9px] font-[700] uppercase tracking-[0.15em] text-fg-faint">live agent run</span>
+          <p className="mt-1.5 font-mono text-[11px] text-fg">library-api / run_01</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {iteration > 1 && (
+            <span className="rounded-full border border-loop-bd bg-loop-soft px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] text-loop">loop {iteration - 1}</span>
+          )}
+          <span className={cn(
+            "inline-flex items-center gap-2 border px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em]",
+            complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent",
+          )}>
+            <span className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              complete ? "bg-ok" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]",
+            )} aria-hidden />
+            {complete ? "succeeded" : loopFiring ? "returning" : "running"}
+          </span>
+        </div>
+      </div>
+
+      <div className="relative mt-5">
+        <ol className="relative z-10 grid gap-3 sm:grid-cols-3 sm:grid-rows-2">
+          {AGENTS.map((agent, index) => (
+            <AgentCard key={agent.name} agent={agent} index={index} state={stateForAgent(index, activeStep)} iteration={iteration} />
+          ))}
+        </ol>
+
+        <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block" aria-hidden>
+          <span className="absolute left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">→</span>
+          <span className="absolute left-2/3 top-1/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">→</span>
+          <span className="absolute left-[83.33%] top-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">↓</span>
+          <span className="absolute left-2/3 top-3/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">←</span>
+          <span className="absolute left-1/3 top-3/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">←</span>
+        </div>
+
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 z-20 hidden h-full w-full overflow-visible sm:block" aria-hidden>
+          <defs>
+            <marker id="loop-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+            </marker>
+          </defs>
+          <path
+            d="M 95 76 C 104 76, 104 24, 95 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.42"
+            strokeDasharray="1.8 1.8"
+            vectorEffect="non-scaling-stroke"
+            markerEnd="url(#loop-arrow)"
+            className={cn("text-border-strong transition-colors duration-300", loopFiring && "text-loop motion-safe:animate-[cfDash_.9s_linear_infinite]")}
+          />
+        </svg>
+
+        <span className={cn(
+          "absolute -right-2 top-1/2 z-30 hidden -translate-y-1/2 rounded-full border px-2 py-1 font-mono text-[8px] font-[700] uppercase tracking-[0.08em] sm:block",
+          loopFiring ? "border-loop-bd bg-loop-soft text-loop motion-safe:animate-[cfPop_.34s_ease-out]" : "border-border bg-bg text-fg-faint",
+        )}>
+          back to coder
+        </span>
+      </div>
+
+      <div key={step.id} className={cn(
+        "mt-4 flex items-start gap-3 border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out]",
+        loopFiring ? "border-loop-bd bg-loop-soft" : complete ? "border-ok-bd bg-ok-soft" : "border-border bg-surface",
+      )}>
+        <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full", loopFiring ? "bg-loop" : complete ? "bg-ok" : "bg-accent")} aria-hidden />
+        <div>
+          <span className={cn(
+            "font-mono text-[9px] font-[700] uppercase tracking-[0.1em]",
+            loopFiring ? "text-loop" : complete ? "text-ok" : "text-fg-faint",
+          )}>
+            {loopFiring ? "feedback loop" : complete ? "run result" : `${AGENTS[Math.min(step.stage, 5)].name} activity`}
+          </span>
+          <p className="mt-1 text-[11.5px] leading-[1.45] text-fg-muted">{step.lines[0].text}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RunWalkthrough() {
-  const [active, setActive] = useState(0);
+  const [activeStep, setActiveStep] = useState(0);
   const refs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
-    // Whichever step owns the upper third of the viewport drives the rail. A plain
-    // "most visible" test flickers between neighbours on a fast scroll.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const hit = entries.filter((e) => e.isIntersecting).at(0);
-        if (!hit) return;
-        const index = refs.current.indexOf(hit.target as HTMLElement);
-        if (index >= 0) setActive(STEPS[index].stage);
-      },
-      { rootMargin: "-12% 0px -68% 0px", threshold: 0 },
-    );
-    for (const el of refs.current) if (el) observer.observe(el);
-    return () => observer.disconnect();
+    let animationFrame = 0;
+
+    const updateActiveStep = () => {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(() => {
+        const anchor = window.innerHeight * 0.46;
+        let closest = 0;
+        let distance = Number.POSITIVE_INFINITY;
+
+        refs.current.forEach((element, index) => {
+          if (!element) return;
+          const rect = element.getBoundingClientRect();
+          const point = Math.min(Math.max(anchor, rect.top), rect.bottom);
+          const nextDistance = Math.abs(point - anchor);
+          if (nextDistance < distance) {
+            distance = nextDistance;
+            closest = index;
+          }
+        });
+
+        setActiveStep(closest);
+      });
+    };
+
+    updateActiveStep();
+    window.addEventListener("scroll", updateActiveStep, { passive: true });
+    window.addEventListener("resize", updateActiveStep);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", updateActiveStep);
+      window.removeEventListener("resize", updateActiveStep);
+    };
   }, []);
 
   return (
-    <div className="mx-auto w-full px-6 md:px-10 lg:px-14">
-      <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
-        {/* The pipeline, pinned. It advances as you read and drops back to the Coder at
-            the loop — the one movement the whole product is built around. */}
-        <nav aria-label="Pipeline position" className="hidden lg:block">
-          <ol className="sticky top-[124px] flex flex-col gap-[10px]">
-            {STAGES.map((stage, i) => {
-              const isActive = i === active;
-              return (
-                <li key={stage} className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      "h-[7px] w-[7px] shrink-0 rounded-full transition-colors duration-300",
-                      isActive ? "bg-fg" : "bg-border-strong",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "font-mono text-[11px] font-[600] uppercase tracking-[0.12em] transition-colors duration-300",
-                      isActive ? "text-fg" : "text-fg-faint",
-                    )}
-                  >
-                    {stage}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
-
+    <div className="mx-auto w-full max-w-[1536px] px-6 md:px-10 lg:px-14">
+      <div className="mb-12 grid gap-x-14 gap-y-4 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(34rem,1.22fr)]">
         <div>
-          {STEPS.map((step, i) => (
+          <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint">[ how a run moves ]</span>
+          <h2 className="font-display mt-5 max-w-[22ch] text-[26px] font-[600] leading-[1.24] tracking-[-0.04em] text-fg md:text-[32px]">Scroll through one complete agent run.</h2>
+        </div>
+        <p className="max-w-[58ch] self-end text-[15px] leading-[1.65] text-fg-muted lg:justify-self-end">
+          Each scroll step advances the active agent. Watch the right side closely when the Reviewer sends a blocking finding back to the Coder.
+        </p>
+      </div>
+
+      <div className="grid gap-x-12 xl:grid-cols-[minmax(20rem,0.78fr)_minmax(42rem,1.22fr)]">
+        <div>
+          {STEPS.map((step, index) => (
             <section
               key={step.id}
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
+              ref={(element) => { refs.current[index] = element; }}
               className={cn(
-                "border-t border-rule py-16 first:border-t-0 first:pt-0 md:py-20",
+                "relative flex min-h-[68svh] scroll-mt-32 flex-col justify-center border-t border-rule py-16 transition-opacity duration-500 first:border-t-0 first:pt-4",
                 step.loop && "border-loop-bd",
+                activeStep === index ? "opacity-100" : "xl:opacity-45",
               )}
             >
               <span
+                aria-hidden
                 className={cn(
-                  "font-mono text-[11px] font-[600] uppercase tracking-[0.16em]",
-                  step.loop ? "text-loop" : "text-fg-faint",
+                  "absolute left-0 top-1/2 hidden h-16 w-[2px] -translate-y-1/2 transition-[background-color,transform,opacity] duration-500 xl:block",
+                  activeStep === index
+                    ? step.loop
+                      ? "bg-loop opacity-100"
+                      : "bg-accent opacity-100"
+                    : "bg-border opacity-0",
                 )}
-              >
+              />
+              <div className="xl:pl-6">
+              <span className={cn(
+                "font-mono text-[10px] font-[700] uppercase tracking-[0.16em] transition-colors",
+                step.loop ? "text-loop" : activeStep === index ? "text-accent" : "text-fg-faint",
+              )}>
                 {step.eyebrow}
               </span>
-
-              <h3
-                className={cn(
-                  "font-display mt-5 max-w-[24ch] text-[24px] font-[600] leading-[1.26] tracking-[-0.035em] md:text-[28px]",
-                  step.loop ? "text-loop" : "text-fg",
-                )}
-              >
+              <h3 className={cn(
+                "font-display mt-5 max-w-[23ch] text-[24px] font-[600] leading-[1.28] tracking-[-0.04em] md:text-[29px]",
+                step.loop ? "text-loop" : "text-fg",
+              )}>
                 {step.title}
               </h3>
-
-              <p className="mt-4 max-w-[58ch] text-[15.5px] leading-[1.62] text-fg-muted">
-                {step.body}
-              </p>
-
-              {step.lines && (
-                <ul className="mt-7 flex flex-col gap-[10px]">
-                  {step.lines.map((line) => (
-                    <li key={line.text} className="flex gap-[11px]">
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full",
-                          step.loop
-                            ? "bg-loop"
-                            : line.kind === "blocking"
-                              ? "bg-danger"
-                              : line.kind === "pass"
-                                ? "bg-ok"
-                                : "bg-border-strong",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-[14.5px] leading-[1.5]",
-                          step.loop
-                            ? "font-[600] text-loop"
-                            : line.kind === "blocking"
-                              ? "text-danger"
-                              : line.kind === "pass"
-                                ? "font-[600] text-ok"
-                                : line.kind === "meta"
-                                  ? "font-[600] text-fg"
-                                  : "text-fg-muted",
-                        )}
-                      >
-                        {line.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {step.code && (
-                <figure className="mt-8 border border-border bg-code-bg">
-                  <figcaption className="border-b border-border px-4 py-[9px] font-mono text-[11px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
-                    {step.code.caption}
-                  </figcaption>
-                  <pre className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-[1.6] text-code-fg">
-                    {step.code.content}
-                  </pre>
-                </figure>
-              )}
-
-              {step.terminal && (
-                <figure className="mt-8 bg-term-bg">
-                  <pre className="overflow-x-auto px-5 py-5 font-mono text-[12.5px] leading-[1.65] text-term-fg">
-                    {step.terminal}
-                  </pre>
-                </figure>
-              )}
+              <p className="mt-5 max-w-[49ch] text-[15px] leading-[1.68] text-fg-muted">{step.body}</p>
+              <ul className="mt-7 space-y-3 border-l border-border pl-4">
+                {step.lines.map((line) => (
+                  <li key={line.text} className={cn(
+                    "font-mono text-[11.5px] leading-[1.55]",
+                    line.kind === "blocking" ? "text-danger" : line.kind === "pass" ? "font-[700] text-ok" : line.kind === "meta" ? "font-[600] text-fg" : "text-fg-muted",
+                  )}>
+                    {line.text}
+                  </li>
+                ))}
+              </ul>
+              <span className="mt-9 font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
+                {String(index + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+              </span>
+              </div>
             </section>
           ))}
         </div>
+
+        <aside className="order-first mb-10 xl:order-none xl:mb-0" aria-label="Animated agent pipeline">
+          <div className="xl:sticky xl:top-[92px] xl:flex xl:min-h-[calc(100svh-116px)] xl:items-center">
+            <div className="w-full">
+              <AgentWorkspace activeStep={activeStep} />
+              <p className="mt-3 hidden text-right font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint xl:block">scroll to advance ↓</p>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

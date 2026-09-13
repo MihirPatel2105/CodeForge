@@ -1,154 +1,210 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Columns, MarketingPage, Section } from "@/components/marketing/marketing-page";
-import { PipelineDiagram } from "@/components/marketing/pipeline-diagram";
+import {
+  ArrowDown,
+  Boxes,
+  FileCode2,
+  GitBranch,
+  Pause,
+  ScanSearch,
+  SquareTerminal,
+  TestTube2,
+} from "lucide-react";
+import { SiteHeader } from "@/components/marketing/site-header";
+import { ClosingBanner, SiteFooter } from "@/components/marketing/marketing-actions";
+import { HowRunRoute } from "@/components/marketing/how-run-route";
 
 export const metadata: Metadata = {
   title: "How it works · CodeForge",
   description:
-    "The six stages of a CodeForge run, the two approval checkpoints, the review-and-test feedback loop, and how the generated code is executed for real.",
+    "Follow a CodeForge request through six specialized stages, two human approvals, review and test feedback loops, and real sandbox execution.",
 };
 
-const P = "text-[16.5px] leading-[1.72] text-fg-muted";
-
-/** Quoted from docs/UI_BRIEF.md §5 so the marketing pages, the pipeline strip and the
- * agent cards all describe the agents in exactly the same words. */
-const AGENTS = [
+const STAGES = [
   {
-    name: "pm",
-    job: "Turns the request into structured requirements",
-    detail:
-      "Entities, their fields and the operations you asked for, as a schema-validated object rather than prose.",
+    icon: ScanSearch,
+    name: "PM",
+    job: "Turns your request into structured requirements",
+    input: "plain-English prompt",
+    output: "entities · fields · operations",
   },
   {
-    name: "architect",
-    job: "Designs the endpoints and data models",
-    detail:
-      "Paths, methods, status codes, request and response models, and the four files the Coder will write.",
+    icon: Boxes,
+    name: "Architect",
+    job: "Designs the API surface and data models",
+    input: "approved requirements",
+    output: "routes · schemas · status codes",
   },
   {
-    name: "coder",
-    job: "Writes the application code",
-    detail:
-      "One file per model call. A whole-tree request breaches the free tier's per-minute token ceiling, so the tree is assembled a file at a time.",
+    icon: FileCode2,
+    name: "Coder",
+    job: "Writes the application one file at a time",
+    input: "approved design",
+    output: "FastAPI project files",
   },
   {
-    name: "reviewer",
+    icon: ScanSearch,
+    name: "Reviewer",
     job: "Checks the code against a fixed checklist",
-    detail:
-      "The same checks every run, so a review is comparable between runs rather than a matter of mood. Only blocking findings send work back.",
+    input: "generated source",
+    output: "findings · blocking repairs",
   },
   {
-    name: "tester",
-    job: "Writes the test suite",
-    detail:
-      "A pytest suite against the generated API, written without sight of the Reviewer's opinion of it.",
+    icon: TestTube2,
+    name: "Tester",
+    job: "Writes a pytest suite independently",
+    input: "requirements and design",
+    output: "executable test suite",
   },
   {
-    name: "sandbox",
-    job: "Runs the code and its tests for real",
-    detail:
-      "A Docker container with networking disabled and its own MongoDB. Its verdict is the authoritative one — the Reviewer has an opinion, the interpreter has a result.",
+    icon: SquareTerminal,
+    name: "Sandbox",
+    job: "Runs the application and tests for real",
+    input: "code and tests",
+    output: "exit code · passed · failed",
+  },
+] as const;
+
+const STOPS = [
+  {
+    icon: Pause,
+    label: "Approval 01",
+    title: "Confirm the requirements",
+    body: "Check that the PM understood your entities, fields and requested operations before any design work begins.",
+  },
+  {
+    icon: Pause,
+    label: "Approval 02",
+    title: "Confirm the architecture",
+    body: "Review the routes, models and status codes before the Coder commits the design to files.",
+  },
+  {
+    icon: GitBranch,
+    label: "Repair loop",
+    title: "Send evidence back",
+    body: "A blocking finding or failed test returns to the Coder with the exact problem attached. Each loop is capped independently.",
   },
 ] as const;
 
 export default function HowItWorksPage() {
   return (
-    <MarketingPage
-      eyebrow="how it works"
-      title="One sentence in, through six stages, out as a tested API."
-      lede="Each stage has one job and hands a validated result to the next. You approve the work twice along the way, and anything the Reviewer or the tests reject travels back to the Coder."
-      aside={<PipelineDiagram />}
-    >
-      {/* The stages are the page's substance, so they get its full width. Each row splits
-          into what the stage is (left) and why it works that way (right), which uses the
-          space for a real distinction rather than just setting longer lines. */}
-      <Section index="01" heading="the stages" wide>
-        <ol className="border-t border-rule">
-          {AGENTS.map((agent, i) => (
-            <li
-              key={agent.name}
-              className="grid gap-x-12 gap-y-3 border-b border-rule py-7 lg:grid-cols-[1fr_1.1fr]"
-            >
-              <div className="flex items-baseline gap-5">
-                <span className="font-mono text-[12.5px] text-fg-faint">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <h3 className="font-mono text-[17px] font-[600] tracking-[-0.02em] text-fg">
-                    {agent.name}
-                  </h3>
-                  <p className="mt-2 text-[16.5px] leading-[1.5] text-fg">{agent.job}</p>
+    <div className="cf-subpage min-h-screen bg-bg">
+      <SiteHeader />
+      <main>
+        <section className="cf-subpage-hero border-b border-rule">
+          <div className="relative z-10 mx-auto grid min-h-[calc(88svh-58px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.8fr)] lg:px-14">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">
+                <GitBranch className="h-3.5 w-3.5" aria-hidden />
+                how it works
+              </span>
+              <h1 className="font-display mt-8 max-w-[14ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[60px]">
+                One request. Six focused jobs. A result that ran.
+              </h1>
+              <p className="mt-7 max-w-[60ch] text-[16px] leading-[1.72] text-fg-muted sm:text-[17px]">
+                Work moves forward through specialized agents. You approve the two
+                decisions that shape everything else, and concrete failures send the
+                work back to the Coder.
+              </p>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Link href="#stages" className="inline-flex items-center gap-2 rounded-[3px] bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90">
+                  Follow the run
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+                </Link>
+                <Link href="/#how" className="inline-flex items-center gap-2 rounded-[3px] border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface">
+                  Watch it move
+                </Link>
+              </div>
+            </div>
+            <HowRunRoute />
+          </div>
+        </section>
+
+        <section id="stages" className="border-b border-rule bg-surface">
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
+            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+              <SectionLabel index="01" label="the six stages" />
+              <div>
+                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                  <h2 className="font-display max-w-[18ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Each agent owns one decision.</h2>
+                  <p className="max-w-[47ch] text-[14px] leading-[1.68] text-fg-muted">Every handoff is validated data, so the next agent receives a contract instead of an ambiguous conversation.</p>
+                </div>
+                <ol className="mt-12 grid border-l border-t border-rule md:grid-cols-2 xl:grid-cols-3">
+                  {STAGES.map(({ icon: Icon, name, job, input, output }, index) => (
+                    <li key={name} className="group border-b border-r border-rule p-6 transition-colors hover:bg-bg md:p-7">
+                      <div className="flex items-center justify-between">
+                        <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-border bg-bg text-accent group-hover:border-accent-bd group-hover:bg-accent-soft"><Icon className="h-4 w-4" aria-hidden /></span>
+                        <span className="font-mono text-[9px] font-[700] tracking-[0.12em] text-fg-faint">{String(index + 1).padStart(2, "0")}</span>
+                      </div>
+                      <h3 className="font-display mt-7 text-[19px] font-[650] tracking-[-0.04em] text-fg">{name}</h3>
+                      <p className="mt-2 min-h-[48px] text-[14px] leading-[1.6] text-fg-muted">{job}</p>
+                      <dl className="mt-7 border-t border-rule pt-4">
+                        <div className="grid grid-cols-[4rem_1fr] gap-3"><dt className="font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">input</dt><dd className="font-mono text-[10px] text-fg">{input}</dd></div>
+                        <div className="mt-3 grid grid-cols-[4rem_1fr] gap-3"><dt className="font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">output</dt><dd className="font-mono text-[10px] text-fg">{output}</dd></div>
+                      </dl>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="cf-invert cf-how-control border-b border-rule bg-bg">
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
+            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+              <SectionLabel index="02" label="control points" />
+              <div>
+                <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The run pauses for judgment and loops on evidence.</h2>
+                <div className="mt-12 grid overflow-hidden rounded-[6px] border border-border bg-surface/25 md:grid-cols-3">
+                  {STOPS.map(({ icon: Icon, label, title, body }) => (
+                    <article key={label} className="border-b border-r border-border p-6 last:border-b-0 md:border-b-0 md:p-8">
+                      <div className="flex items-center gap-3"><Icon className="h-4 w-4 text-accent" aria-hidden /><span className="font-mono text-[8px] font-[700] uppercase tracking-[0.14em] text-accent">{label}</span></div>
+                      <h3 className="font-display mt-7 text-[18px] font-[650] tracking-[-0.035em] text-fg">{title}</h3>
+                      <p className="mt-4 text-[13px] leading-[1.65] text-fg-muted">{body}</p>
+                    </article>
+                  ))}
                 </div>
               </div>
-              <p className="text-[15.5px] leading-[1.65] text-fg-muted lg:pt-[26px]">
-                {agent.detail}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </Section>
+            </div>
+          </div>
+        </section>
 
-      <Section index="02" heading="your two checkpoints" wide>
-        <Columns>
-          <p className={P}>
-            The pipeline stops twice and waits for a person. The first pause is after the PM, on the
-            requirements it extracted; the second is after the Architect, on the design. Nothing
-            proceeds until you approve, and rejecting ends the run rather than pushing ahead with
-            something you disagreed with.
-          </p>
-          <p className={P}>
-            The checkpoints exist because the two cheapest mistakes to catch are a misunderstood
-            request and a wrong design — both before any code is written.
-          </p>
-        </Columns>
-      </Section>
+        <section className="border-b border-rule">
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
+            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+              <SectionLabel index="03" label="the finish line" />
+              <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+                <div>
+                  <span className="inline-flex items-center gap-2 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />sandbox verdict</span>
+                  <h2 className="font-display mt-5 max-w-[15ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[38px]">The final answer comes from execution.</h2>
+                  <p className="mt-5 max-w-[48ch] text-[15px] leading-[1.72] text-fg-muted">The generated application and pytest suite run together inside Docker with networking disabled. Whether the run succeeded, partially passed or reached a loop limit stays visible with every file and event.</p>
+                </div>
+                <TerminalProof />
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <Section index="03" heading="the loop" wide>
-        <Columns>
-          <p className={P}>
-            Two edges send work backwards. A blocking review finding returns the code to the Coder
-            with the finding attached; a failing test does the same with the failure attached. The
-            Coder rewrites only the files the problems point at, rather than regenerating a tree in
-            which most files already work.
-          </p>
-          <p className={P}>
-            Each loop is capped at three attempts, counted separately, so a review that takes a
-            while to converge cannot spend the budget the sandbox needs. When a cap is reached the
-            run stops deliberately and keeps everything it produced — reported as a loop limit, not
-            as a crash.
-          </p>
-        </Columns>
-      </Section>
+        <section>
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14"><div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]"><div aria-hidden className="hidden lg:block" /><ClosingBanner /></div></div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
 
-      <Section index="04" heading="when providers fail">
-        <p className={P}>
-          Every agent has an ordered chain of models, ending at one running locally. A rate limit, a
-          retired model or a truncated response moves the request down the chain rather than failing
-          the run. Free-tier limits are normal operation here, not an exception.
-        </p>
-      </Section>
+function SectionLabel({ index, label }: { index: string; label: string }) {
+  return <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2"><span className="font-mono text-[11px] font-[700] text-fg">[{index}]</span><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-fg-faint">{label}</span></div>;
+}
 
-      <Section index="05" heading="see it">
-        <p className={P}>
-          The landing page replays a real recorded run, including the blocking finding that triggers
-          the loop and the pytest output at the end.
-        </p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Link
-            href="/#how"
-            className="inline-flex items-center justify-center rounded-[2px] bg-fg px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
-          >
-            Watch a run
-          </Link>
-          <Link
-            href="/faq"
-            className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
-          >
-            Read the FAQ
-          </Link>
-        </div>
-      </Section>
-    </MarketingPage>
+function TerminalProof() {
+  return (
+    <div className="overflow-hidden rounded-[6px] border border-border bg-term-bg shadow-[0_24px_70px_rgba(22,24,28,0.12)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-term-dim">sandbox output</span><span className="h-2 w-2 rounded-full bg-term-pass" /></div>
+      <div className="space-y-3 px-5 py-6 font-mono text-[12px] leading-[1.55]"><p className="text-term-dim">$ pytest -q</p><p className="text-term-fg">........</p><p className="text-term-pass">8 passed in 1.42s</p><p className="border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.11em] text-term-dim">process exited with code 0</p></div>
+      <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 font-mono text-[8px] font-[700] uppercase tracking-[0.11em]"><span className="text-term-dim">network disabled</span><span className="flex items-center gap-2 text-term-pass"><span className="h-1.5 w-1.5 rounded-full bg-term-pass" />verified</span></div>
+    </div>
   );
 }

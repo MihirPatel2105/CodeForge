@@ -18,7 +18,7 @@ const PASS_LINE = /\d+ passed/;
  * real output"). `--term-bg` / `--term-fg` are literal across both themes by design. */
 export function TerminalPanel({ lines, image, running }: TerminalPanelProps) {
   return (
-    <div className="flex h-[196px] flex-col overflow-hidden rounded-xl bg-term-bg">
+    <div className="flex h-[196px] flex-col overflow-hidden rounded-[6px] bg-term-bg shadow-[0_16px_40px_rgba(20,22,26,0.12)]">
       <div className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-[9px]">
         <span className={cn(typeScale.label, "text-[#9AA1AB]")}>SANDBOX</span>
         {image && <span className="font-mono text-[12px] text-term-dim">{image}</span>}
@@ -32,7 +32,7 @@ export function TerminalPanel({ lines, image, running }: TerminalPanelProps) {
           </span>
         )}
       </div>
-      <pre className="flex-1 overflow-y-auto px-3 py-[10px] font-mono text-[13px] leading-[1.6] whitespace-pre-wrap text-term-fg">
+      <pre className="cf-run-scroll flex-1 overflow-y-auto px-3 py-[10px] font-mono text-[13px] leading-[1.6] whitespace-pre-wrap text-term-fg">
         {lines.length === 0 ? (
           <span className="text-term-dim">$ waiting for the Tester to finish…</span>
         ) : (

@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, ShieldOff } from "lucide-react";
+import {
+  ArrowLeft,
+  KeyRound,
+  Laptop,
+  LogOut,
+  ShieldCheck,
+  ShieldOff,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { DeleteAccountDialog } from "@/components/auth/delete-account-dialog";
@@ -11,16 +19,9 @@ import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { api, getToken, clearToken, ApiError } from "@/lib/api";
 
-const LABEL = "font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-fg-faint";
+const LABEL =
+  "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-fg-faint";
 
-/**
- * Account settings.
- *
- * Split from the profile page rather than bolted onto the bottom of it: profile is a
- * page you land on to read, and a destructive control sitting under a page people scroll
- * through casually is a control that eventually gets pressed. Reaching this one takes a
- * deliberate click.
- */
 export default function SettingsPage() {
   const router = useRouter();
   const user = useCurrentUser();
@@ -30,7 +31,6 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!getToken()) {
-      // `replace` so Back cannot return to a page this visitor cannot see.
       router.replace("/login");
     }
   }, [router]);
@@ -39,16 +39,10 @@ export default function SettingsPage() {
     setEndingSessions(true);
     setSessionError(null);
     try {
-      // Told to the server, not just forgotten locally: without this the token stays
-      // valid until it expires, so a copy lifted out of local storage would keep
-      // working after the user believed they had signed out.
       await api.signOut();
       clearToken();
       router.replace("/login");
     } catch (err) {
-      // A token the server has already rejected cannot be signed out again, and there
-      // is nothing useful left to do with it — drop it and go. Refusing to sign out
-      // because the session is already dead would be absurd.
       if (err instanceof ApiError && err.status === 401) {
         clearToken();
         router.replace("/login");
@@ -64,8 +58,6 @@ export default function SettingsPage() {
     setSessionError(null);
     try {
       await api.signOutEverywhere();
-      // Only after the server has actually revoked them. Clearing the token first would
-      // leave no way to make the call if it failed.
       clearToken();
       router.replace("/login");
     } catch (err) {
@@ -79,112 +71,182 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="cf-account min-h-screen bg-bg">
       <AppHeader />
 
-      <div className="mx-auto w-full px-6 py-12 md:px-10 lg:px-14">
+      <main className="mx-auto w-full max-w-[1320px] px-6 py-10 md:px-10 md:py-14 lg:px-14">
         <Link
           href="/profile"
-          className="font-mono text-[11px] font-[600] uppercase tracking-[0.14em] text-fg-faint transition-colors hover:text-fg"
+          className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint transition-colors hover:text-fg"
         >
-          ← profile
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+          Back to profile
         </Link>
 
-        <h1 className="font-display mt-6 text-[26px] font-[600] tracking-[-0.04em] text-fg">
-          Settings
-        </h1>
+        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-[7px] border border-border bg-surface px-7 py-8 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-10">
+          <div className="relative z-10 flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
+                <ShieldCheck className="h-3 w-3" aria-hidden />
+                account security
+              </span>
+              <h1 className="font-display mt-6 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
+                Settings
+              </h1>
+              <p className="mt-4 max-w-[58ch] text-[14px] leading-[1.65] text-fg-muted">
+                Update your password, control signed-in sessions, and manage the
+                permanent state of your account.
+              </p>
+            </div>
 
-        {/* Two columns: the thing you do here on the left, the things that end a
-            session or an account on the right. Stacking them left the whole right half
-            of the page empty, and pushed deletion far enough down that it read as an
-            afterthought rather than a deliberate corner of the page.
+            <div className="rounded-[5px] border border-border bg-bg/75 px-4 py-3 backdrop-blur-sm">
+              <span className={LABEL}>signed in as</span>
+              <p className="mt-1.5 max-w-[28rem] truncate font-mono text-[11.5px] text-fg">
+                {user?.email ?? "Loading account…"}
+              </p>
+            </div>
+          </div>
+        </section>
 
-            `items-start` so the two columns size to their own content — without it the
-            grid stretches both to the taller one, and the danger panel would grow a
-            tail of empty red. */}
-        <div className="mt-11 grid items-start gap-x-14 gap-y-12 lg:grid-cols-2">
-          <section>
-            <h2 className={LABEL}>password</h2>
-            <ChangePasswordForm />
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+            <div className="flex items-start gap-4 border-b border-rule px-6 py-5 md:px-7">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+                <KeyRound className="h-4 w-4 text-accent" aria-hidden />
+              </span>
+              <div>
+                <span className={LABEL}>password</span>
+                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
+                  Change your password
+                </h2>
+                <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
+                  Your current password is required before a new one can be saved.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 pb-7 md:px-7">
+              <ChangePasswordForm />
+            </div>
           </section>
 
-          <div className="flex flex-col gap-12">
-            <section>
-              <h2 className={LABEL}>session</h2>
-              <div className="mt-4 flex flex-col gap-6 border-t border-rule pt-6">
-                <div>
-                  <Button
-                    onClick={handleSignOut}
-                    variant="outline"
-                    disabled={endingSessions}
-                    className="h-11 gap-[7px] px-[15px]"
-                  >
-                    <LogOut className="h-[15px] w-[15px]" />
-                    {endingSessions ? "Signing out…" : "Sign out"}
-                  </Button>
-                  <p className="mt-3 max-w-[52ch] text-[13px] leading-[1.6] text-fg-faint">
-                    Ends this session on the server, so it cannot be reused even if the
-                    token was copied. Other devices stay signed in.
-                  </p>
-                </div>
-
-                {/* The honest counterpart to the button above. A normal sign-out never
-                    reaches the server, so a token copied elsewhere keeps working until
-                    it expires; this is the control for when that matters. */}
-                <div>
-                  <Button
-                    onClick={handleSignOutEverywhere}
-                    variant="outline"
-                    disabled={endingSessions}
-                    className="h-11 gap-[7px] px-[15px]"
-                  >
-                    <ShieldOff className="h-[15px] w-[15px]" />
-                    {endingSessions ? "Ending sessions…" : "Sign out everywhere"}
-                  </Button>
-                  <p className="mt-3 max-w-[52ch] text-[13px] leading-[1.6] text-fg-faint">
-                    Ends every session on every device immediately, including this one.
-                    Your password does not change.
-                  </p>
-                  {sessionError && (
-                    <p
-                      role="alert"
-                      className="mt-3 max-w-[52ch] rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
-                    >
-                      {sessionError}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            {/* Danger zone — the only red on the page */}
-            <section>
-              <h2 className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-danger">
-                danger zone
-              </h2>
-              <div className="mt-4 rounded-[3px] border border-danger-bd bg-danger-soft/40 p-6">
-                <h3 className="text-[15.5px] font-[600] text-fg">Delete this account</h3>
-                <p className="mt-2 max-w-[52ch] text-[14px] leading-[1.6] text-fg-muted">
-                  Removes your account and everything it owns — every project, every run,
-                  and every generated file stored against them. Nothing is archived and
-                  nothing can be recovered afterwards.
+          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+            <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+                <Laptop className="h-4 w-4 text-accent" aria-hidden />
+              </span>
+              <div>
+                <span className={LABEL}>session control</span>
+                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
+                  Active sessions
+                </h2>
+                <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
+                  Choose whether to end this browser session or revoke every session.
                 </p>
-                <Button
-                  onClick={() => setConfirming(true)}
-                  disabled={!user}
-                  className="mt-5 h-11 rounded-[2px] bg-danger px-6 font-mono text-[12px] font-[600] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
-                >
-                  Delete account
-                </Button>
               </div>
-            </section>
-          </div>
+            </div>
+
+            <div className="divide-y divide-rule px-6">
+              <SessionAction
+                icon={LogOut}
+                title="This device"
+                description="Ends this server session. Other devices stay signed in."
+                buttonLabel={endingSessions ? "Signing out…" : "Sign out"}
+                onClick={handleSignOut}
+                disabled={endingSessions}
+              />
+              <SessionAction
+                icon={ShieldOff}
+                title="Every device"
+                description="Revokes every active session immediately, including this one."
+                buttonLabel={endingSessions ? "Ending sessions…" : "Sign out everywhere"}
+                onClick={handleSignOutEverywhere}
+                disabled={endingSessions}
+              />
+            </div>
+
+            {sessionError && (
+              <p
+                role="alert"
+                className="mx-6 mb-6 rounded-[3px] border border-danger-bd bg-danger-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-danger"
+              >
+                {sessionError}
+              </p>
+            )}
+          </section>
         </div>
-      </div>
+
+        <section className="mt-6 overflow-hidden rounded-[6px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]">
+          <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
+            <div className="flex items-start gap-4">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-danger-bd bg-surface">
+                <Trash2 className="h-4 w-4 text-danger" aria-hidden />
+              </span>
+              <div>
+                <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-danger">
+                  danger zone
+                </span>
+                <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
+                  Delete this account
+                </h2>
+                <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
+                  Permanently removes every project, run, and generated file owned by
+                  this account. Nothing can be recovered afterwards.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setConfirming(true)}
+              disabled={!user}
+              className="h-11 shrink-0 rounded-[3px] bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
+            >
+              Delete account
+            </Button>
+          </div>
+        </section>
+      </main>
 
       {confirming && user && (
         <DeleteAccountDialog email={user.email} onClose={() => setConfirming(false)} />
       )}
+    </div>
+  );
+}
+
+function SessionAction({
+  icon: Icon,
+  title,
+  description,
+  buttonLabel,
+  onClick,
+  disabled,
+}: {
+  icon: typeof LogOut;
+  title: string;
+  description: string;
+  buttonLabel: string;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="py-5">
+      <div className="flex items-start gap-3">
+        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-fg-faint" aria-hidden />
+        <div>
+          <h3 className="text-[13.5px] font-[650] text-fg">{title}</h3>
+          <p className="mt-1 max-w-[38ch] text-[12px] leading-[1.5] text-fg-muted">
+            {description}
+          </p>
+        </div>
+      </div>
+      <Button
+        onClick={onClick}
+        variant="outline"
+        disabled={disabled}
+        className="mt-4 h-10 w-full justify-center rounded-[3px] border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
+      >
+        {buttonLabel}
+      </Button>
     </div>
   );
 }

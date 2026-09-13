@@ -25,10 +25,13 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   }, [entries.length]);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface">
-      <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface-2 px-[14px] py-[11px]">
-        <span className={cn(typeScale.label, "text-fg-faint")}>LIVE TIMELINE</span>
-        <span className="font-mono text-[12px] text-fg-faint">{entries.length} events</span>
+    <div className="flex h-full flex-col overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface-2/70 px-4 py-[13px]">
+        <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-faint")}>
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+          LIVE TIMELINE
+        </span>
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[10px] text-fg-faint">{entries.length} events</span>
       </div>
 
       {connectionLost && (
@@ -44,7 +47,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         </div>
       )}
 
-      <div ref={viewportRef} className="flex flex-1 flex-col gap-[6px] overflow-y-auto p-[10px]">
+      <div ref={viewportRef} className="cf-run-scroll flex flex-1 flex-col gap-[6px] overflow-y-auto p-3">
         {entries.length === 0 ? (
           <p className="p-2 text-[13px] text-fg-faint">Nothing yet — the run hasn&apos;t started.</p>
         ) : (

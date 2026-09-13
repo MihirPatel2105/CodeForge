@@ -101,7 +101,7 @@ export function ResultSummary({ snapshot, onDownload }: ResultSummaryProps) {
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-6 rounded-xl border-[1.5px] p-4",
+        "flex flex-wrap items-center gap-6 rounded-[6px] border-[1.5px] p-5 shadow-[0_16px_45px_rgba(22,24,28,0.06)]",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         t.border,
         t.soft,
@@ -123,7 +123,7 @@ export function ResultSummary({ snapshot, onDownload }: ResultSummaryProps) {
         <p className="max-w-[52ch] text-[13.5px] leading-[1.4] text-fg-muted">{detail}</p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-6">
+      <div className="flex w-full flex-wrap items-center gap-5 lg:w-auto lg:shrink-0 lg:gap-6">
         <Metric label="Iterations" value={String(snapshot.iterations)} tone="loop" />
         <Metric
           label="Tests"
@@ -135,7 +135,7 @@ export function ResultSummary({ snapshot, onDownload }: ResultSummaryProps) {
         <button
           type="button"
           onClick={onDownload}
-          className="shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface"
+          className="ml-auto shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)]"
         >
           Download code
         </button>

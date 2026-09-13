@@ -82,9 +82,9 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   const canDiff = selected?.status === "updated" && prevVersion != null;
 
   return (
-    <div className="flex h-full overflow-hidden rounded-xl border border-border bg-surface">
+    <div className="flex h-full flex-col overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)] sm:flex-row">
       {/* File rail */}
-      <div className="flex w-[216px] shrink-0 flex-col border-r border-border bg-surface-2">
+      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-surface-2 sm:h-auto sm:w-[196px] sm:border-r sm:border-b-0">
         <div className={cn("border-b border-border px-3 py-[11px]", typeScale.label, "text-fg-faint")}>
           GENERATED CODE
         </div>
@@ -164,7 +164,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
               )}
             </div>
 
-            <ScrollArea className="flex-1 bg-code-bg">
+            <ScrollArea className="cf-run-scroll flex-1 bg-code-bg">
               {view === "current" || !canDiff ? (
                 <CurrentView content={version.content} changedLines={version.changedLines ?? []} />
               ) : (

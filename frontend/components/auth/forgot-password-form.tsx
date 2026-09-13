@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowLeft, KeyRound, MailCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +11,8 @@ import { AuthAside } from "@/components/auth/auth-aside";
 import { LogoMark } from "@/components/brand/logo-mark";
 
 const FIELD =
-  "h-11 rounded-[2px] border-border-strong bg-surface px-[13px] text-[14.5px] " +
-  "focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0";
+  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
 
@@ -50,11 +51,11 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <div className="relative flex min-h-screen bg-bg">
+    <div className="cf-auth relative flex min-h-screen bg-bg">
       <AuthAside />
 
-      <main className="flex flex-1 items-center justify-center p-6 py-12">
-        <div className="w-full max-w-[380px]">
+      <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
+        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-[9px] lg:hidden">
             <LogoMark className="h-6 w-6 rounded-[2px]" />
             <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
@@ -64,31 +65,48 @@ export function ForgotPasswordForm() {
 
           {sent ? (
             <>
-              <span className={LABEL}>[ check your email ]</span>
-              <h1 className="font-display mt-5 text-[28px] font-[600] leading-[1.18] tracking-[-0.04em] text-fg">
-                If that address has an account, a link is on its way.
+              <span className="grid h-12 w-12 place-items-center rounded-[5px] border border-ok-bd bg-ok-soft text-ok">
+                <MailCheck className="h-5 w-5" aria-hidden />
+              </span>
+              <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok">
+                reset requested
+              </span>
+              <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
+                Check your inbox.
               </h1>
-              <p className="mt-[18px] text-[14.5px] leading-[1.6] text-fg-muted">
-                Open the email and follow the link to choose a new password. It expires
-                in 10 minutes and works once.
+              <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+                If that address has an account, a reset link is on its way. Open the
+                email to choose a new password.
               </p>
-              <p className="mt-6 text-[14px] text-fg-muted">
-                Didn&apos;t get it?{" "}
-                <button
-                  type="button"
-                  onClick={() => setSent(false)}
-                  className="font-[600] text-fg underline underline-offset-[4px] decoration-1 decoration-border-strong hover:decoration-fg"
-                >
-                  Try again
-                </button>
-              </p>
+              <div className="mt-6 rounded-[4px] border border-rule bg-bg/70 px-4 py-3">
+                <p className="text-[12.5px] leading-[1.55] text-fg-muted">
+                  The link works once and expires after 10 minutes. Existing sessions
+                  stay active until the password is changed.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSent(false)}
+                className="mt-6 inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.11em] text-fg-faint transition-colors hover:text-fg"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+                Try another address
+              </button>
             </>
           ) : (
             <>
-              <h1 className="font-display text-[30px] font-[600] leading-[1.15] tracking-[-0.04em] text-fg">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
+                <KeyRound className="h-3.5 w-3.5" aria-hidden />
+                password recovery
+              </span>
+              <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
                 Reset your password
               </h1>
-              <p className="mt-[18px] text-[14.5px] leading-[1.5] text-fg-muted">
+              <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+                Enter the email connected to your account. We&apos;ll send a private,
+                one-time link for choosing a new password.
+              </p>
+              <p className="mt-3 text-[13px] leading-[1.5] text-fg-muted">
                 Remembered it?{" "}
                 <Link
                   href="/login"
@@ -98,7 +116,7 @@ export function ForgotPasswordForm() {
                 </Link>
               </p>
 
-              <form className="mt-7 flex flex-col gap-4" onSubmit={handleSubmit}>
+              <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-[6px]">
                   <Label htmlFor="email" className={LABEL}>
                     EMAIL
@@ -128,13 +146,20 @@ export function ForgotPasswordForm() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="mt-2 h-[52px] w-full rounded-[2px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em]"
+                  className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
                 >
                   {submitting ? "Sending…" : "Send reset link"}
                 </Button>
               </form>
             </>
           )}
+
+          <div className="mt-6 flex items-center justify-center gap-2 border-t border-rule pt-5">
+            <ShieldCheck className="h-3.5 w-3.5 text-fg-faint" aria-hidden />
+            <p className="font-mono text-[9px] font-[600] uppercase tracking-[0.11em] text-fg-faint">
+              Private recovery request
+            </p>
+          </div>
         </div>
       </main>
     </div>

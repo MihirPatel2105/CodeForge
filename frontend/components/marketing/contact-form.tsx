@@ -12,17 +12,17 @@ import { filterDialCode, filterDigits } from "@/lib/input-filters";
 import { CONTACT_EMAIL } from "@/lib/contact-details";
 
 const FIELD =
-  "h-11 rounded-[2px] border-border-strong bg-surface px-[13px] text-[14.5px] " +
-  "focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0";
+  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] transition-colors " +
+  "focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
 
 /** A value the account owns and the form only displays. */
 const READONLY =
-  "flex h-11 items-center rounded-[2px] border border-border bg-surface-2 px-[13px] " +
-  "text-[14.5px] text-fg-muted";
+  "flex h-12 items-center rounded-[3px] border border-border bg-surface-2 px-[14px] " +
+  "text-[14px] text-fg-muted";
 
-const PANEL = "cf-frame self-start border border-border bg-surface px-7 py-9";
+const PANEL = "self-start rounded-[5px] border border-rule bg-bg/70 p-6";
 
 const MAX_MESSAGE = 500;
 
@@ -78,7 +78,7 @@ export function ContactForm() {
   if (loading) {
     return (
       <div className={PANEL}>
-        <span className={LABEL}>[ checking your session ]</span>
+        <span className={LABEL}>checking your session…</span>
       </div>
     );
   }
@@ -86,8 +86,8 @@ export function ContactForm() {
   if (!user) {
     return (
       <div className={PANEL}>
-        <span className={LABEL}>[ sign in to continue ]</span>
-        <h2 className="font-display mt-5 text-[22px] font-[600] leading-[1.2] tracking-[-0.035em] text-fg">
+        <span className="inline-flex rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-accent">sign in to continue</span>
+        <h2 className="font-display mt-5 text-[23px] font-[650] leading-[1.2] tracking-[-0.04em] text-fg">
           Messages come from an account.
         </h2>
         <p className="mt-[18px] text-[14.5px] leading-[1.6] text-fg-muted">
@@ -98,13 +98,13 @@ export function ContactForm() {
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-[2px] bg-fg px-7 py-[14px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
+            className="inline-flex items-center justify-center rounded-[3px] bg-fg px-6 py-[13px] font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[14px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
+            className="inline-flex items-center justify-center rounded-[3px] border border-border-strong bg-surface px-6 py-[13px] font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
           >
             Create an account
           </Link>
@@ -126,8 +126,8 @@ export function ContactForm() {
   if (sent) {
     return (
       <div className={PANEL}>
-        <span className={LABEL}>[ message sent ]</span>
-        <h2 className="font-display mt-5 text-[22px] font-[600] leading-[1.2] tracking-[-0.035em] text-fg">
+        <span className="inline-flex rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-ok">message sent</span>
+        <h2 className="font-display mt-5 text-[23px] font-[650] leading-[1.2] tracking-[-0.04em] text-fg">
           Thanks &mdash; we&rsquo;ve got it.
         </h2>
         <p className="mt-[18px] text-[14.5px] leading-[1.6] text-fg-muted">
@@ -149,7 +149,7 @@ export function ContactForm() {
   }
 
   return (
-    <form className="flex h-full flex-col gap-[15px]" onSubmit={handleSubmit}>
+    <form className="flex h-full flex-col gap-5" onSubmit={handleSubmit}>
       {/* Shown, not entered. The server reads both from the account whatever the browser
           sends, so an editable field here would misrepresent what the message will say. */}
       <div className="flex flex-col gap-[6px]">
@@ -219,7 +219,7 @@ export function ContactForm() {
           placeholder="What happened, and what you expected instead"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="min-h-[152px] flex-1 resize-y rounded-[2px] border-border-strong bg-surface px-[13px] py-[11px] text-[14.5px] leading-[1.6] focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="min-h-[152px] flex-1 resize-y rounded-[3px] border-border-strong bg-bg px-[14px] py-3 text-[14px] leading-[1.6] transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0"
         />
       </div>
 
@@ -235,7 +235,7 @@ export function ContactForm() {
       <Button
         type="submit"
         disabled={!canSend || submitting}
-        className="mt-1 h-[50px] w-full rounded-[2px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em]"
+        className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
       >
         {submitting ? "sending…" : "send message"}
       </Button>

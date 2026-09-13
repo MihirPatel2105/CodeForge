@@ -22,20 +22,12 @@ import { tokenizePythonLine } from "@/lib/python-highlight";
  * code panel uses, so this is the real thing rather than a hand-coloured mock.
  */
 
-const FILE = "main.py";
-
-const LINES = [
-  'from fastapi import FastAPI',
-  'from models import Book',
-  "",
-  "app = FastAPI()",
-  "",
-  '@app.post("/books", status_code=201)',
-  "async def create(book: BookIn):",
-  "    doc = Book(**book.model_dump())",
-  "    await doc.insert()",
-  "    return BookOut(id=str(doc.id))",
-] as const;
+export type HeroOutputDemo = {
+  id: string;
+  file: string;
+  lines: readonly string[];
+  result: string;
+};
 
 const TOKEN_CLASS: Record<string, string> = {
   kw: "text-code-kw",
@@ -49,19 +41,29 @@ const TOKEN_CLASS: Record<string, string> = {
 const LINE_MS = 260;
 const HOLD_MS = 3400;
 
-export function HeroOutput({ label }: { label: string }) {
+export function HeroOutput({
+  label,
+  demo,
+}: {
+  label: string;
+  demo: HeroOutputDemo;
+}) {
   // -1 keeps the card empty for one beat before the first line lands, so the sequence
   // reads as starting rather than as already half-done on arrival.
   const [shown, setShown] = useState(0);
-  const done = shown >= LINES.length;
+  const done = shown >= demo.lines.length;
 
   useEffect(() => {
-    const timer = setTimeout(() => setShown((n) => (n >= LINES.length ? 0 : n + 1)), done ? HOLD_MS : LINE_MS);
+    const timer = setTimeout(
+      () => setShown((n) => (n >= demo.lines.length ? 0 : n + 1)),
+      done ? HOLD_MS : LINE_MS,
+    );
     return () => clearTimeout(timer);
-  }, [shown, done]);
+  }, [shown, done, demo.lines.length]);
 
   return (
-    <div className="w-full">
+    <div className="cf-invert cf-lift cf-home-output relative w-full overflow-hidden rounded-[6px] border border-border bg-bg p-4 shadow-[0_28px_80px_rgba(22,24,28,0.18)] sm:p-5">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
       <div className="mb-4 flex items-baseline justify-between">
         <span className={label}>what it writes</span>
         <span
@@ -74,11 +76,11 @@ export function HeroOutput({ label }: { label: string }) {
         </span>
       </div>
 
-      <div className="cf-frame overflow-hidden border border-border bg-surface">
+      <div className="cf-frame overflow-hidden border border-border bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div className="flex items-center justify-between border-b border-rule px-4 py-[9px]">
-          <span className="font-mono text-[12px] font-[600] text-fg">{FILE}</span>
+          <span className="font-mono text-[12px] font-[600] text-fg">{demo.file}</span>
           <span className="font-mono text-[11px] text-fg-faint">
-            {String(Math.min(shown, LINES.length)).padStart(2, "0")}/{LINES.length}
+            {String(Math.min(shown, demo.lines.length)).padStart(2, "0")}/{demo.lines.length}
           </span>
         </div>
 
@@ -86,7 +88,7 @@ export function HeroOutput({ label }: { label: string }) {
             while you read the headline beside it is worse than one that sits still. */}
         <div className="h-[236px] bg-code-bg px-4 py-3">
           <ol className="font-mono text-[12.5px] leading-[1.85]">
-            {LINES.map((line, i) => {
+            {demo.lines.map((line, i) => {
               const visible = i < shown;
               const newest = i === shown - 1;
               return (
@@ -131,7 +133,7 @@ export function HeroOutput({ label }: { label: string }) {
               done ? "font-[600] text-ok" : "text-fg-faint",
             )}
           >
-            {done ? "8 passed in 1.42s" : "running the suite…"}
+            {done ? demo.result : "running the suite…"}
           </span>
         </div>
       </div>

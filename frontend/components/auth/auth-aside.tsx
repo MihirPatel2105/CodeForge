@@ -141,22 +141,28 @@ export function AuthAside() {
   const progress = ((step + 1) / RUN.length) * 100;
 
   return (
-    <aside className="cf-invert cf-lift relative hidden flex-col justify-center overflow-hidden bg-bg px-10 py-9 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[52%] xl:w-[54%]">
+    <aside className="cf-auth-aside cf-invert cf-lift relative hidden flex-col justify-center overflow-hidden bg-bg px-10 py-9 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[50%] xl:w-[52%] xl:px-14">
+      <div className="relative z-10 mx-auto w-full max-w-[640px]">
       <div className="shrink-0">
         {/* A wordmark is expected to be the way home; this one was inert, leaving the
             auth screens with no route back to the landing page at all. */}
-        <Link
-          href="/"
-          aria-label="CodeForge home"
-          className="inline-flex w-fit items-center gap-[9px] transition-opacity hover:opacity-80"
-        >
-          <LogoMark className="h-6 w-6 rounded-[2px]" />
-          <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
-            codeforge
+        <div className="flex items-center justify-between gap-5">
+          <Link
+            href="/"
+            aria-label="CodeForge home"
+            className="inline-flex w-fit items-center gap-[9px] transition-opacity hover:opacity-80"
+          >
+            <LogoMark className="h-6 w-6 rounded-[2px]" />
+            <span className="font-display text-[16px] font-[600] tracking-[-0.03em] text-fg">
+              codeforge
+            </span>
+          </Link>
+          <span className="rounded-full border border-border px-3 py-1.5 font-mono text-[8.5px] font-[700] uppercase tracking-[0.12em] text-fg-faint">
+            agent workspace
           </span>
-        </Link>
+        </div>
 
-        <h1 className="font-display mt-10 max-w-[20ch] text-[27px] font-[600] leading-[1.24] tracking-[-0.04em] text-fg">
+        <h1 className="font-display mt-10 max-w-[18ch] text-[31px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg xl:text-[38px]">
           Five AI agents build your API. You approve the work.
         </h1>
         <p className="mt-5 max-w-[44ch] text-[14.5px] leading-[1.6] text-fg-muted">
@@ -164,9 +170,15 @@ export function AuthAside() {
           <em className="not-italic font-[650] text-fg">run for real</em> in an isolated
           container while you watch.
         </p>
+
+        <dl className="mt-8 grid grid-cols-3 border-y border-rule">
+          <AuthFact value="05" label="agents" />
+          <AuthFact value="02" label="approvals" bordered />
+          <AuthFact value="01" label="feedback loop" bordered />
+        </dl>
       </div>
 
-      <div className="mt-12 shrink-0">
+      <div className="mt-9 shrink-0 rounded-[6px] border border-border bg-surface/55 p-5 shadow-[0_26px_70px_rgba(0,0,0,0.18)] backdrop-blur-sm">
         <div className="mb-5 flex items-center justify-between">
           {/* Labelled honestly: this is a recording on a loop, not a live run. */}
           <span className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-fg-faint">
@@ -235,6 +247,28 @@ export function AuthAside() {
           })}
         </ol>
       </div>
+      </div>
     </aside>
+  );
+}
+
+function AuthFact({
+  value,
+  label,
+  bordered,
+}: {
+  value: string;
+  label: string;
+  bordered?: boolean;
+}) {
+  return (
+    <div className={cn("py-4", bordered && "border-l border-rule pl-4")}>
+      <dt className="font-display text-[16px] font-[700] tracking-[-0.04em] text-fg">
+        {value}
+      </dt>
+      <dd className="mt-1 font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">
+        {label}
+      </dd>
+    </div>
   );
 }

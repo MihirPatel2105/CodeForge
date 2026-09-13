@@ -261,6 +261,700 @@
   mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 82%);
 }
 
+/* Homepage-only visual system. The `.cf-home` boundary keeps these atmosphere and
+   depth treatments out of the dashboard and authentication routes. */
+.cf-home {
+  position: relative;
+  overflow: clip;
+  background:
+    radial-gradient(circle at 82% 4%, rgba(67, 56, 202, 0.08), transparent 26rem),
+    var(--bg);
+}
+
+.cf-home > header {
+  border-color: rgba(205, 202, 194, 0.72);
+  background: rgba(250, 249, 247, 0.82);
+  box-shadow: 0 1px 0 rgba(22, 24, 28, 0.025);
+}
+
+.cf-home-hero {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 42%, rgba(67, 56, 202, 0.105), transparent 24rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(246, 244, 239, 0.48));
+}
+
+.cf-home-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -17rem;
+  right: -12rem;
+  width: 38rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(67, 56, 202, 0.11);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5rem rgba(67, 56, 202, 0.025),
+    0 0 0 10rem rgba(67, 56, 202, 0.018);
+  pointer-events: none;
+}
+
+.cf-home-title-accent {
+  color: transparent;
+  background: linear-gradient(92deg, var(--fg) 0%, var(--fg) 20%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.cf-home-prompt {
+  box-shadow:
+    0 22px 55px rgba(22, 24, 28, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.cf-home-output {
+  --code-bg: #0f1116;
+  --code-fg: #e4e7ec;
+  --code-kw: #b794ff;
+  --code-str: #7fd8ae;
+  --code-com: #626a76;
+  --code-fn: #8bb8ff;
+  --code-num: #f0a860;
+}
+
+.cf-home-output::after {
+  content: "";
+  position: absolute;
+  right: -20%;
+  bottom: -55%;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(139, 147, 248, 0.06);
+  filter: blur(42px);
+  pointer-events: none;
+}
+
+.cf-home-output > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cf-home-walkthrough {
+  background:
+    linear-gradient(180deg, rgba(227, 225, 219, 0.34), transparent 9rem),
+    radial-gradient(circle at 92% 38%, rgba(67, 56, 202, 0.045), transparent 28rem),
+    var(--bg);
+}
+
+.cf-home-stack {
+  position: relative;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 83% 22%, rgba(139, 147, 248, 0.11), transparent 26rem),
+    linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.018));
+}
+
+.cf-home-stack::after {
+  content: "system / execution manifest";
+  position: absolute;
+  right: 3.5rem;
+  bottom: 2rem;
+  color: var(--fg-faint);
+  font-family: var(--font-mono-stack);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cf-home-closing {
+  background:
+    radial-gradient(circle at 72% 42%, rgba(67, 56, 202, 0.1), transparent 22rem),
+    linear-gradient(180deg, #f7f5f0, var(--bg));
+}
+
+.cf-home-closing .cf-frame {
+  border-color: var(--accent-bd);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 24px 70px rgba(67, 56, 202, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+/* The About page reads like a product argument rather than a documentation page.
+   Its grid and faint violet field connect it to the landing page while the proof card
+   gives the opening claim something concrete to point at. */
+.cf-about {
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 88% 6%, rgba(67, 56, 202, 0.055), transparent 30rem),
+    var(--bg);
+}
+
+.cf-about > header {
+  background: rgba(250, 249, 247, 0.88);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-about-hero {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 77% 30%, rgba(67, 56, 202, 0.1), transparent 28rem),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.74), rgba(250, 249, 247, 0.36)),
+    var(--bg);
+}
+
+.cf-about-hero::before,
+.cf-about-evidence::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(205, 202, 194, 0.42) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(205, 202, 194, 0.42) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.58;
+  -webkit-mask-image: linear-gradient(115deg, #000 0%, transparent 76%);
+  mask-image: linear-gradient(115deg, #000 0%, transparent 76%);
+}
+
+.cf-about-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 32rem;
+  height: 32rem;
+  right: -18rem;
+  top: -18rem;
+  border: 1px solid rgba(67, 56, 202, 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5rem rgba(67, 56, 202, 0.025),
+    0 0 0 10rem rgba(67, 56, 202, 0.014);
+}
+
+.cf-about-proof {
+  transform: translateZ(0);
+}
+
+.cf-about-evidence {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(139, 147, 248, 0.1), transparent 28rem),
+    var(--bg);
+}
+
+.cf-about-evidence::before {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 48%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 48%, transparent);
+}
+
+/* Standalone product pages share the same quiet instrument surface, then use their
+   content to establish a distinct rhythm rather than inheriting one generic template. */
+.cf-subpage,
+.cf-contact {
+  overflow-x: clip;
+}
+
+.cf-subpage > header,
+.cf-contact > header {
+  background: rgba(250, 249, 247, 0.88);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-subpage-hero,
+.cf-contact-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(67, 56, 202, 0.1), transparent 27rem),
+    linear-gradient(112deg, rgba(255, 255, 255, 0.78), rgba(250, 249, 247, 0.38)),
+    var(--bg);
+}
+
+.cf-subpage-hero::before,
+.cf-contact-hero::before,
+.cf-how-control::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(205, 202, 194, 0.36) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(205, 202, 194, 0.36) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(105deg, #000, transparent 78%);
+  mask-image: linear-gradient(105deg, #000, transparent 78%);
+}
+
+.cf-contact-hero {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(67, 56, 202, 0.105), transparent 26rem),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.76), rgba(247, 246, 243, 0.5)),
+    var(--bg);
+}
+
+.cf-how-control {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 14%, rgba(139, 147, 248, 0.1), transparent 26rem),
+    var(--bg);
+}
+
+.cf-how-control::before {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 50%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 50%, transparent);
+}
+
+@media (max-width: 639px) {
+  .cf-home-hero::after {
+    top: -13rem;
+    right: -20rem;
+  }
+
+  .cf-home-stack::after {
+    display: none;
+  }
+}
+
+/* Authentication combines a dark product proof surface with a quiet form workspace. */
+.cf-auth {
+  overflow-x: clip;
+}
+
+.cf-auth-main {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 78% 14%, rgba(67, 56, 202, 0.09), transparent 22rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 246, 243, 0.76)),
+    var(--bg);
+}
+
+.cf-auth-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(205, 202, 194, 0.32) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(205, 202, 194, 0.32) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: 0.42;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 72%);
+  mask-image: linear-gradient(to bottom, #000, transparent 72%);
+}
+
+.cf-auth-aside {
+  background:
+    radial-gradient(circle at 78% 16%, rgba(139, 147, 248, 0.13), transparent 22rem),
+    radial-gradient(circle at 8% 82%, rgba(49, 193, 139, 0.055), transparent 20rem),
+    var(--bg);
+}
+
+.cf-auth-aside::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 88%);
+  mask-image: linear-gradient(to bottom, #000, transparent 88%);
+}
+
+.cf-auth-aside::after {
+  content: "";
+  position: absolute;
+  width: 30rem;
+  height: 30rem;
+  right: -16rem;
+  top: -15rem;
+  border: 1px solid rgba(139, 147, 248, 0.12);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4rem rgba(139, 147, 248, 0.025),
+    0 0 0 8rem rgba(139, 147, 248, 0.016);
+  pointer-events: none;
+}
+
+/* Profile and settings share one calm account surface. The subtle grid keeps them
+   connected to the product without competing with forms and security controls. */
+.cf-account {
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(67, 56, 202, 0.07), transparent 27rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), transparent 30rem),
+    var(--bg);
+}
+
+.cf-account > header {
+  z-index: 40;
+  background: rgba(250, 249, 247, 0.86);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-account-hero {
+  isolation: isolate;
+  background:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.98) 0 58%, rgba(237, 239, 255, 0.74)),
+    var(--surface);
+}
+
+.cf-account-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 25rem;
+  height: 25rem;
+  right: -6rem;
+  top: -12rem;
+  border: 1px solid rgba(67, 56, 202, 0.1);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4rem rgba(67, 56, 202, 0.022),
+    0 0 0 8rem rgba(67, 56, 202, 0.016);
+  pointer-events: none;
+}
+
+/* Projects-only visual system. It shares the homepage's warm paper and indigo signal,
+   while keeping the denser, operational character expected after sign-in. */
+.cf-projects {
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 84% 14%, rgba(67, 56, 202, 0.075), transparent 25rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 28rem),
+    var(--bg);
+}
+
+.cf-projects > header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(250, 249, 247, 0.84);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-projects-intro {
+  isolation: isolate;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.98) 0 52%, rgba(237, 239, 255, 0.78)),
+    var(--surface);
+}
+
+.cf-projects-intro::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 28rem;
+  height: 28rem;
+  right: -7rem;
+  top: -15rem;
+  border: 1px solid rgba(67, 56, 202, 0.13);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 3.75rem rgba(67, 56, 202, 0.035),
+    0 0 0 7.5rem rgba(67, 56, 202, 0.02);
+  pointer-events: none;
+}
+
+.cf-projects-intro::after {
+  content: "workspace / api systems / agent runs";
+  position: absolute;
+  right: 2rem;
+  bottom: 1.25rem;
+  color: var(--accent);
+  font-family: var(--font-mono-stack);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.cf-project-card::after {
+  content: "";
+  position: absolute;
+  width: 15rem;
+  height: 15rem;
+  right: -8rem;
+  top: -9rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(67, 56, 202, 0.09), transparent 68%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.cf-project-card:hover::after {
+  opacity: 1;
+}
+
+.cf-project-new {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 12px,
+      rgba(67, 56, 202, 0.025) 12px,
+      rgba(67, 56, 202, 0.025) 13px
+    );
+}
+
+.cf-project-new::after {
+  content: "+";
+  position: absolute;
+  right: 1.25rem;
+  top: 0.75rem;
+  color: var(--border-strong);
+  font-family: var(--font-mono-stack);
+  font-size: 4.5rem;
+  font-weight: 300;
+  line-height: 1;
+  opacity: 0.36;
+  transition: color 300ms ease, transform 300ms ease;
+}
+
+.cf-project-new:hover::after {
+  color: var(--accent-bd);
+  transform: rotate(90deg);
+}
+
+.cf-project-empty {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at center, rgba(237, 239, 255, 0.8), transparent 18rem),
+    rgba(255, 255, 255, 0.75);
+}
+
+.cf-project-empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(67, 56, 202, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(67, 56, 202, 0.045) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at center, #000, transparent 65%);
+  pointer-events: none;
+}
+
+/* Project workspace: the same visual language as the list, with denser surfaces for
+   writing a prompt and reading run output. */
+.cf-project-detail {
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 9% 31%, rgba(67, 56, 202, 0.055), transparent 22rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), transparent 34rem),
+    var(--bg);
+}
+
+.cf-project-detail > header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(250, 249, 247, 0.84);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-project-detail-hero {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.99), rgba(247, 247, 255, 0.92)),
+    var(--surface);
+}
+
+.cf-project-detail-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 25rem;
+  height: 25rem;
+  left: -13rem;
+  bottom: -20rem;
+  border: 1px solid rgba(67, 56, 202, 0.11);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 3.5rem rgba(67, 56, 202, 0.026),
+    0 0 0 7rem rgba(67, 56, 202, 0.015);
+  pointer-events: none;
+}
+
+.cf-project-detail-stats {
+  border-top: 1px solid var(--rule);
+}
+
+.cf-project-composer-head {
+  background:
+    radial-gradient(circle at 100% 0, rgba(67, 56, 202, 0.08), transparent 10rem),
+    linear-gradient(135deg, rgba(243, 242, 238, 0.62), rgba(255, 255, 255, 0.9));
+}
+
+.cf-project-history-empty {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(circle at center, rgba(237, 239, 255, 0.65), transparent 16rem);
+}
+
+.cf-project-history-empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(67, 56, 202, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(67, 56, 202, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(circle at center, #000, transparent 70%);
+  pointer-events: none;
+}
+
+.cf-run-history-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cf-run-history-prompt {
+  grid-column: 1 / -1;
+}
+
+/* Run control room. The status colours stay semantic; the atmosphere comes from
+   neutral light, paper depth, and a restrained indigo execution signal. */
+.cf-run-page {
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 88% 9%, rgba(67, 56, 202, 0.07), transparent 27rem),
+    radial-gradient(circle at 8% 48%, rgba(67, 56, 202, 0.035), transparent 24rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), transparent 38rem),
+    var(--bg);
+}
+
+.cf-run-page > header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 249, 247, 0.86);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.cf-run-hero {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.99), rgba(247, 247, 255, 0.94)),
+    var(--surface);
+}
+
+.cf-run-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 27rem;
+  height: 27rem;
+  left: -14rem;
+  bottom: -21rem;
+  border: 1px solid rgba(67, 56, 202, 0.11);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 3.75rem rgba(67, 56, 202, 0.026),
+    0 0 0 7.5rem rgba(67, 56, 202, 0.015);
+  pointer-events: none;
+}
+
+.cf-run-scroll {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.cf-run-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.cf-run-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cf-run-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
+@media (min-width: 768px) {
+  .cf-run-history-grid {
+    grid-template-columns: minmax(0, 1fr) 150px 62px 88px 118px 28px;
+  }
+
+  .cf-run-history-prompt {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cf-project-detail-stats {
+    border-top: 0;
+    border-left: 1px solid var(--rule);
+  }
+}
+
+@media (max-width: 639px) {
+  .cf-projects-intro::before {
+    right: -18rem;
+  }
+
+  .cf-projects-intro::after {
+    display: none;
+  }
+
+  .cf-project-detail-hero::before {
+    left: -18rem;
+  }
+
+  .cf-run-hero::before {
+    left: -19rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-project-card,
+  .cf-project-card::after,
+  .cf-project-new,
+  .cf-project-new::after {
+    transition: none;
+  }
+}
+
 /* Corner ticks instead of a boxed card — a registration mark, the way a technical
    drawing or a camera frame indicates an area rather than fencing it in. */
 .cf-frame {
@@ -304,49 +998,6 @@
 .cf-fade-top {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 38px);
   mask-image: linear-gradient(to bottom, transparent 0, #000 38px);
-}
-
-/*
- * Smooth disclosure for the FAQ.
- *
- * A native <details> snaps open, because the browser toggles its content between
- * rendered and not — there is no intermediate height to animate. `::details-content`
- * gives that hidden box a handle, and `interpolate-size` makes `auto` a legal endpoint
- * for a height transition, so the panel can grow to whatever its text needs without a
- * hard-coded max-height that would clip a long answer or drag on a short one.
- *
- * Deliberately NOT transitioning `content-visibility` with `allow-discrete`, which is the
- * usual recipe for keeping the text painted through a close. Measured here, it wedges:
- * content-visibility sticks at `hidden` after a toggle, block-size never leaves 0, and
- * the panel stops opening at all. Animating block-size alone is the behaviour that
- * actually holds up — the trade is that a close cuts rather than fades, which is a far
- * smaller flaw than a disclosure that silently stops disclosing.
- *
- * Progressive enhancement throughout: where any of this is unsupported the panel simply
- * opens instantly, which is the behaviour it had before. Nothing depends on it, and no
- * JavaScript is involved — the <details> keeps its native keyboard and screen-reader
- * semantics either way.
- */
-@supports (interpolate-size: allow-keywords) {
-  :root {
-    interpolate-size: allow-keywords;
-  }
-}
-
-.cf-disclose::details-content {
-  block-size: 0;
-  overflow: hidden;
-  transition: block-size 320ms cubic-bezier(0.22, 0.7, 0.28, 1);
-}
-
-.cf-disclose[open]::details-content {
-  block-size: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cf-disclose::details-content {
-    transition: none;
-  }
 }
 
 /* A live caret, for the one place the product speaks in the first person: the prompt.

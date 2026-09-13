@@ -62,7 +62,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <div className="sticky bottom-[56px] z-10 mx-[22px] overflow-hidden rounded-[4px] border-2 border-warn bg-surface shadow-[0_-6px_26px_rgba(20,22,26,.13)]">
+    <div className="sticky bottom-4 z-30 mt-5 overflow-hidden rounded-[6px] border-2 border-warn bg-surface shadow-[0_-8px_34px_rgba(20,22,26,.16)]">
       <div
         aria-hidden
         className="h-1 motion-safe:animate-[cfShift_0.8s_linear_infinite]"

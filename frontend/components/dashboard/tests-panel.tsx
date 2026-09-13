@@ -31,7 +31,7 @@ export function TestsPanel({ tests, failures = [] }: TestsPanelProps) {
   const scoreTone = tests == null ? "text-fg-faint" : tests.failed === 0 ? "text-ok" : "text-warn";
 
   return (
-    <div className="flex min-h-[196px] w-[300px] shrink-0 flex-col gap-2 rounded-xl border border-border bg-surface p-3">
+    <div className="flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-[6px] border border-border bg-surface p-4 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:w-[300px]">
       <div className="flex items-center justify-between">
         <span className={cn(typeScale.label, "text-fg-faint")}>TESTS</span>
         <span className={cn("font-mono text-[18px] font-bold", scoreTone)}>

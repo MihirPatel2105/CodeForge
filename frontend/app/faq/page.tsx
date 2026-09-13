@@ -1,144 +1,131 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HeaderFacts } from "@/components/marketing/header-facts";
-import { MarketingPage } from "@/components/marketing/marketing-page";
+import { ArrowRight, Box, CircleHelp, Clock3, Coins, MessageSquare, ShieldCheck } from "lucide-react";
+import { SiteHeader } from "@/components/marketing/site-header";
+import { SiteFooter } from "@/components/marketing/marketing-actions";
+import { FaqColumn } from "@/components/marketing/faq-column";
 
 export const metadata: Metadata = {
   title: "FAQ · CodeForge",
   description:
-    "What CodeForge can build, whether the generated code really runs, what it costs, what happens when an agent fails, and who can see your runs.",
+    "Clear answers about what CodeForge builds, how the agents recover from mistakes, what runs in the sandbox, and what every project costs.",
 };
 
-/** Answers are written against what the system actually does today — the scope limits,
- * the loop caps, the sandbox, the free-tier fallback chains — rather than what it might
- * do later. An FAQ that overstates is worse than none. */
 const FAQ = [
   {
+    category: "building",
     q: "What kinds of APIs can it build?",
-    a: "CRUD REST APIs over one or two entities: FastAPI, MongoDB via Beanie, and a pytest suite. The scope is locked there on purpose — reliability on a narrow target is worth more than breadth that works occasionally. It does not generate front-ends, authentication, or arbitrary application types.",
+    a: "CRUD REST APIs over one or two entities: FastAPI, MongoDB through Beanie, and a pytest suite. The scope is locked there deliberately. CodeForge does not currently generate frontends, authentication systems, or arbitrary application types.",
   },
   {
+    category: "execution",
     q: "Does it actually run the generated code?",
-    a: "Yes. Every run ends in a Docker container with networking disabled, running MongoDB alongside the generated app, executing the generated pytest suite. The pass/fail you see is the interpreter's result, not a model's opinion of the code.",
+    a: "Yes. Every run ends in a Docker container with networking disabled. MongoDB runs beside the generated application, and the generated pytest suite executes against it. The pass or fail you see is the interpreter's result.",
   },
   {
+    category: "cost",
     q: "What does it cost to run?",
-    a: "Nothing. Every model in the pipeline is a free tier — Groq and OpenRouter, with a local model as the final fallback. Each agent has an ordered chain, so a rate limit moves the request down the chain instead of failing the run.",
+    a: "Nothing. The pipeline uses free-tier providers, with an ordered fallback chain for each agent. A rate limit moves that stage to its next provider instead of immediately ending the run.",
   },
   {
+    category: "recovery",
     q: "What happens when an agent gets something wrong?",
-    a: "It goes back. A blocking review finding, or a failing test, returns the code to the Coder with the specific problem attached, and the pipeline runs again from there. Each of those loops is capped at three attempts, counted separately, so a run always terminates with something to show.",
+    a: "A blocking review finding or a failing test returns the code to the Coder with the specific evidence attached. The relevant files are rewritten and the pipeline continues from there. Review and sandbox loops are capped separately at three attempts.",
   },
   {
+    category: "control",
     q: "Do I have to approve anything?",
-    a: "Twice. Once on the requirements the PM extracted, once on the Architect's design. The run pauses and waits — those are the two cheapest points at which to catch a misunderstanding, both before any code exists.",
+    a: "Twice. The first approval confirms the requirements extracted by the PM. The second confirms the Architect's routes and models. The run waits at both checkpoints because these are the cheapest places to catch a misunderstanding.",
   },
   {
-    q: "What if the tests don't all pass?",
-    a: "You still get everything: the generated files, the review findings, and the real pytest output. A run whose code works but whose tests partly fail is reported as partial, and one that exhausts its fix attempts is reported as a loop limit — a designed stop, never dressed up as success.",
+    category: "results",
+    q: "What if the tests do not all pass?",
+    a: "You still keep the generated files, review findings and real pytest output. A run with some failed tests is reported as partial. A run that exhausts its repair attempts is reported as a loop limit, which is a deliberate stop rather than a crash.",
   },
   {
+    category: "privacy",
     q: "Can anyone else see my projects and runs?",
-    a: "No. Projects and runs are scoped to your account, and the API checks ownership on every request — including the live event stream — so a run id alone is not enough to read someone else's work.",
+    a: "No. Projects and runs are scoped to your account, and the API checks ownership on every request, including the live event stream. Knowing a run ID is not enough to read another account's work.",
   },
   {
+    category: "timing",
     q: "How long does a run take?",
-    a: "Typically a few minutes, most of it spent waiting on free-tier models. The two approval pauses are open-ended: the pipeline waits for you rather than timing out.",
+    a: "Usually a few minutes, with most of that time spent waiting on free-tier models. The two approval pauses are open-ended: the pipeline waits for you instead of timing out.",
   },
   {
-    q: "What is the 'example library' toggle?",
-    a: "Retrieval. With it on, the agents are shown a handful of hand-written reference APIs alongside your prompt. It exists so runs can be compared with and without retrieval — the difference is one of the project's reported measurements.",
+    category: "retrieval",
+    q: "What is the example library toggle?",
+    a: "It enables retrieval. With it on, the agents receive a small set of hand-written reference APIs alongside your prompt. That makes it possible to compare runs with and without examples while keeping the rest of the pipeline the same.",
   },
 ] as const;
 
-/** The five answers most people arrive wanting, readable without opening anything. */
-const AT_A_GLANCE = [
-  { k: "scope", v: "CRUD REST APIs over one or two entities" },
-  { k: "execution", v: "Real, in a container with networking disabled" },
-  { k: "cost", v: "$0 — free-tier models only" },
-  { k: "approvals", v: "Two: the requirements, then the design" },
-  { k: "fix attempts", v: "Three per loop, counted separately" },
+const QUICK_FACTS = [
+  { icon: Box, value: "1–2", label: "entities per API" },
+  { icon: ShieldCheck, value: "02", label: "human approvals" },
+  { icon: Clock3, value: "03", label: "attempts per loop" },
+  { icon: Coins, value: "$0", label: "free-tier models" },
 ] as const;
 
 export default function FaqPage() {
   return (
-    <MarketingPage
-      eyebrow="faq"
-      title="Questions worth asking before you trust it."
-      lede="Short answers about what CodeForge builds, what it refuses to build, and what happens when the models underneath it misbehave."
-      aside={<HeaderFacts label="at a glance" rows={AT_A_GLANCE} />}
-    >
-      <div>
-        {/* One column, not two. Side-by-side cells share a grid row, so the row grows to
-            the taller of the pair — opening a question on the left silently inflated the
-            blank space under its neighbour on the right, which reads as both having
-            opened. A single stack also keeps the reading order the obvious one.
-            The horizontal space is instead taken by the margin label, matching the
-            `[01]` notation the other marketing pages use. */}
-        <div className="grid gap-x-14 gap-y-5 lg:grid-cols-[11rem_1fr]">
-          <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.14em] text-fg-faint lg:pt-6">
-            [01] COMMON QUESTIONS
-          </span>
+    <div className="cf-subpage min-h-screen bg-bg">
+      <SiteHeader />
+      <main>
+        <section className="cf-subpage-hero border-b border-rule">
+          <div className="relative z-10 mx-auto grid w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:min-h-[620px] lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.75fr)] lg:px-14">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent"><CircleHelp className="h-3.5 w-3.5" aria-hidden />frequently asked</span>
+              <h1 className="font-display mt-8 max-w-[13ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[60px]">Questions worth asking before you trust a run.</h1>
+              <p className="mt-7 max-w-[58ch] text-[16px] leading-[1.72] text-fg-muted sm:text-[17px]">Clear answers about what CodeForge builds, where it stops, what it costs and what happens when the agents underneath it misbehave.</p>
+              <Link href="#questions" className="mt-9 inline-flex items-center gap-2 rounded-[3px] bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90">Browse the answers<ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+            </div>
 
-          <dl className="border-t border-rule">
-            {FAQ.map((item) => (
-              <div key={item.q} className="border-b border-rule">
-                {/* <details> rather than a JS accordion: keyboard and screen-reader
-                    behaviour comes for free, and it still works if scripting fails. */}
-                <details className="cf-disclose group">
-                  <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-6 text-[16px] font-[600] leading-[1.45] text-fg transition-colors hover:text-fg-muted [&::-webkit-details-marker]:hidden">
-                    {item.q}
-                    <span
-                      aria-hidden
-                      className="mt-[3px] shrink-0 font-mono text-[15px] text-fg-faint transition-transform duration-[320ms] ease-[cubic-bezier(.22,.7,.28,1)] group-open:rotate-45"
-                    >
-                      +
-                    </span>
-                  </summary>
-                  <p className="max-w-[76ch] pb-7 pr-10 text-[15px] leading-[1.7] text-fg-muted">
-                    {item.a}
-                  </p>
-                </details>
+            <div className="grid grid-cols-2 overflow-hidden rounded-[7px] border border-border bg-surface shadow-[0_28px_80px_rgba(22,24,28,0.09)]">
+              {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
+                <div key={label} className="border-b border-r border-rule p-6 sm:p-7">
+                  <Icon className="h-4 w-4 text-accent" aria-hidden />
+                  <p className="font-display mt-8 text-[28px] font-[650] tracking-[-0.05em] text-fg">{value}</p>
+                  <p className="mt-1 font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">{label}</p>
+                </div>
+              ))}
+              <div className="col-span-2 flex items-center justify-between gap-4 bg-fg px-6 py-4 text-surface">
+                <span className="font-mono text-[8px] font-[700] uppercase tracking-[0.13em]">scope before scale</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-ok" />
               </div>
-            ))}
-          </dl>
-        </div>
+            </div>
+          </div>
+        </section>
 
-        {/* The end of an FAQ is exactly where an unanswered question is felt, so it is
-            where the route to a person belongs. */}
-        <p className="mt-12 max-w-[62ch] text-[15px] leading-[1.7] text-fg-muted">
-          Question not here?{" "}
-          <Link
-            href="/contact"
-            className="font-[600] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
-          >
-            Send it to us
-          </Link>{" "}
-          — bug reports and things that failed in a surprising way are the most useful
-          messages we get.
-        </p>
+        <section id="questions" className="border-b border-rule bg-surface">
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
+            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+              <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2"><span className="font-mono text-[11px] font-[700] text-fg">[01]</span><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-fg-faint">the answers</span></div>
+              <div>
+                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                  <h2 className="font-display max-w-[18ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Everything the product promises, plainly.</h2>
+                  <p className="max-w-[44ch] text-[14px] leading-[1.68] text-fg-muted">Open as many answers as you need. Every statement describes current behavior.</p>
+                </div>
+                <div className="mt-12 grid gap-x-10 lg:grid-cols-2">
+                  <FaqColumn items={FAQ.slice(0, 5)} start={1} />
+                  <FaqColumn items={FAQ.slice(5)} start={6} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/how-it-works"
-            className="inline-flex items-center justify-center rounded-[2px] bg-fg px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
-          >
-            How it works
-          </Link>
-          <Link
-            href="/about"
-            className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
-          >
-            About the project
-          </Link>
-          <Link
-            href="/contact"
-            className="inline-flex items-center justify-center rounded-[2px] border border-border-strong px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
-          >
-            Contact
-          </Link>
-        </div>
-      </div>
-    </MarketingPage>
+        <section className="cf-invert cf-how-control border-b border-rule bg-bg">
+          <div className="mx-auto grid w-full max-w-[1536px] gap-10 px-6 py-16 md:px-10 lg:grid-cols-[1fr_auto] lg:items-center lg:px-14 lg:py-20">
+            <div>
+              <span className="font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">still uncertain?</span>
+              <h2 className="font-display mt-4 max-w-[22ch] text-[28px] font-[650] leading-[1.2] tracking-[-0.045em] text-fg md:text-[36px]">Ask about your use case or report a surprising run.</h2>
+              <p className="mt-4 max-w-[58ch] text-[14px] leading-[1.7] text-fg-muted">Specific prompts, unexpected agent decisions and confusing failures are the most useful messages.</p>
+            </div>
+            <Link href="/contact" className="inline-flex w-fit items-center gap-2 rounded-[3px] bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-bg transition-opacity hover:opacity-85"><MessageSquare className="h-4 w-4" aria-hidden />Contact us</Link>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
