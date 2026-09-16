@@ -3,8 +3,8 @@
 Never hardcode a model string in an agent (CLAUDE.md §5). Changing routing means editing
 this file and nothing else.
 
-Every id below was probed against the live provider APIs on 2026-08-13; see
-`scripts/probe_models.py` to re-verify after a provider changes its catalogue.
+Every id below was probed against the live provider APIs on 2026-08-13. Run
+`scripts/preflight.py` to re-verify inference after a provider changes its catalogue.
 
 Two deviations from CLAUDE.md §5 as originally written:
 

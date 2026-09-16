@@ -564,6 +564,18 @@ Backend verification: **283 passed, 20 skipped**; lint and formatting passed. Th
 A subsequent bounded Tester-only request exhausted its chain (rate limits and invalid
 model output), so the revised prompts have not yet passed a fresh full live pipeline.
 
+**Final predeployment validation, 2026-09-16:** A fresh `p01_books` retrieval-on run
+completed end to end at L5 under the current fingerprint. It passed its generated test
+suite after a real Reviewer-to-Coder repair loop, confirming that the revised pipeline
+and Docker sandbox work together. The matching retrieval-off slot reached the Tester,
+then exhausted the available providers after Groq's 200,000-token daily window filled,
+OpenRouter's NVIDIA upstream was overloaded, and Mistral returned 429. The evaluator
+correctly marks the pair `quota_confounded` and withholds a RAG delta. Mistral's Admin UI
+shows positive model limits, but live inference reports a zero request allowance; the
+preflight now distinguishes that account-entitlement state from a short cooldown.
+Backend verification: **285 passed, 20 skipped**; eight opt-in real Docker tests passed;
+frontend lint, type checking, and the isolated production build passed.
+
 **DoD:** one command produces the full metrics table; results are pasted into the report chapter.
 
 ---

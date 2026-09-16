@@ -2,7 +2,7 @@
 
 These run offline: they exercise the decision logic that decides whether to try the next
 model, which is the part that broke in practice. Live provider calls are covered by
-`scripts/probe_models.py`.
+`scripts/preflight.py`.
 """
 
 import asyncio

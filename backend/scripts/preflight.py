@@ -1,7 +1,8 @@
 """Pre-flight check: is every rung of every chain actually going to answer right now?
 
-Run this before a demo. It asks each provider what quota is left rather than inferring
-it from a test completion, so it costs (almost) nothing to run and can be repeated.
+Run this before a demo. It makes one tiny real completion per provider and reports
+quota headers where the provider exposes them. It costs (almost) nothing and catches
+valid keys whose inference allowance is unavailable.
 
     PYTHONPATH=. python scripts/preflight.py
 
@@ -32,6 +33,21 @@ OK, WARN, FAIL = f"{GREEN}ok{RESET}", f"{YELLOW}warn{RESET}", f"{RED}FAIL{RESET}
 def _model_id(spec_model: str) -> str:
     """`groq/openai/gpt-oss-120b` -> `openai/gpt-oss-120b` (strip the LiteLLM prefix)."""
     return spec_model.split("/", 1)[1]
+
+
+def _mistral_429_message(headers: httpx.Headers) -> str:
+    """Distinguish a transient throttle from an account with no runtime allowance.
+
+    Mistral's Admin UI can show positive model limits while inference returns a zero
+    request allowance. Calling that "quota tight" suggests waiting will fix it, even
+    though the account entitlement needs attention.
+    """
+    request_limit = headers.get("x-ratelimit-limit-req-minute")
+    if request_limit == "0":
+        return "account has zero runtime request allowance (Admin limits may disagree)"
+    retry_after = headers.get("retry-after")
+    suffix = f"; retry after {retry_after}s" if retry_after else ""
+    return f"rate limited right now{suffix}"
 
 
 async def check_groq() -> tuple[bool, list[str]]:
@@ -214,7 +230,8 @@ async def check_mistral() -> tuple[bool, list[str]]:
             return False, [f"  {FAIL} unreachable: {exc}"]
 
         if probe.status_code == 429:
-            return False, [f"  {WARN} rate limited right now {DIM}(key valid, quota tight){RESET}"]
+            detail = _mistral_429_message(probe.headers)
+            return False, [f"  {WARN} {detail} {DIM}(key is valid){RESET}"]
         if probe.status_code != 200:
             return False, [f"  {FAIL} inference returned {probe.status_code}: {probe.text[:120]}"]
 
