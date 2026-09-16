@@ -66,6 +66,22 @@ def test_booted_app_with_failing_tests_reaches_l4_only():
     assert scored.failure_category == "loop_exhausted"
 
 
+def test_old_sandbox_result_does_not_certify_rewritten_code():
+    # A Coder fix clears tests until the revised tree is executed again, while the
+    # previous sandbox log remains available for diagnosis.
+    state = _state(
+        sandbox={"exit_code": 0, "stdout": "CODEFORGE_BOOT_OK\n3 passed"},
+        tests=None,
+        loop_count=1,
+        loop_history=[{"trigger": "reviewer", "blocking_findings": 1}],
+    )
+    scored = score_run(state, status="failed_max_loops")
+    assert scored.acceptance_level == "L2"
+    assert not scored.generation_succeeded
+    assert not scored.tests_passed
+    assert scored.failure_category == "loop_exhausted"
+
+
 def test_syntax_error_fails_before_sandbox_result_can_count():
     state = _state(
         sandbox={"exit_code": 0, "stdout": "CODEFORGE_BOOT_OK"},

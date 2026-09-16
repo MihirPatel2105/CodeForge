@@ -67,11 +67,50 @@ def test_document_dump_excluding_id_is_accepted():
     assert SingleFileOutput(path="main.py", content=source).content == source
 
 
+def test_multiple_document_dumps_excluding_id_are_accepted():
+    source = (
+        "def task_to_read(task):\n"
+        "    return TaskRead(id=str(task.id), **task.model_dump(exclude={'id'}))\n"
+        "def book_to_read(book):\n"
+        "    return BookRead(id=str(book.id), **book.model_dump(exclude={'id'}))\n"
+    )
+    assert SingleFileOutput(path="main.py", content=source).content == source
+
+
+def test_safe_document_dump_does_not_hide_later_duplicate_id():
+    source = (
+        "def task_to_read(task):\n"
+        "    return TaskRead(id=str(task.id), **task.model_dump(exclude={'id'}))\n"
+        "def book_to_read(book):\n"
+        "    return BookRead(id=str(book.id), **book.model_dump(exclude={'title'}))\n"
+    )
+    with pytest.raises(ValidationError, match="duplicates document id"):
+        SingleFileOutput(path="main.py", content=source)
+
+
 def test_unrelated_exclude_value_does_not_bypass_document_id_guard():
     source = (
         "def task_to_read(task):\n"
         "    return TaskRead(id=str(task.id), "
         "**task.model_dump(exclude={'other': 'id'}))\n"
+    )
+    with pytest.raises(ValidationError, match="duplicates document id"):
+        SingleFileOutput(path="main.py", content=source)
+
+
+@pytest.mark.parametrize("exclusion", ["{'id': True}", "{'id': ...}"])
+def test_dictionary_exclusion_of_document_id_is_accepted(exclusion):
+    source = (
+        "def task_to_read(task):\n"
+        f"    return TaskRead(id=str(task.id), **task.model_dump(exclude={exclusion}))\n"
+    )
+    assert SingleFileOutput(path="main.py", content=source).content == source
+
+
+def test_false_dictionary_exclusion_does_not_bypass_document_id_guard():
+    source = (
+        "def task_to_read(task):\n"
+        "    return TaskRead(id=str(task.id), **task.model_dump(exclude={'id': False}))\n"
     )
     with pytest.raises(ValidationError, match="duplicates document id"):
         SingleFileOutput(path="main.py", content=source)

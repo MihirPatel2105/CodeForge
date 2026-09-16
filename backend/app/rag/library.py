@@ -67,7 +67,7 @@ from models import Book
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    client = AsyncMongoClient("mongodb://localhost:27017")
+    client = AsyncMongoClient("mongodb://localhost:27017", tz_aware=True)
     await init_beanie(database=client.appdb, document_models=[Book])
     yield
     await client.close()
@@ -84,7 +84,7 @@ app = FastAPI(lifespan=lifespan)
         code="""# Beanie 2.x uses pymongo's async client. motor is NOT installed in the sandbox.
 from pymongo import AsyncMongoClient
 
-client = AsyncMongoClient("mongodb://localhost:27017")
+client = AsyncMongoClient("mongodb://localhost:27017", tz_aware=True)
 database = client.appdb
 """,
     ),
@@ -306,9 +306,9 @@ class Contact(Document):
     ),
     Snippet(
         id="datetime_field",
-        title="Timestamps default with a factory",
-        about="created_at field, datetime default, timestamps on a document",
-        code="""from datetime import datetime
+        title="UTC timestamps default with a storage-safe factory",
+        about="created_at field, UTC datetime default, MongoDB timestamp precision",
+        code="""from datetime import UTC, datetime
 
 from beanie import Document
 from pydantic import Field
@@ -316,7 +316,8 @@ from pydantic import Field
 
 class Note(Document):
     body: str
-    created_at: datetime = Field(default_factory=datetime.now)
+    # Whole seconds round-trip through MongoDB without losing precision.
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC).replace(microsecond=0))
 
     class Settings:
         name = "notes"

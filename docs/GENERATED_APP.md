@@ -54,6 +54,10 @@ These appear in the Architect prompt template and again on the Reviewer checklis
 9. **Close an async Mongo client asynchronously.** When lifespan closes an
    `AsyncMongoClient` after `yield`, call `await client.close()`. A bare `client.close()`
    leaves the coroutine unawaited and emits a runtime warning.
+10. **Keep datetime fields consistent across persistence.** Use `tz_aware=True` on
+    `AsyncMongoClient` so reads retain UTC offsets. MongoDB stores datetimes at
+    millisecond precision; create, update and read responses must describe the same
+    UTC instant at that precision. Do not add timestamps unless the design requires them.
 
 ---
 
@@ -208,6 +212,10 @@ def test_get_missing_book_returns_404():
 - Tests are **synchronous**. The application is async throughout; its tests are not. This is
   deliberate: it removes the event-loop and missing-initialisation failure modes that async
   test code introduces, and it is the single most common way generated suites break.
+- Use fixed, timezone-aware datetime fixtures at whole-second or millisecond precision.
+  Compare parsed UTC instants, not raw strings: `Z` and `+00:00` are equivalent.
+  MongoDB truncates sub-millisecond precision. Keep date-value assertions, and fail on
+  a missing timezone or an actual change of instant instead of masking either defect.
 
 ---
 

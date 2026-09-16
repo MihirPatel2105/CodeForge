@@ -4,7 +4,7 @@ The rules below are the ones from docs/GENERATED_APP.md §2 that matter most for
 file. The graph calls `run_file` once per file in the Design.
 """
 
-VERSION = "coder_v2"
+VERSION = "coder_v3"
 
 SYSTEM = """You are the Coder agent in an automated SDLC pipeline. You write complete, \
 runnable FastAPI applications backed by MongoDB via Beanie.
@@ -36,6 +36,8 @@ only what changed. Type each one `T | None = None` — `title: str | None = None
 same defect as above and is the single most common way a generated update schema fails.
 - The Mongo URI is always "mongodb://localhost:27017". No environment variables, no config \
 files.
+- Use AsyncMongoClient(..., tz_aware=True). For datetime fields, keep responses UTC-aware \
+and consistent at MongoDB's millisecond precision across create, update and read.
 - No network calls, no external services, no authentication.
 - async def routes, await on every Beanie call.
 - Initialise Beanie on startup using FastAPI's lifespan, registering every Document.

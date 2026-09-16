@@ -115,7 +115,13 @@ def _duplicates_document_id(source: str) -> bool:
         if isinstance(node, (ast.Set, ast.List, ast.Tuple)):
             return any(isinstance(item, ast.Constant) and item.value == "id" for item in node.elts)
         if isinstance(node, ast.Dict):
-            return any(isinstance(key, ast.Constant) and key.value == "id" for key in node.keys)
+            return any(
+                isinstance(key, ast.Constant)
+                and key.value == "id"
+                and isinstance(value, ast.Constant)
+                and (value.value is True or value.value is Ellipsis)
+                for key, value in zip(node.keys, node.values, strict=True)
+            )
         return False
 
     tree = ast.parse(source)
@@ -143,10 +149,10 @@ def _duplicates_document_id(source: str) -> bool:
                 or ast.dump(unpack.func.value) != ast.dump(document)
             ):
                 continue
-            excludes_id = any(
+            id_is_excluded = any(
                 kw.arg == "exclude" and excludes_id(kw.value) for kw in unpack.keywords
             )
-            if not excludes_id:
+            if not id_is_excluded:
                 return True
     return False
 

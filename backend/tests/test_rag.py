@@ -31,6 +31,23 @@ def test_every_snippet_is_valid_python():
             pytest.fail(f"{snippet.id} is not valid Python: {exc}")
 
 
+def test_timestamp_example_survives_bson_round_trip_as_aware_utc():
+    from datetime import timedelta
+
+    from bson import BSON
+    from bson.codec_options import CodecOptions
+
+    snippet = next(s for s in SNIPPETS if s.id == "datetime_field")
+    namespace = {}
+    exec(snippet.code, namespace)
+    note = namespace["Note"].model_construct(body="timestamp regression")
+    stamp = note.created_at
+    assert stamp.utcoffset() == timedelta(0)
+    assert stamp.microsecond % 1000 == 0
+    decoded = BSON.encode({"stamp": stamp}).decode(CodecOptions(tz_aware=True))["stamp"]
+    assert decoded == stamp
+
+
 def test_no_snippet_imports_motor():
     """motor is not installed in the sandbox, so a snippet importing it would teach the
     Coder to write code that cannot run.

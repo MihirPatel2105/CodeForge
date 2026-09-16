@@ -544,6 +544,26 @@ The single-file generation schema also rejects this exact duplicate-id AST patte
 before execution, while accepting an explicit `exclude={'id'}`; Instructor can re-ask
 the Coder or fall through to another model instead of spending a sandbox loop on it.
 
+**Further reliability fixes, 2026-09-16:** The duplicate-id guard had a helper-name
+collision: validating a second safe conversion in one file called a boolean as a
+function. Regression tests reproduced and now cover that crash, a later unsafe
+conversion, and dictionary exclusions (`{'id': False}` does not exclude the field).
+Acceptance scoring now ignores retained sandbox output whenever a fix pass has cleared
+the current test verdict; an older successful boot cannot certify newly rewritten code.
+
+A fresh public tasks diagnostic reached the sandbox, then failed two of eight tests on
+UTC formatting and MongoDB's millisecond precision. A temporary UTC-aware copy with a
+fixed, storage-safe fixture passed all eight tests. Coder, Reviewer, Tester and retrieval
+guidance now cover that contract. The Reviewer also incorrectly called `client.appdb`
+an invalid attribute; its checklist now explicitly accepts PyMongo's dynamic database
+access. The live diagnostic was stopped when these defects were understood and daily
+provider quota was exhausted; its saved record is `cancelled` and excluded, not a
+successful benchmark result. The temporary eight-test check is not a full pipeline run.
+Backend verification: **283 passed, 20 skipped**; lint and formatting passed. The full
+10-prompt comparison still needs fresh collection under the revised fingerprint.
+A subsequent bounded Tester-only request exhausted its chain (rate limits and invalid
+model output), so the revised prompts have not yet passed a fresh full live pipeline.
+
 **DoD:** one command produces the full metrics table; results are pasted into the report chapter.
 
 ---

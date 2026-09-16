@@ -109,8 +109,10 @@ def score_run(state: dict[str, Any], *, status: str, prompt_id: str | None = Non
         metrics.exclusion_reason = "quota_before_completion"
 
     level = _tree_level(state)
-    sandbox = _data(state.get("sandbox"))
     tests = _data(state.get("tests"))
+    # Fix passes clear tests but retain the old sandbox log for diagnosis. That
+    # log cannot establish that the revised file tree boots or classify its failure.
+    sandbox = _data(state.get("sandbox")) if tests else {}
     if level >= 2:
         boot_ok = "CODEFORGE_BOOT_OK" in str(sandbox.get("stdout", ""))
         # Earlier sandbox images had no probe. A fully green suite is still evidence
