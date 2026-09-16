@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className="antialiased">
         {/* Light only. A dark theme's black levels are unreliable on an unknown
             projector, so the product ships the one appearance it can vouch for. */}
