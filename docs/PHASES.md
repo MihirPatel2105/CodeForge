@@ -573,8 +573,14 @@ OpenRouter's NVIDIA upstream was overloaded, and Mistral returned 429. The evalu
 correctly marks the pair `quota_confounded` and withholds a RAG delta. Mistral's Admin UI
 shows positive model limits, but live inference reports a zero request allowance; the
 preflight now distinguishes that account-entitlement state from a short cooldown.
-Backend verification: **285 passed, 20 skipped**; eight opt-in real Docker tests passed;
+Backend verification: **287 passed, 20 skipped**; eight opt-in real Docker tests passed;
 frontend lint, type checking, and the isolated production build passed.
+
+Groq's successful-response headers expose minute-level request and token windows, but
+not the 200,000-token daily remainder. A tiny reachability probe can therefore pass
+while a real agent prompt is rejected by the daily limit. Preflight now states that
+limitation explicitly, and preserves the exact daily-window reset detail whenever Groq
+returns 429, instead of treating a green probe as guaranteed full-run capacity.
 
 **DoD:** one command produces the full metrics table; results are pasted into the report chapter.
 

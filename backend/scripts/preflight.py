@@ -50,6 +50,31 @@ def _mistral_429_message(headers: httpx.Headers) -> str:
     return f"rate limited right now{suffix}"
 
 
+GROQ_DAILY_QUOTA_WARNING = (
+    "daily token headroom is not exposed; this tiny probe cannot guarantee a full pipeline run"
+)
+
+
+def _groq_probe_payload(model: str) -> dict:
+    """Use a cheap reachability probe; Groq does not expose daily headroom on success."""
+    return {
+        "model": model,
+        "messages": [{"role": "user", "content": "Reply only OK"}],
+        "max_tokens": 1,
+    }
+
+
+def _groq_429_message(response: httpx.Response) -> str:
+    try:
+        message = response.json().get("error", {}).get("message", "")
+    except ValueError:
+        message = ""
+    if message:
+        return message.split(" Need more tokens?", 1)[0]
+    retry_after = response.headers.get("retry-after")
+    return f"rate limited{f'; retry after {retry_after}s' if retry_after else ''}"
+
+
 async def check_groq() -> tuple[bool, list[str]]:
     """Groq publishes remaining quota in response headers, so one tiny completion buys
     the real numbers — the catalogue endpoint alone does not carry them."""
@@ -84,17 +109,16 @@ async def check_groq() -> tuple[bool, list[str]]:
                 f"  {mark} {model}{' — NOT in catalogue (retired?)' if model in missing else ''}"
             )
 
-        # One near-empty completion, purely to read the quota headers back.
+        # A tiny completion proves reachability and exposes RPM/TPM headers. Groq does
+        # not expose its daily-token remainder on successful responses, so say that
+        # explicitly below instead of implying a full pipeline is guaranteed to fit.
+        probe_model = (
+            sorted(available & wanted)[0] if (available & wanted) else "openai/gpt-oss-20b"
+        )
         probe = await client.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {settings.groq_api_key}"},
-            json={
-                "model": sorted(available & wanted)[0]
-                if (available & wanted)
-                else "openai/gpt-oss-20b",
-                "messages": [{"role": "user", "content": "hi"}],
-                "max_tokens": 1,
-            },
+            json=_groq_probe_payload(probe_model),
         )
         h = probe.headers
         rem_req, lim_req = (
@@ -112,9 +136,10 @@ async def check_groq() -> tuple[bool, list[str]]:
             lines.append(
                 f"  {mark} tokens: {rem_tok}/{lim_tok} left this minute (resets in {reset})"
             )
+        lines.append(f"  {WARN} {GROQ_DAILY_QUOTA_WARNING}")
 
         if probe.status_code == 429:
-            lines.append(f"  {WARN} completion rate limited right now")
+            lines.append(f"  {WARN} completion rejected: {_groq_429_message(probe)}")
             return False, lines
         if probe.status_code != 200:
             lines.append(f"  {FAIL} completion returned {probe.status_code}")
