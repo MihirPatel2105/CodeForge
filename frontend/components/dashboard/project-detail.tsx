@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -50,6 +50,20 @@ export function ProjectDetail({
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const stats = runStats(history);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("codeforge:retry-prompt");
+    if (!saved) return;
+    try {
+      const retry = JSON.parse(saved) as { projectId?: string; prompt?: string };
+      if (retry.projectId === project.id && typeof retry.prompt === "string") {
+        setPrompt(retry.prompt);
+        sessionStorage.removeItem("codeforge:retry-prompt");
+      }
+    } catch {
+      sessionStorage.removeItem("codeforge:retry-prompt");
+    }
+  }, [project.id]);
 
   async function startRun() {
     if (!prompt.trim()) return;

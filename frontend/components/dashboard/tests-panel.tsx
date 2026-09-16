@@ -5,19 +5,29 @@ import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import type { TestsSnapshot } from "@/lib/run-reducer";
 import type { MockTestFailure } from "@/lib/mock-test-failures";
+import type { TerminalLine } from "./terminal-panel";
+
+const FAILURE_LINE = /^(FAILED|ERROR|E\s{2,}|Traceback)|AssertionError|TypeError/;
 
 export interface TestsPanelProps {
   tests: TestsSnapshot | null;
   /** Per-test assertion detail for the failure cards — not part of the wire contract
    * (`tests.result` carries only aggregate totals); see lib/mock-test-failures.ts. */
   failures?: MockTestFailure[];
+  terminalLines?: TerminalLine[];
 }
 
 /** Eight bars read as a score from across the room (design_handoff/README.md "Tests
  * panel"). Deliberately renders nothing until `tests.result` arrives — the wire
  * contract has no per-test count before then, only the Tester's free-text summary. */
-export function TestsPanel({ tests, failures = [] }: TestsPanelProps) {
+export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPanelProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const liveFailureOutput = terminalLines
+    .flatMap((line) => line.text.split("\n"))
+    .map((line) => line.trimEnd())
+    .filter((line) => FAILURE_LINE.test(line))
+    .slice(-6);
 
   const toggle = (name: string) => {
     setExpanded((prev) => {
@@ -31,7 +41,7 @@ export function TestsPanel({ tests, failures = [] }: TestsPanelProps) {
   const scoreTone = tests == null ? "text-fg-faint" : tests.failed === 0 ? "text-ok" : "text-warn";
 
   return (
-    <div className="flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-[6px] border border-border bg-surface p-4 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:w-[300px]">
+    <div className="flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-[6px] border border-border bg-surface p-4 shadow-[0_16px_45px_rgba(22,24,28,0.045)] xl:w-[300px]">
       <div className="flex items-center justify-between">
         <span className={cn(typeScale.label, "text-fg-faint")}>TESTS</span>
         <span className={cn("font-mono text-[18px] font-bold", scoreTone)}>
@@ -86,6 +96,17 @@ export function TestsPanel({ tests, failures = [] }: TestsPanelProps) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {tests && tests.failed > 0 && failures.length === 0 && liveFailureOutput.length > 0 && (
+        <div className="cf-run-scroll mt-1 max-h-[110px] overflow-y-auto rounded-[3px] border border-danger-bd bg-danger-soft p-2.5">
+          <p className="mb-2 font-mono text-[9px] font-[700] uppercase tracking-[0.1em] text-danger">
+            Failure output
+          </p>
+          <pre className="font-mono text-[11px] leading-[1.45] whitespace-pre-wrap break-words text-danger">
+            {liveFailureOutput.join("\n")}
+          </pre>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";
@@ -17,12 +18,38 @@ export interface TimelinePanelProps {
  * so it never fights a user who has scrolled up to re-read an earlier finding. */
 export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const previousLength = useRef(0);
+  const [following, setFollowing] = useState(true);
+  const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
-  }, [entries.length]);
+    const added = Math.max(0, entries.length - previousLength.current);
+    previousLength.current = entries.length;
+    if (following) {
+      el.scrollTop = el.scrollHeight;
+      setUnread(0);
+    } else if (added > 0) {
+      setUnread((count) => count + added);
+    }
+  }, [entries.length, following]);
+
+  function handleScroll() {
+    const el = viewportRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+    setFollowing(nearBottom);
+    if (nearBottom) setUnread(0);
+  }
+
+  function resumeFollowing() {
+    const el = viewportRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    setFollowing(true);
+    setUnread(0);
+  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
@@ -47,11 +74,28 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         </div>
       )}
 
-      <div ref={viewportRef} className="cf-run-scroll flex flex-1 flex-col gap-[6px] overflow-y-auto p-3">
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={viewportRef}
+          onScroll={handleScroll}
+          className="cf-run-scroll absolute inset-0 flex flex-col gap-[6px] overflow-y-auto p-3"
+        >
         {entries.length === 0 ? (
           <p className="p-2 text-[13px] text-fg-faint">Nothing yet — the run hasn&apos;t started.</p>
         ) : (
           entries.map((entry, i) => <TimelineEntry key={i} entry={entry} i={i} />)
+        )}
+        </div>
+        {unread > 0 && (
+          <button
+            type="button"
+            onClick={resumeFollowing}
+            className="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-accent-bd bg-surface px-3 py-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-accent shadow-[0_10px_28px_rgba(22,24,28,0.16)]"
+            aria-live="polite"
+          >
+            <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+            {unread} new {unread === 1 ? "event" : "events"}
+          </button>
         )}
       </div>
     </div>

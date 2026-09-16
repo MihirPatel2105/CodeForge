@@ -68,7 +68,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   return (
     <div
       className={cn(
-        "flex flex-1 flex-col gap-[7px] rounded-[3px] border-[1.5px] bg-surface px-[13px] pt-3 pb-[11px]",
+        "flex flex-1 snap-center flex-col gap-[7px] rounded-[3px] border-[1.5px] bg-surface px-[13px] pt-3 pb-[11px]",
         "transition-[transform,box-shadow,border-color,opacity] duration-300 ease-out",
         state === "idle" && "border-border opacity-[0.72]",
         working && "-translate-y-[3px] border-accent-bd shadow-[0_4px_16px_rgba(67,56,202,.15)]",

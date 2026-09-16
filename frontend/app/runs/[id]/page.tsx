@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, FileCode2, FlaskConical, ListTree, RotateCcw, ShieldCheck } from "lucide-react";
@@ -37,6 +37,9 @@ export default function LiveRunPage() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [runProjectId, setRunProjectId] = useState<string | null>(null);
+  const [mobileEvidence, setMobileEvidence] = useState<"timeline" | "code" | "terminal" | "tests">("timeline");
+  const pipelineViewport = useRef<HTMLDivElement>(null);
 
   // `replace`, not `push`: a signed-out visitor should not be able to press Back and
   // land on a protected page again. The `allowed` flag then stops the run UI rendering
@@ -49,6 +52,22 @@ export default function LiveRunPage() {
       router.replace("/login");
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!getToken()) return;
+    api.getRun(id).then((run) => setRunProjectId(run.project_id)).catch(() => {
+      // The event stream still renders the run. This only disables the convenience
+      // action that returns to the original project with the prompt prefilled.
+    });
+  }, [id]);
+
+  useEffect(() => {
+    const viewport = pipelineViewport.current;
+    if (!viewport || !snapshot.currentAgent || window.innerWidth >= 640) return;
+    const card = viewport.querySelector<HTMLElement>(`[data-stage="${snapshot.currentAgent}"]`);
+    if (!card) return;
+    viewport.scrollTo({ left: Math.max(0, card.offsetLeft - 20), behavior: "smooth" });
+  }, [snapshot.currentAgent]);
 
   const filesKey = snapshot.files.map((f) => `${f.path}:${f.iteration}`).join(",");
   useEffect(() => {
@@ -145,6 +164,15 @@ export default function LiveRunPage() {
     } catch (err) {
       setDownloadError(err instanceof ApiError ? err.message : "Couldn't download the code.");
     }
+  }
+
+  function handleRetry() {
+    if (!runProjectId || !snapshot.prompt) return;
+    sessionStorage.setItem(
+      "codeforge:retry-prompt",
+      JSON.stringify({ projectId: runProjectId, prompt: snapshot.prompt }),
+    );
+    router.push(`/projects/${runProjectId}`);
   }
 
   // Every terminal outcome sets `endedAt` (run.completed / run.failed) — a more robust
@@ -248,7 +276,7 @@ export default function LiveRunPage() {
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
-          <div className="cf-run-scroll overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
+          <div ref={pipelineViewport} className="cf-run-scroll snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
             <div className="min-w-[1180px]">
               <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
             </div>
@@ -257,7 +285,11 @@ export default function LiveRunPage() {
 
         {snapshot.endedAt && (
           <section className="mt-5" aria-label="Run result">
-            <ResultSummary snapshot={snapshot} onDownload={handleDownload} />
+            <ResultSummary
+              snapshot={snapshot}
+              onDownload={handleDownload}
+              onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
+            />
           </section>
         )}
 
@@ -276,25 +308,74 @@ export default function LiveRunPage() {
             <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint sm:block">events · code · sandbox · tests</span>
           </div>
 
+          <div
+            className="mb-4 grid grid-cols-4 overflow-hidden rounded-[4px] border border-border bg-surface xl:hidden"
+            role="tablist"
+            aria-label="Run evidence"
+          >
+            {(["timeline", "code", "terminal", "tests"] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                role="tab"
+                id={`evidence-tab-${view}`}
+                aria-controls={`evidence-panel-${view}`}
+                aria-selected={mobileEvidence === view}
+                tabIndex={mobileEvidence === view ? 0 : -1}
+                onClick={() => setMobileEvidence(view)}
+                className={cn(
+                  "border-r border-border px-2 py-3 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] last:border-r-0",
+                  mobileEvidence === view
+                    ? "bg-fg text-surface"
+                    : "bg-surface text-fg-muted hover:bg-surface-2",
+                )}
+              >
+                {view}
+              </button>
+            ))}
+          </div>
+
           <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
-            <div className="h-[520px] xl:h-[648px]">
+            <div
+              id="evidence-panel-timeline"
+              role="tabpanel"
+              aria-labelledby="evidence-tab-timeline"
+              className={cn("h-[520px] xl:block xl:h-[648px]", mobileEvidence !== "timeline" && "hidden")}
+            >
               <TimelinePanel entries={snapshot.timeline} connectionLost={connectionLost} />
             </div>
 
-            <div className="flex min-w-0 flex-col gap-3">
-              <div className="h-[560px] sm:h-[440px]">
+            <div className={cn("min-w-0 flex-col gap-3 xl:flex", mobileEvidence === "timeline" ? "hidden" : "flex")}>
+              <div
+                id="evidence-panel-code"
+                role="tabpanel"
+                aria-labelledby="evidence-tab-code"
+                className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}
+              >
                 <CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />
               </div>
 
-              <div className="flex flex-col gap-3 md:flex-row">
-                <div className="min-w-0 flex-1">
+              <div className={cn("flex-col gap-3 md:flex-row xl:flex", mobileEvidence === "terminal" || mobileEvidence === "tests" ? "flex" : "hidden")}>
+                <div
+                  id="evidence-panel-terminal"
+                  role="tabpanel"
+                  aria-labelledby="evidence-tab-terminal"
+                  className={cn("min-w-0 flex-1 xl:block", mobileEvidence !== "terminal" && "hidden")}
+                >
                   <TerminalPanel
                     lines={snapshot.terminalLines}
                     image={snapshot.agents.sandbox.model}
                     running={snapshot.agents.sandbox.state === "working"}
                   />
                 </div>
-                <TestsPanel tests={snapshot.tests} />
+                <div
+                  id="evidence-panel-tests"
+                  role="tabpanel"
+                  aria-labelledby="evidence-tab-tests"
+                  className={cn("xl:block", mobileEvidence !== "tests" && "hidden")}
+                >
+                  <TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />
+                </div>
               </div>
             </div>
           </div>

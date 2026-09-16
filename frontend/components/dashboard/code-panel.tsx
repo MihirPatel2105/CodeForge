@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check, Copy, WrapText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
@@ -58,7 +59,10 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
   const [view, setView] = useState<"current" | "diff">("current");
+  const [wrap, setWrap] = useState(false);
+  const [copied, setCopied] = useState(false);
   const lastSeenPath = useRef<string | null>(null);
+  const copyTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const latest = files[files.length - 1];
@@ -80,6 +84,29 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   const prevVersion =
     selected && getPreviousVersion ? getPreviousVersion(selected.path, selected.iteration) : null;
   const canDiff = selected?.status === "updated" && prevVersion != null;
+
+  useEffect(() => {
+    setCopied(false);
+  }, [selectedPath]);
+
+  useEffect(
+    () => () => {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    },
+    [],
+  );
+
+  async function copyCurrentFile() {
+    if (!version) return;
+    try {
+      await navigator.clipboard.writeText(version.content);
+      setCopied(true);
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)] sm:flex-row">
@@ -134,7 +161,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
       <div className="flex min-w-0 flex-1 flex-col">
         {selected && version ? (
           <>
-            <div className="flex items-center justify-between gap-3 border-b border-border px-[13px] py-[10px]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-[13px] py-[10px]">
               <div className="flex min-w-0 items-baseline gap-2">
                 <span className="shrink-0 font-mono text-[13.5px] font-[650] text-fg">{selected.path}</span>
                 <span className="min-w-0 truncate text-[12.5px] text-fg-muted">
@@ -145,8 +172,9 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                       } ${(version.changedLineCount ?? version.changedLines?.length ?? 0) === 1 ? "line" : "lines"} changed`}
                 </span>
               </div>
-              {canDiff && (
-                <div className="flex shrink-0 gap-[2px] rounded-[2px] bg-surface-2 p-[2px]">
+              <div className="flex shrink-0 items-center gap-1.5">
+                {canDiff && (
+                  <div className="flex gap-[2px] rounded-[2px] bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
                     <button
                       key={v}
@@ -160,15 +188,38 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                       {v}
                     </button>
                   ))}
-                </div>
-              )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setWrap((value) => !value)}
+                  aria-pressed={wrap}
+                  className={cn(
+                    "inline-flex h-7 items-center gap-1.5 rounded-[2px] border px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em]",
+                    wrap
+                      ? "border-accent-bd bg-accent-soft text-accent"
+                      : "border-border bg-surface text-fg-muted hover:border-border-strong",
+                  )}
+                >
+                  <WrapText className="h-3.5 w-3.5" aria-hidden />
+                  Wrap
+                </button>
+                <button
+                  type="button"
+                  onClick={copyCurrentFile}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-[2px] border border-border bg-surface px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-ok" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
             </div>
 
             <ScrollArea className="cf-run-scroll flex-1 bg-code-bg">
               {view === "current" || !canDiff ? (
-                <CurrentView content={version.content} changedLines={version.changedLines ?? []} />
+                <CurrentView content={version.content} changedLines={version.changedLines ?? []} wrap={wrap} />
               ) : (
-                <DiffView oldContent={prevVersion!.content} newContent={version.content} />
+                <DiffView oldContent={prevVersion!.content} newContent={version.content} wrap={wrap} />
               )}
             </ScrollArea>
           </>
@@ -182,7 +233,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   );
 }
 
-function CurrentView({ content, changedLines }: { content: string; changedLines: number[] }) {
+function CurrentView({ content, changedLines, wrap }: { content: string; changedLines: number[]; wrap: boolean }) {
   const lines = content.split("\n");
   const changed = new Set(changedLines);
   return (
@@ -194,7 +245,8 @@ function CurrentView({ content, changedLines }: { content: string; changedLines:
           <div
             key={n}
             className={cn(
-              "grid grid-cols-[46px_14px_1fr] whitespace-pre",
+              "grid grid-cols-[46px_14px_minmax(0,1fr)]",
+              wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre",
               isChanged && "border-l-2 border-loop bg-loop-soft",
             )}
           >
@@ -210,7 +262,7 @@ function CurrentView({ content, changedLines }: { content: string; changedLines:
   );
 }
 
-function DiffView({ oldContent, newContent }: { oldContent: string; newContent: string }) {
+function DiffView({ oldContent, newContent, wrap }: { oldContent: string; newContent: string; wrap: boolean }) {
   const hunks = buildHunks(oldContent, newContent);
   if (hunks.length === 0) {
     return <p className="p-3 text-[13px] text-fg-faint">No changes.</p>;
@@ -220,7 +272,7 @@ function DiffView({ oldContent, newContent }: { oldContent: string; newContent: 
       {hunks.map((hunk, hi) => (
         <div key={hi}>
           {hi > 0 && (
-            <div className="grid grid-cols-[46px_14px_1fr] whitespace-pre text-fg-faint">
+            <div className={cn("grid grid-cols-[46px_14px_minmax(0,1fr)] text-fg-faint", wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre")}>
               <span />
               <span />
               <span>⋯</span>
@@ -230,7 +282,8 @@ function DiffView({ oldContent, newContent }: { oldContent: string; newContent: 
             <div
               key={li}
               className={cn(
-                "grid grid-cols-[46px_14px_1fr] whitespace-pre",
+                "grid grid-cols-[46px_14px_minmax(0,1fr)]",
+                wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre",
                 line.kind === "removed" && "bg-danger-soft",
                 line.kind === "added" && "bg-ok-soft",
               )}

@@ -7,6 +7,7 @@ import type { RunSnapshot } from "@/lib/run-reducer";
 export interface ResultSummaryProps {
   snapshot: RunSnapshot;
   onDownload?: () => void;
+  onRetry?: () => void;
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -53,11 +54,16 @@ function copyFor(
         headline: "Stopped deliberately after three attempts.",
         detail: `Three passes could not clear the blocking findings, so the loop cap held and the work was kept as-is. Not a crash.`,
       };
-    case "failed_llm":
+    case "failed_llm": {
+      const failedAgent = snapshot.failureReason?.match(/agent ['\"]([^'\"]+)['\"]/i)?.[1];
       return {
-        headline: "The run stopped early — no code was lost.",
-        detail: snapshot.failureReason ?? "All providers were unavailable.",
+        headline: failedAgent
+          ? `${failedAgent[0].toUpperCase()}${failedAgent.slice(1)} could not get a valid AI response.`
+          : "The AI providers could not finish this run.",
+        detail:
+          "The available model routes were rate-limited, overloaded, or returned invalid structured output. Generated files and events are preserved; retry when provider capacity is available.",
       };
+    }
     case "cancelled":
       return {
         headline: "Cancelled by you before it finished.",
@@ -86,7 +92,7 @@ function copyFor(
 
 /** Inline at the bottom of the Live run screen when a run ends (docs/UI_BRIEF.md
  * §3.5), and the same card set standalone on the Screens tab. */
-export function ResultSummary({ snapshot, onDownload }: ResultSummaryProps) {
+export function ResultSummary({ snapshot, onDownload, onRetry }: ResultSummaryProps) {
   const isPartial = snapshot.status === "succeeded" && snapshot.tests?.ok === false;
   const outcomeKey = isPartial ? "partial" : snapshot.status;
   const meta = RUN_STATUS_META[outcomeKey] ?? { label: outcomeKey, tone: "neutral" as const };
@@ -132,13 +138,25 @@ export function ResultSummary({ snapshot, onDownload }: ResultSummaryProps) {
         <Metric label="Elapsed" value={elapsedMs != null ? formatElapsed(elapsedMs) : "—"} />
         <Metric label="Files" value={String(snapshot.files.length)} />
 
-        <button
-          type="button"
-          onClick={onDownload}
-          className="ml-auto shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)]"
-        >
-          Download code
-        </button>
+        <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+          {onRetry && outcomeKey !== "succeeded" && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="rounded-[3px] border border-border-strong bg-surface px-[16px] py-[10px] text-[13.5px] font-[700] text-fg hover:border-accent-bd hover:text-accent"
+            >
+              Run again
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDownload}
+            disabled={snapshot.files.length === 0}
+            className="shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {snapshot.files.length === 0 ? "No code generated" : "Download code"}
+          </button>
+        </div>
       </div>
     </div>
   );
