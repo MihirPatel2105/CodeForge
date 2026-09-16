@@ -228,8 +228,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4.5rem;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+  section[id] {
+    scroll-margin-top: 4.5rem;
   }
 }
 
@@ -902,6 +909,7 @@
 }
 
 .cf-run-scroll {
+  scroll-behavior: smooth;
   scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;
 }
@@ -958,6 +966,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html,
+  .cf-run-scroll {
+    scroll-behavior: auto;
+  }
+
   .cf-project-card,
   .cf-project-card::after,
   .cf-project-new,

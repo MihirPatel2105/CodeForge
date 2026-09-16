@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { preferredScrollBehavior } from "@/lib/motion";
 import { typeScale } from "@/lib/type-scale";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";
 
@@ -46,7 +47,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   function resumeFollowing() {
     const el = viewportRef.current;
     if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    el.scrollTo({ top: el.scrollHeight, behavior: preferredScrollBehavior() });
     setFollowing(true);
     setUnread(0);
   }

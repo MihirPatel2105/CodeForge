@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
+import { preferredScrollBehavior } from "@/lib/motion";
 
 /**
  * The real Live Run screen (docs/UI_BRIEF.md §4) — the same components proven out
@@ -66,7 +67,10 @@ export default function LiveRunPage() {
     if (!viewport || !snapshot.currentAgent || window.innerWidth >= 640) return;
     const card = viewport.querySelector<HTMLElement>(`[data-stage="${snapshot.currentAgent}"]`);
     if (!card) return;
-    viewport.scrollTo({ left: Math.max(0, card.offsetLeft - 20), behavior: "smooth" });
+    viewport.scrollTo({
+      left: Math.max(0, card.offsetLeft - 20),
+      behavior: preferredScrollBehavior(),
+    });
   }, [snapshot.currentAgent]);
 
   const filesKey = snapshot.files.map((f) => `${f.path}:${f.iteration}`).join(",");
