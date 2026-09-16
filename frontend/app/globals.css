@@ -933,7 +933,7 @@
 /* Root templates remount on App Router navigation, so this runs once per page
    switch without replaying when live pipeline data updates. */
 .cf-route-transition {
-  animation: cfRouteEnter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: cfRouteEnter 380ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 @media (min-width: 768px) {
@@ -1104,8 +1104,8 @@
 
 @keyframes cfRouteEnter {
   from {
-    opacity: 0;
-    transform: translateY(6px);
+    opacity: 0.18;
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
