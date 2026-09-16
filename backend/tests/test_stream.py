@@ -111,6 +111,38 @@ def test_last_event_id_skips_what_the_client_already_has():
     assert "id: 3" in frames[0]
 
 
+def test_disconnect_then_reconnect_replays_what_arrived_while_offline():
+    async def scenario(run_id: str):
+        await bus.emit(run_id, ev.RunStarted(run_id=run_id, prompt="x"))
+        first = [frame async for frame in _event_stream(FakeRequest(disconnect_after=0), run_id, 0)]
+        assert ["id: 1" in frame for frame in first] == [True]
+
+        await bus.emit(run_id, ev.AgentStarted(agent="pm"))
+        await bus.emit(run_id, ev.AgentCompleted(agent="pm"))
+        replayed = [
+            frame async for frame in _event_stream(FakeRequest(disconnect_after=0), run_id, 1)
+        ]
+        return replayed
+
+    replayed = asyncio.run(_with_run(scenario))
+    assert ["id: 2" in frame or "id: 3" in frame for frame in replayed] == [True, True]
+    assert "agent.started" in replayed[0]
+    assert "agent.completed" in replayed[1]
+
+
+def test_finished_replay_closes_without_heartbeats():
+    async def scenario(run_id: str):
+        await bus.emit(run_id, ev.RunStarted(run_id=run_id, prompt="x"))
+        await bus.emit(run_id, ev.RunCompleted(status="succeeded"))
+        frames = [frame async for frame in _event_stream(FakeRequest(), run_id, 0)]
+        return frames, bus.subscriber_count(run_id)
+
+    frames, subscribers = asyncio.run(_with_run(scenario))
+    assert len(frames) == 2
+    assert "run.completed" in frames[-1]
+    assert subscribers == 0
+
+
 def test_live_event_is_delivered_after_the_initial_replay():
     async def scenario(run_id: str):
         request = FakeRequest()

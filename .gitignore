@@ -46,6 +46,7 @@ env/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+backend/evaluation-results/
 
 # Java / JVM
 target/

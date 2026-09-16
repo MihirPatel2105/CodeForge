@@ -29,6 +29,7 @@ import type {
   RunResponse,
   RunSummary,
   FileTreeResponse,
+  FileHistoryResponse,
   ApprovalRequest,
   ApprovalResponse,
   ArtifactListResponse,
@@ -146,6 +147,7 @@ export const api = {
     request<RunCreateResponse>("/runs", { method: "POST", body: JSON.stringify(payload) }),
   getRun: (id: string) => request<RunResponse>(`/runs/${id}`),
   getRunFiles: (id: string) => request<FileTreeResponse>(`/runs/${id}/files`),
+  getRunFileHistory: (id: string) => request<FileHistoryResponse>(`/runs/${id}/file-history`),
   approveRun: (id: string, payload: ApprovalRequest) =>
     request<ApprovalResponse>(`/runs/${id}/approve`, {
       method: "POST",

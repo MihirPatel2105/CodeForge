@@ -102,6 +102,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/runs/{id}/approve` | body: `{phase, approved: bool, note?}` — resumes or rejects |
 | POST | `/runs/{id}/cancel` | cancel a running graph |
 | GET | `/runs/{id}/files` | current generated file tree |
+| GET | `/runs/{id}/file-history` | archived per-iteration versions for the Diff panel; owner-only |
 | GET | `/runs/{id}/artifacts` | GridFS zip download |
 | GET | `/projects/{id}/runs` | run history |
 
@@ -212,5 +213,14 @@ class RunMetrics(BaseModel):
     tokens_total: int
     provider_fallbacks: int          # how often a 429 forced a switch
     end_to_end_ms: int
+    acceptance_level: str            # L0–L5, scored against the final file tree
+    exclusion_reason: str | None     # infrastructure | quota_before_completion | cancelled | rejected
+    prompt_id: str | None            # frozen evaluation prompt id, when applicable
     failure_category: str | None     # schema | objectid | timeout | quota | loop_exhausted | other
 ```
+
+Acceptance scoring follows `docs/ACCEPTANCE.md`. The sandbox boot probe imports the generated
+FastAPI app and calls one designed endpoint before pytest; its marker establishes L3 even when
+tests fail. Excluded attempts remain in the JSON/CSV report but do not enter success-rate
+denominators. The evaluator checks a fingerprint of the backend and sandbox implementation before
+resuming, so RAG arms from different versions cannot be combined accidentally.

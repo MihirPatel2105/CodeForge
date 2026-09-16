@@ -38,6 +38,9 @@ These appear in the Architect prompt template and again on the Reviewer checklis
    paired with `status_code=204`. Every other route: Mongo's `_id` is an `ObjectId` and is
    not JSON-serialisable, so a raw Document must never leak out.
 2. **Expose `id` as `str`.** Convert with `str(doc.id)` when building a response model.
+   Do not combine `id=str(doc.id)` with `**doc.model_dump()`: the Beanie dump already
+   contains `id`, so the route raises a duplicate-keyword `TypeError`. Name response
+   fields explicitly, or exclude `id` from the dump before unpacking it.
 3. **The Mongo URI is always `mongodb://localhost:27017`.** `mongod` runs inside the sandbox
    container. No environment variables, no configuration files.
 4. **No network calls.** The container runs with networking disabled; any outbound request
@@ -48,6 +51,9 @@ These appear in the Architect prompt template and again on the Reviewer checklis
 7. **Async throughout.** `async def` routes, `await` on every Beanie call.
 8. **Beanie is initialised on startup** via FastAPI's lifespan, with every `Document`
    registered.
+9. **Close an async Mongo client asynchronously.** When lifespan closes an
+   `AsyncMongoClient` after `yield`, call `await client.close()`. A bare `client.close()`
+   leaves the coroutine unawaited and emits a runtime warning.
 
 ---
 

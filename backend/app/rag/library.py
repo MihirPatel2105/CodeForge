@@ -70,6 +70,7 @@ async def lifespan(app: FastAPI):
     client = AsyncMongoClient("mongodb://localhost:27017")
     await init_beanie(database=client.appdb, document_models=[Book])
     yield
+    await client.close()
 
 
 # lifespan is passed to the constructor; it is not an attribute of FastAPI

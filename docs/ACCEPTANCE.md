@@ -78,6 +78,12 @@ The denominator is `10 canonical prompts × N repetitions`, per RAG mode.
 **Included:**
 - Runs that hit `MAX_LOOPS`. Loop exhaustion is a system outcome, not an excuse.
 - Runs where a provider fallback fired mid-run and then succeeded.
+- Runs that exhaust every provider after an earlier completion. The arm rate keeps this
+  failure as an outcome, but a RAG pair containing it is marked quota-confounded.
+
+The report shows arm rates during collection. Its RAG deltas are null until every
+planned prompt/repetition pair has both arms included and none of those pairs is
+quota-confounded; an incomplete or quota-skewed report cannot establish a retrieval effect.
 
 **Evaluation runs must auto-approve both human checkpoints.** The graph interrupts before the PM and
 Architect nodes; an unattended harness would stall there forever. The harness sets approval

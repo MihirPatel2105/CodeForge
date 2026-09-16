@@ -294,6 +294,16 @@ class FileTreeResponse(BaseModel):
     files: list[GeneratedFile] = Field(default_factory=list)
 
 
+class FileHistoryVersion(BaseModel):
+    iteration: int
+    files: list[GeneratedFile] = Field(default_factory=list)
+
+
+class FileHistoryResponse(BaseModel):
+    run_id: str
+    versions: list[FileHistoryVersion] = Field(default_factory=list)
+
+
 # --------------------------------------------------------------------------- #
 # Approvals
 # --------------------------------------------------------------------------- #

@@ -9,6 +9,30 @@ Build plan in [docs/PHASES.md](docs/PHASES.md); the dashboard's design brief in
 [docs/UI_BRIEF.md](docs/UI_BRIEF.md). Architecture and stack decisions live in `CLAUDE.md` — kept
 out of this repo intentionally; ask a teammate for a copy.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Next.js dashboard] -->|REST and SSE| API[FastAPI]
+    API --> Graph[LangGraph run]
+    Graph --> PM[PM] --> Architect[Architect] --> Coder[Coder]
+    Coder --> Reviewer[Reviewer]
+    Reviewer -->|blocking findings| Coder
+    Reviewer --> Tester[Tester]
+    Tester --> Sandbox[Network-isolated Docker sandbox]
+    Sandbox -->|failing tests| Coder
+    Graph -->|agent calls| LiteLLM[LiteLLM provider chains]
+    Coder -->|optional examples| Chroma[Chroma retrieval]
+    API <--> Mongo[MongoDB runs and checkpoints]
+    Graph --> GridFS[GridFS artifacts]
+    GridFS --> Mongo
+```
+
+Runs pause for approval after requirements and design. The Reviewer and Tester can send a run
+back to the Coder within a bounded loop; the sandbox executes the generated API and tests without
+network access. MongoDB stores run state and per-iteration artifacts, which power stream replay
+and the code Diff panel. The supported generation domain is single- and two-entity CRUD APIs.
+
 ## Prerequisites
 
 - Docker Desktop
@@ -111,6 +135,29 @@ PYTHONPATH=. python scripts/smoke_llm.py              # completion + Langfuse tr
 
 The smoke script makes one LiteLLM call through Groq and traces it to Langfuse — it verifies keys,
 routing, and observability in one shot. Check the trace appears in the Langfuse UI.
+
+## Evaluate the pipeline
+
+The canonical evaluation is 10 frozen prompts, three repetitions, and both retrieval settings
+(60 slots). It records acceptance levels, failure categories, timing, review-loop outcomes,
+provider attempts, and RAG deltas. Check the planned work without contacting services:
+
+```bash
+cd backend
+PYTHONPATH=. python scripts/evaluate.py --repeat 3 --dry-run
+```
+
+With MongoDB, the sandbox image, and LLM keys ready, run in quota-sized chunks:
+
+```bash
+PYTHONPATH=. python scripts/evaluate.py --repeat 3 --max-runs 2
+```
+
+Reusing the command resumes unfinished slots. The JSON and CSV files are written to
+`backend/evaluation-results/` and ignored by Git; infrastructure failures and a provider-wide
+429 before any completion are recorded but excluded from rates. If platform code or the sandbox
+changes between chunks, start a new experiment with `--out-dir` pointing to a new directory.
+Partial runs are not a full benchmark and should not be read as a RAG comparison.
 
 To check quota and reachability for every rung of every chain — worth doing before a demo, since
 free-tier limits are the usual reason a run dies mid-way:

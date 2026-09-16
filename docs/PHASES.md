@@ -270,18 +270,16 @@ Tasks
       *(the LOOP entry + pipeline return-arc animation, confirmed firing on two real Reviewer
       findings in the same run)*
 - [x] Code viewer with file tree + syntax highlighting; sandbox output panel.
-      *(current-file view reads live from `GET /runs/{id}/files`; the Diff toggle intentionally
-      never appears for a live run — the backend stores per-iteration history as a zipped
-      artifact, not structured per-file content, so there is nothing cheap to diff against yet.
-      Fixing that needs either a backend endpoint returning structured history or a client-side
-      unzip step — not done)*
+      *(current-file view reads `GET /runs/{id}/files`; the Diff toggle now uses owner-checked
+      `GET /runs/{id}/file-history` to compare a rewritten file with its archived prior pass.)*
 - [x] Approval checkpoints: run pauses, UI shows Approve / Reject + edit-notes, graph resumes from
       the checkpoint on approve.
       *(both the PM and Architect checkpoints verified live, including the two bug fixes noted
       under Phase 6 above — this task was the one that surfaced them)*
 - [x] SSE reconnect with replay from last event id.
       *(implemented — `Last-Event-ID` + exponential backoff in `use-run-stream.ts`, replayed by
-      `bus.replay()` server-side — but not yet exercised against a real dropped connection)*
+      `bus.replay()` server-side. Scripted disconnect/replay and terminal closure pass backend
+      regression tests; a real browser/network drop remains to be exercised.)*
 
 **DoD:** a non-technical person watches one run start to finish and can explain what happened.
 
@@ -478,15 +476,73 @@ person to watch one run for the literal DoD, then start Phase 8.*
 **Goal:** turn the project into numbers for the report.
 
 Tasks
-- [ ] pytest for the platform: auth, CRUD, graph transitions, sandbox runner (mocked Docker),
+- [x] pytest for the platform: auth, CRUD, graph transitions, sandbox runner (mocked Docker),
       loop-cap behaviour.
+      *(Backend suite: 269 passed, 19 skipped on 2026-09-15 after the provider-output fix;
+      live sandbox probes and stream replay have focused regression coverage.)*
 - [ ] Evaluation harness: run all 10 canonical prompts × N repetitions, collect metrics into a
       JSON/CSV report.
-- [ ] Metrics: generation success rate, test pass rate, review-loop effectiveness, average
+- [x] Metrics: generation success rate, test pass rate, review-loop effectiveness, average
       iterations to success, end-to-end time, **RAG vs no-RAG delta**.
-- [ ] Failure taxonomy: categorise every failed run (bad schema, ObjectId error, timeout, quota,
+      *(Resumable 60-slot harness and per-run acceptance scoring implemented; complete rates
+      require included runs for both arms, and full benchmark collection is still open.)*
+- [x] Failure taxonomy: categorise every failed run (bad schema, ObjectId error, timeout, quota,
       loop exhausted) — this table is report gold.
-- [ ] Load/quota sanity: what happens when every provider 429s at once.
+- [x] Load/quota sanity: what happens when every provider 429s at once.
+      *(A simulated provider-wide 429 exhausts the chain, preserves each failed attempt, and
+      excludes the no-completion run from the benchmark denominator.)*
+
+**Pipeline recovery check, 2026-09-15:** Groq GPT-OSS planning now uses Instructor's
+JSON-schema mode, avoiding the missing tool call that stopped the Architect. Generation
+and testing can retry the same Groq model in JSON-object mode if schema-mode output is
+invalid. Brief Groq cooldowns, including millisecond `retry-after` messages, wait and
+retry before switching providers. A fix pass can recreate a designed file that a prior
+Coder call missed. The public `p01_books` end-to-end smoke reached L5 with all four app
+files present and 8/8 sandbox tests passing; missing-file recovery also has a focused
+regression test. This verifies one prompt, not the still-open 10-prompt benchmark.
+
+**Tester follow-up, 2026-09-15:** A user run reached Reviewer with four app files but
+Tester exhausted its chain: GPT-OSS 20B failed JSON validation in both modes,
+OpenRouter emitted no test functions, and Mistral was rate-limited. Tester now tries
+GPT-OSS 120B first and sends only route/schema files as source context. The public
+`p04_products` smoke then reached L5 after one repair iteration: GPT-OSS 120B wrote
+`test_main.py`, and all 8 sandbox tests passed. The saved failed run remains failed;
+the fix applies to new runs.
+
+**Evaluation probe correction, 2026-09-15:** The first paired `p01_books` collection
+exposed a false L2 score in the RAG-off arm. The sandbox had executed 8 tests, but the
+boot probe selected a detail GET before an available list GET and supplied a one-character
+id, which the generated app rejected before a response existed. Probe selection now
+prefers a parameter-free GET, and its fallback id is valid 24-character hex. A real
+Docker regression confirms a parameterized 404 is recorded as a successful boot. The
+earlier two-slot report is diagnostic only; benchmark collection restarts under the
+new code fingerprint.
+
+**Predeployment coverage, 2026-09-16:** The corrected books prompt completed once in
+each retrieval mode under a fresh 20-slot coverage plan. Both runs reached L5 with a
+1.0 test-pass ratio and no quota failure; the report remains incomplete until the other
+nine frozen prompt pairs finish, so it does not present a RAG delta. The RAG-on run's
+generated lifespan now uses `await client.close()`, removing the unawaited async Mongo
+client warning seen in the successful recipe run. The Coder rule, Reviewer checklist,
+and retrieval example now agree on that cleanup. Preflight had been probing a retired
+OpenRouter Nano free model and counted a Mistral 429 as live; it now probes the active
+Super free model and counts current 429s as unavailable. The active Super completion
+succeeded. Backend verification reached 276 passed, 20 skipped after the generated
+source guard; eight opt-in real Docker
+sandbox tests passed; frontend lint, type check, and isolated production build passed.
+
+**Tasks-prompt correction, 2026-09-16:** The second public pair exposed a genuine
+generated-code defect. RAG-off recovered through three Reviewer/Coder repairs and
+reached L5. RAG-on booted and ran pytest, but generated `TaskRead(id=str(task.id),
+**task.model_dump())`; Beanie's dump already includes `id`, so four route tests raised
+duplicate-keyword `TypeError`. The Reviewer missed it, and the later repair exhausted
+the loop while Groq's 200K daily budget and alternate providers were constrained.
+The Coder and Reviewer now name this exact blocking pattern, with explicit response
+fields as the safe construction. The four-slot report belongs to the earlier prompt
+fingerprint and is diagnostic; further collection needs a fresh output directory.
+The single-file generation schema also rejects this exact duplicate-id AST pattern
+before execution, while accepting an explicit `exclude={'id'}`; Instructor can re-ask
+the Coder or fall through to another model instead of spending a sandbox loop on it.
 
 **DoD:** one command produces the full metrics table; results are pasted into the report chapter.
 
@@ -497,7 +553,7 @@ Tasks
 Tasks
 - [ ] Frontend to Vercel; backend + sandbox on the local machine/VM (free hosts don't expose the
       Docker socket).
-- [ ] README: architecture diagram, setup steps, `.env` guide, run instructions.
+- [x] README: architecture diagram, setup steps, `.env` guide, run instructions.
 - [ ] Final report chapters: architecture, agent design, feedback loop, metrics, limitations.
 - [ ] Demo script: 3 prompts — one clean run, one that triggers the review loop, one showing an
       approval rejection.

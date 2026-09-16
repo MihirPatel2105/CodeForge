@@ -53,6 +53,38 @@ def test_unparseable_python_is_rejected_at_generation_time():
         SingleFileOutput(path="bad.py", content="def f(:\n    pass\n")
 
 
+def test_duplicate_beanie_id_unpack_is_rejected_before_execution():
+    source = "def task_to_read(task):\n    return TaskRead(id=str(task.id), **task.model_dump())\n"
+    with pytest.raises(ValidationError, match="duplicates document id"):
+        SingleFileOutput(path="main.py", content=source)
+
+
+def test_document_dump_excluding_id_is_accepted():
+    source = (
+        "def task_to_read(task):\n"
+        "    return TaskRead(id=str(task.id), **task.model_dump(exclude={'id'}))\n"
+    )
+    assert SingleFileOutput(path="main.py", content=source).content == source
+
+
+def test_unrelated_exclude_value_does_not_bypass_document_id_guard():
+    source = (
+        "def task_to_read(task):\n"
+        "    return TaskRead(id=str(task.id), "
+        "**task.model_dump(exclude={'other': 'id'}))\n"
+    )
+    with pytest.raises(ValidationError, match="duplicates document id"):
+        SingleFileOutput(path="main.py", content=source)
+
+
+def test_create_payload_dump_does_not_match_document_id_guard():
+    source = (
+        "def create_book(payload, book):\n"
+        "    return BookResponse(id=str(book.id), **payload.model_dump())\n"
+    )
+    assert SingleFileOutput(path="main.py", content=source).content == source
+
+
 def test_stored_broken_files_remain_loadable():
     """Lenient where nothing can be fixed: a tree already in the database must still load,
     or analysis, replay and the files endpoint would all break on historic runs."""

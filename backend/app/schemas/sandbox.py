@@ -13,6 +13,8 @@ class SandboxRequest(BaseModel):
     run_id: str
     files: list[GeneratedFile] = Field(min_length=1)  # application code plus tests
     timeout_s: int = 120
+    probe_method: str | None = None
+    probe_path: str | None = None
 
 
 class SandboxResult(BaseModel):

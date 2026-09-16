@@ -65,6 +65,20 @@ def zip_tree(files: list[GeneratedFile]) -> bytes:
     return buffer.getvalue()
 
 
+def unzip_tree(payload: bytes) -> list[GeneratedFile]:
+    """Read a stored iteration into structured files for the live Diff viewer."""
+    files: list[GeneratedFile] = []
+    with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+        for info in archive.infolist():
+            if info.is_dir() or info.file_size > 2_000_000:
+                continue
+            name = Path(info.filename).name
+            if not name or not name.endswith(".py"):
+                continue
+            files.append(GeneratedFile(path=name, content=archive.read(info).decode("utf-8")))
+    return files
+
+
 async def store_run_artifacts(
     *,
     run_id: str,

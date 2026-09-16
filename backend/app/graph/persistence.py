@@ -10,6 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from app.graph.metrics import score_run
 from app.models import Run
 
 
@@ -46,5 +47,7 @@ async def save_state(state: dict[str, Any]) -> None:
     run.state = serialise(state)
     run.status = state.get("status", run.status)
     run.iterations = state.get("loop_count", run.iterations)
+    if state.get("finished_at") is not None:
+        run.metrics = score_run(state, status=run.status)
     run.updated_at = datetime.now()
     await run.save()

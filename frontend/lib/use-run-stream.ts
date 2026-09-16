@@ -31,6 +31,7 @@ export function useRunStream(runId: string) {
     let cancelled = false;
     let attempt = 0;
     let lastEventId = 0;
+    let terminalSeen = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let abortController: AbortController | null = null;
 
@@ -43,17 +44,22 @@ export function useRunStream(runId: string) {
         else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
       }
       if (dataLines.length === 0) return;
-      if (id != null && Number.isFinite(id)) lastEventId = id;
       try {
         const event = JSON.parse(dataLines.join("\n")) as CodeForgeEvent;
+        if (id != null && Number.isFinite(id)) lastEventId = id;
         setSnapshot((prev) => applyEvent(prev, event));
+        if (event.event === "run.completed" || event.event === "run.failed") {
+          terminalSeen = true;
+          setConnectionLost(null);
+          abortController?.abort();
+        }
       } catch {
         // A malformed frame shouldn't take the whole stream down.
       }
     }
 
     async function connect() {
-      if (cancelled) return;
+      if (cancelled || terminalSeen) return;
       abortController = new AbortController();
 
       try {
@@ -89,7 +95,7 @@ export function useRunStream(runId: string) {
         if (cancelled || (err instanceof DOMException && err.name === "AbortError")) return;
       }
 
-      if (cancelled) return;
+      if (cancelled || terminalSeen) return;
       // The stream ended (server closed it, network dropped, proxy timed out) —
       // reconnect with backoff; the server replays everything after `lastEventId`.
       attempt += 1;

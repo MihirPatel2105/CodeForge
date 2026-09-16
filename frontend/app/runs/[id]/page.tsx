@@ -9,13 +9,14 @@ import { api, getToken, downloadLatestFileTree, ApiError } from "@/lib/api";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
+import { buildHunks } from "@/lib/diff";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { ApprovalBar } from "@/components/dashboard/approval-bar";
 import { ResultSummary } from "@/components/dashboard/result-summary";
 import { displayStatus, tone } from "@/lib/tone";
 import { cn } from "@/lib/utils";
-import type { ApprovalPhase } from "@/lib/types";
+import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
 
@@ -24,16 +25,15 @@ import { Button } from "@/components/ui/button";
  * against mock playback in /dev/reducer, now composed against a live SSE connection
  * (lib/use-run-stream.ts) instead of a timer.
  *
- * One known gap: the Diff toggle never appears here. `GET /runs/{id}/files` only
- * returns each file's *current* content, not per-iteration history — the backend
- * stores that history as a zipped artifact per loop (backend/app/db/artifacts.py),
- * not as structured per-file JSON, so there is nothing cheap to diff against yet.
+ * Current content comes from /files; archived sandbox iterations come from
+ * /file-history so a rewritten file can be compared with the previous pass.
  */
 export default function LiveRunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { snapshot, connectionLost } = useRunStream(id);
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
+  const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -67,8 +67,34 @@ export default function LiveRunPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, filesKey]);
 
-  function getVersion(path: string): CodeVersion | null {
+  useEffect(() => {
+    if (snapshot.iterations === 0) return;
+    api.getRunFileHistory(id).then((history) => setFileHistory(history.versions)).catch(() => {
+      // A later file event or terminal event retries after artifacts are saved.
+    });
+  }, [id, filesKey, snapshot.iterations, snapshot.endedAt]);
+
+  function getVersion(path: string, iteration: number): CodeVersion | null {
     const content = fileContent[path];
+    if (content == null) return null;
+    const previous = getPreviousVersion(path, iteration);
+    if (!previous) return { content };
+    const changed = buildHunks(previous.content, content, 0).flatMap((hunk) => hunk.lines);
+    return {
+      content,
+      changedLines: changed.flatMap((line) =>
+        line.kind === "added" && line.newLine != null ? [line.newLine] : [],
+      ),
+      changedLineCount: changed.filter((line) => line.kind !== "context").length,
+    };
+  }
+
+  function getPreviousVersion(path: string, iteration: number): CodeVersion | null {
+    const previous = fileHistory
+      .filter((version) => version.iteration < iteration)
+      .sort((a, b) => b.iteration - a.iteration)
+      .find((version) => version.files.some((file) => file.path === path));
+    const content = previous?.files.find((file) => file.path === path)?.content;
     return content != null ? { content } : null;
   }
 
@@ -257,7 +283,7 @@ export default function LiveRunPage() {
 
             <div className="flex min-w-0 flex-col gap-3">
               <div className="h-[560px] sm:h-[440px]">
-                <CodePanel files={snapshot.files} getVersion={getVersion} />
+                <CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />
               </div>
 
               <div className="flex flex-col gap-3 md:flex-row">

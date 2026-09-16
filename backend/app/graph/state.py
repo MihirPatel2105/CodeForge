@@ -11,7 +11,7 @@ Rules that hold everywhere:
 * No raw LLM text is stored here, only validated schema objects.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal, TypedDict
 
 from pydantic import BaseModel, Field
@@ -82,6 +82,7 @@ class RunState(TypedDict, total=False):
 
     # input
     user_prompt: str
+    prompt_id: str | None
 
     # phase outputs
     requirements: Requirements | None
@@ -107,6 +108,8 @@ class RunState(TypedDict, total=False):
     current_agent: AgentName | None
     prompt_versions: dict[str, str]  # agent -> template version
     rag_enabled: bool
+    llm_attempts: list[dict]
+    llm_tokens: int
     errors: list[RunError]
     started_at: datetime
     finished_at: datetime | None
@@ -120,6 +123,7 @@ def new_run_state(
     thread_id: str,
     user_prompt: str,
     rag_enabled: bool = True,
+    prompt_id: str | None = None,
     max_loops: int = DEFAULT_MAX_LOOPS,
 ) -> RunState:
     """Build the initial state for a run. Collections start empty, never unset, so
@@ -130,6 +134,7 @@ def new_run_state(
         user_id=user_id,
         thread_id=thread_id,
         user_prompt=user_prompt,
+        prompt_id=prompt_id,
         requirements=None,
         design=None,
         code=None,
@@ -147,8 +152,10 @@ def new_run_state(
         current_agent=None,
         prompt_versions={},
         rag_enabled=rag_enabled,
+        llm_attempts=[],
+        llm_tokens=0,
         errors=[],
-        started_at=datetime.now(),
+        started_at=datetime.now(UTC),
         finished_at=None,
     )
 
@@ -169,4 +176,6 @@ class RunMetrics(BaseModel):
     end_to_end_ms: int = 0
     failure_category: str | None = None
     prompt_id: str | None = None  # links a run to backend/tests/prompts.json
+    acceptance_level: str = "L0"
+    exclusion_reason: str | None = None
     notes: list[str] = Field(default_factory=list)

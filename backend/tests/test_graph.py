@@ -19,6 +19,18 @@ def test_thread_config_shape():
     assert thread_config("abc") == {"configurable": {"thread_id": "abc"}}
 
 
+def test_boot_probe_prefers_list_route_over_detail_route():
+    """A detail route with a synthetic id can fail even when the app boots."""
+    from app.graph.nodes import _boot_probe_endpoint
+    from app.schemas.agents import Endpoint
+
+    detail = Endpoint(
+        method="GET", path="/books/{book_id}", response_model="BookRead", status_code=200
+    )
+    listing = Endpoint(method="GET", path="/books", response_model="BookRead", status_code=200)
+    assert _boot_probe_endpoint([detail, listing]) is listing
+
+
 # --------------------------------------------------------------------------- #
 # Fallback classification — each of these aborted a real run before being fixed
 # --------------------------------------------------------------------------- #

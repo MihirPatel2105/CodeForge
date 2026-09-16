@@ -49,6 +49,7 @@ RUN pip install --no-cache-dir \
 RUN mkdir -p /data/db /app && chown -R mongodb:mongodb /data/db /app
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY probe.py /usr/local/bin/probe.py
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER mongodb

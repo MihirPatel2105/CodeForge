@@ -12,6 +12,8 @@ export interface CodeVersion {
   content: string;
   /** 1-indexed lines this version changed, for the Current view's loop-soft marks. */
   changedLines?: number[];
+  /** Added and removed lines in the prior-version comparison. */
+  changedLineCount?: number;
 }
 
 export interface CodePanelProps {
@@ -21,9 +23,8 @@ export interface CodePanelProps {
    * whether from `lib/mock-files.ts` (dev playback) or a live `GET /runs/{id}/files`
    * fetch (the real Live Run screen). */
   getVersion: (path: string, iteration: number) => CodeVersion | null;
-  /** Omit for a source with no historical content — the Diff toggle simply never
-   * appears (the real backend only exposes current file content today; see
-   * lib/use-run-stream.ts's neighbouring notes on the artifacts contract gap). */
+  /** Omit for a source with no historical content. The live page reads archived
+   * versions from `GET /runs/{id}/file-history`. */
   getPreviousVersion?: (path: string, iteration: number) => CodeVersion | null;
 }
 
@@ -51,8 +52,7 @@ function CodeLine({ text }: { text: string }) {
 /**
  * File rail + code viewer (design_handoff/README.md "Code and output"). File content
  * isn't part of the SSE contract (`FileWrittenEvent` carries only path + bytes) — it's
- * joined here from `lib/mock-files.ts`, standing in for what would be a REST fetch
- * (`FileTreeResponse`) against the real backend.
+ * joined here from mock data during dev playback or the REST file endpoints on a live run.
  */
 export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
@@ -141,8 +141,8 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                   {selected.status === "new"
                     ? `${selected.bytes.toLocaleString()} bytes · written in the first pass`
                     : `${selected.bytes.toLocaleString()} bytes · rewritten in iteration ${selected.iteration} · ${
-                        version.changedLines?.length ?? 0
-                      } ${(version.changedLines?.length ?? 0) === 1 ? "line" : "lines"} changed`}
+                        version.changedLineCount ?? version.changedLines?.length ?? 0
+                      } ${(version.changedLineCount ?? version.changedLines?.length ?? 0) === 1 ? "line" : "lines"} changed`}
                 </span>
               </div>
               {canDiff && (

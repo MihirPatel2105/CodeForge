@@ -21,6 +21,9 @@ anyio. pytest-asyncio is not installed and async tests will error at collection.
 between tests, no ordering assumptions.
 - No network, no external fixtures, no sleeping.
 - Use a clearly invalid 24-character hex id such as "000000000000000000000000" for 404 tests.
+- Keep the whole suite compact. Use one small create/delete helper and short endpoint tests.
+- Avoid repeating large request bodies and long assertion blocks. A complete short suite
+  is better than a long response that cuts off or breaks its JSON wrapper.
 
 Return one complete file named test_main.py."""
 

@@ -17,6 +17,7 @@ from app.events import events
 from app.graph.persistence import save_state
 from app.graph.routing import loop_count_for, loop_trigger
 from app.graph.state import DEFAULT_MAX_LOOPS
+from app.llm.client import LLMResult
 from app.sandbox import SANDBOX_IMAGE, parse_pytest, run_in_sandbox
 from app.sandbox.runner import SandboxUnavailableError
 from app.schemas.agents import Design, GeneratedFile, Requirements
@@ -27,6 +28,53 @@ State = dict[str, Any]
 
 def _elapsed_ms(started: float) -> int:
     return int((time.monotonic() - started) * 1000)
+
+
+def _boot_probe_endpoint(endpoints: list[Any]) -> Any | None:
+    """Prefer a GET route with no path id, so the boot check is not an id-validation test."""
+    return next(
+        (e for e in endpoints if e.method == "GET" and "{" not in e.path),
+        next((e for e in endpoints if e.method == "GET"), endpoints[0] if endpoints else None),
+    )
+
+
+def _collect_usage(attempts: list[dict], tokens: int, result: LLMResult) -> tuple[list[dict], int]:
+    recorded = [
+        {
+            **attempt.model_dump(),
+            "fallback": index < len(result.attempts) - 1
+            and result.attempts[index + 1].model != attempt.model,
+        }
+        for index, attempt in enumerate(result.attempts)
+    ]
+    return [*attempts, *recorded], tokens + result.tokens
+
+
+def _usage_update(state: State, result: LLMResult) -> State:
+    attempts, tokens = _collect_usage(
+        list(state.get("llm_attempts") or []), int(state.get("llm_tokens") or 0), result
+    )
+    return {"llm_attempts": attempts, "llm_tokens": tokens}
+
+
+def _failed_attempts(previous: list[dict], exc: Exception) -> list[dict]:
+    if not isinstance(exc, ProviderExhaustedError):
+        return previous
+    return [
+        *previous,
+        *(
+            {
+                **attempt.model_dump(),
+                "fallback": index < len(exc.attempts) - 1
+                and exc.attempts[index + 1].model != attempt.model,
+            }
+            for index, attempt in enumerate(exc.attempts)
+        ),
+    ]
+
+
+def _failed_usage_update(state: State, exc: Exception) -> State:
+    return {"llm_attempts": _failed_attempts(list(state.get("llm_attempts") or []), exc)}
 
 
 # The files other files' names and types get checked against. Never main.py: nothing
@@ -67,6 +115,7 @@ async def pm_node(state: State) -> State:
     await events.agent_started(run_id, "pm")
     try:
         result = await PMAgent().run(state)
+        update.update(_usage_update(state, result))
         requirements = result.value
         update["requirements"] = requirements
         update["prompt_versions"] = {
@@ -85,6 +134,7 @@ async def pm_node(state: State) -> State:
             _elapsed_ms(started),
         )
     except Exception as exc:
+        update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "pm", exc)
         update["status"] = "failed_llm"
         await events.agent_failed(run_id, "pm", "llm_exhausted", str(exc))
@@ -101,6 +151,7 @@ async def architect_node(state: State) -> State:
     await events.agent_started(run_id, "architect")
     try:
         result = await ArchitectAgent().run(state)
+        update.update(_usage_update(state, result))
         design = result.value
         update["design"] = design
         update["prompt_versions"] = {
@@ -119,6 +170,7 @@ async def architect_node(state: State) -> State:
             _elapsed_ms(started),
         )
     except Exception as exc:
+        update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "architect", exc)
         update["status"] = "failed_llm"
         await events.agent_failed(run_id, "architect", "llm_exhausted", str(exc))
@@ -144,9 +196,8 @@ async def coder_node(state: State) -> State:
     """Generates the tree one file per call.
 
     A whole-tree request breaches Groq's 8000 TPM ceiling and provokes nested tool-call
-    rejections; per-file requests avoid both. A file that fails is skipped rather than
-    aborting the run — the Reviewer will report what is missing, which is exactly the
-    signal the loop is built to act on.
+    rejections; per-file requests avoid both. A failed file leaves a partial tree,
+    which the fix loop can complete on a later pass.
     """
     design: Design | None = state.get("design")
     if design is None:
@@ -210,15 +261,19 @@ async def _generate_tree(state: State, coder, design: Design) -> State:
     """First pass: write every file in the Design, one call per file."""
     files: list[GeneratedFile] = []
     errors = list(state.get("errors") or [])
+    attempts = list(state.get("llm_attempts") or [])
+    tokens = int(state.get("llm_tokens") or 0)
 
     for spec in design.files:
         try:
             result = await coder.run_file(state, spec)
-            files.append(result.value.as_generated_file())
+            attempts, tokens = _collect_usage(attempts, tokens, result)
+            files.append(GeneratedFile(path=spec.path, content=result.value.content))
         except Exception as exc:
+            attempts = _failed_attempts(attempts, exc)
             errors = _error({"errors": errors}, "coder", exc)
 
-    return {"files": files, "errors": errors}
+    return {"files": files, "errors": errors, "llm_attempts": attempts, "llm_tokens": tokens}
 
 
 async def _fix_tree(state: State, coder, trigger: str) -> State:
@@ -231,23 +286,36 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
     files: list[GeneratedFile] = list(state.get("files") or [])
     by_path = {f.path: f for f in files}
     errors = list(state.get("errors") or [])
+    attempts = list(state.get("llm_attempts") or [])
+    tokens = int(state.get("llm_tokens") or 0)
 
     problems = _problems_by_file(state)
+    design_specs = {spec.path: spec for spec in state["design"].files}
+    for path in design_specs:
+        if path not in by_path:
+            problems.setdefault(path, []).append("- required file missing from the first pass")
     iteration = state.get("loop_count", 0) + 1
     changed: list[str] = []
 
     for path, issues in problems.items():
         current = by_path.get(path)
         if current is None:
-            # The Reviewer named a file that was never generated — a typo, a path
-            # prefix, or a file it imagined. Skipping silently spends a whole loop
-            # iteration doing nothing and looks identical to a fix that did not work,
-            # so it is recorded instead.
-            errors = _error(
-                {"errors": errors},
-                "coder",
-                RuntimeError(f"review names {path!r}, which this run never generated"),
-            )
+            spec = design_specs.get(path)
+            if spec is None:
+                errors = _error(
+                    {"errors": errors},
+                    "coder",
+                    RuntimeError(f"review names {path!r}, which the design never specified"),
+                )
+                continue
+            try:
+                result = await coder.run_file({**state, "loop_count": iteration}, spec)
+                attempts, tokens = _collect_usage(attempts, tokens, result)
+                by_path[path] = GeneratedFile(path=path, content=result.value.content)
+                changed.append(path)
+            except Exception as exc:
+                attempts = _failed_attempts(attempts, exc)
+                errors = _error({"errors": errors}, "coder", exc)
             continue
         try:
             result = await coder.run_fix(
@@ -257,9 +325,11 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
                 problems="\n".join(issues),
                 siblings=_sibling_context(by_path, exclude=path),
             )
-            by_path[path] = result.value.as_generated_file()
+            attempts, tokens = _collect_usage(attempts, tokens, result)
+            by_path[path] = GeneratedFile(path=path, content=result.value.content)
             changed.append(path)
         except Exception as exc:
+            attempts = _failed_attempts(attempts, exc)
             errors = _error({"errors": errors}, "coder", exc)
 
     record = {
@@ -272,8 +342,14 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
     }
 
     return {
-        "files": [by_path[f.path] for f in files],
+        "files": [
+            by_path[path]
+            for path in dict.fromkeys([*(f.path for f in files), *design_specs])
+            if path in by_path
+        ],
         "errors": errors,
+        "llm_attempts": attempts,
+        "llm_tokens": tokens,
         "loop_count": iteration,
         "loop_history": [*(state.get("loop_history") or []), record],
         # Cleared so the next reviewer/sandbox verdict is judged fresh rather than
@@ -333,8 +409,16 @@ async def reviewer_node(state: State) -> State:
     await events.agent_started(run_id, "reviewer", iteration=state.get("loop_count", 0))
     try:
         result = await ReviewerAgent().run(state)
+        update.update(_usage_update(state, result))
         review = result.value
         update["review"] = review
+        history = list(state.get("loop_history") or [])
+        if history and history[-1].get("outcome") is None:
+            history[-1] = {
+                **history[-1],
+                "outcome": "review_cleared" if review.passed else "review_still_blocking",
+            }
+            update["loop_history"] = history
         update["prompt_versions"] = {
             **(state.get("prompt_versions") or {}),
             "reviewer": ReviewerAgent.template_version,
@@ -356,6 +440,7 @@ async def reviewer_node(state: State) -> State:
             _elapsed_ms(started),
         )
     except Exception as exc:
+        update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "reviewer", exc)
         update["status"] = "failed_llm"
         await events.agent_failed(run_id, "reviewer", "llm_exhausted", str(exc))
@@ -379,6 +464,7 @@ async def tester_node(state: State) -> State:
     await events.agent_started(run_id, "tester", iteration=state.get("loop_count", 0))
     try:
         result = await TesterAgent().run(state)
+        update.update(_usage_update(state, result))
         test_file = result.value.as_generated_file()
         update["test_files"] = [test_file]
         update["prompt_versions"] = {
@@ -390,6 +476,7 @@ async def tester_node(state: State) -> State:
             run_id, "tester", {"files": 1, "model": result.model}, _elapsed_ms(started)
         )
     except Exception as exc:
+        update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "tester", exc)
         update["status"] = "failed_llm"
         await events.agent_failed(run_id, "tester", "llm_exhausted", str(exc))
@@ -417,7 +504,15 @@ async def sandbox_node(state: State) -> State:
         return update
 
     run_id = state["run_id"]
-    request = SandboxRequest(run_id=run_id, files=files + test_files)
+    design: Design | None = state.get("design")
+    endpoints = list(design.endpoints) if design else []
+    probe = _boot_probe_endpoint(endpoints)
+    request = SandboxRequest(
+        run_id=run_id,
+        files=files + test_files,
+        probe_method=probe.method if probe else None,
+        probe_path=probe.path if probe else None,
+    )
     await events.sandbox_started(run_id, SANDBOX_IMAGE)
 
     try:
@@ -516,12 +611,12 @@ async def finalise_node(state: State) -> State:
 
     update: State = {
         "current_agent": None,
-        "finished_at": datetime.now(),
+        "finished_at": datetime.now(UTC),
         "status": status,
     }
 
     history = list(state.get("loop_history") or [])
-    if history:
+    if history and history[-1].get("outcome") is None:
         history[-1] = {**history[-1], "outcome": status}
         update["loop_history"] = history
 
@@ -548,7 +643,9 @@ async def finalise_node(state: State) -> State:
     # Emitted last, once the outcome and its reasons are both settled — the dashboard
     # closes the run on this event, so it must carry the final word.
     started_at = state.get("started_at")
-    duration_ms = int((datetime.now() - started_at).total_seconds() * 1000) if started_at else 0
+    if started_at is not None and started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=UTC)
+    duration_ms = int((datetime.now(UTC) - started_at).total_seconds() * 1000) if started_at else 0
     if status == "succeeded":
         await events.run_completed(state["run_id"], status, state.get("loop_count", 0), duration_ms)
     else:

@@ -5,11 +5,18 @@ model, which is the part that broke in practice. Live provider calls are covered
 `scripts/probe_models.py`.
 """
 
+import asyncio
+from types import SimpleNamespace
+
+import instructor
 import litellm
 import pytest
+from pydantic import BaseModel
 
-from app.llm.client import _is_retryable
-from app.llm.registry import CHAINS, chain_for
+from app.core.exceptions import ProviderExhaustedError
+from app.llm import client
+from app.llm.client import _is_retryable, _short_rate_limit_delay
+from app.llm.registry import CHAINS, ModelSpec, chain_for
 
 
 class FakeInstructorWrapper(Exception):
@@ -70,6 +77,13 @@ def test_truncated_single_file_output_is_retryable():
     assert _is_retryable(exc)
 
 
+def test_duplicate_document_id_validation_can_fall_through_to_another_model():
+    exc = FakeInstructorWrapper(
+        "1 validation error for SingleFileOutput: main.py duplicates document id"
+    )
+    assert _is_retryable(exc)
+
+
 def test_prose_instead_of_a_tool_call_is_retryable():
     """Groq reports a model narrating the schema instead of emitting it as a 400
     `output_parse_failed`, which is otherwise the one error worth failing fast on. It is
@@ -95,6 +109,177 @@ def test_genuine_bad_request_is_not_retryable():
         "messages: content must be a string", llm_provider="groq", model="m"
     )
     assert not _is_retryable(exc)
+
+
+def test_groq_invalid_json_falls_through_to_a_different_output_mode():
+    exc = litellm.BadRequestError(
+        'GroqException - {"error":{"code":"json_validate_failed"}}',
+        llm_provider="groq",
+        model="m",
+    )
+    assert _is_retryable(_wrapped(exc))
+
+
+def test_mistral_fallback_receives_configured_key(monkeypatch):
+    monkeypatch.setattr(client, "_configured", False)
+    monkeypatch.setattr(client.settings, "mistral_api_key", "test-mistral-key")
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    client.configure()
+    assert client.os.environ["MISTRAL_API_KEY"] == "test-mistral-key"
+
+
+def test_every_rung_429_exhausts_chain_with_attempts_recorded(monkeypatch):
+    class AlwaysLimited:
+        async def create(self, **kwargs):
+            raise litellm.RateLimitError(
+                "429 rate limit", llm_provider="groq", model=kwargs["model"]
+            )
+
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=AlwaysLimited()))
+    monkeypatch.setattr(instructor, "from_litellm", lambda *_, **__: fake)
+    monkeypatch.setattr(client, "configure", lambda: None)
+    monkeypatch.setattr(
+        client,
+        "chain_for",
+        lambda *_: [ModelSpec(model="groq/a"), ModelSpec(model="openrouter/b")],
+    )
+    with pytest.raises(ProviderExhaustedError) as caught:
+        asyncio.run(client.structured(prompt="test", schema=BaseModel, agent="tester"))
+    assert [attempt.model for attempt in caught.value.attempts] == ["groq/a", "openrouter/b"]
+    assert all(not attempt.ok for attempt in caught.value.attempts)
+
+
+def test_schema_mode_uses_groq_then_tools_for_provider_fallback(monkeypatch):
+    class Output(BaseModel):
+        name: str
+
+    seen: list[instructor.Mode] = []
+
+    class FakeCompletions:
+        def __init__(self, mode):
+            self.mode = mode
+
+        async def create(self, **kwargs):
+            if self.mode == instructor.Mode.JSON_SCHEMA:
+                raise litellm.RateLimitError(
+                    "429 rate limit", llm_provider="groq", model=kwargs["model"]
+                )
+            return Output(name="books")
+
+    def fake_from_litellm(_completion, *, mode):
+        seen.append(mode)
+        return SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions(mode)))
+
+    monkeypatch.setattr(instructor, "from_litellm", fake_from_litellm)
+    monkeypatch.setattr(client, "configure", lambda: None)
+    monkeypatch.setattr(
+        client,
+        "chain_for",
+        lambda *_: [
+            ModelSpec(model="groq/a", structured_mode="json_schema"),
+            ModelSpec(model="openrouter/b"),
+        ],
+    )
+    result = asyncio.run(client.structured(prompt="test", schema=Output, agent="architect"))
+    assert result.value.name == "books"
+    assert seen == [instructor.Mode.JSON_SCHEMA, instructor.Mode.TOOLS]
+    assert [(a.mode, a.ok) for a in result.attempts] == [
+        ("json_schema", False),
+        ("tools", True),
+    ]
+
+
+def test_invalid_schema_json_retries_same_groq_model_in_json_mode(monkeypatch):
+    class Output(BaseModel):
+        name: str
+
+    seen: list[instructor.Mode] = []
+
+    class FakeCompletions:
+        def __init__(self, mode):
+            self.mode = mode
+
+        async def create(self, **kwargs):
+            if self.mode == instructor.Mode.JSON_SCHEMA:
+                raise litellm.BadRequestError(
+                    'GroqException - {"error":{"code":"json_validate_failed"}}',
+                    llm_provider="groq",
+                    model=kwargs["model"],
+                )
+            return Output(name="books")
+
+    def fake_from_litellm(_completion, *, mode):
+        seen.append(mode)
+        return SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions(mode)))
+
+    monkeypatch.setattr(instructor, "from_litellm", fake_from_litellm)
+    monkeypatch.setattr(client, "configure", lambda: None)
+    monkeypatch.setattr(
+        client,
+        "chain_for",
+        lambda *_: [
+            ModelSpec(model="groq/a", structured_mode="json_schema"),
+            ModelSpec(model="groq/a", structured_mode="json"),
+        ],
+    )
+    result = asyncio.run(client.structured(prompt="test", schema=Output, agent="tester"))
+    assert result.value.name == "books"
+    assert seen == [instructor.Mode.JSON_SCHEMA, instructor.Mode.JSON]
+    assert [(a.model, a.mode, a.ok) for a in result.attempts] == [
+        ("groq/a", "json_schema", False),
+        ("groq/a", "json", True),
+    ]
+
+
+def test_short_429_waits_and_retries_same_model(monkeypatch):
+    class Output(BaseModel):
+        name: str
+
+    calls = 0
+    slept: list[float] = []
+
+    class OnceLimited:
+        async def create(self, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise litellm.RateLimitError(
+                    "429 TPM",
+                    llm_provider="groq",
+                    model=kwargs["model"],
+                    headers={"retry-after": "2"},
+                )
+            return Output(name="books")
+
+    async def fake_sleep(delay):
+        slept.append(delay)
+
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=OnceLimited()))
+    monkeypatch.setattr(instructor, "from_litellm", lambda *_, **__: fake)
+    monkeypatch.setattr(client, "configure", lambda: None)
+    monkeypatch.setattr(client.asyncio, "sleep", fake_sleep)
+    monkeypatch.setattr(
+        client,
+        "chain_for",
+        lambda *_: [ModelSpec(model="groq/a", structured_mode="json_schema")],
+    )
+    result = asyncio.run(client.structured(prompt="test", schema=Output, agent="architect"))
+    assert result.value.name == "books"
+    assert calls == 2 and slept == [2.5]
+    assert [a.model for a in result.attempts] == ["groq/a", "groq/a"]
+
+
+def test_long_429_does_not_wait_on_the_same_provider():
+    exc = litellm.RateLimitError(
+        "429 daily quota", llm_provider="groq", model="m", headers={"retry-after": "3600"}
+    )
+    assert _short_rate_limit_delay(exc) is None
+    message = litellm.RateLimitError("Please try again in 1.5225s", llm_provider="groq", model="m")
+    assert _short_rate_limit_delay(message) == pytest.approx(2.0225)
+    milliseconds = litellm.RateLimitError(
+        "Please try again in 862.5ms", llm_provider="groq", model="m"
+    )
+    assert _short_rate_limit_delay(milliseconds) == pytest.approx(1.3625)
 
 
 # --------------------------------------------------------------------------- #
@@ -129,7 +314,7 @@ def test_every_chain_spans_more_than_one_provider():
         )
 
 
-def test_no_duplicate_models_within_a_chain():
+def test_no_duplicate_model_mode_pairs_within_a_chain():
     for agent, chain in CHAINS.items():
-        models = [spec.model for spec in chain]
-        assert len(models) == len(set(models)), f"{agent} retries the same model twice"
+        pairs = [(spec.model, spec.structured_mode) for spec in chain]
+        assert len(pairs) == len(set(pairs)), f"{agent} repeats the same output mode twice"

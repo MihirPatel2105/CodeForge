@@ -21,10 +21,14 @@ class TesterAgent(BaseAgent):
     async def run(self, state: dict) -> LLMResult:
         design: Design = state["design"]
         files: list[GeneratedFile] = state.get("files") or []
+        # Endpoint tests need the request/response contracts and route behavior. The
+        # database connection and document internals add tokens without changing an
+        # HTTP assertion, and can push a whole-suite response over Groq's TPM budget.
+        test_context = [f for f in files if f.path in {"schemas.py", "main.py"}] or files
         return await self.call(
             prompt.render(
                 endpoints=describe_endpoints(design),
-                files=render_files(files),
+                files=render_files(test_context),
             ),
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),

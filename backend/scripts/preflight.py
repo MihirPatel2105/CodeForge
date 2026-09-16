@@ -23,7 +23,7 @@ import httpx
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.config import settings  # noqa: E402
-from app.llm.registry import CHAINS  # noqa: E402
+from app.llm.registry import CHAINS, OPENROUTER_NEMOTRON_SUPER  # noqa: E402
 
 GREEN, YELLOW, RED, DIM, RESET = "\033[32m", "\033[33m", "\033[31m", "\033[2m", "\033[0m"
 OK, WARN, FAIL = f"{GREEN}ok{RESET}", f"{YELLOW}warn{RESET}", f"{RED}FAIL{RESET}"
@@ -97,6 +97,13 @@ async def check_groq() -> tuple[bool, list[str]]:
                 f"  {mark} tokens: {rem_tok}/{lim_tok} left this minute (resets in {reset})"
             )
 
+        if probe.status_code == 429:
+            lines.append(f"  {WARN} completion rate limited right now")
+            return False, lines
+        if probe.status_code != 200:
+            lines.append(f"  {FAIL} completion returned {probe.status_code}")
+            return False, lines
+
     return not missing, lines
 
 
@@ -155,20 +162,27 @@ async def check_openrouter() -> tuple[bool, list[str]]:
                 "Content-Type": "application/json",
             },
             json={
-                "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+                "model": _model_id(OPENROUTER_NEMOTRON_SUPER),
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 1,
             },
         )
         if probe.status_code == 429:
-            lines.append(f"  {FAIL} :free models are RATE LIMITED right now")
+            lines.append(
+                f"  {FAIL} {_model_id(OPENROUTER_NEMOTRON_SUPER)} is RATE LIMITED right now"
+            )
             detail = probe.json().get("error", {}).get("message", "")[:80]
             lines.append(f"     {DIM}{detail}{RESET}")
             return False, lines
         if probe.status_code != 200:
-            lines.append(f"  {FAIL} :free completion returned {probe.status_code}")
+            lines.append(
+                f"  {FAIL} {_model_id(OPENROUTER_NEMOTRON_SUPER)} returned {probe.status_code}"
+            )
             return False, lines
-        lines.append(f"  {OK} :free completion succeeded {DIM}(not just a valid key){RESET}")
+        lines.append(
+            f"  {OK} {_model_id(OPENROUTER_NEMOTRON_SUPER)} completion succeeded "
+            f"{DIM}(not just a valid key){RESET}"
+        )
 
     return True, lines
 
@@ -200,7 +214,7 @@ async def check_mistral() -> tuple[bool, list[str]]:
             return False, [f"  {FAIL} unreachable: {exc}"]
 
         if probe.status_code == 429:
-            return True, [f"  {WARN} rate limited right now {DIM}(key valid, quota tight){RESET}"]
+            return False, [f"  {WARN} rate limited right now {DIM}(key valid, quota tight){RESET}"]
         if probe.status_code != 200:
             return False, [f"  {FAIL} inference returned {probe.status_code}: {probe.text[:120]}"]
 

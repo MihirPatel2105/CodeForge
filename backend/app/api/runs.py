@@ -11,15 +11,18 @@ from fastapi import APIRouter, Response, status
 
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import NotFoundError
-from app.db.artifacts import list_artifacts, read_artifact
+from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
 from app.graph import executor
+from app.graph.metrics import score_run
 from app.graph.state import new_run_state
 from app.models import Project, Run
 from app.schemas.agents import GeneratedFile
 from app.schemas.api import (
     ApprovalRequest,
     ApprovalResponse,
+    FileHistoryResponse,
+    FileHistoryVersion,
     FileTreeResponse,
     RunCreate,
     RunCreateResponse,
@@ -29,6 +32,13 @@ from app.schemas.api import (
 from app.schemas.artifacts import ArtifactListResponse
 
 router = APIRouter(tags=["runs"])
+
+
+def _record_terminal_metrics(run: Run, status: str) -> None:
+    """Immediate user exits bypass the graph's terminal node."""
+    state = {**(run.state or {}), "status": status, "finished_at": datetime.now(UTC).isoformat()}
+    run.state = state
+    run.metrics = score_run(state, status=status)
 
 
 def _to_response(run: Run) -> RunResponse:
@@ -109,6 +119,21 @@ async def get_run_files(run_id: str, user: CurrentUser) -> FileTreeResponse:
     return FileTreeResponse(run_id=str(run.id), files=[GeneratedFile(**f) for f in raw])
 
 
+@router.get("/runs/{run_id}/file-history", response_model=FileHistoryResponse)
+async def get_run_file_history(run_id: str, user: CurrentUser) -> FileHistoryResponse:
+    """Return saved per-iteration trees after checking run ownership."""
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+    listing = await list_artifacts(str(run.id))
+    versions = []
+    for artifact in listing.artifacts:
+        if artifact.kind == "file_tree":
+            payload = await read_artifact(artifact.file_id)
+            versions.append(
+                FileHistoryVersion(iteration=artifact.iteration, files=unzip_tree(payload))
+            )
+    return FileHistoryResponse(run_id=str(run.id), versions=versions)
+
+
 @router.get("/projects/{project_id}/runs", response_model=list[RunSummary])
 async def list_project_runs(project_id: str, user: CurrentUser) -> list[RunSummary]:
     await get_owned(Project, project_id, str(user.id), "Project")
@@ -171,6 +196,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
 
     if not payload.approved:
         run.status = "rejected"
+        _record_terminal_metrics(run, "rejected")
         run.updated_at = datetime.now()
         await run.save()
         await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
@@ -216,6 +242,7 @@ async def cancel_run(run_id: str, user: CurrentUser) -> RunCreateResponse:
         return RunCreateResponse(run_id=str(run.id), status=run.status)
 
     run.status = "cancelled"
+    _record_terminal_metrics(run, "cancelled")
     run.updated_at = datetime.now()
     await run.save()
 

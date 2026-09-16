@@ -194,6 +194,8 @@ export interface RunMetrics {
   end_to_end_ms: number;
   failure_category: string | null;
   prompt_id: string | null;
+  acceptance_level: string;
+  exclusion_reason: string | null;
   notes: string[];
 }
 
@@ -205,6 +207,16 @@ export interface GeneratedFile {
 export interface FileTreeResponse {
   run_id: string;
   files: GeneratedFile[];
+}
+
+export interface FileHistoryVersion {
+  iteration: number;
+  files: GeneratedFile[];
+}
+
+export interface FileHistoryResponse {
+  run_id: string;
+  versions: FileHistoryVersion[];
 }
 
 export interface Finding {

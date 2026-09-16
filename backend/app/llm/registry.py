@@ -28,6 +28,8 @@ Cerebras still answers 402 on inference. Note that Cerebras' *catalogue* endpoin
 attempt a real completion.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel
 
 # --- provider model ids ---------------------------------------------------- #
@@ -42,7 +44,9 @@ GROQ_GPT_OSS_20B = "groq/openai/gpt-oss-20b"
 _RETIRED_GROQ_LLAMA_70B = "groq/llama-3.3-70b-versatile"
 
 OPENROUTER_NEMOTRON_SUPER = "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
-OPENROUTER_NEMOTRON_NANO = "openrouter/nvidia/nemotron-3-nano-30b-a3b:free"
+# This free slug returned 404 on a live run on 2026-09-15; OpenRouter now offers
+# only its paid variant. Keep the id as a record, but do not route through it.
+_RETIRED_OPENROUTER_NEMOTRON_NANO = "openrouter/nvidia/nemotron-3-nano-30b-a3b:free"
 OPENROUTER_NORTH_CODE = "openrouter/cohere/north-mini-code:free"
 
 # The third provider, and the last rung of every chain. Verified 2026-08-20 through
@@ -56,6 +60,9 @@ class ModelSpec(BaseModel):
     """One rung of a fallback chain."""
 
     model: str
+    # Groq GPT-OSS supports native JSON-schema responses. Instructor validates the
+    # result without requiring the model to emit a tool call, which failed live.
+    structured_mode: Literal["tools", "json_schema", "json"] = "tools"
     # Extra kwargs LiteLLM needs for this model.
     extra: dict = {}
 
@@ -73,13 +80,14 @@ class ModelSpec(BaseModel):
 
 CHAINS: dict[str, list[ModelSpec]] = {
     "pm": [
-        ModelSpec(model=GROQ_GPT_OSS),
-        ModelSpec(model=GROQ_GPT_OSS_20B),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json_schema"),
+        ModelSpec(model=GROQ_GPT_OSS_20B, structured_mode="json_schema"),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
         ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
     "architect": [
-        ModelSpec(model=GROQ_GPT_OSS),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json_schema"),
+        ModelSpec(model=GROQ_GPT_OSS_20B, structured_mode="json_schema", timeout=90),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER),
         ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
@@ -92,7 +100,8 @@ CHAINS: dict[str, list[ModelSpec]] = {
     # ceiling reserved TPM that was never used and capped Groq at roughly one file per
     # minute. Measured 2026-08-14: the Coder was 70% of a 764s run.
     "coder": [
-        ModelSpec(model=GROQ_GPT_OSS, max_tokens=2500, timeout=90),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json_schema", max_tokens=2500, timeout=90),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json", max_tokens=2500, timeout=90),
         ModelSpec(model=OPENROUTER_NORTH_CODE, max_tokens=8000, timeout=120),
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=8000, timeout=120),
         ModelSpec(model=MISTRAL_MEDIUM, max_tokens=8000, timeout=120),
@@ -105,21 +114,22 @@ CHAINS: dict[str, list[ModelSpec]] = {
     # reasons the local fallback was dropped; see the module docstring.)
     "reviewer": [
         ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, timeout=90),
-        ModelSpec(model=OPENROUTER_NEMOTRON_NANO, timeout=90),
-        ModelSpec(model=GROQ_GPT_OSS, timeout=60),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json_schema", timeout=60),
         ModelSpec(model=MISTRAL_MEDIUM, timeout=90),
     ],
-    # Groq rung had no timeout until 2026-08-18 — every other chain already had one on
-    # its cloud rungs, this one just got missed. A rung that hangs is worse than one
-    # that fails: the chain cannot move on until it returns.
-    # Budgets added 2026-08-19: this agent emits a whole suite in a single call, and with
-    # no ceiling at all Groq truncated it mid-file — twice visibly (invalid Python) and
-    # once silently, returning a file that parsed but defined zero tests. Groq counts
-    # prompt + max_tokens against its 8000 TPM ceiling and this prompt carries the whole
-    # app, so 3000 leaves room for it; the OpenRouter rung has no such shared budget.
+    # The Tester emits a complete suite in one call. GPT-OSS 20B failed to wrap a
+    # longer suite in valid JSON in both structured modes on a live recipe run, while
+    # OpenRouter returned a file without tests and Mistral was rate-limited. Try the
+    # stronger Groq 120B first; keep 20B as a separate-model fallback. Both modes retain
+    # Instructor validation, and the 3000-token ceiling leaves Groq TPM headroom.
     "tester": [
-        ModelSpec(model=GROQ_GPT_OSS_20B, max_tokens=3000, timeout=60),
-        ModelSpec(model=OPENROUTER_NEMOTRON_NANO, max_tokens=8000, timeout=90),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json_schema", max_tokens=3000, timeout=90),
+        ModelSpec(model=GROQ_GPT_OSS, structured_mode="json", max_tokens=3000, timeout=90),
+        ModelSpec(
+            model=GROQ_GPT_OSS_20B, structured_mode="json_schema", max_tokens=3000, timeout=60
+        ),
+        ModelSpec(model=GROQ_GPT_OSS_20B, structured_mode="json", max_tokens=3000, timeout=60),
+        ModelSpec(model=OPENROUTER_NEMOTRON_SUPER, max_tokens=8000, timeout=90),
         ModelSpec(model=MISTRAL_MEDIUM, max_tokens=8000, timeout=90),
     ],
 }

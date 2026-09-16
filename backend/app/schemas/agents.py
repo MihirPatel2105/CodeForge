@@ -107,6 +107,50 @@ def _parses(source: str) -> bool:
     return True
 
 
+def _duplicates_document_id(source: str) -> bool:
+    """Catch `id=str(doc.id), **doc.model_dump()` before the route reaches pytest."""
+    import ast
+
+    def excludes_id(node: ast.AST) -> bool:
+        if isinstance(node, (ast.Set, ast.List, ast.Tuple)):
+            return any(isinstance(item, ast.Constant) and item.value == "id" for item in node.elts)
+        if isinstance(node, ast.Dict):
+            return any(isinstance(key, ast.Constant) and key.value == "id" for key in node.keys)
+        return False
+
+    tree = ast.parse(source)
+    for call in ast.walk(tree):
+        if not isinstance(call, ast.Call):
+            continue
+        id_arg = next((kw for kw in call.keywords if kw.arg == "id"), None)
+        if id_arg is None or not isinstance(id_arg.value, ast.Call):
+            continue
+        string_call = id_arg.value
+        if (
+            not isinstance(string_call.func, ast.Name)
+            or string_call.func.id != "str"
+            or len(string_call.args) != 1
+            or not isinstance(string_call.args[0], ast.Attribute)
+            or string_call.args[0].attr != "id"
+        ):
+            continue
+        document = string_call.args[0].value
+        for unpack in (kw.value for kw in call.keywords if kw.arg is None):
+            if (
+                not isinstance(unpack, ast.Call)
+                or not isinstance(unpack.func, ast.Attribute)
+                or unpack.func.attr != "model_dump"
+                or ast.dump(unpack.func.value) != ast.dump(document)
+            ):
+                continue
+            excludes_id = any(
+                kw.arg == "exclude" and excludes_id(kw.value) for kw in unpack.keywords
+            )
+            if not excludes_id:
+                return True
+    return False
+
+
 def _strip_fences(source: str) -> str:
     """Remove a wrapping ```python ... ``` block."""
     lines = source.strip().splitlines()
@@ -377,6 +421,13 @@ class SingleFileOutput(AgentSchema):
             raise ValueError(
                 f"{self.path} is not valid Python. Return the complete file; if it was cut "
                 "short, write a shorter implementation rather than a truncated one."
+            )
+
+        if _duplicates_document_id(self.content):
+            raise ValueError(
+                f"{self.path} duplicates document id: `id=str(doc.id)` and "
+                "`**doc.model_dump()` pass id twice. Name response fields explicitly "
+                "or use `doc.model_dump(exclude={'id'})`."
             )
 
         # Truncation does not always produce a syntax error. A file cut off after its

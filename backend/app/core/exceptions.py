@@ -45,6 +45,10 @@ class ProviderExhaustedError(CodeForgeError):
     status_code = 503
     code = "llm_exhausted"
 
+    def __init__(self, message: str, *, attempts: list | None = None) -> None:
+        super().__init__(message)
+        self.attempts = attempts or []
+
 
 class RateLimitError(CodeForgeError):
     """Too many attempts, or too soon after the last one."""

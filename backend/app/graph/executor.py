@@ -11,12 +11,13 @@ reference to it — an un-referenced asyncio task can be garbage collected mid-f
 import asyncio
 import contextlib
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from app.events import events
 from app.graph.build import compile_graph, thread_config
+from app.graph.metrics import score_run
 from app.graph.state import new_run_state
 from app.models import Run
 
@@ -115,7 +116,17 @@ async def _finish(run_id: str, status: str, reason: str) -> None:
             run = await Run.get(run_id)
             if run is not None:
                 run.status = status
-                run.updated_at = datetime.now()
+                run.updated_at = datetime.now(UTC)
+                if isinstance(getattr(run, "state", None), dict):
+                    snapshot = dict(run.state)
+                    snapshot["status"] = status
+                    snapshot["finished_at"] = run.updated_at
+                    snapshot["errors"] = [
+                        *(snapshot.get("errors") or []),
+                        {"code": "execution_failed", "message": reason, "at": run.updated_at},
+                    ]
+                    run.state = snapshot
+                    run.metrics = score_run(snapshot, status=status)
                 await run.save()
             break
         except Exception:  # noqa: BLE001 — nothing here is worth stranding a run over

@@ -77,6 +77,10 @@ def _run_blocking(request: SandboxRequest) -> SandboxResult:
         container = client.containers.create(
             SANDBOX_IMAGE,
             network_mode="none",  # never relax this
+            environment={
+                "CODEFORGE_PROBE_METHOD": request.probe_method or "",
+                "CODEFORGE_PROBE_PATH": request.probe_path or "",
+            },
             mem_limit=MEM_LIMIT,
             nano_cpus=NANO_CPUS,
             pids_limit=PIDS_LIMIT,

@@ -172,6 +172,40 @@ def test_run_files_includes_the_generated_test_suite(client, registered_user, pr
     assert all(f["content"] for f in body["files"])
 
 
+def test_file_history_returns_archived_passes_only_to_run_owner(
+    client, registered_user, project, other_user
+):
+    from gridfs import GridFSBucket
+
+    from app.db.artifacts import zip_tree
+    from app.schemas.agents import GeneratedFile
+
+    run_id = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    ).json()["run_id"]
+    with MongoClient(settings.mongo_uri) as mongo:
+        bucket = GridFSBucket(mongo[settings.mongo_db], bucket_name="artifacts")
+        for iteration, content in ((0, "value = 1\n"), (1, "value = 2\n")):
+            bucket.upload_from_stream(
+                f"{run_id}-tree-{iteration}.zip",
+                zip_tree([GeneratedFile(path="main.py", content=content)]),
+                metadata={"run_id": run_id, "kind": "file_tree", "iteration": iteration},
+            )
+
+    url = f"/runs/{run_id}/file-history"
+    response = client.get(url, headers=registered_user["headers"])
+    assert response.status_code == 200
+    versions = response.json()["versions"]
+    assert [version["iteration"] for version in versions] == [0, 1]
+    assert [version["files"][0]["content"] for version in versions] == [
+        "value = 1\n",
+        "value = 2\n",
+    ]
+    assert client.get(url, headers=other_user["headers"]).status_code == 404
+
+
 def test_project_run_history(client, registered_user, project):
     for prompt in ("books api", "tasks api"):
         client.post(
@@ -224,6 +258,19 @@ def _start_run(client, registered_user, project) -> str:
     ).json()["run_id"]
 
 
+def test_rejection_records_excluded_terminal_metrics(client, registered_user, project):
+    run_id = _start_run(client, registered_user, project)
+    response = client.post(
+        f"/runs/{run_id}/approve",
+        json={"phase": "pm", "approved": False, "note": "requirements need revision"},
+        headers=registered_user["headers"],
+    )
+    assert response.status_code == 200
+    snapshot = client.get(f"/runs/{run_id}", headers=registered_user["headers"]).json()
+    assert snapshot["status"] == "rejected"
+    assert snapshot["metrics"]["exclusion_reason"] == "rejected"
+
+
 def test_cancel_stops_a_live_run_whose_status_looks_terminal(
     client, registered_user, project, monkeypatch
 ):
@@ -252,6 +299,8 @@ def test_cancel_stops_a_live_run_whose_status_looks_terminal(
     assert response.status_code == 200
     assert response.json()["status"] == "cancelled"
     assert cancelled == [run_id], "the in-flight task was never cancelled"
+    snapshot = client.get(f"/runs/{run_id}", headers=registered_user["headers"]).json()
+    assert snapshot["metrics"]["exclusion_reason"] == "cancelled"
 
 
 def test_cancel_leaves_a_genuinely_finished_run_alone(

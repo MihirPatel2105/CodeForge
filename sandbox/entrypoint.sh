@@ -30,6 +30,9 @@ if ! python -c "import socket;socket.create_connection(('127.0.0.1',27017),0.5)"
 fi
 
 cd /app
+if [ -n "${CODEFORGE_PROBE_PATH:-}" ]; then
+    PYTHONPATH=/app python /usr/local/bin/probe.py || true
+fi
 # -p no:cacheprovider: /app is mounted read-only, and pytest's cache
 # warnings would otherwise pollute every run's captured output.
 python -m pytest -q --tb=short -p no:cacheprovider

@@ -4,8 +4,8 @@ One stream per run. A client reconnects with `Last-Event-ID` and gets everything
 missed before the live feed resumes, so a dropped connection is invisible in the
 timeline (FR-40).
 
-SSE rather than WebSockets: the traffic is one-way, it survives proxies, and the browser
-reconnects on its own.
+SSE rather than WebSockets: the traffic is one-way and survives proxies. The frontend
+uses authenticated fetch and implements reconnect/replay itself.
 """
 
 import asyncio
@@ -34,6 +34,10 @@ def _frame(envelope) -> str:
     return f"id: {stored['id']}\nevent: {stored['event']}\ndata: {json.dumps(stored['data'])}\n\n"
 
 
+def _terminal(envelope) -> bool:
+    return envelope.to_dict()["event"] in {"run.completed", "run.failed"}
+
+
 async def _event_stream(request: Request, run_id: str, last_event_id: int) -> AsyncIterator[str]:
     # Subscribe before replaying, so an event emitted during the replay is queued rather
     # than lost between the two.
@@ -44,6 +48,8 @@ async def _event_stream(request: Request, run_id: str, last_event_id: int) -> As
         for envelope in await bus.replay(run_id, after_id=sent):
             sent = max(sent, envelope.id)
             yield _frame(envelope)
+            if _terminal(envelope):
+                return
 
         while True:
             if await request.is_disconnected():
@@ -64,11 +70,15 @@ async def _event_stream(request: Request, run_id: str, last_event_id: int) -> As
                         break
                     sent = max(sent, missed.id)
                     yield _frame(missed)
+                    if _terminal(missed):
+                        return
 
             if envelope.id <= sent:
                 continue  # already delivered by a replay
             sent = envelope.id
             yield _frame(envelope)
+            if _terminal(envelope):
+                return
     finally:
         bus.unsubscribe(run_id, queue)
 

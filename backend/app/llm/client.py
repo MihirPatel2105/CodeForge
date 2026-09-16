@@ -11,7 +11,9 @@ Responsibilities, in order:
   3. Trace every attempt to Langfuse with run id, agent and iteration (FR-42).
 """
 
+import asyncio
 import os
+import re
 from typing import Any, TypeVar
 
 import litellm
@@ -27,12 +29,15 @@ litellm.suppress_debug_info = True
 litellm.drop_params = True  # not every provider accepts every sampling parameter
 
 _configured = False
+MAX_SHORT_RETRY_AFTER_SECONDS = 30
+MAX_SHORT_RATE_LIMIT_RETRIES = 2
 
 
 class LLMAttempt(BaseModel):
     """One rung of the chain, recorded so a run can report why it fell through."""
 
     model: str
+    mode: str | None = None
     ok: bool
     error: str | None = None
 
@@ -62,6 +67,7 @@ def configure() -> None:
         ("GROQ_API_KEY", settings.groq_api_key),
         ("CEREBRAS_API_KEY", settings.cerebras_api_key),
         ("OPENROUTER_API_KEY", settings.openrouter_api_key),
+        ("MISTRAL_API_KEY", settings.mistral_api_key),
         ("GEMINI_API_KEY", settings.google_api_key),
     ):
         if value:
@@ -129,6 +135,7 @@ _RETRYABLE_MARKERS = (
     # Architect died on rung 1 with two healthy fallbacks below it untried, failing the
     # whole run in 18 seconds.
     "output_parse_failed",
+    "json_validate_failed",
     "could not be parsed",
     # `SingleFileOutput`'s own validator (schemas/agents.py) raises this when a model's
     # generated file won't parse as Python after Instructor has already re-asked within
@@ -137,6 +144,7 @@ _RETRYABLE_MARKERS = (
     # this marker the chain raised immediately on rung 1 and never reached a rung with a
     # larger budget, which is the exact fallback this validator's docstring promises.
     "is not valid python",
+    "duplicates document id",
     # The silent half of the same truncation failure: a test file cut off after its
     # imports still parses, so only the "no tests defined" check catches it. Same
     # remedy — the next rung has a different budget (schemas/agents.py).
@@ -171,6 +179,27 @@ def _is_retryable(exc: Exception) -> bool:
     return False
 
 
+def _short_rate_limit_delay(exc: Exception) -> float | None:
+    """Wait on a brief provider cooldown instead of burning the next free rung."""
+    for err in _causes(exc):
+        if not isinstance(err, litellm.RateLimitError):
+            continue
+        headers = err.headers or getattr(getattr(err, "response", None), "headers", {})
+        header = headers.get("retry-after") if headers else None
+        if header is not None:
+            try:
+                seconds = float(header)
+            except (TypeError, ValueError):
+                pass
+            else:
+                return seconds + 0.5 if 0 <= seconds <= MAX_SHORT_RETRY_AFTER_SECONDS else None
+        match = re.search(r"please try again in (\d+(?:\.\d+)?)(ms|s)\b", str(err), re.I)
+        if match:
+            seconds = float(match.group(1)) / (1000 if match.group(2).lower() == "ms" else 1)
+            return seconds + 0.5 if seconds <= MAX_SHORT_RETRY_AFTER_SECONDS else None
+    return None
+
+
 async def structured(
     *,
     prompt: str,
@@ -185,7 +214,7 @@ async def structured(
 
     import instructor
 
-    client = instructor.from_litellm(litellm.acompletion)
+    clients: dict[str, Any] = {}
 
     messages: list[dict[str, str]] = []
     if system:
@@ -196,31 +225,53 @@ async def structured(
     chain: list[ModelSpec] = chain_for(agent)
 
     for spec in chain:
-        try:
-            value = await client.chat.completions.create(
-                model=spec.model,
-                messages=messages,
-                response_model=schema,
-                temperature=temperature,
-                max_retries=2,  # Instructor re-asks on schema violations
-                metadata=_trace_metadata(agent, trace),
-                **({"max_tokens": spec.max_tokens} if spec.max_tokens else {}),
-                **({"timeout": spec.timeout} if spec.timeout else {}),
-                **spec.extra,
-            )
-            attempts.append(LLMAttempt(model=spec.model, ok=True))
-            return LLMResult(value=value, model=spec.model, attempts=attempts)
+        if spec.structured_mode not in clients:
+            mode = {
+                "json_schema": instructor.Mode.JSON_SCHEMA,
+                "json": instructor.Mode.JSON,
+                "tools": instructor.Mode.TOOLS,
+            }[spec.structured_mode]
+            clients[spec.structured_mode] = instructor.from_litellm(litellm.acompletion, mode=mode)
+        client = clients[spec.structured_mode]
+        for retry in range(MAX_SHORT_RATE_LIMIT_RETRIES + 1):
+            try:
+                value = await client.chat.completions.create(
+                    model=spec.model,
+                    messages=messages,
+                    response_model=schema,
+                    temperature=temperature,
+                    max_retries=2,  # Instructor re-asks on schema violations
+                    metadata=_trace_metadata(agent, trace),
+                    **({"max_tokens": spec.max_tokens} if spec.max_tokens else {}),
+                    **({"timeout": spec.timeout} if spec.timeout else {}),
+                    **spec.extra,
+                )
+                attempts.append(LLMAttempt(model=spec.model, mode=spec.structured_mode, ok=True))
+                usage = getattr(getattr(value, "_raw_response", None), "usage", None)
+                tokens = getattr(usage, "total_tokens", 0) or 0
+                return LLMResult(value=value, model=spec.model, attempts=attempts, tokens=tokens)
 
-        except Exception as exc:  # noqa: BLE001 - classified immediately below
-            attempts.append(
-                LLMAttempt(model=spec.model, ok=False, error=f"{type(exc).__name__}: {exc}"[:300])
-            )
-            if not _is_retryable(exc):
-                raise
+            except Exception as exc:  # noqa: BLE001 - classified immediately below
+                attempts.append(
+                    LLMAttempt(
+                        model=spec.model,
+                        mode=spec.structured_mode,
+                        ok=False,
+                        error=f"{type(exc).__name__}: {exc}"[:300],
+                    )
+                )
+                delay = _short_rate_limit_delay(exc)
+                if delay is not None and retry < MAX_SHORT_RATE_LIMIT_RETRIES:
+                    await asyncio.sleep(delay)
+                    continue
+                if not _is_retryable(exc):
+                    raise
+                break
 
     raise ProviderExhaustedError(
         f"Every model failed for agent {agent!r}: "
-        + "; ".join(f"{a.model} -> {a.error}" for a in attempts)
+        + "; ".join(f"{a.model} -> {a.error}" for a in attempts),
+        attempts=attempts,
     )
 
 
@@ -267,7 +318,7 @@ async def complete(
             if not _is_retryable(exc):
                 raise
 
-    raise ProviderExhaustedError(f"Every model failed for agent {agent!r}")
+    raise ProviderExhaustedError(f"Every model failed for agent {agent!r}", attempts=attempts)
 
 
 def _trace_metadata(agent: str, trace: dict[str, Any] | None) -> dict[str, Any]:

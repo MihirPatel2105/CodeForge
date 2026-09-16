@@ -34,9 +34,22 @@ def _containers() -> int:
     return len(result.stdout.split())
 
 
-def _run(files: list[GeneratedFile], timeout_s: int = 60):
+def _run(
+    files: list[GeneratedFile],
+    timeout_s: int = 60,
+    probe_method: str | None = None,
+    probe_path: str | None = None,
+):
     return asyncio.run(
-        run_in_sandbox(SandboxRequest(run_id="test", files=files, timeout_s=timeout_s))
+        run_in_sandbox(
+            SandboxRequest(
+                run_id="test",
+                files=files,
+                timeout_s=timeout_s,
+                probe_method=probe_method,
+                probe_path=probe_path,
+            )
+        )
     )
 
 
@@ -59,6 +72,53 @@ def test_failing_suite_is_distinguishable_from_a_crash():
     result = _run([GeneratedFile(path="test_main.py", content="def test_x():\n    assert False\n")])
     assert result.exit_code == 1, "a failing test is exit 1, not a crash"
     assert not parse_pytest(result).passed
+
+
+def test_boot_probe_detects_a_runnable_app_before_failing_tests():
+    result = _run(
+        [
+            GeneratedFile(
+                path="main.py",
+                content=(
+                    "from fastapi import FastAPI\n"
+                    "app = FastAPI()\n"
+                    "@app.get('/ready')\n"
+                    "def ready(): return {'ok': True}\n"
+                ),
+            ),
+            GeneratedFile(path="test_main.py", content="def test_fails(): assert False\n"),
+        ],
+        probe_method="GET",
+        probe_path="/ready",
+    )
+    assert result.exit_code == 1
+    assert "CODEFORGE_BOOT_OK 200" in result.stdout
+    assert not parse_pytest(result).passed
+
+
+def test_parameterized_boot_probe_uses_a_valid_objectid():
+    """A one-character synthetic id falsely reports an app boot failure."""
+    result = _run(
+        [
+            GeneratedFile(
+                path="main.py",
+                content=(
+                    "from bson import ObjectId\n"
+                    "from fastapi import FastAPI, HTTPException\n"
+                    "app = FastAPI()\n"
+                    "@app.get('/items/{item_id}')\n"
+                    "def item(item_id: str):\n"
+                    "    ObjectId(item_id)\n"
+                    "    raise HTTPException(status_code=404)\n"
+                ),
+            ),
+            GeneratedFile(path="test_main.py", content="def test_fails(): assert False\n"),
+        ],
+        probe_method="GET",
+        probe_path="/items/{item_id}",
+    )
+    assert result.exit_code == 1
+    assert "CODEFORGE_BOOT_OK 404" in result.stdout
 
 
 def test_infinite_loop_is_killed():
