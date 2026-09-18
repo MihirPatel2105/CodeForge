@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowRight, Boxes, LibraryBig, PackageSearch } from "lucide-react";
 import { HeroOutput, type HeroOutputDemo } from "@/components/marketing/hero-output";
 import { DEMO_RUNS } from "@/lib/demo-runs";
@@ -40,7 +39,6 @@ const TAG =
 
 export function HeroDemo() {
   const [activeId, setActiveId] = useState(EXAMPLES[0].id);
-  const router = useRouter();
   const user = useCurrentUser();
   const active = EXAMPLES.find((example) => example.id === activeId) ?? EXAMPLES[0];
 
@@ -77,10 +75,7 @@ export function HeroDemo() {
                     type="button"
                     role="tab"
                     aria-selected={selected}
-                    onClick={() => {
-                      setActiveId(example.id);
-                      router.push(`/demo/${example.id}`);
-                    }}
+                    onClick={() => setActiveId(example.id)}
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-[3px] px-2.5 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] transition-colors",
                       selected
@@ -123,7 +118,7 @@ export function HeroDemo() {
             href={`/demo/${active.id}`}
             className="inline-flex items-center gap-2 rounded-[3px] border border-border bg-surface/70 px-5 py-3 font-mono text-[10.5px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-border-strong hover:bg-surface"
           >
-            Watch this full run
+            Watch {active.label} Full Run
             <ArrowDown className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
