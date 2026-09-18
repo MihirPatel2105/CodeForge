@@ -47,6 +47,33 @@ git clone https://github.com/MihirPatel2105/CodeForge.git
 cd CodeForge
 ```
 
+### Quick start
+
+For a local demo, the repository includes a one-command launcher. It checks prerequisites,
+starts Docker services, waits for the backend health check, runs the optional provider preflight,
+and starts the Next.js dashboard on port 3001.
+
+```bash
+./start.sh --demo
+```
+
+Open <http://localhost:3001> and keep the terminal open while using CodeForge. The `--demo`
+option checks that every agent has at least one reachable AI-provider fallback before starting
+the dashboard. A normal development start skips that provider check:
+
+```bash
+./start.sh
+```
+
+Useful commands:
+
+```bash
+./start.sh --check   # verify prerequisites without changing anything
+./start.sh --stop    # stop CodeForge services
+```
+
+Press `Ctrl-C` in the launcher terminal to stop the frontend and Docker services together.
+
 ### 1. Environment file
 
 Each developer keeps their own `.env` — it is never committed.
