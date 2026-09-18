@@ -203,8 +203,8 @@ export default function LiveRunPage() {
         </Link>
 
         <header className="cf-run-hero mt-4 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.075)]">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_410px]">
-            <div className="relative px-5 py-7 sm:px-7 sm:py-8 lg:px-9">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_350px]">
+            <div className="relative px-5 py-5 sm:px-7 sm:py-6 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span
                   className={cn(
@@ -228,10 +228,10 @@ export default function LiveRunPage() {
                 </span>
               </div>
 
-              <p className="mt-6 font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-accent">
+              <p className="mt-4 font-mono text-[9px] font-[650] uppercase tracking-[0.14em] text-accent">
                 API build request
               </p>
-              <h1 className="font-display mt-3 max-w-[46ch] text-[21px] font-[650] leading-[1.4] tracking-[-0.035em] text-fg sm:text-[25px]">
+              <h1 className="font-display mt-2 max-w-[60ch] text-[16px] font-[650] leading-[1.3] tracking-[-0.035em] text-fg sm:text-[18px]">
                 {snapshot.prompt ?? "Preparing the agent workflow…"}
               </h1>
 
@@ -413,7 +413,7 @@ function RunMetric({
   return (
     <div
       className={cn(
-        "relative flex min-h-[112px] flex-col justify-center px-5 py-5",
+        "relative flex min-h-[76px] flex-col justify-center px-3.5 py-3.5",
         bordered && "border-l border-rule",
         topBorder && "border-t border-rule",
       )}
@@ -422,8 +422,8 @@ function RunMetric({
         <span className="[&>svg]:h-3.5 [&>svg]:w-3.5" aria-hidden>{icon}</span>
         <dt className="font-mono text-[8.5px] font-[650] uppercase tracking-[0.13em]">{label}</dt>
       </div>
-      <dd className="font-display mt-2.5 text-[24px] font-[650] tracking-[-0.05em] text-fg">{value}</dd>
-      <span className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />
+      <dd className="font-display mt-1 text-[20px] font-[650] tracking-[-0.05em] text-fg">{value}</dd>
+      <span className="absolute inset-x-3.5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />
     </div>
   );
 }
