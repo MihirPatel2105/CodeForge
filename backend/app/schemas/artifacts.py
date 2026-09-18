@@ -9,6 +9,8 @@ The bucket itself is opened in `db/`; this module defines only the naming and me
 contract, so producers and consumers agree without importing each other.
 """
 
+import re
+import unicodedata
 from datetime import datetime
 from typing import Literal
 
@@ -62,3 +64,25 @@ class ArtifactListResponse(BaseModel):
 def artifact_filename(run_id: str, kind: ArtifactKind, iteration: int = 0) -> str:
     """Deterministic name so an artifact can be located from a run id alone."""
     return f"{run_id}/{kind}_iter{iteration}{ARTIFACT_SUFFIX[kind]}"
+
+
+def artifact_download_filename(project_name: str, kind: ArtifactKind, iteration: int = 0) -> str:
+    """Return the human-facing filename used when an artifact is downloaded.
+
+    GridFS keeps its run-scoped internal name, while the browser gets a name the user
+    can recognise. Project names are user input, so convert them to a filesystem-safe
+    slug before putting them in a response header or an HTML download attribute.
+    """
+    normalized = (
+        unicodedata.normalize("NFKD", project_name).encode("ascii", "ignore").decode("ascii")
+    )
+    stem = re.sub(r"[^A-Za-z0-9]+", "-", normalized).strip("-").lower()[:80]
+    stem = stem or "codeforge"
+    iteration_suffix = f"-iter{iteration}" if iteration else ""
+
+    if kind == "file_tree":
+        api_suffix = "" if stem.endswith("-api") else "-api"
+        return f"{stem}{api_suffix}{iteration_suffix}.zip"
+    if kind == "sandbox_log":
+        return f"{stem}-sandbox{iteration_suffix}.log"
+    return f"{stem}-tests{iteration_suffix}.json"

@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowRight, Boxes, LibraryBig, PackageSearch } from "lucide-react";
 import { HeroOutput, type HeroOutputDemo } from "@/components/marketing/hero-output";
+import { DEMO_RUNS } from "@/lib/demo-runs";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { cn } from "@/lib/utils";
+
+const ICONS = {
+  library: LibraryBig,
+  inventory: Boxes,
+  support: PackageSearch,
+} as const;
 
 const EXAMPLES: Array<{
   id: string;
@@ -13,80 +21,13 @@ const EXAMPLES: Array<{
   icon: typeof LibraryBig;
   prompt: string;
   output: HeroOutputDemo;
-}> = [
-  {
-    id: "library",
-    label: "Library",
-    icon: LibraryBig,
-    prompt:
-      "I want an API to manage a personal library of books — title, author, ISBN, genre, and whether I’ve read it.",
-    output: {
-      id: "library",
-      file: "main.py",
-      result: "8 passed in 1.42s",
-      lines: [
-        "from fastapi import FastAPI",
-        "from models import Book",
-        "",
-        "app = FastAPI()",
-        "",
-        '@app.post("/books", status_code=201)',
-        "async def create(book: BookIn):",
-        "    doc = Book(**book.model_dump())",
-        "    await doc.insert()",
-        "    return BookOut(id=str(doc.id))",
-      ],
-    },
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    icon: Boxes,
-    prompt:
-      "Build an inventory API for products, stock levels, warehouses, and low-stock alerts.",
-    output: {
-      id: "inventory",
-      file: "routes.py",
-      result: "10 passed in 1.68s",
-      lines: [
-        "from fastapi import APIRouter, HTTPException",
-        "from schemas import StockUpdate",
-        "",
-        'router = APIRouter(prefix="/products")',
-        "",
-        '@router.patch("/{product_id}/stock")',
-        "async def update_stock(product_id: str, body: StockUpdate):",
-        "    product = await Product.get(product_id)",
-        "    if not product: raise HTTPException(404)",
-        "    return await product.set({Product.stock: body.stock})",
-      ],
-    },
-  },
-  {
-    id: "support",
-    label: "Support",
-    icon: PackageSearch,
-    prompt:
-      "Create a support ticket API with priorities, assignees, status history, and comments.",
-    output: {
-      id: "support",
-      file: "tickets.py",
-      result: "12 passed in 1.91s",
-      lines: [
-        "from datetime import datetime, timezone",
-        "from fastapi import APIRouter",
-        "",
-        'router = APIRouter(prefix="/tickets")',
-        "",
-        '@router.post("/", status_code=201)',
-        "async def open_ticket(body: TicketCreate):",
-        "    ticket = Ticket(**body.model_dump())",
-        "    ticket.opened_at = datetime.now(timezone.utc)",
-        "    return await ticket.insert()",
-      ],
-    },
-  },
-];
+}> = DEMO_RUNS.map((demo) => ({
+  id: demo.slug,
+  label: demo.label,
+  icon: ICONS[demo.slug as keyof typeof ICONS],
+  prompt: demo.prompt,
+  output: demo.preview,
+}));
 
 const RUN_FACTS = [
   { value: "05", label: "specialist agents" },
@@ -99,6 +40,7 @@ const TAG =
 
 export function HeroDemo() {
   const [activeId, setActiveId] = useState(EXAMPLES[0].id);
+  const router = useRouter();
   const user = useCurrentUser();
   const active = EXAMPLES.find((example) => example.id === activeId) ?? EXAMPLES[0];
 
@@ -135,7 +77,10 @@ export function HeroDemo() {
                     type="button"
                     role="tab"
                     aria-selected={selected}
-                    onClick={() => setActiveId(example.id)}
+                    onClick={() => {
+                      setActiveId(example.id);
+                      router.push(`/demo/${example.id}`);
+                    }}
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-[3px] px-2.5 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] transition-colors",
                       selected
@@ -174,13 +119,13 @@ export function HeroDemo() {
             {user ? "Start a project" : "Build your first API"}
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
-          <a
-            href="#how"
+          <Link
+            href={`/demo/${active.id}`}
             className="inline-flex items-center gap-2 rounded-[3px] border border-border bg-surface/70 px-5 py-3 font-mono text-[10.5px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-border-strong hover:bg-surface"
           >
-            Watch a full run
+            Watch this full run
             <ArrowDown className="h-3.5 w-3.5" aria-hidden />
-          </a>
+          </Link>
         </div>
 
         <dl className="mt-6 grid max-w-[37rem] grid-cols-3 gap-3 border-t border-rule pt-4">

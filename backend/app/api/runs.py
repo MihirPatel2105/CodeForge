@@ -5,7 +5,6 @@ until then a created run stays `queued`.
 """
 
 from datetime import UTC, datetime
-from pathlib import Path
 
 from fastapi import APIRouter, Response, status
 
@@ -29,7 +28,7 @@ from app.schemas.api import (
     RunResponse,
     RunSummary,
 )
-from app.schemas.artifacts import ArtifactListResponse
+from app.schemas.artifacts import ArtifactListResponse, artifact_download_filename
 
 router = APIRouter(tags=["runs"])
 
@@ -146,7 +145,13 @@ async def get_run_artifacts(run_id: str, user: CurrentUser) -> ArtifactListRespo
     """List stored artifacts for a run: the generated tree, sandbox log and test report,
     one set per loop iteration."""
     run = await get_owned(Run, run_id, str(user.id), "Run")
-    return await list_artifacts(str(run.id))
+    project = await get_owned(Project, run.project_id, str(user.id), "Project")
+    listing = await list_artifacts(str(run.id))
+    for artifact in listing.artifacts:
+        artifact.filename = artifact_download_filename(
+            project.name, artifact.kind, artifact.iteration
+        )
+    return listing
 
 
 @router.get("/runs/{run_id}/artifacts/{file_id}")
@@ -157,6 +162,7 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
     reach another user's output.
     """
     run = await get_owned(Run, run_id, str(user.id), "Run")
+    project = await get_owned(Project, run.project_id, str(user.id), "Project")
 
     listing = await list_artifacts(str(run.id))
     match = next((a for a in listing.artifacts if a.file_id == file_id), None)
@@ -167,7 +173,12 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
     return Response(
         content=payload,
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f'attachment; filename="{Path(match.filename).name}"'},
+        headers={
+            "Content-Disposition": (
+                'attachment; filename="'
+                f'{artifact_download_filename(project.name, match.kind, match.iteration)}"'
+            )
+        },
     )
 
 

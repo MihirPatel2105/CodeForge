@@ -148,14 +148,16 @@ export function ResultSummary({ snapshot, onDownload, onRetry }: ResultSummaryPr
               Run again
             </button>
           )}
-          <button
-            type="button"
-            onClick={onDownload}
-            disabled={snapshot.files.length === 0}
-            className="shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            {snapshot.files.length === 0 ? "No code generated" : "Download code"}
-          </button>
+          {onDownload && (
+            <button
+              type="button"
+              onClick={onDownload}
+              disabled={snapshot.files.length === 0}
+              className="shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {snapshot.files.length === 0 ? "No code generated" : "Download code"}
+            </button>
+          )}
         </div>
       </div>
     </div>

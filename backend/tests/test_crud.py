@@ -206,6 +206,33 @@ def test_file_history_returns_archived_passes_only_to_run_owner(
     assert client.get(url, headers=other_user["headers"]).status_code == 404
 
 
+def test_artifact_download_uses_project_name(client, registered_user, project):
+    """The browser-facing name should identify the project, not expose a run id."""
+    from gridfs import GridFSBucket
+
+    run_id = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    ).json()["run_id"]
+    with MongoClient(settings.mongo_uri) as mongo:
+        bucket = GridFSBucket(mongo[settings.mongo_db], bucket_name="artifacts")
+        file_id = bucket.upload_from_stream(
+            f"{run_id}/file_tree_iter0.zip",
+            b"zip payload",
+            metadata={"run_id": run_id, "kind": "file_tree", "iteration": 0},
+        )
+
+    listing = client.get(f"/runs/{run_id}/artifacts", headers=registered_user["headers"])
+    assert listing.status_code == 200
+    assert listing.json()["artifacts"][0]["filename"] == "book-api.zip"
+
+    response = client.get(f"/runs/{run_id}/artifacts/{file_id}", headers=registered_user["headers"])
+    assert response.status_code == 200
+    assert response.content == b"zip payload"
+    assert 'filename="book-api.zip"' in response.headers["content-disposition"]
+
+
 def test_project_run_history(client, registered_user, project):
     for prompt in ("books api", "tasks api"):
         client.post(
