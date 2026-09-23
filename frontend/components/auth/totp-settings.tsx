@@ -71,7 +71,7 @@ export function TotpSettings({
       setPassword("");
       setCode("");
       setCopied(false);
-      setMessage("Two-factor authentication is now protecting this administrator account.");
+      setMessage("Two-factor authentication is now protecting this account.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not verify that code.");
     } finally {
@@ -125,7 +125,7 @@ export function TotpSettings({
             <div>
               <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-faint")}>security status</span>
               <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Two-factor protection is active" : "Two-factor protection is off"}</h2>
-              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "Password sign-in now requires a rotating code from your authenticator app." : "Add a rotating authenticator code so a stolen password alone cannot open the admin panel."}</p>
+              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "Password sign-in now requires a rotating code from your authenticator app." : "Add a rotating authenticator code so a stolen password alone cannot open your account."}</p>
             </div>
           </div>
           <span className={cn("inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
@@ -150,7 +150,7 @@ export function TotpSettings({
                   <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
                   <div><span className={cn(LABEL, "text-accent")}>step 01</span><h2 className="font-display mt-1 text-[21px] font-[650] tracking-[-0.04em] text-fg">Confirm your password</h2></div>
                 </div>
-                <p className="mt-5 max-w-[60ch] text-[13px] leading-6 text-fg-muted">Re-enter the current administrator password before CodeForge creates a new authenticator secret.</p>
+                <p className="mt-5 max-w-[60ch] text-[13px] leading-6 text-fg-muted">Re-enter your current password before CodeForge creates a new authenticator secret.</p>
                 <label htmlFor="totp-current-password" className={cn(LABEL, "mt-6 block text-fg-faint")}>current password</label>
                 <Input id="totp-current-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-12 max-w-xl rounded-[3px] bg-bg" />
                 <Button onClick={startSetup} disabled={busy || !password} className="mt-4 h-11 gap-2 rounded-[3px] px-5">
@@ -183,7 +183,7 @@ export function TotpSettings({
                   <div className="rounded-[6px] border border-accent-bd bg-accent-soft/55 p-5 md:p-6">
                     <div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-[4px] border border-accent-bd bg-surface text-accent"><QrCode className="h-4 w-4" aria-hidden /></span><div><span className={cn(LABEL, "text-accent")}>option A</span><h3 className="mt-1 text-[14px] font-[700] text-fg">Scan QR code</h3></div></div>
                     <p className="mt-4 text-[12px] leading-5 text-fg-muted">In Google Authenticator, tap <strong>+</strong>, choose <strong>Scan a QR code</strong>, then point the camera here.</p>
-                    <div role="img" aria-label="CodeForge administrator two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm"><QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden /></div>
+                    <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm"><QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden /></div>
                   </div>
 
                   <div className="rounded-[6px] border border-border bg-bg p-5 md:p-6">

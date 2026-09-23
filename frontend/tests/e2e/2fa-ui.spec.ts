@@ -11,6 +11,15 @@ const ADMIN = {
   totp_enabled: false,
 };
 
+const USER = {
+  ...ADMIN,
+  id: "507f1f77bcf86cd799439012",
+  email: "user@example.com",
+  first_name: "Regular",
+  last_name: "User",
+  is_admin: false,
+};
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
   await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN) }));
@@ -28,19 +37,22 @@ test("settings owns the 2FA entry instead of the admin navigation", async ({ pag
   await expect(page.getByRole("navigation", { name: "Admin navigation" }).getByRole("link", { name: "Security", exact: true })).toHaveCount(0);
 });
 
-test("dedicated 2FA page presents QR and manual enrollment paths", async ({ page }) => {
+test("normal users can open 2FA settings and use QR or manual enrollment", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(USER) }));
   await page.route("**/auth/totp/setup", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({
       secret: "JBSWY3DPEHPK3PXP",
-      provisioning_uri: "otpauth://totp/CodeForge%3Aoperator%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=CodeForge&algorithm=SHA1&digits=6&period=30",
+      provisioning_uri: "otpauth://totp/CodeForge%3Auser%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=CodeForge&algorithm=SHA1&digits=6&period=30",
     }),
   }));
   await page.route("**/auth/totp/verify", (route) => route.fulfill({ status: 204 }));
 
   await page.goto("/profile/settings/2fa");
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
+  await expect(page.getByText("account security")).toBeVisible();
   await expect(page.getByText("Two-factor protection is off")).toBeVisible();
 
   await page.getByLabel("current password").fill("test-password");
@@ -48,7 +60,7 @@ test("dedicated 2FA page presents QR and manual enrollment paths", async ({ page
 
   await expect(page.getByRole("heading", { name: "Scan QR code" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Enter setup key" })).toBeVisible();
-  await expect(page.getByRole("img", { name: "CodeForge administrator two-factor setup QR code" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeVisible();
   await expect(page.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
 
   await page.getByLabel("six-digit authenticator code").fill("123456");

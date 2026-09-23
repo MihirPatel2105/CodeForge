@@ -306,10 +306,6 @@ async def login(payload: LoginRequest, background: BackgroundTasks) -> LoginResp
 
 @router.post("/totp/setup", response_model=TotpSetupResponse)
 async def setup_totp(payload: TotpSetupRequest, user: CurrentUser) -> TotpSetupResponse:
-    if not is_admin_user(user):
-        from app.core.exceptions import PermissionError_
-
-        raise PermissionError_("Two-factor setup is currently restricted to administrators")
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     secret = generate_totp_secret()

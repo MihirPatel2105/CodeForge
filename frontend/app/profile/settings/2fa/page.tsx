@@ -15,10 +15,9 @@ export default function SettingsTwoFactorPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) router.replace("/login");
-    else if (!user.is_admin) router.replace("/projects");
   }, [loading, router, user]);
 
-  if (loading || !user?.is_admin) return null;
+  if (loading || !user) return null;
 
   return (
     <div className="cf-account min-h-screen bg-bg">
@@ -36,13 +35,13 @@ export default function SettingsTwoFactorPage() {
         <header className="mt-5 border-b border-rule pb-7">
           <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
             <ShieldCheck className="h-3 w-3" aria-hidden />
-            administrator security
+            account security
           </span>
           <h1 className="font-display mt-5 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
             Two-factor authentication
           </h1>
           <p className="mt-4 max-w-[72ch] text-[14px] leading-6 text-fg-muted">
-            Require a time-based authenticator code after the administrator password. Configure it using either a QR code or a manual setup key.
+            Require a time-based authenticator code after your password. Configure it using either a QR code or a manual setup key.
           </p>
         </header>
 

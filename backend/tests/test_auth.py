@@ -1,4 +1,8 @@
+import time
+
 import pytest
+
+from app.core.security import _totp
 
 
 def _registration(**overrides) -> dict:
@@ -81,6 +85,53 @@ def test_login_succeeds(client, registered_user):
     )
     assert response.status_code == 200
     assert response.json()["access_token"]
+
+
+def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_user):
+    setup = client.post(
+        "/auth/totp/setup",
+        json={"current_password": registered_user["password"]},
+        headers=registered_user["headers"],
+    )
+    assert setup.status_code == 200
+    secret = setup.json()["secret"]
+    code = _totp(secret, int(time.time()) // 30)
+
+    verify = client.post(
+        "/auth/totp/verify",
+        json={"code": code},
+        headers=registered_user["headers"],
+    )
+    assert verify.status_code == 204
+
+    password_only = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    )
+    assert password_only.status_code == 200
+    assert password_only.json()["mfa_required"] is True
+    assert password_only.json()["access_token"] is None
+
+    with_totp = client.post(
+        "/auth/login",
+        json={
+            "email": registered_user["email"],
+            "password": registered_user["password"],
+            "totp_code": _totp(secret, int(time.time()) // 30),
+        },
+    )
+    assert with_totp.status_code == 200
+    assert with_totp.json()["access_token"]
+
+
+def test_normal_user_totp_setup_requires_current_password(client, registered_user):
+    response = client.post(
+        "/auth/totp/setup",
+        json={"current_password": "WrongPassword123"},
+        headers=registered_user["headers"],
+    )
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "unauthorized"
 
 
 def test_login_rejects_wrong_password(client, registered_user):

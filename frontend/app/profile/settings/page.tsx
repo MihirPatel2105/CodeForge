@@ -208,7 +208,7 @@ export default function SettingsPage() {
           </section>
         </div>
 
-        {user?.is_admin ? (
+        {user ? (
           <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-surface shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
             <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
               <div className="flex items-start gap-4">
@@ -222,11 +222,11 @@ export default function SettingsPage() {
                   <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
                     {user.totp_enabled
                       ? "Authenticator protection is enabled"
-                      : "Protect administrator sign-in"}
+                      : "Protect your sign-in"}
                   </h2>
                   <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
                     {user.totp_enabled
-                      ? "Manage the authenticator required after your administrator password."
+                      ? "Manage the authenticator required after your account password."
                       : "Add a time-based authenticator using either a QR code or a manual setup key."}
                   </p>
                 </div>

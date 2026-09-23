@@ -134,9 +134,9 @@ Conventions
   then attaches to the SSE stream. Never block the HTTP request on a full run.
 - `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
-- Admin sign-in supports encrypted TOTP secrets and persistent password-attempt lockouts.
+- Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.
   TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the
-  dedicated admin security screen renders the URI as a QR code while keeping manual entry available.
+  dedicated account-security screen renders the URI as a QR code while keeping manual entry available.
 - Suspended accounts are rejected centrally by the authentication dependency. Project and
   monthly-run limits are enforced at creation time, not only displayed in the admin UI.
 
