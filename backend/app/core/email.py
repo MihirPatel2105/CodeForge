@@ -467,6 +467,24 @@ async def send_password_changed_email(*, to: str, first_name: str = "") -> None:
     )
 
 
+async def send_security_alert_email(*, to: str, title: str, detail: str) -> None:
+    when = _stamp()
+    await send_email(
+        to=to,
+        subject=f"CodeForge security alert: {title}",
+        text=f"{title}\n\n{detail}\n\nWhen: {when}\n",
+        html=_shell(
+            eyebrow="security alert",
+            heading=title,
+            rows=_security_rows(
+                when=when,
+                body=detail,
+                warning="If this was not expected, change the account password immediately.",
+            ),
+        ),
+    )
+
+
 async def send_account_deleted_email(
     *, to: str, first_name: str = "", projects: int = 0, runs: int = 0
 ) -> None:

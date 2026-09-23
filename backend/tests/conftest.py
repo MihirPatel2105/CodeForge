@@ -29,6 +29,7 @@ COLLECTIONS = (
     "revoked_tokens",
     "projects",
     "runs",
+    "admin_audit_logs",
     # GridFS is two collections and was previously missed here, so artifacts leaked
     # between tests — harmless until a test asserted on the bucket being empty, which
     # then passed alone and failed in the full suite.

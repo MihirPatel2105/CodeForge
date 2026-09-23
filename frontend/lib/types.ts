@@ -56,6 +56,13 @@ export interface RegisterRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+  totp_code?: string;
+}
+
+export interface LoginResponse {
+  access_token: string | null;
+  token_type: string;
+  mfa_required: boolean;
 }
 
 export interface TokenResponse {
@@ -133,6 +140,192 @@ export interface UserResponse {
   first_name: string;
   last_name: string;
   created_at: string;
+  is_admin: boolean;
+  email_verified: boolean;
+  totp_enabled: boolean;
+}
+
+export interface TotpSetupResponse {
+  secret: string;
+  provisioning_uri: string;
+}
+
+export interface AdminOverviewTotals {
+  users: number;
+  projects: number;
+  runs: number;
+  active_runs: number;
+  awaiting_approval: number;
+  succeeded_runs: number;
+  failed_runs: number;
+  l5_runs: number;
+  runs_with_provider_fallbacks: number;
+}
+
+export interface AdminRunSummary {
+  id: string;
+  project_id: string;
+  project_name: string;
+  user_id: string;
+  user_email: string;
+  prompt: string;
+  status: RunStatus;
+  is_live: boolean;
+  iterations: number;
+  acceptance_level: string | null;
+  test_pass_ratio: number | null;
+  provider_fallbacks: number;
+  end_to_end_ms: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_admin: boolean;
+  project_count: number;
+  run_count: number;
+  succeeded_runs: number;
+  created_at: string;
+  last_activity_at: string | null;
+  email_verified: boolean;
+  is_suspended: boolean;
+  suspended_at: string | null;
+  suspended_reason: string | null;
+  project_limit: number | null;
+  monthly_run_limit: number | null;
+}
+
+export interface AdminPageInfo {
+  page: number;
+  page_size: number;
+  total: number;
+  pages: number;
+}
+
+export interface AdminRunPage { items: AdminRunSummary[]; pagination: AdminPageInfo; }
+export interface AdminUserPage { items: AdminUserSummary[]; pagination: AdminPageInfo; }
+
+export interface AdminOverviewResponse {
+  totals: AdminOverviewTotals;
+  recent_runs: AdminRunSummary[];
+}
+
+export interface AdminRunDetail {
+  run: AdminRunSummary;
+  state: Record<string, unknown>;
+  events: Array<Record<string, unknown>>;
+}
+
+export interface AdminProjectSummary {
+  id: string;
+  name: string;
+  description: string;
+  run_count: number;
+  created_at: string;
+}
+
+export interface AdminUserDetail {
+  user: AdminUserSummary;
+  projects: AdminProjectSummary[];
+  recent_runs: AdminRunSummary[];
+}
+
+export interface AdminBreakdownItem {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AdminRagQuality {
+  rag_enabled: boolean;
+  runs: number;
+  l5_rate: number;
+  generation_success_rate: number;
+  average_test_pass_ratio: number;
+  average_iterations: number;
+  average_duration_ms: number;
+}
+
+export interface AdminQualityResponse {
+  measured_runs: number;
+  eligible_runs: number;
+  excluded_runs: number;
+  generation_success_rate: number;
+  test_pass_rate: number;
+  average_test_pass_ratio: number;
+  average_iterations: number;
+  average_duration_ms: number;
+  average_tokens: number;
+  review_fix_rate: number;
+  provider_fallbacks: number;
+  acceptance_levels: AdminBreakdownItem[];
+  failure_categories: AdminBreakdownItem[];
+  exclusions: AdminBreakdownItem[];
+  rag_comparison: AdminRagQuality[];
+}
+
+export type AdminHealthStatus = "healthy" | "degraded" | "unavailable" | "unknown";
+
+export interface AdminServiceStatus {
+  name: string;
+  status: AdminHealthStatus;
+  detail: string;
+  latency_ms: number | null;
+}
+
+export interface AdminProviderStatus {
+  name: string;
+  status: AdminHealthStatus;
+  configured: boolean;
+  recent_attempts: number;
+  recent_successes: number;
+  recent_failures: number;
+  recent_rate_limits: number;
+  last_observed_at: string | null;
+}
+
+export interface AdminSystemHealthResponse {
+  checked_at: string;
+  services: AdminServiceStatus[];
+  providers: AdminProviderStatus[];
+}
+
+export interface AdminAuditEntry {
+  id: string;
+  admin_email: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  reason: string;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface AdminAuditPage { items: AdminAuditEntry[]; pagination: AdminPageInfo; }
+
+export interface AdminActionResponse {
+  message: string;
+}
+
+export interface AdminDailyMetric { date: string; runs: number; succeeded: number; failed: number; tokens: number; }
+export interface AdminProviderUsage { provider: string; attempts: number; successes: number; failures: number; tokens: number; estimated_cost_usd: number; }
+export interface AdminAlert { severity: "info" | "warning" | "critical"; title: string; detail: string; }
+export interface AdminMonitoringResponse {
+  generated_at: string;
+  period_days: number;
+  total_storage_bytes: number;
+  artifact_storage_bytes: number;
+  database_storage_bytes: number;
+  total_tokens: number;
+  estimated_cost_usd: number;
+  failure_rate: number;
+  daily: AdminDailyMetric[];
+  providers: AdminProviderUsage[];
+  alerts: AdminAlert[];
 }
 
 export interface ProjectCreate {

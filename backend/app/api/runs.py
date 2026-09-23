@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Response, status
 
 from app.core.deps import CurrentUser, get_owned
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, UsageLimitError
 from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
 from app.graph import executor
@@ -69,6 +69,15 @@ def _to_summary(run: Run) -> RunSummary:
 async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse:
     # Ownership of the project is what authorises the run.
     await get_owned(Project, payload.project_id, str(user.id), "Project")
+
+    if user.monthly_run_limit is not None:
+        now = datetime.now(UTC)
+        month_start = datetime(now.year, now.month, 1, tzinfo=UTC)
+        count = await Run.find(
+            {"user_id": str(user.id), "created_at": {"$gte": month_start}}
+        ).count()
+        if count >= user.monthly_run_limit:
+            raise UsageLimitError(f"Monthly run limit reached ({user.monthly_run_limit}).")
 
     run = Run(
         project_id=payload.project_id,

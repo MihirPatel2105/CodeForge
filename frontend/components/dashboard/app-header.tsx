@@ -51,6 +51,17 @@ export function AppHeader() {
         >
           Projects
         </Link>
+        {user?.is_admin && (
+          <Link
+            href="/admin"
+            className={cn(
+              "hidden font-mono text-[11px] font-[600] uppercase tracking-[0.12em] transition-colors sm:block",
+              pathname.startsWith("/admin") ? "text-fg" : "text-fg-faint hover:text-fg",
+            )}
+          >
+            Admin
+          </Link>
+        )}
       </div>
 
       <div className="flex items-center gap-2">

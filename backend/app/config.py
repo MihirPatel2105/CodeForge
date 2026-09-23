@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24  # 24h; long enough to survive a demo session
 
+    # One explicit operator account for the first admin-panel slice. Access is checked
+    # on every /admin request by the backend; the frontend link is only navigation, not
+    # the security boundary. Keeping this in the environment also means an existing
+    # account can become the operator without rewriting user documents in Atlas.
+    admin_email: str | None = None
+
     groq_api_key: str | None = None
     cerebras_api_key: str | None = None
     openrouter_api_key: str | None = None
@@ -47,6 +53,10 @@ class Settings(BaseSettings):
 
     reset_token_ttl_minutes: int = 10
     reset_resend_cooldown_seconds: int = 60
+    login_max_attempts: int = 5
+    login_lockout_minutes: int = 15
+    admin_failure_alert_percent: float = 25.0
+    admin_failure_alert_min_runs: int = 5
 
     @property
     def email_verification_enabled(self) -> bool:

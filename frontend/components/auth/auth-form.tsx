@@ -58,6 +58,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [mfaRequired, setMfaRequired] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // Set only when the server asks for a code, which it does when it has SMTP configured.
@@ -101,13 +103,28 @@ export function AuthForm({ mode }: { mode: Mode }) {
         }
         setToken(result.access_token);
       } else {
-        const { access_token } = await api.login({ email, password });
+        const result = await api.login({ email, password, ...(mfaRequired ? { totp_code: totpCode } : {}) });
+        if (result.mfa_required) {
+          setMfaRequired(true);
+          setError(null);
+          return;
+        }
+        if (!result.access_token) {
+          setError("The server did not return a session. Try again.");
+          return;
+        }
+        const { access_token } = result;
         setToken(access_token);
+        // The backend decides whether this session is administrative. Do not branch on
+        // the typed email here: ADMIN_EMAIL is configuration, and duplicating that
+        // value in the browser would turn a server-side permission into UI folklore.
+        const user = await api.me();
+        router.replace(user.is_admin ? "/admin" : "/projects");
+        return;
       }
-      // New accounts start on the landing page, returning users go straight to work.
-      // Both paths that create an account agree on this — this one, and the OTP step
-      // in `verify-step.tsx`.
-      router.replace(registering ? "/" : "/projects");
+      // New accounts start on the landing page. The OTP path in `verify-step.tsx`
+      // follows the same rule.
+      router.replace("/");
     } catch (err) {
       setError(messageFor(err, mode));
     } finally {
@@ -211,6 +228,24 @@ export function AuthForm({ mode }: { mode: Mode }) {
                   className={FIELD}
                 />
               </div>
+
+              {!registering && mfaRequired ? (
+                <div className="flex flex-col gap-[6px]">
+                  <Label htmlFor="totp_code" className={LABEL}>AUTHENTICATOR CODE</Label>
+                  <Input
+                    id="totp_code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    required
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className={FIELD}
+                    placeholder="000000"
+                  />
+                  <p className="text-[12px] leading-5 text-fg-muted">Enter the six-digit code from your authenticator app.</p>
+                </div>
+              ) : null}
 
               <div className="flex flex-col gap-[6px]">
                 <div className="flex items-baseline justify-between">

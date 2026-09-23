@@ -89,6 +89,16 @@ def is_running(run_id: str) -> bool:
     return task is not None and not task.done()
 
 
+def active_run_ids() -> set[str]:
+    """Snapshot the runs this process is actively driving.
+
+    Stored status is not authoritative while a graph is in flight: a node can record
+    ``failed_llm`` and still continue to the next stage. Operations views use this
+    registry so that transient status never makes live work disappear.
+    """
+    return {run_id for run_id, task in _running.items() if not task.done()}
+
+
 def cancel(run_id: str) -> bool:
     task = _running.get(run_id)
     if task is None or task.done():

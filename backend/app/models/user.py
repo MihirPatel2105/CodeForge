@@ -19,6 +19,17 @@ class User(Document):
     # token's full 24-hour life. Defaults to 0, and a token minted before this existed
     # carries no `tv` claim and is read as 0, so nobody is signed out by the upgrade.
     token_version: int = 0
+    email_verified: bool = True
+    is_suspended: bool = False
+    suspended_at: datetime | None = None
+    suspended_reason: str | None = None
+    project_limit: int | None = None
+    monthly_run_limit: int | None = None
+    failed_login_attempts: int = 0
+    locked_until: datetime | None = None
+    last_login_at: datetime | None = None
+    totp_secret_encrypted: str | None = None
+    totp_enabled: bool = False
 
     class Settings:
         name = "users"

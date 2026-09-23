@@ -109,6 +109,16 @@ def test_deleting_requires_a_session(client):
     assert response.status_code == 401
 
 
+def test_configured_administrator_cannot_delete_itself(client, registered_user, db, monkeypatch):
+    monkeypatch.setattr(settings, "admin_email", registered_user["email"])
+
+    response = _delete(client, registered_user["headers"])
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "conflict"
+    assert db.users.find_one({"email": registered_user["email"]}) is not None
+
+
 def test_another_account_is_untouched(client, user_with_data, db):
     other = client.post(
         "/auth/register",

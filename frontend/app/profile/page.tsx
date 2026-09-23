@@ -6,16 +6,21 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
+  ClipboardList,
   FolderKanban,
+  LayoutDashboard,
   PlayCircle,
+  ServerCog,
   Settings,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { useCurrentUser } from "@/lib/use-current-user";
+import { useSession } from "@/lib/use-current-user";
 import { api, getToken, ApiError } from "@/lib/api";
 import { runStats } from "@/lib/run-stats";
 import { formatWhen } from "@/lib/format";
+import type { AdminOverviewTotals } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const LABEL =
@@ -29,12 +34,19 @@ interface Totals {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const user = useCurrentUser();
+  const { user, loading: userLoading } = useSession();
   const [totals, setTotals] = useState<Totals | null>(null);
+  const [adminTotals, setAdminTotals] = useState<AdminOverviewTotals | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isAdmin: boolean) => {
+    setError(null);
     try {
+      if (isAdmin) {
+        const overview = await api.adminOverview();
+        setAdminTotals(overview.totals);
+        return;
+      }
       const projects = await api.listProjects();
       const histories = await Promise.all(
         projects.map((project) => api.listProjectRuns(project.id)),
@@ -59,13 +71,19 @@ export default function ProfilePage() {
       router.replace("/login");
       return;
     }
-    load();
-  }, [router, load]);
+    if (userLoading || !user) return;
+    void load(user.is_admin);
+  }, [router, load, user, userLoading]);
 
   const successRate =
     totals && totals.runs > 0
       ? String(Math.round((totals.succeeded / totals.runs) * 100)) + "%"
       : "—";
+  const platformSuccessRate =
+    adminTotals && adminTotals.runs > 0
+      ? `${Math.round((adminTotals.succeeded_runs / adminTotals.runs) * 100)}%`
+      : "—";
+  const isAdmin = Boolean(user?.is_admin);
 
   return (
     <div className="cf-account min-h-screen bg-bg">
@@ -89,7 +107,7 @@ export default function ProfilePage() {
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok">
                   <ShieldCheck className="h-3 w-3" aria-hidden />
-                  authenticated account
+                  {isAdmin ? "platform administrator" : "authenticated account"}
                 </span>
 
                 <div className="mt-8 flex items-center gap-5">
@@ -97,7 +115,7 @@ export default function ProfilePage() {
                     {user?.initials ?? "—"}
                   </span>
                   <div className="min-w-0">
-                    <p className={LABEL}>profile</p>
+                    <p className={LABEL}>{isAdmin ? "operator profile" : "profile"}</p>
                     <h1 className="font-display mt-2 truncate text-[30px] font-[650] leading-none tracking-[-0.05em] text-fg md:text-[38px]">
                       {user?.displayName ?? "Loading…"}
                     </h1>
@@ -111,26 +129,28 @@ export default function ProfilePage() {
               </div>
 
               <p className="mt-8 max-w-[52ch] text-[13.5px] leading-[1.6] text-fg-muted">
-                Your identity, workspace activity, and account controls in one place.
+                {isAdmin
+                  ? "Your operator identity, platform activity, and protected account controls in one place."
+                  : "Your identity, workspace activity, and account controls in one place."}
               </p>
             </div>
 
             <dl className="cf-invert grid bg-bg sm:grid-cols-3 lg:grid-cols-1">
               <ProfileMetric
-                icon={FolderKanban}
-                label="projects"
-                value={totals ? String(totals.projects) : "—"}
+                icon={isAdmin ? Users : FolderKanban}
+                label={isAdmin ? "platform users" : "projects"}
+                value={isAdmin ? (adminTotals ? String(adminTotals.users) : "—") : totals ? String(totals.projects) : "—"}
               />
               <ProfileMetric
                 icon={PlayCircle}
                 label="total runs"
-                value={totals ? String(totals.runs) : "—"}
+                value={isAdmin ? (adminTotals ? String(adminTotals.runs) : "—") : totals ? String(totals.runs) : "—"}
                 bordered
               />
               <ProfileMetric
                 icon={ShieldCheck}
-                label="success rate"
-                value={successRate}
+                label={isAdmin ? "platform success" : "success rate"}
+                value={isAdmin ? platformSuccessRate : successRate}
                 bordered
               />
             </dl>
@@ -149,15 +169,16 @@ export default function ProfilePage() {
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
           <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="border-b border-rule px-6 py-5">
-              <span className={LABEL}>account record</span>
+              <span className={LABEL}>{isAdmin ? "operator record" : "account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
-                Personal details
+                {isAdmin ? "Administrator identity" : "Personal details"}
               </h2>
             </div>
             <dl className="px-6">
               <DetailRow label="first name" value={user?.first_name || "—"} />
               <DetailRow label="last name" value={user?.last_name || "—"} />
               <DetailRow label="email address" value={user?.email ?? "—"} mono />
+              {isAdmin ? <DetailRow label="role" value="Platform administrator" /> : null}
               <DetailRow
                 label="member since"
                 value={user ? formatWhen(user.created_at) : "—"}
@@ -171,16 +192,19 @@ export default function ProfilePage() {
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>quick access</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
-                Manage your workspace
+                {isAdmin ? "Operate CodeForge" : "Manage your workspace"}
               </h2>
             </div>
             <div className="p-3">
-              <AccountLink
-                href="/projects"
-                icon={FolderKanban}
-                title="Projects"
-                description="Open your APIs, previous runs, and generated files."
-              />
+              {isAdmin ? (
+                <>
+                  <AccountLink href="/admin" icon={LayoutDashboard} title="Admin control centre" description="Open the platform overview and operator attention queue." />
+                  <AccountLink href="/admin/system" icon={ServerCog} title="System health" description="Check services and recent model-provider observations." />
+                  <AccountLink href="/admin/audit" icon={ClipboardList} title="Audit log" description="Review sensitive administrator actions and their reasons." />
+                </>
+              ) : (
+                <AccountLink href="/projects" icon={FolderKanban} title="Projects" description="Open your APIs, previous runs, and generated files." />
+              )}
               <AccountLink
                 href="/profile/settings"
                 icon={Settings}

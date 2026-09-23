@@ -6,7 +6,7 @@ the Reviewer enforces on generated code applies to the platform itself.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -94,6 +94,13 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    totp_code: str | None = Field(default=None, min_length=6, max_length=8)
+
+
+class LoginResponse(BaseModel):
+    access_token: str | None = None
+    token_type: str = "bearer"
+    mfa_required: bool = False
 
 
 class TokenResponse(BaseModel):
@@ -211,6 +218,9 @@ class UserResponse(BaseModel):
     first_name: str = ""
     last_name: str = ""
     created_at: datetime
+    is_admin: bool = False
+    email_verified: bool = True
+    totp_enabled: bool = False
 
     @property
     def display_name(self) -> str:
@@ -218,6 +228,253 @@ class UserResponse(BaseModel):
         created before names were collected."""
         full = " ".join(part for part in (self.first_name, self.last_name) if part)
         return full or self.email
+
+
+class TotpSetupRequest(BaseModel):
+    current_password: str
+
+
+class TotpSetupResponse(BaseModel):
+    secret: str
+    provisioning_uri: str
+
+
+class TotpVerifyRequest(BaseModel):
+    code: str = Field(min_length=6, max_length=8)
+
+
+class TotpDisableRequest(BaseModel):
+    current_password: str
+    code: str = Field(min_length=6, max_length=8)
+
+
+# --------------------------------------------------------------------------- #
+# Admin
+# --------------------------------------------------------------------------- #
+
+
+class AdminOverviewTotals(BaseModel):
+    users: int
+    projects: int
+    runs: int
+    active_runs: int
+    awaiting_approval: int
+    succeeded_runs: int
+    failed_runs: int
+    l5_runs: int
+    runs_with_provider_fallbacks: int
+
+
+class AdminRunSummary(BaseModel):
+    id: str
+    project_id: str
+    project_name: str
+    user_id: str
+    user_email: EmailStr
+    prompt: str
+    status: RunStatus
+    is_live: bool = False
+    iterations: int = 0
+    acceptance_level: str | None = None
+    test_pass_ratio: float | None = None
+    provider_fallbacks: int = 0
+    end_to_end_ms: int | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdminUserSummary(BaseModel):
+    id: str
+    email: EmailStr
+    first_name: str = ""
+    last_name: str = ""
+    is_admin: bool = False
+    project_count: int = 0
+    run_count: int = 0
+    succeeded_runs: int = 0
+    created_at: datetime
+    last_activity_at: datetime | None = None
+    email_verified: bool = True
+    is_suspended: bool = False
+    suspended_at: datetime | None = None
+    suspended_reason: str | None = None
+    project_limit: int | None = None
+    monthly_run_limit: int | None = None
+
+
+class AdminPageInfo(BaseModel):
+    page: int
+    page_size: int
+    total: int
+    pages: int
+
+
+class AdminRunPage(BaseModel):
+    items: list[AdminRunSummary] = Field(default_factory=list)
+    pagination: AdminPageInfo
+
+
+class AdminUserPage(BaseModel):
+    items: list[AdminUserSummary] = Field(default_factory=list)
+    pagination: AdminPageInfo
+
+
+class AdminOverviewResponse(BaseModel):
+    totals: AdminOverviewTotals
+    recent_runs: list[AdminRunSummary] = Field(default_factory=list)
+
+
+class AdminRunDetail(BaseModel):
+    run: AdminRunSummary
+    state: dict[str, Any] = Field(default_factory=dict)
+    events: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class AdminProjectSummary(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    run_count: int = 0
+    created_at: datetime
+
+
+class AdminUserDetail(BaseModel):
+    user: AdminUserSummary
+    projects: list[AdminProjectSummary] = Field(default_factory=list)
+    recent_runs: list[AdminRunSummary] = Field(default_factory=list)
+
+
+class AdminBreakdownItem(BaseModel):
+    label: str
+    count: int
+    percentage: float
+
+
+class AdminRagQuality(BaseModel):
+    rag_enabled: bool
+    runs: int
+    l5_rate: float
+    generation_success_rate: float
+    average_test_pass_ratio: float
+    average_iterations: float
+    average_duration_ms: int
+
+
+class AdminQualityResponse(BaseModel):
+    measured_runs: int
+    eligible_runs: int
+    excluded_runs: int
+    generation_success_rate: float
+    test_pass_rate: float
+    average_test_pass_ratio: float
+    average_iterations: float
+    average_duration_ms: int
+    average_tokens: int
+    review_fix_rate: float
+    provider_fallbacks: int
+    acceptance_levels: list[AdminBreakdownItem] = Field(default_factory=list)
+    failure_categories: list[AdminBreakdownItem] = Field(default_factory=list)
+    exclusions: list[AdminBreakdownItem] = Field(default_factory=list)
+    rag_comparison: list[AdminRagQuality] = Field(default_factory=list)
+
+
+AdminHealthStatus = Literal["healthy", "degraded", "unavailable", "unknown"]
+
+
+class AdminServiceStatus(BaseModel):
+    name: str
+    status: AdminHealthStatus
+    detail: str
+    latency_ms: int | None = None
+
+
+class AdminProviderStatus(BaseModel):
+    name: str
+    status: AdminHealthStatus
+    configured: bool
+    recent_attempts: int = 0
+    recent_successes: int = 0
+    recent_failures: int = 0
+    recent_rate_limits: int = 0
+    last_observed_at: datetime | None = None
+
+
+class AdminSystemHealthResponse(BaseModel):
+    checked_at: datetime
+    services: list[AdminServiceStatus] = Field(default_factory=list)
+    providers: list[AdminProviderStatus] = Field(default_factory=list)
+
+
+class AdminAuditEntry(BaseModel):
+    id: str
+    admin_email: str
+    action: str
+    target_type: str
+    target_id: str
+    reason: str
+    details: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+
+
+class AdminAuditPage(BaseModel):
+    items: list[AdminAuditEntry] = Field(default_factory=list)
+    pagination: AdminPageInfo
+
+
+class AdminActionRequest(BaseModel):
+    reason: str = Field(min_length=3, max_length=240)
+
+    @field_validator("reason")
+    @classmethod
+    def _trim_reason(cls, value: str) -> str:
+        return value.strip()
+
+
+class AdminActionResponse(BaseModel):
+    message: str
+
+
+class AdminUserLimitsRequest(BaseModel):
+    project_limit: int | None = Field(default=None, ge=1, le=1000)
+    monthly_run_limit: int | None = Field(default=None, ge=1, le=100000)
+    reason: str = Field(min_length=3, max_length=240)
+
+
+class AdminAlert(BaseModel):
+    severity: Literal["info", "warning", "critical"]
+    title: str
+    detail: str
+
+
+class AdminDailyMetric(BaseModel):
+    date: str
+    runs: int = 0
+    succeeded: int = 0
+    failed: int = 0
+    tokens: int = 0
+
+
+class AdminProviderUsage(BaseModel):
+    provider: str
+    attempts: int = 0
+    successes: int = 0
+    failures: int = 0
+    tokens: int = 0
+    estimated_cost_usd: float = 0.0
+
+
+class AdminMonitoringResponse(BaseModel):
+    generated_at: datetime
+    period_days: int
+    total_storage_bytes: int
+    artifact_storage_bytes: int
+    database_storage_bytes: int
+    total_tokens: int
+    estimated_cost_usd: float
+    failure_rate: float
+    daily: list[AdminDailyMetric] = Field(default_factory=list)
+    providers: list[AdminProviderUsage] = Field(default_factory=list)
+    alerts: list[AdminAlert] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #

@@ -4,12 +4,17 @@ CodeForge issues and verifies its own tokens — there is one backend, so there 
 cross-service secret to share (CLAUDE.md §8).
 """
 
+import base64
 import hashlib
+import hmac
 import secrets
+import struct
+import time
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from cryptography.fernet import Fernet, InvalidToken
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -73,6 +78,52 @@ def hash_otp(code: str) -> str:
 
 def verify_otp(code: str, hashed: str) -> bool:
     return _pwd.verify(code, hashed)
+
+
+def generate_totp_secret() -> str:
+    return base64.b32encode(secrets.token_bytes(20)).decode().rstrip("=")
+
+
+def _totp(secret: str, counter: int) -> str:
+    padded = secret + "=" * (-len(secret) % 8)
+    key = base64.b32decode(padded, casefold=True)
+    digest = hmac.new(key, struct.pack(">Q", counter), hashlib.sha1).digest()
+    offset = digest[-1] & 0x0F
+    value = struct.unpack(">I", digest[offset : offset + 4])[0] & 0x7FFFFFFF
+    return f"{value % 1_000_000:06d}"
+
+
+def verify_totp(code: str, secret: str, *, at_time: int | None = None) -> bool:
+    cleaned = code.replace(" ", "").replace("-", "")
+    if len(cleaned) != 6 or not cleaned.isdigit():
+        return False
+    counter = (at_time if at_time is not None else int(time.time())) // 30
+    return any(hmac.compare_digest(cleaned, _totp(secret, counter + drift)) for drift in (-1, 0, 1))
+
+
+def totp_uri(secret: str, email: str) -> str:
+    from urllib.parse import quote
+
+    label = quote(f"CodeForge:{email}", safe="")
+    return (
+        f"otpauth://totp/{label}?secret={secret}&issuer=CodeForge&algorithm=SHA1&digits=6&period=30"
+    )
+
+
+def _fernet() -> Fernet:
+    key = base64.urlsafe_b64encode(hashlib.sha256(settings.jwt_secret.encode()).digest())
+    return Fernet(key)
+
+
+def encrypt_totp_secret(secret: str) -> str:
+    return _fernet().encrypt(secret.encode()).decode()
+
+
+def decrypt_totp_secret(encrypted: str) -> str:
+    try:
+        return _fernet().decrypt(encrypted.encode()).decode()
+    except InvalidToken as exc:
+        raise AuthError("Two-factor configuration is invalid. Contact the administrator.") from exc
 
 
 def create_access_token(

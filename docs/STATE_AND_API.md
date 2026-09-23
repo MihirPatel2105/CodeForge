@@ -76,6 +76,7 @@ Rules
 | `users` | `email` (unique index), `hashed_password`, `created_at` |
 | `projects` | `user_id`, `name`, `description`, `created_at` |
 | `runs` | `project_id`, `user_id`, `prompt`, `status`, `state` (RunState snapshot), `metrics`, timestamps |
+| `admin_audit_logs` | admin identity, action, target, required reason, action details, timestamp |
 | `checkpoints` | managed by LangGraph `MongoDBSaver` — do not hand-edit |
 | GridFS `artifacts` | zipped file tree, sandbox logs, pytest report, keyed by `run_id` |
 
@@ -105,11 +106,39 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | GET | `/runs/{id}/file-history` | archived per-iteration versions for the Diff panel; owner-only |
 | GET | `/runs/{id}/artifacts` | GridFS zip download |
 | GET | `/projects/{id}/runs` | run history |
+| GET | `/admin/overview` | admin-only platform totals and recent runs |
+| GET | `/admin/runs` | paginated cross-user run inventory; status, prompt, RAG, acceptance, failure, and date filters |
+| GET | `/admin/runs/export.csv` | export up to 5,000 filtered-period run records |
+| GET | `/admin/runs/{id}` | admin-only run state and durable event replay |
+| POST | `/admin/runs/{id}/cancel` | audited cancellation; body: `{reason}` |
+| POST | `/admin/runs/{id}/retry` | start an audited new run from a terminal run |
+| GET | `/admin/runs/{id}/artifacts` | list generated code, logs, and test reports |
+| GET | `/admin/runs/{id}/artifacts/{file_id}` | authenticated admin artifact download |
+| GET | `/admin/users` | paginated user inventory with search and date filters |
+| GET | `/admin/users/export.csv` | export up to 5,000 user records |
+| GET | `/admin/users/{id}` | account, project, and recent-run support view |
+| POST | `/admin/users/{id}/revoke-sessions` | revoke every user JWT generation; body: `{reason}` |
+| POST | `/admin/users/{id}/suspend` | suspend login and revoke all sessions |
+| POST | `/admin/users/{id}/restore` | restore a suspended account |
+| POST | `/admin/users/{id}/verify-email` | manually mark an address verified |
+| POST | `/admin/users/{id}/limits` | set project and monthly-run limits |
+| GET | `/admin/quality` | persisted RunMetrics scorecard, breakdowns, and RAG comparison |
+| GET | `/admin/system-health` | live internal checks and passive provider observations |
+| GET | `/admin/monitoring` | historical volume, alerts, storage, tokens, and free-provider cost totals |
+| GET | `/admin/audit-log` | paginated and filterable history of sensitive admin actions |
+| GET | `/admin/audit-log/export.csv` | export the durable audit record |
 
 Conventions
 - Errors: `{"error": {"code": "...", "message": "...", "run_id": "..."}}`, correct HTTP status.
 - `POST /runs` returns immediately (202) and executes the graph in the background — the client
   then attaches to the SSE stream. Never block the HTTP request on a full run.
+- `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
+  Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
+- Admin sign-in supports encrypted TOTP secrets and persistent password-attempt lockouts.
+  TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the
+  dedicated admin security screen renders the URI as a QR code while keeping manual entry available.
+- Suspended accounts are rejected centrally by the authentication dependency. Project and
+  monthly-run limits are enforced at creation time, not only displayed in the admin UI.
 
 ---
 

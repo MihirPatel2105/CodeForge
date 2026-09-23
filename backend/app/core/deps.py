@@ -5,7 +5,8 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.core.exceptions import AuthError
+from app.config import settings
+from app.core.exceptions import AccountSuspendedError, AuthError, PermissionError_
 from app.core.security import decode_access_token
 from app.models import RevokedToken, User
 
@@ -29,6 +30,9 @@ async def get_current_user(
     if user is None:
         raise AuthError("User no longer exists")
 
+    if user.is_suspended:
+        raise AccountSuspendedError("This account is suspended. Contact the administrator.")
+
     # A token minted before the last password change is refused. Absent claim reads as
     # 0 so tokens issued before this check existed keep working.
     if payload.get("tv", 0) != user.token_version:
@@ -44,6 +48,26 @@ async def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def is_admin_user(user: User) -> bool:
+    """Whether this account is the configured platform operator.
+
+    Email comparison is case-insensitive because addresses are identities here, while
+    environment files are hand-edited and should not make access depend on casing.
+    A missing value fails closed: deploying without ADMIN_EMAIL exposes no admin API.
+    """
+    configured = (settings.admin_email or "").strip().lower()
+    return bool(configured and user.email.lower() == configured)
+
+
+async def get_current_admin(user: CurrentUser) -> User:
+    if not is_admin_user(user):
+        raise PermissionError_("Administrator access required")
+    return user
+
+
+AdminUser = Annotated[User, Depends(get_current_admin)]
 
 
 async def get_token_claims(

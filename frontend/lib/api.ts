@@ -10,6 +10,8 @@
 
 import type {
   TokenResponse,
+  LoginResponse,
+  TotpSetupResponse,
   UserResponse,
   LoginRequest,
   RegisterRequest,
@@ -35,6 +37,16 @@ import type {
   ArtifactListResponse,
   ContactRequest,
   ContactResponse,
+  AdminOverviewResponse,
+  AdminRunDetail,
+  AdminRunPage,
+  AdminUserDetail,
+  AdminUserPage,
+  AdminQualityResponse,
+  AdminSystemHealthResponse,
+  AdminAuditPage,
+  AdminMonitoringResponse,
+  AdminActionResponse,
   ErrorResponse,
 } from "./types";
 
@@ -129,11 +141,68 @@ export const api = {
       body: JSON.stringify({ email }),
     }),
   login: (payload: LoginRequest) =>
-    request<TokenResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
+    request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
   me: () => request<UserResponse>("/auth/me"),
+  setupTotp: (currentPassword: string) =>
+    request<TotpSetupResponse>("/auth/totp/setup", { method: "POST", body: JSON.stringify({ current_password: currentPassword }) }),
+  verifyTotp: (code: string) =>
+    request<void>("/auth/totp/verify", { method: "POST", body: JSON.stringify({ code }) }),
+  disableTotp: (currentPassword: string, code: string) =>
+    request<TokenResponse>("/auth/totp/disable", { method: "POST", body: JSON.stringify({ current_password: currentPassword, code }) }),
 
   sendContactMessage: (payload: ContactRequest) =>
     request<ContactResponse>("/contact", { method: "POST", body: JSON.stringify(payload) }),
+
+  adminOverview: () => request<AdminOverviewResponse>("/admin/overview"),
+  adminRuns: (filters: {
+    q?: string;
+    status?: string;
+    rag_enabled?: boolean;
+    acceptance_level?: string;
+    failure_category?: string;
+    date_from?: string;
+    date_to?: string;
+    page?: number;
+    page_size?: number;
+  } = {}) => {
+    const search = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== "") search.set(key, String(value));
+    });
+    return request<AdminRunPage>(`/admin/runs${search.size ? `?${search}` : ""}`);
+  },
+  adminRun: (id: string) => request<AdminRunDetail>(`/admin/runs/${id}`),
+  adminCancelRun: (id: string, reason: string) =>
+    request<AdminActionResponse>(`/admin/runs/${id}/cancel`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  adminRetryRun: (id: string, reason: string) =>
+    request<AdminActionResponse>(`/admin/runs/${id}/retry`, { method: "POST", body: JSON.stringify({ reason }) }),
+  adminRunArtifacts: (id: string) => request<ArtifactListResponse>(`/admin/runs/${id}/artifacts`),
+  adminUsers: (filters: { q?: string; date_from?: string; date_to?: string; page?: number; page_size?: number } = {}) => {
+    const search = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== "") search.set(key, String(value)); });
+    return request<AdminUserPage>(`/admin/users${search.size ? `?${search}` : ""}`);
+  },
+  adminUser: (id: string) => request<AdminUserDetail>(`/admin/users/${id}`),
+  adminRevokeUserSessions: (id: string, reason: string) =>
+    request<AdminActionResponse>(`/admin/users/${id}/revoke-sessions`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  adminSuspendUser: (id: string, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/suspend`, { method: "POST", body: JSON.stringify({ reason }) }),
+  adminRestoreUser: (id: string, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/restore`, { method: "POST", body: JSON.stringify({ reason }) }),
+  adminVerifyUserEmail: (id: string, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/verify-email`, { method: "POST", body: JSON.stringify({ reason }) }),
+  adminSetUserLimits: (id: string, projectLimit: number | null, monthlyRunLimit: number | null, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/limits`, { method: "POST", body: JSON.stringify({ project_limit: projectLimit, monthly_run_limit: monthlyRunLimit, reason }) }),
+  adminQuality: () => request<AdminQualityResponse>("/admin/quality"),
+  adminSystemHealth: () => request<AdminSystemHealthResponse>("/admin/system-health"),
+  adminAuditLog: (filters: { action?: string; date_from?: string; date_to?: string; page?: number; page_size?: number } = {}) => {
+    const search = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => { if (value !== undefined && value !== "") search.set(key, String(value)); });
+    return request<AdminAuditPage>(`/admin/audit-log${search.size ? `?${search}` : ""}`);
+  },
+  adminMonitoring: (days = 30) => request<AdminMonitoringResponse>(`/admin/monitoring?days=${days}`),
 
   listProjects: () => request<ProjectResponse[]>("/projects"),
   createProject: (payload: ProjectCreate) =>
@@ -170,6 +239,33 @@ export async function downloadArtifact(
   });
   if (!res.ok) throw new ApiError(res.status, "download_failed", "Couldn't download the artifact.");
 
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadAdminArtifact(
+  runId: string,
+  fileId: string,
+  filename: string,
+): Promise<void> {
+  await downloadAuthenticated(`/admin/runs/${runId}/artifacts/${fileId}`, filename);
+}
+
+export async function downloadAdminCsv(kind: "runs" | "users" | "audit-log"): Promise<void> {
+  await downloadAuthenticated(`/admin/${kind}/export.csv`, `codeforge-${kind}.csv`);
+}
+
+async function downloadAuthenticated(path: string, filename: string): Promise<void> {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new ApiError(res.status, "download_failed", "Couldn't download this file.");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

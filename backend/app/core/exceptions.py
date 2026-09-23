@@ -55,3 +55,13 @@ class RateLimitError(CodeForgeError):
 
     status_code = 429
     code = "rate_limited"
+
+
+class AccountSuspendedError(CodeForgeError):
+    status_code = 403
+    code = "account_suspended"
+
+
+class UsageLimitError(CodeForgeError):
+    status_code = 409
+    code = "usage_limit_reached"

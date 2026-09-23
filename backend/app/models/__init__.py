@@ -1,3 +1,4 @@
+from app.models.admin_audit import AdminAuditLog
 from app.models.password_reset import PasswordResetToken
 from app.models.pending_signup import PendingSignup
 from app.models.project import Project
@@ -6,9 +7,18 @@ from app.models.run import Run
 from app.models.user import User
 
 # Registered with Beanie on startup; keep this list in sync with the Documents above.
-DOCUMENT_MODELS = [User, PendingSignup, PasswordResetToken, RevokedToken, Project, Run]
+DOCUMENT_MODELS = [
+    User,
+    PendingSignup,
+    PasswordResetToken,
+    RevokedToken,
+    Project,
+    Run,
+    AdminAuditLog,
+]
 
 __all__ = [
+    "AdminAuditLog",
     "DOCUMENT_MODELS",
     "PasswordResetToken",
     "PendingSignup",

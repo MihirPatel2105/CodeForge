@@ -13,24 +13,30 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, status
 
 from app.config import settings
-from app.core.deps import CurrentUser, TokenClaims
+from app.core.deps import CurrentUser, TokenClaims, is_admin_user
 from app.core.email import (
     send_account_deleted_email,
     send_password_changed_email,
     send_password_reset_email,
+    send_security_alert_email,
     send_verification_code,
     send_welcome_email,
 )
 from app.core.exceptions import AuthError, ConflictError, NotFoundError, RateLimitError
 from app.core.security import (
     create_access_token,
+    decrypt_totp_secret,
+    encrypt_totp_secret,
     generate_otp,
     generate_reset_token,
+    generate_totp_secret,
     hash_otp,
     hash_password,
     hash_reset_token,
+    totp_uri,
     verify_otp,
     verify_password,
+    verify_totp,
 )
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
@@ -42,11 +48,16 @@ from app.schemas.api import (
     ForgotPasswordRequest,
     ForgotPasswordResponse,
     LoginRequest,
+    LoginResponse,
     RegisterRequest,
     RegisterResponse,
     ResendCodeRequest,
     ResetPasswordRequest,
     TokenResponse,
+    TotpDisableRequest,
+    TotpSetupRequest,
+    TotpSetupResponse,
+    TotpVerifyRequest,
     UserResponse,
     VerifyEmailRequest,
 )
@@ -102,6 +113,7 @@ async def register(payload: RegisterRequest) -> RegisterResponse:
             hashed_password=hashed,
             first_name=payload.first_name,
             last_name=payload.last_name,
+            email_verified=False,
         )
         await user.insert()
         return RegisterResponse(
@@ -198,6 +210,7 @@ async def verify_email(payload: VerifyEmailRequest, background: BackgroundTasks)
         hashed_password=pending.hashed_password,
         first_name=pending.first_name,
         last_name=pending.last_name,
+        email_verified=True,
     )
     await user.insert()
     await pending.delete()  # the code cannot be replayed
@@ -236,15 +249,98 @@ async def resend_code(payload: ResendCodeRequest) -> RegisterResponse:
     )
 
 
-@router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest) -> TokenResponse:
+@router.post("/login", response_model=LoginResponse)
+async def login(payload: LoginRequest, background: BackgroundTasks) -> LoginResponse:
     user = await User.find_one(User.email == payload.email)
     # Same message whether the email is unknown or the password is wrong, so the endpoint
     # cannot be used to enumerate registered addresses. An unverified sign-up has no
     # User document at all, so it lands here too — nothing extra to check.
-    if user is None or not verify_password(payload.password, user.hashed_password):
+    if user is None:
         raise AuthError("Incorrect email or password")
 
+    now = _now()
+    if user.locked_until and _as_utc(user.locked_until) > now:
+        raise RateLimitError("Too many failed attempts. Try again after the account lock expires.")
+
+    if not verify_password(payload.password, user.hashed_password):
+        user.failed_login_attempts += 1
+        if user.failed_login_attempts >= settings.login_max_attempts:
+            user.locked_until = now + timedelta(minutes=settings.login_lockout_minutes)
+            user.failed_login_attempts = 0
+            background.add_task(
+                _send_quietly,
+                "Security alert",
+                send_security_alert_email,
+                to=user.email,
+                title="Account temporarily locked",
+                detail=(
+                    f"CodeForge blocked sign-in for {settings.login_lockout_minutes} minutes "
+                    "after repeated incorrect passwords."
+                ),
+            )
+        await user.save()
+        raise AuthError("Incorrect email or password")
+
+    if user.is_suspended:
+        from app.core.exceptions import AccountSuspendedError
+
+        raise AccountSuspendedError("This account is suspended. Contact the administrator.")
+
+    if user.totp_enabled:
+        if not payload.totp_code:
+            return LoginResponse(mfa_required=True)
+        if not user.totp_secret_encrypted or not verify_totp(
+            payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)
+        ):
+            raise AuthError("The two-factor code is not correct")
+
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    user.last_login_at = now
+    await user.save()
+
+    return LoginResponse(
+        access_token=create_access_token(str(user.id), token_version=user.token_version)
+    )
+
+
+@router.post("/totp/setup", response_model=TotpSetupResponse)
+async def setup_totp(payload: TotpSetupRequest, user: CurrentUser) -> TotpSetupResponse:
+    if not is_admin_user(user):
+        from app.core.exceptions import PermissionError_
+
+        raise PermissionError_("Two-factor setup is currently restricted to administrators")
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise AuthError("Your current password is not correct")
+    secret = generate_totp_secret()
+    user.totp_secret_encrypted = encrypt_totp_secret(secret)
+    user.totp_enabled = False
+    await user.save()
+    return TotpSetupResponse(secret=secret, provisioning_uri=totp_uri(secret, user.email))
+
+
+@router.post("/totp/verify", status_code=status.HTTP_204_NO_CONTENT)
+async def enable_totp(payload: TotpVerifyRequest, user: CurrentUser) -> None:
+    if not user.totp_secret_encrypted:
+        raise ConflictError("Start two-factor setup before verifying a code")
+    if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
+        raise AuthError("The two-factor code is not correct")
+    user.totp_enabled = True
+    await user.save()
+
+
+@router.post("/totp/disable", response_model=TokenResponse)
+async def disable_totp(payload: TotpDisableRequest, user: CurrentUser) -> TokenResponse:
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise AuthError("Your current password is not correct")
+    if not user.totp_enabled or not user.totp_secret_encrypted:
+        raise ConflictError("Two-factor authentication is not enabled")
+    if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
+        raise AuthError("The two-factor code is not correct")
+    user.totp_enabled = False
+    user.totp_secret_encrypted = None
+    user.token_version += 1
+    await user.save()
     return TokenResponse(
         access_token=create_access_token(str(user.id), token_version=user.token_version)
     )
@@ -438,6 +534,9 @@ async def me(user: CurrentUser) -> UserResponse:
         first_name=user.first_name,
         last_name=user.last_name,
         created_at=user.created_at,
+        is_admin=is_admin_user(user),
+        email_verified=user.email_verified,
+        totp_enabled=user.totp_enabled,
     )
 
 
@@ -455,6 +554,11 @@ async def delete_account(
     endpoint: a token left behind on a shared machine should not be enough to destroy
     somebody's work.
     """
+    if is_admin_user(user):
+        raise ConflictError(
+            "The configured administrator account cannot delete itself. Change ADMIN_EMAIL first."
+        )
+
     if not verify_password(payload.password, user.hashed_password):
         # Same wording as a failed login. Confirming that the token's owner exists but
         # the password was wrong is fine — the caller already proved they hold a session

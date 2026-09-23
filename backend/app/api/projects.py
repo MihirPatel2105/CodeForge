@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, status
 
 from app.core.deps import CurrentUser, get_owned
+from app.core.exceptions import UsageLimitError
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
 from app.models import Project, Run
@@ -26,6 +27,10 @@ def _to_response(project: Project) -> ProjectResponse:
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(payload: ProjectCreate, user: CurrentUser) -> ProjectResponse:
+    if user.project_limit is not None:
+        count = await Project.find(Project.user_id == str(user.id)).count()
+        if count >= user.project_limit:
+            raise UsageLimitError(f"Project limit reached ({user.project_limit}).")
     project = Project(user_id=str(user.id), name=payload.name, description=payload.description)
     await project.insert()
     return _to_response(project)
