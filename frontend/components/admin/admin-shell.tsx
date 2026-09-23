@@ -9,7 +9,6 @@ import {
   ClipboardList,
   LayoutDashboard,
   ServerCog,
-  ShieldCheck,
   TrendingUp,
   Users,
   Workflow,
@@ -27,7 +26,6 @@ const NAV = [
   { href: "/admin/quality", label: "Quality", icon: BarChart3, exact: false },
   { href: "/admin/monitoring", label: "Monitoring", icon: TrendingUp, exact: false },
   { href: "/admin/system", label: "System", icon: ServerCog, exact: false },
-  { href: "/admin/security/2fa", label: "Security", icon: ShieldCheck, exact: false },
   { href: "/admin/audit", label: "Audit log", icon: ClipboardList, exact: false },
 ] as const;
 

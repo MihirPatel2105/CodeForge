@@ -20,7 +20,6 @@ test("admin navigation exposes every operational surface", async ({ page }) => {
     ["/admin/runs", "Runs"],
     ["/admin/quality", "Quality"],
     ["/admin/system", "System health"],
-    ["/admin/security/2fa", "Two-factor authentication"],
     ["/admin/monitoring", "Monitoring"],
     ["/admin/audit", "Audit log"],
   ] as const) {
@@ -46,13 +45,16 @@ test("admin inventories are paginated, filterable, and exportable", async ({ pag
 });
 
 test("admin settings expose two-factor and protected-account controls", async ({ page }) => {
+  await page.goto("/admin");
+  await expect(page.getByRole("link", { name: "Security", exact: true })).toHaveCount(0);
+
   await page.goto("/profile/settings");
   await expect(page.getByRole("heading", { name: "Admin settings" })).toBeVisible();
   await expect(page.getByRole("link", { name: /two-factor authentication/i })).toBeVisible();
   await expect(page.getByText("Administrator deletion is disabled")).toBeVisible();
 
   await page.getByRole("link", { name: /two-factor authentication/i }).click();
-  await expect(page).toHaveURL(/\/admin\/security\/2fa$/);
+  await expect(page).toHaveURL(/\/profile\/settings\/2fa$/);
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
   await expect(page.getByText(/two-factor protection is (active|off)/i)).toBeVisible();
 });

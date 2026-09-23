@@ -16,6 +16,18 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN) }));
 });
 
+test("settings owns the 2FA entry instead of the admin navigation", async ({ page }) => {
+  await page.goto("/profile/settings");
+
+  const twoFactorLink = page.getByRole("link", { name: "Set up two-factor authentication" });
+  await expect(twoFactorLink).toBeVisible();
+  await expect(twoFactorLink).toHaveAttribute("href", "/profile/settings/2fa");
+  await expect(page.getByText("Administrator deletion is disabled")).toBeVisible();
+
+  await page.goto("/admin");
+  await expect(page.getByRole("navigation", { name: "Admin navigation" }).getByRole("link", { name: "Security", exact: true })).toHaveCount(0);
+});
+
 test("dedicated 2FA page presents QR and manual enrollment paths", async ({ page }) => {
   await page.route("**/auth/totp/setup", (route) => route.fulfill({
     status: 200,
@@ -27,7 +39,7 @@ test("dedicated 2FA page presents QR and manual enrollment paths", async ({ page
   }));
   await page.route("**/auth/totp/verify", (route) => route.fulfill({ status: 204 }));
 
-  await page.goto("/admin/security/2fa");
+  await page.goto("/profile/settings/2fa");
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
   await expect(page.getByText("Two-factor protection is off")).toBeVisible();
 

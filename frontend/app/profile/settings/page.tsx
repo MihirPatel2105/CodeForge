@@ -136,7 +136,6 @@ export default function SettingsPage() {
                 <AdminSettingLink href="/admin" icon={LayoutDashboard} label="Control centre" />
                 <AdminSettingLink href="/admin/system" icon={ServerCog} label="System health" />
                 <AdminSettingLink href="/admin/audit" icon={ClipboardList} label="Audit log" />
-                <AdminSettingLink href="/admin/security/2fa" icon={ShieldCheck} label={`Two-factor authentication · ${user.totp_enabled ? "On" : "Off"}`} />
               </div>
             </div>
           </section>
@@ -208,6 +207,42 @@ export default function SettingsPage() {
             )}
           </section>
         </div>
+
+        {user?.is_admin ? (
+          <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-surface shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
+            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
+              <div className="flex items-start gap-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-accent-soft">
+                  <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
+                </span>
+                <div>
+                  <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent">
+                    two-factor authentication · {user.totp_enabled ? "on" : "off"}
+                  </span>
+                  <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
+                    {user.totp_enabled
+                      ? "Authenticator protection is enabled"
+                      : "Protect administrator sign-in"}
+                  </h2>
+                  <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
+                    {user.totp_enabled
+                      ? "Manage the authenticator required after your administrator password."
+                      : "Add a time-based authenticator using either a QR code or a manual setup key."}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/profile/settings/2fa"
+                aria-label={user.totp_enabled ? "Manage two-factor authentication" : "Set up two-factor authentication"}
+                className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90"
+              >
+                {user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
         <section className={user?.is_admin ? "mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]" : "mt-6 overflow-hidden rounded-[6px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"}>
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
