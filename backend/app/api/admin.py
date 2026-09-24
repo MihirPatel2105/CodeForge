@@ -3,6 +3,7 @@
 import asyncio
 import csv
 import io
+import logging
 import math
 import re
 import time
@@ -12,11 +13,14 @@ from typing import Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Query, Response
 
 from app.config import settings
+from app.core.account_deletion import delete_user_account
 from app.core.deps import AdminUser, is_admin_user
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.email import send_account_deleted_email
+from app.core.exceptions import AuthError, ConflictError, NotFoundError
+from app.core.security import verify_password
 from app.db.artifacts import list_artifacts, read_artifact
 from app.db.mongo import get_database
 from app.events import events
@@ -32,6 +36,7 @@ from app.schemas.api import (
     AdminAuditPage,
     AdminBreakdownItem,
     AdminDailyMetric,
+    AdminDeleteUserRequest,
     AdminMonitoringResponse,
     AdminOverviewResponse,
     AdminOverviewTotals,
@@ -50,10 +55,12 @@ from app.schemas.api import (
     AdminUserLimitsRequest,
     AdminUserPage,
     AdminUserSummary,
+    DeleteAccountResponse,
 )
 from app.schemas.artifacts import ArtifactListResponse, artifact_download_filename
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+logger = logging.getLogger(__name__)
 
 _ACTIVE_STATUSES = ["queued", "running", "awaiting_approval"]
 _FAILED_STATUSES = ["failed_max_loops", "failed_sandbox", "failed_llm"]
@@ -558,6 +565,62 @@ async def get_user(user_id: str, admin: AdminUser) -> AdminUserDetail:
             for project in projects
         ],
         recent_runs=await _run_summaries(runs),
+    )
+
+
+async def _send_account_deleted_notice(
+    *, to: str, first_name: str, projects: int, runs: int
+) -> None:
+    try:
+        await send_account_deleted_email(
+            to=to,
+            first_name=first_name,
+            projects=projects,
+            runs=runs,
+        )
+    except Exception:  # noqa: BLE001 — notification failure cannot restore deleted data
+        logger.exception("Account-deleted notice to %s failed", to)
+
+
+@router.post("/users/{user_id}/delete", response_model=DeleteAccountResponse)
+async def delete_user(
+    user_id: str,
+    payload: AdminDeleteUserRequest,
+    admin: AdminUser,
+    background: BackgroundTasks,
+) -> DeleteAccountResponse:
+    """Permanently delete a non-admin account after re-authenticating the operator."""
+    user = await _get_user(user_id)
+    if str(user.id) == str(admin.id) or is_admin_user(user):
+        raise ConflictError("The administrator account cannot be deleted")
+    if not verify_password(payload.current_password, admin.hashed_password):
+        raise AuthError("Incorrect password")
+
+    email, first_name = user.email, user.first_name
+    result = await delete_user_account(user)
+    await _audit(
+        admin,
+        action="user.deleted",
+        target_type="user",
+        target_id=user_id,
+        reason=payload.reason,
+        details={
+            "projects_deleted": result.projects_deleted,
+            "runs_deleted": result.runs_deleted,
+            "artifacts_deleted": result.artifacts_deleted,
+        },
+    )
+    background.add_task(
+        _send_account_deleted_notice,
+        to=email,
+        first_name=first_name,
+        projects=result.projects_deleted,
+        runs=result.runs_deleted,
+    )
+    return DeleteAccountResponse(
+        projects_deleted=result.projects_deleted,
+        runs_deleted=result.runs_deleted,
+        artifacts_deleted=result.artifacts_deleted,
     )
 
 

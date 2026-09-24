@@ -257,6 +257,106 @@ def test_admin_can_suspend_restore_verify_and_limit_a_user(client, admin_user):
     assert restored.status_code == 200
 
 
+def test_admin_can_permanently_delete_a_user_and_owned_data(client, admin_user, monkeypatch):
+    notices: list[dict] = []
+
+    async def fake_notice(**kwargs):
+        notices.append(kwargs)
+
+    monkeypatch.setattr("app.api.admin.send_account_deleted_email", fake_notice)
+    other = _create_user(client, email="delete-me@example.com", first_name="Delete")
+    _create_run(client, other, project_name="Disposable API", prompt="Build disposable CRUD")
+    target = client.get("/admin/users?q=delete-me", headers=admin_user["headers"]).json()["items"][
+        0
+    ]
+
+    unconfirmed = client.post(
+        f"/admin/users/{target['id']}/delete",
+        json={
+            "current_password": admin_user["password"],
+            "confirmation": "delete",
+            "reason": "User requested permanent removal.",
+        },
+        headers=admin_user["headers"],
+    )
+    assert unconfirmed.status_code == 422
+
+    denied = client.post(
+        f"/admin/users/{target['id']}/delete",
+        json={
+            "current_password": "WrongPassword123",
+            "confirmation": "DELETE",
+            "reason": "User requested permanent removal.",
+        },
+        headers=admin_user["headers"],
+    )
+    assert denied.status_code == 401
+
+    forbidden = client.post(
+        f"/admin/users/{target['id']}/delete",
+        json={
+            "current_password": admin_user["password"],
+            "confirmation": "DELETE",
+            "reason": "Attempted without admin access.",
+        },
+        headers=other["headers"],
+    )
+    assert forbidden.status_code == 403
+
+    response = client.post(
+        f"/admin/users/{target['id']}/delete",
+        json={
+            "current_password": admin_user["password"],
+            "confirmation": "DELETE",
+            "reason": "User requested permanent removal.",
+        },
+        headers=admin_user["headers"],
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "projects_deleted": 1,
+        "runs_deleted": 1,
+        "artifacts_deleted": 0,
+    }
+    assert client.get("/auth/me", headers=other["headers"]).status_code == 401
+
+    with MongoClient(settings.mongo_uri) as mongo:
+        database = mongo[settings.mongo_db]
+        assert database.users.find_one({"email": "delete-me@example.com"}) is None
+        assert database.projects.count_documents({"user_id": target["id"]}) == 0
+        assert database.runs.count_documents({"user_id": target["id"]}) == 0
+
+    audit = client.get(
+        "/admin/audit-log?action=user.deleted", headers=admin_user["headers"]
+    ).json()["items"]
+    assert audit[0]["target_id"] == target["id"]
+    assert audit[0]["reason"] == "User requested permanent removal."
+    assert audit[0]["details"]["projects_deleted"] == 1
+    assert notices == [
+        {
+            "to": "delete-me@example.com",
+            "first_name": "Delete",
+            "projects": 1,
+            "runs": 1,
+        }
+    ]
+
+
+def test_admin_cannot_delete_the_configured_administrator(client, admin_user):
+    admin_id = client.get("/auth/me", headers=admin_user["headers"]).json()["id"]
+    response = client.post(
+        f"/admin/users/{admin_id}/delete",
+        json={
+            "current_password": admin_user["password"],
+            "confirmation": "DELETE",
+            "reason": "This must remain protected.",
+        },
+        headers=admin_user["headers"],
+    )
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "conflict"
+
+
 def test_admin_totp_setup_changes_login_to_two_step(client, admin_user):
     setup = client.post(
         "/auth/totp/setup",

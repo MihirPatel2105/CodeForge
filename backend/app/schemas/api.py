@@ -434,6 +434,18 @@ class AdminActionResponse(BaseModel):
     message: str
 
 
+class AdminDeleteUserRequest(AdminActionRequest):
+    current_password: str
+    confirmation: str
+
+    @field_validator("confirmation")
+    @classmethod
+    def _must_confirm_delete(cls, value: str) -> str:
+        if value.strip() != DELETE_CONFIRMATION:
+            raise ValueError(f"Type {DELETE_CONFIRMATION} to confirm.")
+        return value.strip()
+
+
 class AdminUserLimitsRequest(BaseModel):
     project_limit: int | None = Field(default=None, ge=1, le=1000)
     monthly_run_limit: int | None = Field(default=None, ge=1, le=100000)

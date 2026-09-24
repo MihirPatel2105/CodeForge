@@ -195,6 +195,11 @@ export const api = {
   adminRestoreUser: (id: string, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/restore`, { method: "POST", body: JSON.stringify({ reason }) }),
   adminVerifyUserEmail: (id: string, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/verify-email`, { method: "POST", body: JSON.stringify({ reason }) }),
   adminSetUserLimits: (id: string, projectLimit: number | null, monthlyRunLimit: number | null, reason: string) => request<AdminActionResponse>(`/admin/users/${id}/limits`, { method: "POST", body: JSON.stringify({ project_limit: projectLimit, monthly_run_limit: monthlyRunLimit, reason }) }),
+  adminDeleteUser: (id: string, currentPassword: string, confirmation: string, reason: string) =>
+    request<DeleteAccountResponse>(`/admin/users/${id}/delete`, {
+      method: "POST",
+      body: JSON.stringify({ current_password: currentPassword, confirmation, reason }),
+    }),
   adminQuality: () => request<AdminQualityResponse>("/admin/quality"),
   adminSystemHealth: () => request<AdminSystemHealthResponse>("/admin/system-health"),
   adminAuditLog: (filters: { action?: string; date_from?: string; date_to?: string; page?: number; page_size?: number } = {}) => {

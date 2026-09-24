@@ -13,6 +13,7 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, status
 
 from app.config import settings
+from app.core.account_deletion import delete_user_account
 from app.core.deps import CurrentUser, TokenClaims, is_admin_user
 from app.core.email import (
     send_account_deleted_email,
@@ -38,9 +39,7 @@ from app.core.security import (
     verify_password,
     verify_totp,
 )
-from app.db.artifacts import delete_run_artifacts
-from app.graph import executor
-from app.models import PasswordResetToken, PendingSignup, Project, RevokedToken, Run, User
+from app.models import PasswordResetToken, PendingSignup, RevokedToken, User
 from app.schemas.api import (
     ChangePasswordRequest,
     DeleteAccountRequest,
@@ -561,47 +560,22 @@ async def delete_account(
         # for this account — but there is no reason to phrase it differently.
         raise AuthError("Incorrect password")
 
-    uid = str(user.id)
     # Read off the document before it is deleted — afterwards there is nothing to read
     # the address from, and this is the last message this address will ever get.
     email, first_name = user.email, user.first_name
-    runs = await Run.find(Run.user_id == uid).to_list()
-    run_ids = [str(run.id) for run in runs]
-
-    # Stop anything still executing before its documents are removed, or the graph would
-    # carry on writing state for a run that no longer exists.
-    for run_id in run_ids:
-        executor.cancel(run_id)
-
-    # Children first: if this fails partway, the account is still there to find the
-    # leftovers by. Deleting the user first would strand them with no owner to search on.
-    artifacts_deleted = await delete_run_artifacts(run_ids)
-    runs_deleted = (await Run.find(Run.user_id == uid).delete()).deleted_count
-    projects_deleted = (await Project.find(Project.user_id == uid).delete()).deleted_count
-    # An abandoned sign-up for the same address would otherwise outlive the account and
-    # block re-registering with it until Mongo's TTL sweep caught up.
-    await PendingSignup.find(PendingSignup.email == user.email).delete()
-    await user.delete()
-
-    logger.info(
-        "Account %s deleted: %d runs, %d projects, %d artifacts",
-        uid,
-        runs_deleted,
-        projects_deleted,
-        artifacts_deleted,
-    )
+    result = await delete_user_account(user)
     background.add_task(
         _send_quietly,
         "Account-deleted notice",
         send_account_deleted_email,
         to=email,
         first_name=first_name,
-        projects=projects_deleted,
-        runs=runs_deleted,
+        projects=result.projects_deleted,
+        runs=result.runs_deleted,
     )
 
     return DeleteAccountResponse(
-        projects_deleted=projects_deleted,
-        runs_deleted=runs_deleted,
-        artifacts_deleted=artifacts_deleted,
+        projects_deleted=result.projects_deleted,
+        runs_deleted=result.runs_deleted,
+        artifacts_deleted=result.artifacts_deleted,
     )

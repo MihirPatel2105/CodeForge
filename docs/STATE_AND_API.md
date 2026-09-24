@@ -122,6 +122,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/admin/users/{id}/restore` | restore a suspended account |
 | POST | `/admin/users/{id}/verify-email` | manually mark an address verified |
 | POST | `/admin/users/{id}/limits` | set project and monthly-run limits |
+| POST | `/admin/users/{id}/delete` | permanently delete a non-admin user and all owned data; requires admin password, typed confirmation, and reason |
 | GET | `/admin/quality` | persisted RunMetrics scorecard, breakdowns, and RAG comparison |
 | GET | `/admin/system-health` | live internal checks and passive provider observations |
 | GET | `/admin/monitoring` | historical volume, alerts, storage, tokens, and free-provider cost totals |
