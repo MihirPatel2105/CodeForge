@@ -125,7 +125,7 @@ export function TotpSettings({
             <div>
               <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-faint")}>security status</span>
               <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Two-factor protection is active" : "Two-factor protection is off"}</h2>
-              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "Password sign-in now requires a rotating code from your authenticator app." : "Add a rotating authenticator code so a stolen password alone cannot open your account."}</p>
+              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "Sign-in now requires a rotating code from your authenticator app, even when you use a passkey." : "Add a rotating authenticator code so a stolen password alone cannot open your account."}</p>
             </div>
           </div>
           <span className={cn("inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
