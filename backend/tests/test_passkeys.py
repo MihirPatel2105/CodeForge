@@ -10,6 +10,7 @@ import cbor2
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from app.config import settings
 from app.core.security import _totp
 
 
@@ -241,6 +242,91 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
     )
     assert completed.status_code == 200
     assert completed.json()["access_token"]
+
+
+def test_admin_password_login_can_finish_with_code_or_passkey(client, registered_user, monkeypatch):
+    monkeypatch.setattr(settings, "admin_email", registered_user["email"])
+    headers = registered_user["headers"]
+
+    setup = client.post(
+        "/auth/totp/setup",
+        headers=headers,
+        json={"current_password": registered_user["password"]},
+    )
+    secret = setup.json()["secret"]
+    code = _totp(secret, int(time.time()) // 30)
+    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 204
+
+    options = client.post(
+        "/auth/passkeys/register/options",
+        headers=headers,
+        json={"current_password": registered_user["password"], "totp_code": code},
+    )
+    monkeypatch.setattr(
+        "app.api.passkeys.verify_registration_response",
+        lambda **kwargs: SimpleNamespace(
+            credential_id=b"admin-credential",
+            credential_public_key=b"public-key",
+            sign_count=0,
+        ),
+    )
+    added = client.post(
+        "/auth/passkeys/register/verify",
+        headers=headers,
+        json={
+            "challenge_id": options.json()["challenge_id"],
+            "credential": {},
+            "label": "Admin laptop",
+        },
+    )
+    assert added.status_code == 201
+
+    code_login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    ).json()
+    assert code_login["mfa_methods"] == ["totp", "passkey"]
+    code_session = client.post(
+        "/auth/login/complete",
+        json={
+            "ticket": code_login["mfa_ticket"],
+            "totp_code": _totp(secret, int(time.time()) // 30),
+        },
+    )
+    assert code_session.status_code == 200
+    code_me = client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {code_session.json()['access_token']}"},
+    )
+    assert code_me.json()["is_admin"] is True
+
+    monkeypatch.setattr(
+        "app.api.passkeys.verify_authentication_response",
+        lambda **kwargs: SimpleNamespace(credential_id=b"admin-credential", new_sign_count=1),
+    )
+    passkey_login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    ).json()
+    assert passkey_login["mfa_methods"] == ["totp", "passkey"]
+    passkey_options = client.post(
+        "/auth/passkeys/mfa/options",
+        json={"ticket": passkey_login["mfa_ticket"]},
+    ).json()
+    passkey_session = client.post(
+        "/auth/passkeys/mfa/verify",
+        json={
+            "ticket": passkey_login["mfa_ticket"],
+            "challenge_id": passkey_options["challenge_id"],
+            "credential": {"id": "YWRtaW4tY3JlZGVudGlhbA"},
+        },
+    )
+    assert passkey_session.status_code == 200
+    passkey_me = client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {passkey_session.json()['access_token']}"},
+    )
+    assert passkey_me.json()["is_admin"] is True
 
 
 def test_password_reset_removes_passkeys(client, registered_user, monkeypatch):

@@ -28,6 +28,9 @@ test.beforeEach(async ({ page }) => {
 test("settings owns the 2FA entry instead of the admin navigation", async ({ page }) => {
   await page.goto("/profile/settings");
 
+  const passkeyLink = page.getByRole("link", { name: "Manage passkeys" });
+  await expect(passkeyLink).toBeVisible();
+  await expect(passkeyLink).toHaveAttribute("href", "/profile/settings/passkeys");
   const twoFactorLink = page.getByRole("link", { name: "Set up 2FA" });
   await expect(twoFactorLink).toBeVisible();
   await expect(twoFactorLink).toHaveAttribute("href", "/profile/settings/2fa");
