@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY scripts/preflight.py scripts/check_deployment.py ./scripts/
 
 EXPOSE 8000
 

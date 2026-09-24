@@ -1,0 +1,55 @@
+# Deployment stack: expose the API through an HTTPS reverse proxy on the host.
+# MongoDB is hosted separately (MONGO_URI in backend/.env); no test database is started.
+name: codeforge-deploy
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      LANGFUSE_HOST: http://langfuse:3000
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      # Required to launch network-isolated sibling sandbox containers.
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+  langfuse-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:?Set LANGFUSE_DB_PASSWORD in the deployment env file}
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  langfuse:
+    image: langfuse/langfuse:2
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://langfuse:${LANGFUSE_DB_PASSWORD:?Set LANGFUSE_DB_PASSWORD in the deployment env file}@langfuse-db:5432/langfuse
+      NEXTAUTH_URL: ${LANGFUSE_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:?Set LANGFUSE_NEXTAUTH_SECRET in the deployment env file}
+      SALT: ${LANGFUSE_SALT:?Set LANGFUSE_SALT in the deployment env file}
+      TELEMETRY_ENABLED: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+
+volumes:
+  langfuse_db_data:
