@@ -20,7 +20,7 @@ import { api, getToken, ApiError } from "@/lib/api";
 import type { ProjectResponse, RunSummary } from "@/lib/types";
 import { runStats, OUTCOME_FILL, type RunStats } from "@/lib/run-stats";
 import { RUN_STATUS_META, tone } from "@/lib/tone";
-import { formatWhen } from "@/lib/format";
+import { formatWhen, parseApiTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/dashboard/app-header";
 
@@ -56,8 +56,8 @@ export default function ProjectsPage() {
       // Most recently active first. A list ordered by creation buries the project you
       // were just working in as soon as there are more than a few.
       rows.sort((a, b) => {
-        const at = a.stats.last ? Date.parse(a.stats.last.created_at) : 0;
-        const bt = b.stats.last ? Date.parse(b.stats.last.created_at) : 0;
+        const at = a.stats.last ? parseApiTime(a.stats.last.created_at).getTime() : 0;
+        const bt = b.stats.last ? parseApiTime(b.stats.last.created_at).getTime() : 0;
         return bt - at;
       });
       setProjects(rows);

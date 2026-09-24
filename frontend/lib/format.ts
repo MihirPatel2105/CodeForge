@@ -1,16 +1,14 @@
-/** HH:MM:SS in the viewer's own timezone.
- *
- * Was UTC, on the reasoning that a recorded tape should read the same for everyone.
- * That is right for a fixed replay and wrong for a live run: someone watching a run
- * happen compares the timeline against the clock on their wall, and a demo audience
- * seeing 07:11 while their phone says 12:41 assumes the product is broken.
- *
- * Note this is only readable because the backend now sends an explicit offset. While
- * event times were emitted naive, this same call rendered them shifted by the viewer's
- * offset — a naive string is parsed as local, and `toISOString()` then converted it
- * back to UTC, subtracting 5h30m on an IST machine. */
+/** API datetimes are UTC. Archived Mongo-backed records may omit the offset. */
+export function parseApiTime(iso: string): Date {
+  // MongoDB stores UTC instants but older API responses can omit the offset.
+  // JavaScript otherwise treats those strings as local time.
+  const hasOffset = /(?:Z|[+-]\d{2}:\d{2})$/i.test(iso);
+  return new Date(hasOffset ? iso : `${iso}Z`);
+}
+
+/** HH:MM:SS in the viewer's timezone, matching the clock beside a live run. */
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-GB", { hour12: false });
+  return parseApiTime(iso).toLocaleTimeString("en-GB", { hour12: false });
 }
 
 /** "5.1s" — per-agent duration, from `duration_ms`. */
@@ -33,12 +31,13 @@ export function formatBytes(bytes: number): string {
   return `${bytes.toLocaleString()} bytes`;
 }
 
-/** "Aug 13, 10:01" — the run history table's "when" column. */
+/** "Aug 13, 10:01" in the viewer's timezone, matching the live timeline. */
 export function formatWhen(iso: string): string {
-  const d = new Date(iso);
-  const month = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
-  const day = d.getUTCDate();
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${month} ${day}, ${hh}:${mm}`;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(parseApiTime(iso));
 }
