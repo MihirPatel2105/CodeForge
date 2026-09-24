@@ -123,7 +123,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/admin/runs/{id}/retry` | start an audited new run from a terminal run |
 | GET | `/admin/runs/{id}/artifacts` | list generated code, logs, and test reports |
 | GET | `/admin/runs/{id}/artifacts/{file_id}` | authenticated admin artifact download |
-| GET | `/admin/users` | paginated user inventory with search and date filters; matching administrator is pinned first on page one |
+| GET | `/admin/users` | paginated user inventory with search and date filters |
 | GET | `/admin/users/export.csv` | export up to 5,000 user records |
 | GET | `/admin/users/{id}` | account, project, and recent-run support view |
 | POST | `/admin/users/{id}/revoke-sessions` | revoke every user JWT generation; body: `{reason}` |
