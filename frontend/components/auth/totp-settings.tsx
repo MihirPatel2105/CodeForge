@@ -23,11 +23,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const LABEL = "font-mono text-[10px] font-[700] uppercase tracking-[0.14em]";
+const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-[3px] border-0 bg-transparent px-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
 
 export function TotpSettings({
   initiallyEnabled,
@@ -45,11 +45,12 @@ export function TotpSettings({
   const [copied, setCopied] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [setupMethod, setSetupMethod] = useState<"qr" | "key">("qr");
+  const [setupStage, setSetupStage] = useState<"method" | "verify">("method");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const enrolling = Boolean(secret && uri);
-  const verificationReady = enrolling && code.length === 6;
+  const verificationStage = enrolling && setupStage === "verify";
 
   async function startSetup() {
     setBusy(true);
@@ -62,6 +63,7 @@ export function TotpSettings({
       setCopied(false);
       setCode("");
       setSetupMethod("qr");
+      setSetupStage("method");
       setSetupOpen(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not start two-factor setup.");
@@ -71,6 +73,7 @@ export function TotpSettings({
   }
 
   async function verify() {
+    if (code.length !== 6 || busy) return;
     setBusy(true);
     setError(null);
     setMessage(null);
@@ -83,6 +86,7 @@ export function TotpSettings({
       setCode("");
       setCopied(false);
       setSetupOpen(false);
+      setSetupStage("method");
       setMessage("Two-factor authentication is now protecting this account.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not verify that code.");
@@ -151,8 +155,8 @@ export function TotpSettings({
         <>
           <ol className="grid overflow-hidden rounded-[6px] border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
-            <SetupStep number="02" label="Add authenticator" state={verificationReady ? "complete" : enrolling ? "active" : "pending"} />
-            <SetupStep number="03" label="Verify code" state={verificationReady ? "active" : "pending"} />
+            <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
+            <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
@@ -191,52 +195,46 @@ export function TotpSettings({
                   </div>
                 </div>
                 <Button type="button" onClick={() => setSetupOpen(true)} className="mt-5 h-11 gap-2 rounded-[3px] px-5">
-                  <QrCode className="h-4 w-4" aria-hidden />
-                  Open QR code or setup key
+                  {setupStage === "verify" ? <Smartphone className="h-4 w-4" aria-hidden /> : <QrCode className="h-4 w-4" aria-hidden />}
+                  {setupStage === "verify" ? "Continue verification" : "Open QR code or setup key"}
                 </Button>
               </section>
 
               <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
                 <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-[7px] border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
                   <DialogHeader className="border-b border-rule px-6 py-6 pr-14">
-                    <span className={cn(LABEL, "text-accent")}>step 02 · authenticator setup</span>
-                    <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">Add CodeForge to your app</DialogTitle>
-                    <DialogDescription className="text-[13px] leading-5 text-fg-muted">Select one setup method for {accountEmail}.</DialogDescription>
+                    <span className={cn(LABEL, "text-accent")}>{setupStage === "method" ? "step 02 · authenticator setup" : "step 03 · verification"}</span>
+                    <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">{setupStage === "method" ? "Add CodeForge to your app" : "Verify your authenticator"}</DialogTitle>
+                    <DialogDescription className="text-[13px] leading-5 text-fg-muted">{setupStage === "method" ? `Select one setup method for ${accountEmail}.` : "Enter the current code from your authenticator app to enable two-factor protection."}</DialogDescription>
                   </DialogHeader>
 
-                  <div className="px-6 py-6">
-                    <Tabs
-                      value={setupMethod}
-                      onValueChange={(value) => {
-                        if (value === "qr" || value === "key") setSetupMethod(value);
-                      }}
-                      className="gap-0"
-                    >
-                      <TabsList className="relative grid h-12 w-full grid-cols-2 rounded-[5px] border border-border bg-bg p-1">
+                  {setupStage === "method" ? (
+                    <div className="px-6 py-6">
+                      <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-[5px] border border-border bg-bg p-1">
                         <span
                           aria-hidden
                           className={cn(
-                            "absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-[3px] border border-accent-bd bg-accent-soft shadow-sm transition-[left] duration-200 motion-reduce:transition-none",
-                            setupMethod === "qr" ? "left-1" : "left-1/2",
+                            "pointer-events-none absolute inset-y-[5px] w-[calc(50%-5px)] rounded-[3px] border border-accent-bd bg-accent-soft shadow-sm transition-[left] duration-200 motion-reduce:transition-none",
+                            setupMethod === "qr" ? "left-[5px]" : "left-1/2",
                           )}
                         />
-                        <TabsTrigger value="qr" className="relative z-10 h-10 gap-2 rounded-[3px] font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg-muted data-active:bg-transparent data-active:text-accent data-active:shadow-none after:hidden">
+                        <Button type="button" variant="ghost" aria-pressed={setupMethod === "qr"} onClick={() => setSetupMethod("qr")} className={cn(METHOD_BUTTON, setupMethod === "qr" ? "text-accent hover:text-accent" : "text-fg-muted hover:text-fg")}>
                           <QrCode className="h-4 w-4" aria-hidden /> QR code
-                        </TabsTrigger>
-                        <TabsTrigger value="key" className="relative z-10 h-10 gap-2 rounded-[3px] font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg-muted data-active:bg-transparent data-active:text-accent data-active:shadow-none after:hidden">
+                        </Button>
+                        <Button type="button" variant="ghost" aria-pressed={setupMethod === "key"} onClick={() => setSetupMethod("key")} className={cn(METHOD_BUTTON, setupMethod === "key" ? "text-accent hover:text-accent" : "text-fg-muted hover:text-fg")}>
                           <KeyRound className="h-4 w-4" aria-hidden /> Setup key
-                        </TabsTrigger>
-                      </TabsList>
+                        </Button>
+                      </div>
 
-                      <TabsContent value="qr" className="pt-6">
+                      {setupMethod === "qr" ? <div className="pt-6">
                         <h3 className="text-[14px] font-[700] text-fg">Scan the QR code</h3>
                         <p className="mt-2 text-[12px] leading-5 text-fg-muted">In your authenticator app, add a new account and scan this code.</p>
                         <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm">
                           <QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden />
                         </div>
-                      </TabsContent>
+                      </div> : null}
 
-                      <TabsContent value="key" className="pt-6">
+                      {setupMethod === "key" ? <div className="pt-6">
                         <h3 className="text-[14px] font-[700] text-fg">Enter the setup key</h3>
                         <p className="mt-2 text-[12px] leading-5 text-fg-muted">Choose manual entry in your authenticator app. Use account name <strong>CodeForge</strong> and select <strong>Time based</strong>.</p>
                         <div className="mt-5 rounded-[4px] border border-border bg-bg p-4">
@@ -247,33 +245,41 @@ export function TotpSettings({
                           {copied ? <Check className="h-4 w-4 text-ok" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
                           {copied ? "Setup key copied" : "Copy setup key"}
                         </Button>
-                      </TabsContent>
-                    </Tabs>
+                      </div> : null}
 
                     <p className="mt-6 flex items-start gap-3 rounded-[4px] border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted">
                       <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />
                       Treat the QR code and setup key like a password. Do not share or save them in screenshots.
                     </p>
                     {error ? <p role="alert" className="mt-4 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
-                  </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={(event) => { event.preventDefault(); void verify(); }}>
+                      <div className="px-6 py-6">
+                        <div className="flex items-start gap-3">
+                          <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
+                          <p id="totp-code-help" className="text-[13px] leading-5 text-fg-muted">Enter the current six-digit code shown for CodeForge. Codes refresh every 30 seconds.</p>
+                        </div>
+                        <label htmlFor="totp-verification-code" className={cn(LABEL, "mt-6 block text-fg-faint")}>six-digit authenticator code</label>
+                        <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 w-full max-w-xs rounded-[3px] bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
+                        {error ? <p role="alert" className="mt-4 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
+                        <Button type="button" variant="ghost" onClick={() => { setError(null); setSetupStage("method"); }} className="h-10 rounded-[3px] px-2 text-fg-muted">Back to setup</Button>
+                        <Button type="submit" disabled={busy || code.length !== 6} className="h-10 gap-2 rounded-[3px] px-4"><ShieldCheck className="h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Verify and enable 2FA"}</Button>
+                      </div>
+                    </form>
+                  )}
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
+                  {setupStage === "method" ? <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
                     <Button type="button" variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-10 gap-2 rounded-[3px] px-2 text-fg-muted">
                       <RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden />
                       Generate new key
                     </Button>
-                    <Button type="button" onClick={() => setSetupOpen(false)} className="h-10 rounded-[3px] px-4">Continue to verification</Button>
-                  </div>
+                    <Button type="button" onClick={() => { setError(null); setSetupStage("verify"); }} className="h-10 rounded-[3px] px-4">Continue to verification</Button>
+                  </div> : null}
                 </DialogContent>
               </Dialog>
-
-              <section className="rounded-[7px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
-                <span className={cn(LABEL, "text-accent")}>step 03</span>
-                <div className="mt-2 flex items-start gap-3"><Smartphone className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden /><div><h2 className="font-display text-[22px] font-[650] tracking-[-0.045em] text-fg">Verify the first code</h2><p id="totp-code-help" className="mt-2 text-[13px] leading-5 text-fg-muted">Enter the current six-digit code shown for CodeForge. Codes refresh every 30 seconds.</p></div></div>
-                <label htmlFor="totp-verification-code" className={cn(LABEL, "mt-6 block text-fg-faint")}>six-digit authenticator code</label>
-                <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 max-w-xs rounded-[3px] bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
-                <Button onClick={verify} disabled={busy || code.length !== 6} className="mt-4 h-11 gap-2 rounded-[3px] px-5"><ShieldCheck className="h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Verify and enable 2FA"}</Button>
-              </section>
             </>
           )}
         </>

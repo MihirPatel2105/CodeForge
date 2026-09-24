@@ -60,22 +60,36 @@ test("normal users can open 2FA settings and use QR or manual enrollment", async
 
   const setupDialog = page.getByRole("dialog", { name: "Add CodeForge to your app" });
   await expect(setupDialog).toBeVisible();
-  await expect(setupDialog.getByRole("tab", { name: "QR code" })).toHaveAttribute("aria-selected", "true");
+  await expect(setupDialog.getByRole("button", { name: "QR code" })).toHaveAttribute("aria-pressed", "true");
+  const selector = setupDialog.getByRole("group", { name: "Authenticator setup method" });
+  const selectorBox = await selector.boundingBox();
+  const qrButtonBox = await selector.getByRole("button", { name: "QR code" }).boundingBox();
+  expect(selectorBox).not.toBeNull();
+  expect(qrButtonBox).not.toBeNull();
+  expect(qrButtonBox!.y).toBeGreaterThanOrEqual(selectorBox!.y);
+  expect(qrButtonBox!.y + qrButtonBox!.height).toBeLessThanOrEqual(selectorBox!.y + selectorBox!.height);
   await expect(setupDialog.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeVisible();
   await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeHidden();
 
-  await setupDialog.getByRole("tab", { name: "Setup key" }).click();
-  await expect(setupDialog.getByRole("tab", { name: "Setup key" })).toHaveAttribute("aria-selected", "true");
+  await setupDialog.getByRole("button", { name: "Setup key", exact: true }).click();
+  await expect(setupDialog.getByRole("button", { name: "Setup key", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
   await expect(setupDialog.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeHidden();
 
   await setupDialog.getByRole("button", { name: "Continue to verification" }).click();
-  await expect(setupDialog).toBeHidden();
-  await page.getByRole("button", { name: "Open QR code or setup key" }).click();
+  const verificationDialog = page.getByRole("dialog", { name: "Verify your authenticator" });
+  await expect(verificationDialog).toBeVisible();
+  await expect(verificationDialog.getByLabel("six-digit authenticator code")).toBeVisible();
+  await verificationDialog.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: "Continue verification" }).click();
+  await expect(verificationDialog).toBeVisible();
+  await verificationDialog.getByRole("button", { name: "Back to setup" }).click();
   await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
   await setupDialog.getByRole("button", { name: "Continue to verification" }).click();
 
-  await page.getByLabel("six-digit authenticator code").fill("123456");
-  await page.getByRole("button", { name: "Verify and enable 2FA" }).click();
+  await verificationDialog.getByLabel("six-digit authenticator code").fill("123456");
+  const verifyRequest = page.waitForRequest((request) => request.url().endsWith("/auth/totp/verify") && request.method() === "POST");
+  await verificationDialog.getByRole("button", { name: "Verify and enable 2FA" }).click();
+  expect(JSON.parse((await verifyRequest).postData() ?? "null")).toEqual({ code: "123456" });
   await expect(page.getByText("Two-factor protection is active")).toBeVisible();
 });
