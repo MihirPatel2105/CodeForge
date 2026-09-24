@@ -398,6 +398,19 @@ def test_admin_lists_are_paginated_and_exports_are_csv(client, admin_user):
     assert page.status_code == 200
     assert len(page.json()["items"]) == 2
     assert page.json()["pagination"]["total"] == 4
+    assert page.json()["items"][0]["email"] == admin_user["email"]
+    assert page.json()["items"][0]["is_admin"] is True
+
+    second_page = client.get("/admin/users?page=2&page_size=2", headers=admin_user["headers"])
+    assert second_page.status_code == 200
+    combined_ids = [item["id"] for item in page.json()["items"] + second_page.json()["items"]]
+    assert len(combined_ids) == len(set(combined_ids)) == 4
+    assert all(item["is_admin"] is False for item in second_page.json()["items"])
+
+    filtered = client.get("/admin/users?q=page-&page_size=2", headers=admin_user["headers"])
+    assert filtered.status_code == 200
+    assert filtered.json()["pagination"]["total"] == 3
+    assert all(item["is_admin"] is False for item in filtered.json()["items"])
     export = client.get("/admin/users/export.csv", headers=admin_user["headers"])
     assert export.status_code == 200
     assert export.headers["content-type"].startswith("text/csv")

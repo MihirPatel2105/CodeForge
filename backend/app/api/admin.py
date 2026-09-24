@@ -479,7 +479,6 @@ async def list_users(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ) -> AdminUserPage:
-    del admin
     term = q.strip()
     if term:
         safe = re.escape(term)
@@ -495,9 +494,26 @@ async def list_users(
     filters.update(_date_filters(date_from, date_to))
     query = User.find(filters) if filters else User.find_all()
     total = await query.count()
-    users = (
-        await query.sort(-User.created_at).skip((page - 1) * page_size).limit(page_size).to_list()
+
+    # The operator is the anchor account for this screen. Reserve the first slot on
+    # page one for it, then paginate every other account around that fixed position.
+    # Applying the active filters to the operator check keeps searches honest: a query
+    # for another user must not inject an unrelated admin row into the results.
+    admin_matches = (
+        not filters or await User.find_one({"$and": [filters, {"_id": admin.id}]}) is not None
     )
+    non_admin_filter: dict[str, Any] = {"_id": {"$ne": admin.id}}
+    if filters:
+        non_admin_filter = {"$and": [filters, non_admin_filter]}
+    non_admin_query = User.find(non_admin_filter).sort(-User.created_at)
+
+    if admin_matches and page == 1:
+        users = [admin]
+        if page_size > 1:
+            users.extend(await non_admin_query.limit(page_size - 1).to_list())
+    else:
+        offset = (page - 1) * page_size - (1 if admin_matches else 0)
+        users = await non_admin_query.skip(max(offset, 0)).limit(page_size).to_list()
     return AdminUserPage(
         items=list(await asyncio.gather(*(_user_summary(user) for user in users))),
         pagination=_page_info(page, page_size, total),
