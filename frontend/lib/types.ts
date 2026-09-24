@@ -404,6 +404,35 @@ export interface RunResponse {
   updated_at: string;
 }
 
+export interface PreviewOperation {
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  path: string;
+  summary: string;
+  has_body: boolean;
+  example_body: unknown | null;
+}
+
+export interface PreviewInfo {
+  operations: PreviewOperation[];
+  expires_after_seconds: number;
+  session_started: boolean;
+}
+
+export interface PreviewCall {
+  method: PreviewOperation["method"];
+  path: string;
+  body: unknown | null;
+}
+
+export interface PreviewResult {
+  status: number;
+  content_type: string;
+  body: string;
+  truncated: boolean;
+  duration_ms: number;
+  session_started: boolean;
+}
+
 export interface RunMetrics {
   generation_succeeded: boolean;
   tests_passed: boolean;

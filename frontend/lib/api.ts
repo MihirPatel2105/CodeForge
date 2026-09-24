@@ -34,6 +34,9 @@ import type {
   RunCreate,
   RunCreateResponse,
   RunResponse,
+  PreviewCall,
+  PreviewInfo,
+  PreviewResult,
   RunSummary,
   FileTreeResponse,
   FileHistoryResponse,
@@ -277,6 +280,10 @@ export const api = {
   createRun: (payload: RunCreate) =>
     request<RunCreateResponse>("/runs", { method: "POST", body: JSON.stringify(payload) }),
   getRun: (id: string) => request<RunResponse>(`/runs/${id}`),
+  getPreview: (id: string) => request<PreviewInfo>(`/runs/${id}/preview`),
+  sendPreviewRequest: (id: string, payload: PreviewCall) =>
+    request<PreviewResult>(`/runs/${id}/preview/request`, { method: "POST", body: JSON.stringify(payload) }),
+  resetPreview: (id: string) => request<void>(`/runs/${id}/preview`, { method: "DELETE" }),
   getRunFiles: (id: string) => request<FileTreeResponse>(`/runs/${id}/files`),
   getRunFileHistory: (id: string) => request<FileHistoryResponse>(`/runs/${id}/file-history`),
   approveRun: (id: string, payload: ApprovalRequest) =>

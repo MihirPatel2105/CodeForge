@@ -65,3 +65,13 @@ class AccountSuspendedError(CodeForgeError):
 class UsageLimitError(CodeForgeError):
     status_code = 409
     code = "usage_limit_reached"
+
+
+class PreviewRequestError(CodeForgeError):
+    status_code = 400
+    code = "invalid_preview_request"
+
+
+class PreviewUnavailableError(CodeForgeError):
+    status_code = 503
+    code = "preview_unavailable"

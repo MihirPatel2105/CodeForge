@@ -114,6 +114,9 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | GET | `/runs/{id}/files` | current generated file tree |
 | GET | `/runs/{id}/file-history` | archived per-iteration versions for the Diff panel; owner-only |
 | GET | `/runs/{id}/artifacts` | GridFS zip download |
+| GET | `/runs/{id}/preview` | Start or reuse a private temporary sandbox and list generated API endpoints |
+| POST | `/runs/{id}/preview/request` | Send `{method, path, body?}` to the generated API inside that sandbox; return its HTTP status and body |
+| DELETE | `/runs/{id}/preview` | Remove the preview and its temporary data |
 | GET | `/projects/{id}/runs` | run history |
 | GET | `/admin/overview` | admin-only platform totals and recent runs |
 | GET | `/admin/runs` | paginated cross-user run inventory; status, prompt, RAG, acceptance, failure, and date filters |
@@ -142,6 +145,9 @@ Conventions
 - Errors: `{"error": {"code": "...", "message": "...", "run_id": "..."}}`, correct HTTP status.
 - `POST /runs` returns immediately (202) and executes the graph in the background — the client
   then attaches to the SSE stream. Never block the HTTP request on a full run.
+- Try API is owner-only and available only for succeeded runs with passing sandbox tests.
+  Its Docker container has no network or published port, shares no database with the platform,
+  and expires after 15 minutes. It is an in-app preview, not a deployed API URL.
 - `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.

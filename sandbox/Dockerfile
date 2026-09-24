@@ -50,7 +50,9 @@ RUN mkdir -p /data/db /app && chown -R mongodb:mongodb /data/db /app
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY probe.py /usr/local/bin/probe.py
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY preview_entrypoint.sh /usr/local/bin/preview_entrypoint.sh
+COPY preview_request.py /usr/local/bin/preview_request.py
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/preview_entrypoint.sh
 
 USER mongodb
 WORKDIR /app

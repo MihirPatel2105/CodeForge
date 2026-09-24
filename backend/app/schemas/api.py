@@ -583,6 +583,35 @@ class RunResponse(BaseModel):
     updated_at: datetime
 
 
+class PreviewOperation(BaseModel):
+    method: str
+    path: str
+    summary: str = ""
+    has_body: bool = False
+    example_body: Any | None = None
+
+
+class PreviewInfo(BaseModel):
+    operations: list[PreviewOperation]
+    expires_after_seconds: int
+    session_started: bool
+
+
+class PreviewCall(BaseModel):
+    method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
+    path: str = Field(min_length=1, max_length=300)
+    body: Any | None = None
+
+
+class PreviewResult(BaseModel):
+    status: int
+    content_type: str
+    body: str
+    truncated: bool
+    duration_ms: int
+    session_started: bool
+
+
 class FileTreeResponse(BaseModel):
     run_id: str
     files: list[GeneratedFile] = Field(default_factory=list)

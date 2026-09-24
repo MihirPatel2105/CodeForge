@@ -11,6 +11,7 @@ from app.api.auth import router as auth_router
 from app.api.contact import router as contact_router
 from app.api.health import router as health_router
 from app.api.passkeys import router as passkeys_router
+from app.api.preview import router as preview_router
 from app.api.projects import router as projects_router
 from app.api.runs import router as runs_router
 from app.api.stream import router as stream_router
@@ -91,6 +92,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_router)
     app.include_router(contact_router)
     app.include_router(projects_router)
+    app.include_router(preview_router)
     app.include_router(runs_router)
     app.include_router(stream_router)
     return app

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { typeScale } from "@/lib/type-scale";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
 import { formatElapsed } from "@/lib/format";
@@ -8,6 +9,7 @@ export interface ResultSummaryProps {
   snapshot: RunSnapshot;
   onDownload?: () => void;
   onRetry?: () => void;
+  tryApiHref?: string;
 }
 
 function plural(n: number, one: string, many: string): string {
@@ -92,7 +94,7 @@ function copyFor(
 
 /** Inline at the bottom of the Live run screen when a run ends (docs/UI_BRIEF.md
  * §3.5), and the same card set standalone on the Screens tab. */
-export function ResultSummary({ snapshot, onDownload, onRetry }: ResultSummaryProps) {
+export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: ResultSummaryProps) {
   const isPartial = snapshot.status === "succeeded" && snapshot.tests?.ok === false;
   const outcomeKey = isPartial ? "partial" : snapshot.status;
   const meta = RUN_STATUS_META[outcomeKey] ?? { label: outcomeKey, tone: "neutral" as const };
@@ -139,6 +141,11 @@ export function ResultSummary({ snapshot, onDownload, onRetry }: ResultSummaryPr
         <Metric label="Files" value={String(snapshot.files.length)} />
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+          {tryApiHref && outcomeKey === "succeeded" && (
+            <Link href={tryApiHref} className="rounded-[3px] border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
+              Try API
+            </Link>
+          )}
           {onRetry && outcomeKey !== "succeeded" && (
             <button
               type="button"
