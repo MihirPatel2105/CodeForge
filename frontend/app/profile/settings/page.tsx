@@ -11,6 +11,7 @@ import {
   Laptop,
   LayoutDashboard,
   LogOut,
+  MonitorSmartphone,
   ServerCog,
   ShieldCheck,
   ShieldOff,
@@ -19,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { DeleteAccountDialog } from "@/components/auth/delete-account-dialog";
-import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { DeviceList } from "@/components/auth/device-list";
 import { useSession } from "@/lib/use-current-user";
 import { api, getToken, clearToken, ApiError } from "@/lib/api";
@@ -142,27 +142,7 @@ export default function SettingsPage() {
           </section>
         ) : null}
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
-            <div className="flex items-start gap-4 border-b border-rule px-6 py-5 md:px-7">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
-                <KeyRound className="h-4 w-4 text-accent" aria-hidden />
-              </span>
-              <div>
-                <span className={LABEL}>password</span>
-                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
-                  Change your password
-                </h2>
-                <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
-                  Your current password is required before a new one can be saved.
-                </p>
-              </div>
-            </div>
-            <div className="px-6 pb-7 md:px-7">
-              <ChangePasswordForm />
-            </div>
-          </section>
-
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
           <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
@@ -198,8 +178,6 @@ export default function SettingsPage() {
               />
             </div>
 
-            <DeviceList />
-
             {sessionError && (
               <p
                 role="alert"
@@ -209,7 +187,54 @@ export default function SettingsPage() {
               </p>
             )}
           </section>
+
+          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+            <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+                <MonitorSmartphone className="h-4 w-4 text-accent" aria-hidden />
+              </span>
+              <div>
+                <span className={LABEL}>device activity</span>
+                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
+                  Signed-in browsers
+                </h2>
+                <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
+                  Review browsers with an active session and sign out any you do not recognize.
+                </p>
+              </div>
+            </div>
+            <DeviceList />
+          </section>
         </div>
+
+        {user ? (
+          <section className="mt-6 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
+              <div className="flex items-start gap-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+                  <KeyRound className="h-4 w-4 text-accent" aria-hidden />
+                </span>
+                <div>
+                  <span className={LABEL}>password</span>
+                  <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
+                    Change your password
+                  </h2>
+                  <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
+                    Update your password using your current one. Your other sessions will be signed out.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/profile/settings/password"
+                className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90"
+              >
+                Change password
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
         {user ? (
           <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-surface shadow-[0_16px_45px_rgba(73,67,214,0.05)]">

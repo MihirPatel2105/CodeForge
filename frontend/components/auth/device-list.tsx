@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Laptop, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, clearToken, getToken, ApiError } from "@/lib/api";
 import type { DeviceResponse } from "@/lib/types";
@@ -48,18 +48,14 @@ export function DeviceList() {
   }
 
   return (
-    <div className="border-t border-rule px-6 py-5">
-      <div className="flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint">
-        <Laptop className="h-3.5 w-3.5" aria-hidden />
-        Signed-in browsers
-      </div>
-      {loading ? <p className="mt-3 text-[12px] text-fg-muted">Loading devices…</p> : null}
+    <div className="px-6 py-2">
+      {loading ? <p className="py-4 text-[12px] text-fg-muted">Loading devices…</p> : null}
       {!loading && devices.length === 0 ? (
-        <p className="mt-3 text-[12px] leading-5 text-fg-muted">
+        <p className="py-4 text-[12px] leading-5 text-fg-muted">
           No tracked browser sessions yet. Sessions opened before this feature will not appear.
         </p>
       ) : null}
-      <div className="mt-3 divide-y divide-rule">
+      <div className="divide-y divide-rule">
         {devices.map((device) => (
           <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div>
@@ -83,7 +79,7 @@ export function DeviceList() {
           </div>
         ))}
       </div>
-      {error ? <p role="alert" className="mt-3 text-[12px] text-danger">{error}</p> : null}
+      {error ? <p role="alert" className="py-3 text-[12px] text-danger">{error}</p> : null}
     </div>
   );
 }
