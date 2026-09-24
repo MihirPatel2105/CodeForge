@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ClipboardList,
+  Fingerprint,
   KeyRound,
   Laptop,
   LayoutDashboard,
@@ -53,7 +54,9 @@ export default function SettingsPage() {
         router.replace("/login");
         return;
       }
-      setSessionError("Couldn't reach the server, so you are still signed in. Try again.");
+      setSessionError(
+        "Couldn't reach the server, so you are still signed in. Try again.",
+      );
       setEndingSessions(false);
     }
   }
@@ -88,20 +91,20 @@ export default function SettingsPage() {
           Back to profile
         </Link>
 
-        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-[7px] border border-border bg-surface px-7 py-8 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-10">
-          <div className="relative z-10 flex flex-col justify-between gap-8 md:flex-row md:items-end">
+        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-[7px] border border-border bg-surface px-7 py-7 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-9">
+          <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
                 <ShieldCheck className="h-3 w-3" aria-hidden />
                 {user?.is_admin ? "administrator security" : "account security"}
               </span>
-              <h1 className="font-display mt-6 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
+              <h1 className="font-display mt-4 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
                 {user?.is_admin ? "Admin settings" : "Settings"}
               </h1>
-              <p className="mt-4 max-w-[58ch] text-[14px] leading-[1.65] text-fg-muted">
+              <p className="mt-3 max-w-[58ch] text-[14px] leading-[1.65] text-fg-muted">
                 {user?.is_admin
-                  ? "Protect the platform operator account, control its sessions, and review administrator access."
-                  : "Update your password, control signed-in sessions, and manage the permanent state of your account."}
+                  ? "Manage operator access, sign-in methods, and active sessions."
+                  : "Manage your sign-in methods, active sessions, and account."}
               </p>
             </div>
 
@@ -129,20 +132,40 @@ export default function SettingsPage() {
                     Platform administrator
                   </h2>
                   <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
-                    This account is authorized by the server&apos;s admin email allowlist. Admin API access still requires a valid signed-in session.
+                    This account is authorized by the server&apos;s admin email
+                    allowlist. Admin API access still requires a valid signed-in
+                    session.
                   </p>
                 </div>
               </div>
               <div className="border-t border-accent-bd p-3 lg:border-l lg:border-t-0">
-                <AdminSettingLink href="/admin" icon={LayoutDashboard} label="Control centre" />
-                <AdminSettingLink href="/admin/system" icon={ServerCog} label="System health" />
-                <AdminSettingLink href="/admin/audit" icon={ClipboardList} label="Audit log" />
+                <AdminSettingLink
+                  href="/admin"
+                  icon={LayoutDashboard}
+                  label="Control centre"
+                />
+                <AdminSettingLink
+                  href="/admin/system"
+                  icon={ServerCog}
+                  label="System health"
+                />
+                <AdminSettingLink
+                  href="/admin/audit"
+                  icon={ClipboardList}
+                  label="Audit log"
+                />
               </div>
             </div>
           </section>
         ) : null}
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <SectionHeading
+          eyebrow="01 / Active access"
+          title="Sessions and devices"
+          description="See where your account is signed in and end sessions you no longer need."
+        />
+
+        <div className="mt-4 grid items-start gap-5 lg:grid-cols-2">
           <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
@@ -150,11 +173,12 @@ export default function SettingsPage() {
               </span>
               <div>
                 <span className={LABEL}>session control</span>
-                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
+                <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Active sessions
-                </h2>
+                </h3>
                 <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
-                  Choose whether to end this browser session or revoke every session.
+                  Choose whether to end this browser session or revoke every
+                  session.
                 </p>
               </div>
             </div>
@@ -172,7 +196,9 @@ export default function SettingsPage() {
                 icon={ShieldOff}
                 title="Every device"
                 description="Revokes every active session immediately, including this one."
-                buttonLabel={endingSessions ? "Ending sessions…" : "Sign out everywhere"}
+                buttonLabel={
+                  endingSessions ? "Ending sessions…" : "Sign out everywhere"
+                }
                 onClick={handleSignOutEverywhere}
                 disabled={endingSessions}
               />
@@ -191,15 +217,19 @@ export default function SettingsPage() {
           <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
-                <MonitorSmartphone className="h-4 w-4 text-accent" aria-hidden />
+                <MonitorSmartphone
+                  className="h-4 w-4 text-accent"
+                  aria-hidden
+                />
               </span>
               <div>
                 <span className={LABEL}>device activity</span>
-                <h2 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
+                <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Signed-in browsers
-                </h2>
+                </h3>
                 <p className="mt-1.5 text-[12.5px] leading-[1.5] text-fg-muted">
-                  Review browsers with an active session and sign out any you do not recognize.
+                  Review browsers with an active session and sign out any you do
+                  not recognize.
                 </p>
               </div>
             </div>
@@ -207,96 +237,103 @@ export default function SettingsPage() {
           </section>
         </div>
 
-        {user ? (
-          <section className="mt-6 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
-            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
-              <div className="flex items-start gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
-                  <KeyRound className="h-4 w-4 text-accent" aria-hidden />
-                </span>
-                <div>
-                  <span className={LABEL}>password</span>
-                  <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
-                    Change your password
-                  </h2>
-                  <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
-                    Update your password using your current one. Your other sessions will be signed out.
-                  </p>
-                </div>
-              </div>
+        <SectionHeading
+          eyebrow="02 / Authentication"
+          title="Sign-in methods"
+          description="Choose how you access CodeForge and add another layer of protection."
+        />
 
-              <Link
+        {user ? (
+          <section
+            aria-label="Sign-in methods"
+            className="mt-4 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]"
+          >
+            <ul className="divide-y divide-rule">
+              <SecurityMethodRow
+                icon={KeyRound}
+                label="Password"
+                title="Change your password"
+                description="Update your password. Your other sessions will be signed out."
                 href="/profile/settings/password"
-                className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90"
-              >
-                Change password
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        {user ? (
-          <section className="mt-6 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
-            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
-              <div className="flex items-start gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg"><KeyRound className="h-4 w-4 text-accent" aria-hidden /></span>
-                <div><span className={LABEL}>passkeys</span><h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Sign in without typing a password</h2><p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">Add or remove passkeys for this account. Your password stays available as a backup.</p></div>
-              </div>
-              <Link href="/profile/settings/passkeys" className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90">Manage passkeys<ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
-            </div>
-          </section>
-        ) : null}
-
-        {user ? (
-          <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-surface shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
-            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
-              <div className="flex items-start gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-accent-soft">
-                  <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
-                </span>
-                <div>
-                  <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent">
-                    two-factor authentication · {user.totp_enabled ? "on" : "off"}
-                  </span>
-                  <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
-                    {user.totp_enabled
-                      ? "Authenticator protection is enabled"
-                      : "Protect your sign-in"}
-                  </h2>
-                  <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
-                    {user.totp_enabled
-                      ? "Manage the authenticator required after your account password."
-                      : "Add a time-based authenticator using either a QR code or a manual setup key."}
-                  </p>
-                </div>
-              </div>
-
-              <Link
+                action="Change password"
+              />
+              <SecurityMethodRow
+                icon={Fingerprint}
+                label="Passkeys"
+                title="Sign in without typing a password"
+                description="Add or remove passkeys. Your password remains available as a backup."
+                href="/profile/settings/passkeys"
+                action="Manage passkeys"
+              />
+              <SecurityMethodRow
+                icon={ShieldCheck}
+                label="Two-factor authentication"
+                title={
+                  user.totp_enabled
+                    ? "Authenticator protection is on"
+                    : "Protect your sign-in"
+                }
+                description={
+                  user.totp_enabled
+                    ? "Manage the authenticator code required after sign-in."
+                    : "Add a time-based authenticator with a QR code or manual key."
+                }
                 href="/profile/settings/2fa"
-                aria-label={user.totp_enabled ? "Manage two-factor authentication" : "Set up two-factor authentication"}
-                className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90"
-              >
-                {user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </Link>
-            </div>
+                action={user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}
+                status={user.totp_enabled ? "On" : "Off"}
+                highlighted
+              />
+            </ul>
           </section>
         ) : null}
 
-        <section className={user?.is_admin ? "mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]" : "mt-6 overflow-hidden rounded-[6px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"}>
+        <SectionHeading
+          eyebrow="03 / Account"
+          title="Account"
+          description={
+            user?.is_admin
+              ? "Operator account controls and restrictions stay separate from sign-in settings."
+              : "Permanent account actions are kept separate from everyday security settings."
+          }
+        />
+
+        <section
+          className={
+            user?.is_admin
+              ? "mt-4 overflow-hidden rounded-[6px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
+              : "mt-4 overflow-hidden rounded-[6px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
+          }
+        >
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
             <div className="flex items-start gap-4">
-              <span className={user?.is_admin ? "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-surface" : "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-danger-bd bg-surface"}>
-                {user?.is_admin ? <ShieldCheck className="h-4 w-4 text-accent" aria-hidden /> : <Trash2 className="h-4 w-4 text-danger" aria-hidden />}
+              <span
+                className={
+                  user?.is_admin
+                    ? "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-surface"
+                    : "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-danger-bd bg-surface"
+                }
+              >
+                {user?.is_admin ? (
+                  <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
+                ) : (
+                  <Trash2 className="h-4 w-4 text-danger" aria-hidden />
+                )}
               </span>
               <div>
-                <span className={user?.is_admin ? "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent" : "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-danger"}>
+                <span
+                  className={
+                    user?.is_admin
+                      ? "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent"
+                      : "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-danger"
+                  }
+                >
                   {user?.is_admin ? "protected account" : "danger zone"}
                 </span>
-                <h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
-                  {user?.is_admin ? "Administrator deletion is disabled" : "Delete this account"}
-                </h2>
+                <h3 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
+                  {user?.is_admin
+                    ? "Administrator deletion is disabled"
+                    : "Delete this account"}
+                </h3>
                 <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
                   {user?.is_admin
                     ? "The configured operator account cannot delete itself while it controls platform administration. Change the server allowlist first if this account must be retired."
@@ -306,11 +343,19 @@ export default function SettingsPage() {
             </div>
 
             {user?.is_admin ? (
-              <Button disabled variant="outline" className="h-11 shrink-0 rounded-[3px] border-accent-bd px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em]">
+              <Button
+                disabled
+                variant="outline"
+                className="h-11 shrink-0 rounded-[3px] border-accent-bd px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em]"
+              >
                 Protected
               </Button>
             ) : (
-              <Button onClick={() => setConfirming(true)} disabled={!user} className="h-11 shrink-0 rounded-[3px] bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90">
+              <Button
+                onClick={() => setConfirming(true)}
+                disabled={!user}
+                className="h-11 shrink-0 rounded-[3px] bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
+              >
                 Delete account
               </Button>
             )}
@@ -319,9 +364,104 @@ export default function SettingsPage() {
       </main>
 
       {confirming && user && !user.is_admin && (
-        <DeleteAccountDialog email={user.email} onClose={() => setConfirming(false)} />
+        <DeleteAccountDialog
+          email={user.email}
+          onClose={() => setConfirming(false)}
+        />
       )}
     </div>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mt-9 flex flex-col gap-2 border-b border-rule pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+      <div>
+        <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent">
+          {eyebrow}
+        </span>
+        <h2 className="font-display mt-1.5 text-[23px] font-[650] tracking-[-0.045em] text-fg">
+          {title}
+        </h2>
+      </div>
+      <p className="max-w-[45ch] text-[12.5px] leading-[1.5] text-fg-muted">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function SecurityMethodRow({
+  icon: Icon,
+  label,
+  title,
+  description,
+  href,
+  action,
+  status,
+  highlighted = false,
+}: {
+  icon: typeof KeyRound;
+  label: string;
+  title: string;
+  description: string;
+  href: string;
+  action: string;
+  status?: string;
+  highlighted?: boolean;
+}) {
+  return (
+    <li className="flex flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
+      <div className="flex min-w-0 items-start gap-4">
+        <span
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}
+        >
+          <Icon className="h-4 w-4 text-accent" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <span
+            className={
+              highlighted
+                ? "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent"
+                : LABEL
+            }
+          >
+            {label}
+          </span>
+          {status && (
+            <span
+              className={`ml-2 rounded-[3px] border px-1.5 py-0.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] ${status === "On" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint"}`}
+            >
+              {status}
+            </span>
+          )}
+          <h3 className="font-display mt-1 text-[19px] font-[650] tracking-[-0.04em] text-fg">
+            {title}
+          </h3>
+          <p className="mt-1 max-w-[65ch] text-[12.5px] leading-[1.5] text-fg-muted">
+            {description}
+          </p>
+        </div>
+      </div>
+      <Link
+        href={href}
+        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-[3px] border border-border-strong px-4 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-fg hover:bg-bg sm:self-auto"
+      >
+        {action}
+        <ArrowRight
+          className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+          aria-hidden
+        />
+      </Link>
+    </li>
   );
 }
 
@@ -335,10 +475,16 @@ function AdminSettingLink({
   label: string;
 }) {
   return (
-    <Link href={href} className="group flex items-center gap-3 rounded-[4px] px-3 py-2.5 text-[12.5px] font-[650] text-fg transition-colors hover:bg-surface">
+    <Link
+      href={href}
+      className="group flex items-center gap-3 rounded-[4px] px-3 py-2.5 text-[12.5px] font-[650] text-fg transition-colors hover:bg-surface"
+    >
       <Icon className="h-4 w-4 text-accent" aria-hidden />
       <span className="flex-1">{label}</span>
-      <ArrowRight className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5" aria-hidden />
+      <ArrowRight
+        className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5"
+        aria-hidden
+      />
     </Link>
   );
 }
@@ -359,11 +505,11 @@ function SessionAction({
   disabled: boolean;
 }) {
   return (
-    <div className="py-5">
-      <div className="flex items-start gap-3">
+    <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-start gap-3">
         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-fg-faint" aria-hidden />
         <div>
-          <h3 className="text-[13.5px] font-[650] text-fg">{title}</h3>
+          <h4 className="text-[13.5px] font-[650] text-fg">{title}</h4>
           <p className="mt-1 max-w-[38ch] text-[12px] leading-[1.5] text-fg-muted">
             {description}
           </p>
@@ -373,7 +519,7 @@ function SessionAction({
         onClick={onClick}
         variant="outline"
         disabled={disabled}
-        className="mt-4 h-10 w-full justify-center rounded-[3px] border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
+        className="h-10 shrink-0 justify-center rounded-[3px] border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
       >
         {buttonLabel}
       </Button>
