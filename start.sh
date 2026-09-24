@@ -159,7 +159,9 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
-docker compose -f "$COMPOSE_FILE" up -d
+# App code is bind-mounted, but Python dependencies live in the image. Rebuild when
+# starting so a new requirement cannot leave an otherwise healthy-looking stale image.
+docker compose -f "$COMPOSE_FILE" up -d --build
 STACK_STARTED=true
 ok "Containers started"
 
