@@ -32,7 +32,7 @@ Create `backend/.env` from `backend/.env.example`. Keep it private. Set at least
 
 ```dotenv
 MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.<id>.mongodb.net/?appName=<cluster>
-MONGO_DB=codeforge
+MONGO_DB=codeforge_deploy
 JWT_SECRET=<unique-random-value-at-least-32-characters>
 CORS_ORIGINS=["https://app.example.com"]
 APP_BASE_URL=https://app.example.com
@@ -45,7 +45,9 @@ Use real values, never commit this file. The frontend origin controls CORS, emai
 and passkey verification. Set the other available provider keys for fallback. The static
 configuration check requires one active provider key; the live provider check below tests
 whether an agent can actually reach a model. Configure Atlas network access for the backend
-host and a database user with access to `MONGO_DB`.
+host and a database user with access to `MONGO_DB`. Use a separate database name and a new
+JWT secret for this deployment so it cannot read the localhost demo's users, runs, or sessions.
+If both environments use the same provider keys, their free-tier request quotas still overlap.
 
 Create `deployment.env` from `deployment.env.example` and replace all placeholder secrets.
 The Langfuse database password must be URL-safe alphanumeric text because Compose places it
