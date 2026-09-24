@@ -235,9 +235,32 @@
   body {
     @apply bg-background text-foreground;
   }
+  a,
+  button,
+  [role="button"],
+  input,
+  textarea,
+  select {
+    transition-property: color, background-color, border-color, box-shadow, opacity;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.22, 0.7, 0.28, 1);
+  }
   section[id] {
     scroll-margin-top: 4.5rem;
   }
+}
+
+/* Sections below the fold enter as they become readable. The route template adds
+   these attributes after hydration, so content stays visible when JS is unavailable. */
+main > section[data-cf-reveal-pending],
+.cf-home > section[data-cf-reveal-pending] {
+  opacity: 0;
+  translate: 0 18px;
+}
+
+main > section[data-cf-reveal-visible],
+.cf-home > section[data-cf-reveal-visible] {
+  animation: cfSectionReveal 540ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /*
@@ -996,6 +1019,15 @@
     animation: none;
   }
 
+  main > section[data-cf-reveal-pending],
+  main > section[data-cf-reveal-visible],
+  .cf-home > section[data-cf-reveal-pending],
+  .cf-home > section[data-cf-reveal-visible] {
+    opacity: 1;
+    translate: none;
+    animation: none;
+  }
+
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
@@ -1130,6 +1162,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes cfSectionReveal {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 
