@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Filter, RefreshCw, Search } from "lucide-react";
 import { ADMIN_LABEL, AdminPageHeader, AdminShell } from "@/components/admin/admin-shell";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api, ApiError, downloadAdminCsv, getToken } from "@/lib/api";
 import type { AdminPageInfo, AdminRunSummary } from "@/lib/types";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
 
 type Filters = { q: string; status: string; rag_enabled: string; acceptance_level: string; failure_category: string; date_from: string; date_to: string };
@@ -22,8 +23,11 @@ export default function AdminRunsPage() {
   const [pagination, setPagination] = useState<AdminPageInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestSequence = useRef(0);
+  const debouncedFilters = useDebouncedValue(filters);
 
   const load = useCallback(async (next: Filters, page = 1) => {
+    const requestId = ++requestSequence.current;
     setLoading(true);
     setError(null);
     try {
@@ -37,20 +41,22 @@ export default function AdminRunsPage() {
         date_to: next.date_to ? `${next.date_to}T23:59:59Z` : undefined,
         page,
       });
+      if (requestId !== requestSequence.current) return;
       setRuns(result.items); setPagination(result.pagination);
     } catch (err) {
+      if (requestId !== requestSequence.current) return;
       if (err instanceof ApiError && err.status === 401) return router.replace("/login");
       if (err instanceof ApiError && err.status === 403) return router.replace("/projects");
       setError(err instanceof ApiError ? err.message : "Could not load runs.");
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) setLoading(false);
     }
   }, [router]);
 
   useEffect(() => {
     if (!getToken()) return router.replace("/login");
-    void load(EMPTY);
-  }, [load, router]);
+    void load(debouncedFilters);
+  }, [debouncedFilters, load, router]);
 
   const submit = (event: FormEvent) => { event.preventDefault(); void load(filters); };
   const clear = () => { setFilters(EMPTY); void load(EMPTY); };
@@ -58,7 +64,7 @@ export default function AdminRunsPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => load(filters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
+      <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => load(debouncedFilters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
       {error ? <p role="alert" className="mt-6 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
 
       <form onSubmit={submit} className="mt-7 grid gap-3 rounded-[6px] border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
@@ -76,7 +82,7 @@ export default function AdminRunsPage() {
       </form>
       <div className="mt-4 flex items-center justify-between"><p className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-faint">{loading ? "Loading…" : `${pagination?.total ?? runs.length} runs`}</p><p className="text-[11px] text-fg-faint">Newest first · 25 per page</p></div>
       <div className="mt-3"><AdminRunTable runs={runs} /></div>
-      {pagination ? <div className="mt-4 flex items-center justify-between"><p className={ADMIN_LABEL}>Page {pagination.page} of {pagination.pages}</p><div className="flex gap-2"><Button variant="outline" disabled={pagination.page <= 1 || loading} onClick={() => load(filters, pagination.page - 1)}>Previous</Button><Button variant="outline" disabled={pagination.page >= pagination.pages || loading} onClick={() => load(filters, pagination.page + 1)}>Next</Button></div></div> : null}
+      {pagination ? <div className="mt-4 flex items-center justify-between"><p className={ADMIN_LABEL}>Page {pagination.page} of {pagination.pages}</p><div className="flex gap-2"><Button variant="outline" disabled={pagination.page <= 1 || loading} onClick={() => load(debouncedFilters, pagination.page - 1)}>Previous</Button><Button variant="outline" disabled={pagination.page >= pagination.pages || loading} onClick={() => load(debouncedFilters, pagination.page + 1)}>Next</Button></div></div> : null}
     </AdminShell>
   );
 }
