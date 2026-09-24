@@ -9,6 +9,10 @@ Build plan in [docs/PHASES.md](docs/PHASES.md); the dashboard's design brief in
 [docs/UI_BRIEF.md](docs/UI_BRIEF.md). Architecture and stack decisions live in `CLAUDE.md` — kept
 out of this repo intentionally; ask a teammate for a copy.
 
+Deployment preparation for Vercel plus a Docker-capable backend host is in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The local `docker-compose.yml` and `./start.sh` remain
+the development and demo path.
+
 ## Architecture
 
 ```mermaid
@@ -83,16 +87,17 @@ cp backend/.env.example backend/.env
 python3 -c "import secrets; print(secrets.token_urlsafe(48))"   # paste into JWT_SECRET
 ```
 
-Add your own free-tier API keys. Groq is the minimum needed to run anything; the rest back the
+Add your own free-tier API keys. Groq is the primary provider; OpenRouter and Mistral back the
 fallback chains. Do not share keys between team members — free tiers are rate-limited per account.
 
 | Key | Where to get it |
 |---|---|
 | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
-| `CEREBRAS_API_KEY` | [cloud.cerebras.ai](https://cloud.cerebras.ai) |
 | `OPENROUTER_API_KEY` | [openrouter.ai](https://openrouter.ai) |
 | `MISTRAL_API_KEY` | [console.mistral.ai](https://console.mistral.ai) — free tier, the last rung of every chain |
-| `GOOGLE_API_KEY` | [aistudio.google.com](https://aistudio.google.com) — AI Studio, **not** Google Cloud/Vertex, which is paid |
+
+`CEREBRAS_API_KEY` and `GOOGLE_API_KEY` remain in the example for historical configuration,
+but neither provider is currently in an agent fallback chain.
 
 `MONGO_URI` defaults to the local `mongo` service docker-compose brings up — nothing else to do. It
 can instead point at an Atlas M0 free-tier cluster — both are fine, it's a project-approved choice; the
