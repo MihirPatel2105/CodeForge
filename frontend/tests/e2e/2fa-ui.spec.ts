@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
 test("settings owns the 2FA entry instead of the admin navigation", async ({ page }) => {
   await page.goto("/profile/settings");
 
-  const twoFactorLink = page.getByRole("link", { name: "Set up two-factor authentication" });
+  const twoFactorLink = page.getByRole("link", { name: "Set up 2FA" });
   await expect(twoFactorLink).toBeVisible();
   await expect(twoFactorLink).toHaveAttribute("href", "/profile/settings/2fa");
   await expect(page.getByText("Administrator deletion is disabled")).toBeVisible();
@@ -58,10 +58,22 @@ test("normal users can open 2FA settings and use QR or manual enrollment", async
   await page.getByLabel("current password").fill("test-password");
   await page.getByRole("button", { name: "Continue securely" }).click();
 
-  await expect(page.getByRole("heading", { name: "Scan QR code" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Enter setup key" })).toBeVisible();
-  await expect(page.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeVisible();
-  await expect(page.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
+  const setupDialog = page.getByRole("dialog", { name: "Add CodeForge to your app" });
+  await expect(setupDialog).toBeVisible();
+  await expect(setupDialog.getByRole("tab", { name: "QR code" })).toHaveAttribute("aria-selected", "true");
+  await expect(setupDialog.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeVisible();
+  await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeHidden();
+
+  await setupDialog.getByRole("tab", { name: "Setup key" }).click();
+  await expect(setupDialog.getByRole("tab", { name: "Setup key" })).toHaveAttribute("aria-selected", "true");
+  await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
+  await expect(setupDialog.getByRole("img", { name: "CodeForge two-factor setup QR code" })).toBeHidden();
+
+  await setupDialog.getByRole("button", { name: "Continue to verification" }).click();
+  await expect(setupDialog).toBeHidden();
+  await page.getByRole("button", { name: "Open QR code or setup key" }).click();
+  await expect(setupDialog.getByText("JBSWY3DPEHPK3PXP")).toBeVisible();
+  await setupDialog.getByRole("button", { name: "Continue to verification" }).click();
 
   await page.getByLabel("six-digit authenticator code").fill("123456");
   await page.getByRole("button", { name: "Verify and enable 2FA" }).click();

@@ -15,7 +15,15 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +43,8 @@ export function TotpSettings({
   const [uri, setUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupMethod, setSetupMethod] = useState<"qr" | "key">("qr");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +61,8 @@ export function TotpSettings({
       setUri(result.provisioning_uri);
       setCopied(false);
       setCode("");
-      setMessage("Setup key created. Add it to your authenticator, then verify one code.");
+      setSetupMethod("qr");
+      setSetupOpen(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not start two-factor setup.");
     } finally {
@@ -71,6 +82,7 @@ export function TotpSettings({
       setPassword("");
       setCode("");
       setCopied(false);
+      setSetupOpen(false);
       setMessage("Two-factor authentication is now protecting this account.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not verify that code.");
@@ -170,31 +182,90 @@ export function TotpSettings({
           ) : (
             <>
               <section className="rounded-[7px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
-                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                <span className={cn(LABEL, "text-accent")}>step 02</span>
+                <div className="mt-2 flex items-start gap-3">
+                  <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />
                   <div>
-                    <span className={cn(LABEL, "text-accent")}>step 02 · choose one option</span>
-                    <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.045em] text-fg">Add CodeForge to your authenticator</h2>
-                    <p className="mt-2 text-[13px] leading-5 text-fg-muted">Both options configure the same protected account: {accountEmail}</p>
-                  </div>
-                  <Button variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-9 gap-2 rounded-[3px] text-fg-muted"><RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden />Generate new key</Button>
-                </div>
-
-                <div className="mt-6 grid gap-5 lg:grid-cols-2">
-                  <div className="rounded-[6px] border border-accent-bd bg-accent-soft/55 p-5 md:p-6">
-                    <div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-[4px] border border-accent-bd bg-surface text-accent"><QrCode className="h-4 w-4" aria-hidden /></span><div><span className={cn(LABEL, "text-accent")}>option A</span><h3 className="mt-1 text-[14px] font-[700] text-fg">Scan QR code</h3></div></div>
-                    <p className="mt-4 text-[12px] leading-5 text-fg-muted">In Google Authenticator, tap <strong>+</strong>, choose <strong>Scan a QR code</strong>, then point the camera here.</p>
-                    <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm"><QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden /></div>
-                  </div>
-
-                  <div className="rounded-[6px] border border-border bg-bg p-5 md:p-6">
-                    <div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-[4px] border border-border bg-surface text-accent"><KeyRound className="h-4 w-4" aria-hidden /></span><div><span className={cn(LABEL, "text-fg-faint")}>option B</span><h3 className="mt-1 text-[14px] font-[700] text-fg">Enter setup key</h3></div></div>
-                    <p className="mt-4 text-[12px] leading-5 text-fg-muted">Choose <strong>Enter a setup key</strong>, use account name <strong>CodeForge</strong>, and select <strong>Time based</strong>.</p>
-                    <div className="mt-5 rounded-[4px] border border-border bg-surface p-4"><span className={cn(LABEL, "text-fg-faint")}>setup key</span><code className="mt-2 block break-all font-mono text-[15px] font-[700] leading-7 tracking-[0.12em] text-fg">{secret}</code></div>
-                    <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-[3px]">{copied ? <Check className="h-4 w-4 text-ok" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}{copied ? "Setup key copied" : "Copy setup key"}</Button>
+                    <h2 className="font-display text-[22px] font-[650] tracking-[-0.045em] text-fg">Add CodeForge to your authenticator</h2>
+                    <p className="mt-2 text-[13px] leading-5 text-fg-muted">Choose a QR code or manual setup key in the pop-up. Both connect the same account: {accountEmail}</p>
                   </div>
                 </div>
-                <div className="mt-5 flex items-start gap-3 rounded-[4px] border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />Treat the QR code and setup key like a password. Do not share or save them in screenshots.</div>
+                <Button type="button" onClick={() => setSetupOpen(true)} className="mt-5 h-11 gap-2 rounded-[3px] px-5">
+                  <QrCode className="h-4 w-4" aria-hidden />
+                  Open QR code or setup key
+                </Button>
               </section>
+
+              <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
+                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-[7px] border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
+                  <DialogHeader className="border-b border-rule px-6 py-6 pr-14">
+                    <span className={cn(LABEL, "text-accent")}>step 02 · authenticator setup</span>
+                    <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">Add CodeForge to your app</DialogTitle>
+                    <DialogDescription className="text-[13px] leading-5 text-fg-muted">Select one setup method for {accountEmail}.</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="px-6 py-6">
+                    <Tabs
+                      value={setupMethod}
+                      onValueChange={(value) => {
+                        if (value === "qr" || value === "key") setSetupMethod(value);
+                      }}
+                      className="gap-0"
+                    >
+                      <TabsList className="relative grid h-12 w-full grid-cols-2 rounded-[5px] border border-border bg-bg p-1">
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-[3px] border border-accent-bd bg-accent-soft shadow-sm transition-[left] duration-200 motion-reduce:transition-none",
+                            setupMethod === "qr" ? "left-1" : "left-1/2",
+                          )}
+                        />
+                        <TabsTrigger value="qr" className="relative z-10 h-10 gap-2 rounded-[3px] font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg-muted data-active:bg-transparent data-active:text-accent data-active:shadow-none after:hidden">
+                          <QrCode className="h-4 w-4" aria-hidden /> QR code
+                        </TabsTrigger>
+                        <TabsTrigger value="key" className="relative z-10 h-10 gap-2 rounded-[3px] font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg-muted data-active:bg-transparent data-active:text-accent data-active:shadow-none after:hidden">
+                          <KeyRound className="h-4 w-4" aria-hidden /> Setup key
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="qr" className="pt-6">
+                        <h3 className="text-[14px] font-[700] text-fg">Scan the QR code</h3>
+                        <p className="mt-2 text-[12px] leading-5 text-fg-muted">In your authenticator app, add a new account and scan this code.</p>
+                        <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm">
+                          <QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden />
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="key" className="pt-6">
+                        <h3 className="text-[14px] font-[700] text-fg">Enter the setup key</h3>
+                        <p className="mt-2 text-[12px] leading-5 text-fg-muted">Choose manual entry in your authenticator app. Use account name <strong>CodeForge</strong> and select <strong>Time based</strong>.</p>
+                        <div className="mt-5 rounded-[4px] border border-border bg-bg p-4">
+                          <span className={cn(LABEL, "text-fg-faint")}>setup key</span>
+                          <code className="mt-2 block break-all font-mono text-[15px] font-[700] leading-7 tracking-[0.12em] text-fg">{secret}</code>
+                        </div>
+                        <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-[3px]">
+                          {copied ? <Check className="h-4 w-4 text-ok" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+                          {copied ? "Setup key copied" : "Copy setup key"}
+                        </Button>
+                      </TabsContent>
+                    </Tabs>
+
+                    <p className="mt-6 flex items-start gap-3 rounded-[4px] border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted">
+                      <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />
+                      Treat the QR code and setup key like a password. Do not share or save them in screenshots.
+                    </p>
+                    {error ? <p role="alert" className="mt-4 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
+                    <Button type="button" variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-10 gap-2 rounded-[3px] px-2 text-fg-muted">
+                      <RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden />
+                      Generate new key
+                    </Button>
+                    <Button type="button" onClick={() => setSetupOpen(false)} className="h-10 rounded-[3px] px-4">Continue to verification</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <section className="rounded-[7px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
                 <span className={cn(LABEL, "text-accent")}>step 03</span>
@@ -217,7 +288,7 @@ export function TotpSettings({
         </section>
       )}
 
-      {error ? <p role="alert" className="rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+      {error && !setupOpen ? <p role="alert" className="rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
       {message ? <p role="status" className="flex items-center gap-2 rounded-[4px] border border-ok-bd bg-ok-soft px-4 py-3 text-[12.5px] text-ok"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{message}</p> : null}
     </div>
   );
