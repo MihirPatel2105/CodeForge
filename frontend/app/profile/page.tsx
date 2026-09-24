@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
-  CalendarDays,
   ClipboardList,
   FolderKanban,
   LayoutDashboard,
@@ -13,9 +12,11 @@ import {
   ServerCog,
   Settings,
   ShieldCheck,
+  ShieldOff,
   Users,
 } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/use-current-user";
 import { api, getToken, ApiError } from "@/lib/api";
 import { runStats } from "@/lib/run-stats";
@@ -38,9 +39,11 @@ export default function ProfilePage() {
   const [totals, setTotals] = useState<Totals | null>(null);
   const [adminTotals, setAdminTotals] = useState<AdminOverviewTotals | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   const load = useCallback(async (isAdmin: boolean) => {
     setError(null);
+    setActivityLoading(true);
     try {
       if (isAdmin) {
         const overview = await api.adminOverview();
@@ -63,6 +66,8 @@ export default function ProfilePage() {
         return;
       }
       setError("Couldn't load your activity.");
+    } finally {
+      setActivityLoading(false);
     }
   }, [router]);
 
@@ -84,6 +89,8 @@ export default function ProfilePage() {
       ? `${Math.round((adminTotals.succeeded_runs / adminTotals.runs) * 100)}%`
       : "—";
   const isAdmin = Boolean(user?.is_admin);
+  const activityValue = (value: number | undefined) =>
+    activityLoading ? "…" : value === undefined ? "—" : String(value);
 
   return (
     <div className="cf-account min-h-screen bg-bg">
@@ -116,11 +123,11 @@ export default function ProfilePage() {
                   </span>
                   <div className="min-w-0">
                     <p className={LABEL}>{isAdmin ? "operator profile" : "profile"}</p>
-                    <h1 className="font-display mt-2 truncate text-[30px] font-[650] leading-none tracking-[-0.05em] text-fg md:text-[38px]">
+                    <h1 className="font-display mt-2 break-words text-[30px] font-[650] leading-tight tracking-[-0.05em] text-fg md:text-[38px]">
                       {user?.displayName ?? "Loading…"}
                     </h1>
                     {user && user.displayName !== user.email && (
-                      <p className="mt-3 truncate font-mono text-[12px] text-fg-muted">
+                      <p className="mt-3 break-all font-mono text-[12px] text-fg-muted">
                         {user.email}
                       </p>
                     )}
@@ -135,22 +142,22 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <dl className="cf-invert grid bg-bg sm:grid-cols-3 lg:grid-cols-1">
+            <dl aria-label="Activity summary" aria-busy={activityLoading} className="cf-invert grid bg-bg sm:grid-cols-3 lg:grid-cols-1">
               <ProfileMetric
                 icon={isAdmin ? Users : FolderKanban}
                 label={isAdmin ? "platform users" : "projects"}
-                value={isAdmin ? (adminTotals ? String(adminTotals.users) : "—") : totals ? String(totals.projects) : "—"}
+                value={activityValue(isAdmin ? adminTotals?.users : totals?.projects)}
               />
               <ProfileMetric
                 icon={PlayCircle}
                 label="total runs"
-                value={isAdmin ? (adminTotals ? String(adminTotals.runs) : "—") : totals ? String(totals.runs) : "—"}
+                value={activityValue(isAdmin ? adminTotals?.runs : totals?.runs)}
                 bordered
               />
               <ProfileMetric
                 icon={ShieldCheck}
                 label={isAdmin ? "platform success" : "success rate"}
-                value={isAdmin ? platformSuccessRate : successRate}
+                value={activityLoading ? "…" : isAdmin ? platformSuccessRate : successRate}
                 bordered
               />
             </dl>
@@ -158,12 +165,12 @@ export default function ProfilePage() {
         </section>
 
         {error && (
-          <p
-            role="alert"
-            className="mt-5 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger"
-          >
-            {error}
-          </p>
+          <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3">
+            <p className="text-[13px] text-danger">{error}</p>
+            <Button variant="outline" size="sm" onClick={() => void load(isAdmin)}>
+              Retry activity
+            </Button>
+          </div>
         )}
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
@@ -179,6 +186,7 @@ export default function ProfilePage() {
               <DetailRow label="last name" value={user?.last_name || "—"} />
               <DetailRow label="email address" value={user?.email ?? "—"} mono />
               {isAdmin ? <DetailRow label="role" value="Platform administrator" /> : null}
+              <DetailRow label="two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} />
               <DetailRow
                 label="member since"
                 value={user ? formatWhen(user.created_at) : "—"}
@@ -209,15 +217,14 @@ export default function ProfilePage() {
                 href="/profile/settings"
                 icon={Settings}
                 title="Security settings"
-                description="Change your password or manage active sessions."
+                description="Change your password and manage active sessions."
               />
-            </div>
-
-            <div className="mx-6 flex items-center gap-3 border-t border-rule py-5">
-              <CalendarDays className="h-4 w-4 text-fg-faint" aria-hidden />
-              <p className="text-[12.5px] text-fg-muted">
-                Member since {user ? formatWhen(user.created_at) : "—"}
-              </p>
+              <AccountLink
+                href="/profile/settings/2fa"
+                icon={user?.totp_enabled ? ShieldCheck : ShieldOff}
+                title="Two-factor authentication"
+                description={user?.totp_enabled ? "Authenticator codes are on. Manage your setup." : "Add authenticator codes to protect your account."}
+              />
             </div>
           </section>
         </div>
@@ -245,7 +252,7 @@ function DetailRow({
       )}
     >
       <dt className={LABEL}>{label}</dt>
-      <dd className={cn("text-[14px] text-fg", mono && "font-mono text-[12.5px]")}>
+      <dd className={cn("min-w-0 text-[14px] text-fg", mono && "break-all font-mono text-[12.5px]")}>
         {value}
       </dd>
     </div>
