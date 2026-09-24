@@ -10,13 +10,14 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, status
+from fastapi import APIRouter, BackgroundTasks, Request, status
 
 from app.config import settings
 from app.core.account_deletion import delete_user_account
 from app.core.deps import CurrentUser, TokenClaims, is_admin_user
 from app.core.email import (
     send_account_deleted_email,
+    send_new_device_email,
     send_password_changed_email,
     send_password_reset_email,
     send_security_alert_email,
@@ -24,8 +25,8 @@ from app.core.email import (
     send_welcome_email,
 )
 from app.core.exceptions import AuthError, ConflictError, NotFoundError, RateLimitError
+from app.core.login_activity import issue_session, revoke_device_sessions
 from app.core.security import (
-    create_access_token,
     decrypt_totp_secret,
     encrypt_totp_secret,
     generate_otp,
@@ -39,11 +40,20 @@ from app.core.security import (
     verify_password,
     verify_totp,
 )
-from app.models import PasswordResetToken, PendingSignup, RevokedToken, User
+from app.models import (
+    Device,
+    LoginSession,
+    PasswordResetToken,
+    PendingSignup,
+    RevokedToken,
+    SignInAlert,
+    User,
+)
 from app.schemas.api import (
     ChangePasswordRequest,
     DeleteAccountRequest,
     DeleteAccountResponse,
+    DeviceResponse,
     ForgotPasswordRequest,
     ForgotPasswordResponse,
     LoginRequest,
@@ -52,6 +62,8 @@ from app.schemas.api import (
     RegisterResponse,
     ResendCodeRequest,
     ResetPasswordRequest,
+    SignInAlertResponse,
+    SignInAlertResponseRequest,
     TokenResponse,
     TotpDisableRequest,
     TotpSetupRequest,
@@ -98,7 +110,7 @@ async def _issue_code(pending: PendingSignup) -> None:
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
-async def register(payload: RegisterRequest) -> RegisterResponse:
+async def register(payload: RegisterRequest, request: Request) -> RegisterResponse:
     if await User.find_one(User.email == payload.email) is not None:
         raise ConflictError("An account with that email already exists")
 
@@ -115,10 +127,11 @@ async def register(payload: RegisterRequest) -> RegisterResponse:
             email_verified=False,
         )
         await user.insert()
+        token, _, _ = await issue_session(user, request)
         return RegisterResponse(
             email=user.email,
             verification_required=False,
-            access_token=create_access_token(str(user.id), token_version=user.token_version),
+            access_token=token,
         )
 
     # A second attempt on the same address overwrites the first: the details may have
@@ -174,7 +187,9 @@ async def _send_quietly(what: str, send: Callable[..., Awaitable[None]], **kwarg
 
 
 @router.post("/verify-email", response_model=TokenResponse)
-async def verify_email(payload: VerifyEmailRequest, background: BackgroundTasks) -> TokenResponse:
+async def verify_email(
+    payload: VerifyEmailRequest, background: BackgroundTasks, request: Request
+) -> TokenResponse:
     pending = await PendingSignup.find_one(PendingSignup.email == payload.email)
     if pending is None:
         # Covers an unknown address, an expired row Mongo already swept, and a code
@@ -225,9 +240,8 @@ async def verify_email(payload: VerifyEmailRequest, background: BackgroundTasks)
         first_name=user.first_name,
     )
 
-    return TokenResponse(
-        access_token=create_access_token(str(user.id), token_version=user.token_version)
-    )
+    token, _, _ = await issue_session(user, request)
+    return TokenResponse(access_token=token)
 
 
 @router.post("/resend-code", response_model=RegisterResponse)
@@ -249,7 +263,9 @@ async def resend_code(payload: ResendCodeRequest) -> RegisterResponse:
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(payload: LoginRequest, background: BackgroundTasks) -> LoginResponse:
+async def login(
+    payload: LoginRequest, background: BackgroundTasks, request: Request
+) -> LoginResponse:
     user = await User.find_one(User.email == payload.email)
     # Same message whether the email is unknown or the password is wrong, so the endpoint
     # cannot be used to enumerate registered addresses. An unverified sign-up has no
@@ -285,6 +301,9 @@ async def login(payload: LoginRequest, background: BackgroundTasks) -> LoginResp
 
         raise AccountSuspendedError("This account is suspended. Contact the administrator.")
 
+    if user.password_reset_required:
+        raise AuthError("Reset your password before signing in again.")
+
     if user.totp_enabled:
         if not payload.totp_code:
             return LoginResponse(mfa_required=True)
@@ -298,9 +317,26 @@ async def login(payload: LoginRequest, background: BackgroundTasks) -> LoginResp
     user.last_login_at = now
     await user.save()
 
-    return LoginResponse(
-        access_token=create_access_token(str(user.id), token_version=user.token_version)
-    )
+    token, device, is_new = await issue_session(user, request)
+    if is_new and user.email_verified and settings.email_verification_enabled:
+        alert_token = generate_reset_token()
+        await SignInAlert(
+            user_id=str(user.id),
+            device_hash=device.device_hash,
+            token_hash=hash_reset_token(alert_token),
+            expires_at=now + timedelta(hours=24),
+        ).insert()
+        background.add_task(
+            _send_quietly,
+            "New-device sign-in notice",
+            send_new_device_email,
+            to=user.email,
+            label=device.label,
+            ip_address=device.ip_address,
+            occurred_at=now,
+            review_url=f"{settings.app_base_url}/sign-in-alert/{alert_token}",
+        )
+    return LoginResponse(access_token=token)
 
 
 @router.post("/totp/setup", response_model=TotpSetupResponse)
@@ -325,7 +361,9 @@ async def enable_totp(payload: TotpVerifyRequest, user: CurrentUser) -> None:
 
 
 @router.post("/totp/disable", response_model=TokenResponse)
-async def disable_totp(payload: TotpDisableRequest, user: CurrentUser) -> TokenResponse:
+async def disable_totp(
+    payload: TotpDisableRequest, user: CurrentUser, request: Request
+) -> TokenResponse:
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     if not user.totp_enabled or not user.totp_secret_encrypted:
@@ -336,9 +374,8 @@ async def disable_totp(payload: TotpDisableRequest, user: CurrentUser) -> TokenR
     user.totp_secret_encrypted = None
     user.token_version += 1
     await user.save()
-    return TokenResponse(
-        access_token=create_access_token(str(user.id), token_version=user.token_version)
-    )
+    token, _, _ = await issue_session(user, request)
+    return TokenResponse(access_token=token)
 
 
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
@@ -392,7 +429,7 @@ async def _send_reset_link(user: User) -> None:
 
 @router.post("/reset-password", response_model=TokenResponse)
 async def reset_password(
-    payload: ResetPasswordRequest, background: BackgroundTasks
+    payload: ResetPasswordRequest, background: BackgroundTasks, request: Request
 ) -> TokenResponse:
     """Exchange a reset link for a new password and a session.
 
@@ -416,6 +453,7 @@ async def reset_password(
         raise AuthError("This link is invalid or has expired. Request a new one.")
 
     user.hashed_password = hash_password(payload.new_password)
+    user.password_reset_required = False
     # Same as an explicit password change: every session this token might have been
     # phished alongside, or any that predate the reset, stops working at once.
     user.token_version += 1
@@ -423,6 +461,7 @@ async def reset_password(
 
     # Single-use: gone whether it succeeded or not, so the same link cannot be replayed.
     await reset.delete()
+    await SignInAlert.find(SignInAlert.user_id == str(user.id)).delete()
 
     background.add_task(
         _send_quietly,
@@ -432,9 +471,8 @@ async def reset_password(
         first_name=user.first_name,
     )
 
-    return TokenResponse(
-        access_token=create_access_token(str(user.id), token_version=user.token_version)
-    )
+    token, _, _ = await issue_session(user, request)
+    return TokenResponse(access_token=token)
 
 
 @router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT)
@@ -461,6 +499,10 @@ async def sign_out(user: CurrentUser, claims: TokenClaims) -> None:
     # refused on its own and Mongo's TTL sweep drops the row.
     expires_at = datetime.fromtimestamp(claims["exp"], tz=UTC)
     await RevokedToken(jti=jti, expires_at=expires_at, revoked_at=_now()).insert()
+    session = await LoginSession.find_one(LoginSession.jti == jti)
+    if session is not None:
+        session.revoked_at = _now()
+        await session.save()
 
 
 @router.post("/sign-out-everywhere", status_code=status.HTTP_204_NO_CONTENT)
@@ -482,7 +524,7 @@ async def sign_out_everywhere(user: CurrentUser) -> None:
 
 @router.post("/change-password", response_model=TokenResponse)
 async def change_password(
-    payload: ChangePasswordRequest, user: CurrentUser, background: BackgroundTasks
+    payload: ChangePasswordRequest, user: CurrentUser, background: BackgroundTasks, request: Request
 ) -> TokenResponse:
     """Replace the account password and end every other session.
 
@@ -516,9 +558,74 @@ async def change_password(
 
     # A fresh token for the browser doing the changing, so the person who just proved
     # they own the account is not the one signed out by their own action.
-    return TokenResponse(
-        access_token=create_access_token(str(user.id), token_version=user.token_version)
-    )
+    token, _, _ = await issue_session(user, request)
+    return TokenResponse(access_token=token)
+
+
+@router.get("/devices", response_model=list[DeviceResponse])
+async def list_devices(user: CurrentUser, claims: TokenClaims) -> list[DeviceResponse]:
+    """Show browsers with at least one valid, tracked session."""
+    uid = str(user.id)
+    now = _now()
+    sessions = await LoginSession.find(
+        LoginSession.user_id == uid,
+        LoginSession.token_version == user.token_version,
+        LoginSession.expires_at > now,
+        LoginSession.revoked_at == None,  # noqa: E711 — Beanie query expression
+    ).to_list()
+    by_device: dict[str, list[LoginSession]] = {}
+    for session in sessions:
+        by_device.setdefault(session.device_hash, []).append(session)
+    devices = await Device.find(Device.user_id == uid).to_list()
+    return [
+        DeviceResponse(
+            id=str(device.id),
+            label=device.label,
+            ip_address=device.ip_address,
+            first_seen_at=_as_utc(device.first_seen_at),
+            last_seen_at=_as_utc(device.last_seen_at),
+            active_sessions=len(by_device[device.device_hash]),
+            current=any(s.jti == claims.get("jti") for s in by_device[device.device_hash]),
+        )
+        for device in sorted(devices, key=lambda item: item.last_seen_at, reverse=True)
+        if device.device_hash in by_device
+    ]
+
+
+@router.post("/devices/{device_id}/sign-out", status_code=status.HTTP_204_NO_CONTENT)
+async def sign_out_device(device_id: str, user: CurrentUser) -> None:
+    from app.core.deps import get_owned
+
+    device = await get_owned(Device, device_id, str(user.id), "Device")
+    await revoke_device_sessions(str(user.id), device.device_hash)
+
+
+@router.post("/sign-in-alert/respond", response_model=SignInAlertResponse)
+async def respond_to_sign_in_alert(payload: SignInAlertResponseRequest) -> SignInAlertResponse:
+    """A mailed one-time link is proof of inbox access; GET never changes account state."""
+    alert = await SignInAlert.find_one(SignInAlert.token_hash == hash_reset_token(payload.token))
+    if alert is None or alert.resolved_at or _as_utc(alert.expires_at) <= _now():
+        raise AuthError("This sign-in link is invalid or has expired.")
+    user = await User.get(alert.user_id)
+    if user is None:
+        raise AuthError("This sign-in link is invalid or has expired.")
+
+    if payload.response == "not_me":
+        user.token_version += 1
+        user.password_reset_required = True
+        await user.save()
+        device = await Device.find_one(
+            Device.user_id == alert.user_id, Device.device_hash == alert.device_hash
+        )
+        if device is not None:
+            await device.delete()
+        message = "All sessions have ended. Reset your password before signing in again."
+    else:
+        message = "Sign-in confirmed. Your sessions are unchanged."
+    alert.resolved_at = _now()
+    alert.resolution = payload.response
+    await alert.save()
+    return SignInAlertResponse(message=message)
 
 
 @router.get("/me", response_model=UserResponse)

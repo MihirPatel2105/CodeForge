@@ -11,6 +11,8 @@
 import type {
   TokenResponse,
   LoginResponse,
+  DeviceResponse,
+  SignInAlertResponse,
   TotpSetupResponse,
   UserResponse,
   LoginRequest,
@@ -53,6 +55,17 @@ import type {
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const TOKEN_KEY = "codeforge_token";
+const DEVICE_KEY = "codeforge_device";
+
+function getDeviceId(): string | null {
+  if (typeof window === "undefined") return null;
+  let deviceId = localStorage.getItem(DEVICE_KEY);
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem(DEVICE_KEY, deviceId);
+  }
+  return deviceId;
+}
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -82,6 +95,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const deviceId = getDeviceId();
+  if (deviceId) headers.set("X-CodeForge-Device", deviceId);
 
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
 
@@ -125,6 +140,13 @@ export const api = {
     }),
   signOut: () => request<void>("/auth/sign-out", { method: "POST" }),
   signOutEverywhere: () => request<void>("/auth/sign-out-everywhere", { method: "POST" }),
+  devices: () => request<DeviceResponse[]>("/auth/devices"),
+  signOutDevice: (id: string) => request<void>(`/auth/devices/${encodeURIComponent(id)}/sign-out`, { method: "POST" }),
+  respondToSignInAlert: (token: string, response: "me" | "not_me") =>
+    request<SignInAlertResponse>("/auth/sign-in-alert/respond", {
+      method: "POST",
+      body: JSON.stringify({ token, response }),
+    }),
   changePassword: (payload: ChangePasswordRequest) =>
     request<TokenResponse>("/auth/change-password", {
       method: "POST",

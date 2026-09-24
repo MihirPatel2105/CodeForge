@@ -108,6 +108,25 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+class DeviceResponse(BaseModel):
+    id: str
+    label: str
+    ip_address: str | None
+    first_seen_at: datetime
+    last_seen_at: datetime
+    active_sessions: int
+    current: bool
+
+
+class SignInAlertResponseRequest(BaseModel):
+    token: str
+    response: Literal["me", "not_me"]
+
+
+class SignInAlertResponse(BaseModel):
+    message: str
+
+
 class RegisterResponse(BaseModel):
     """The answer to a sign-up, which no longer always ends in a session.
 

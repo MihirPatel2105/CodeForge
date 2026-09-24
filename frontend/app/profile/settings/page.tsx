@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { DeleteAccountDialog } from "@/components/auth/delete-account-dialog";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { DeviceList } from "@/components/auth/device-list";
 import { useSession } from "@/lib/use-current-user";
 import { api, getToken, clearToken, ApiError } from "@/lib/api";
 
@@ -181,7 +182,7 @@ export default function SettingsPage() {
             <div className="divide-y divide-rule px-6">
               <SessionAction
                 icon={LogOut}
-                title="This device"
+                title="This session"
                 description="Ends this server session. Other devices stay signed in."
                 buttonLabel={endingSessions ? "Signing out…" : "Sign out"}
                 onClick={handleSignOut}
@@ -196,6 +197,8 @@ export default function SettingsPage() {
                 disabled={endingSessions}
               />
             </div>
+
+            <DeviceList />
 
             {sessionError && (
               <p

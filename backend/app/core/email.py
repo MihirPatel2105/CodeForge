@@ -485,6 +485,34 @@ async def send_security_alert_email(*, to: str, title: str, detail: str) -> None
     )
 
 
+async def send_new_device_email(
+    *, to: str, label: str, ip_address: str | None, occurred_at: datetime, review_url: str
+) -> None:
+    when = occurred_at.astimezone(UTC).strftime("%d %b %Y at %H:%M UTC")
+    detail = f"Device: {label}\nTime: {when}\nIP address: {ip_address or 'Unavailable'}"
+    await send_email(
+        to=to,
+        subject="New sign-in to your CodeForge account",
+        text=(
+            f"A new browser signed in to your CodeForge account.\n\n{detail}\n\n"
+            f"Was this you? Review this sign-in: {review_url}\n\n"
+            "If it was not you, use that page to sign out every device and then reset your password.\n"
+        ),
+        html=_shell(
+            eyebrow="new sign-in",
+            heading="A new browser signed in.",
+            rows=(
+                _security_rows(
+                    when=when,
+                    body=f"Device: {html_escape(label)}. IP address: {html_escape(ip_address or 'Unavailable')}.",
+                    warning="If this was not you, sign out every device and reset your password.",
+                )
+                + _button_row(href=review_url, label="Review sign-in")
+            ),
+        ),
+    )
+
+
 async def send_account_deleted_email(
     *, to: str, first_name: str = "", projects: int = 0, runs: int = 0
 ) -> None:

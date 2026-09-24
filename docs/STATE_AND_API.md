@@ -94,6 +94,9 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/auth/register` | create user → JWT |
 | POST | `/auth/login` | JWT |
 | GET | `/auth/me` | current user |
+| GET | `/auth/devices` | active browser sessions grouped by device |
+| POST | `/auth/devices/{id}/sign-out` | revoke all current tokens for one owned device |
+| POST | `/auth/sign-in-alert/respond` | one-time email response: `me` or `not_me`; the latter revokes all sessions |
 | POST | `/projects` | create project |
 | GET | `/projects` | list user's projects |
 | GET | `/projects/{id}` | project detail |
@@ -138,6 +141,10 @@ Conventions
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.
   TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the
   dedicated account-security screen renders the URI as a QR code while keeping manual entry available.
+- Browser sessions carry a separate device identifier; new browsers receive a sign-in email when SMTP is configured.
+  The alert link is single-use and expires after 24 hours. Its review page requires a POST confirmation;
+  opening the email link cannot revoke sessions. Browser and platform labels come from User-Agent and
+  IP is the direct peer address, so neither represents a verified physical device or location.
 - Suspended accounts are rejected centrally by the authentication dependency. Project and
   monthly-run limits are enforced at creation time, not only displayed in the admin UI.
 

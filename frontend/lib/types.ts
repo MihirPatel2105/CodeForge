@@ -70,6 +70,20 @@ export interface TokenResponse {
   token_type: string;
 }
 
+export interface DeviceResponse {
+  id: string;
+  label: string;
+  ip_address: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  active_sessions: number;
+  current: boolean;
+}
+
+export interface SignInAlertResponse {
+  message: string;
+}
+
 /** Sign-up no longer always ends in a session: when the server has email verification
  * configured there is a code to collect first, and `access_token` is null until it is. */
 export interface RegisterResponse {

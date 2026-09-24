@@ -5,7 +5,16 @@ from dataclasses import dataclass
 
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
-from app.models import PasswordResetToken, PendingSignup, Project, Run, User
+from app.models import (
+    Device,
+    LoginSession,
+    PasswordResetToken,
+    PendingSignup,
+    Project,
+    Run,
+    SignInAlert,
+    User,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +43,9 @@ async def delete_user_account(user: User) -> AccountDeletionResult:
     runs_deleted = (await Run.find(Run.user_id == user_id).delete()).deleted_count
     projects_deleted = (await Project.find(Project.user_id == user_id).delete()).deleted_count
     await PasswordResetToken.find(PasswordResetToken.user_id == user_id).delete()
+    await SignInAlert.find(SignInAlert.user_id == user_id).delete()
+    await LoginSession.find(LoginSession.user_id == user_id).delete()
+    await Device.find(Device.user_id == user_id).delete()
     await PendingSignup.find(PendingSignup.email == user.email).delete()
     await user.delete()
 
