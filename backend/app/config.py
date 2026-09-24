@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     # Where the emails point people back to. Dev default matches the Next.js port this
     # project actually runs on; set it to the deployed origin in production.
     app_base_url: str = "http://localhost:3001"
+    api_public_base_url: str = "http://localhost:8000"
 
     otp_length: int = 6
     otp_ttl_minutes: int = 10

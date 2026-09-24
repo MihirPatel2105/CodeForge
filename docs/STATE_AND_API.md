@@ -117,6 +117,11 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | GET | `/runs/{id}/preview` | Start or reuse a private temporary sandbox and list generated API endpoints |
 | POST | `/runs/{id}/preview/request` | Send `{method, path, body?}` to the generated API inside that sandbox; return its HTTP status and body |
 | DELETE | `/runs/{id}/preview` | Remove the preview and its temporary data |
+| POST | `/runs/{id}/deployment` | Publish a passed run; return stable URL and API key once |
+| GET | `/runs/{id}/deployment` | Read publication status and URL without revealing the key |
+| POST | `/runs/{id}/deployment/rotate-key` | Replace the key and return the new key once |
+| DELETE | `/runs/{id}/deployment` | Unpublish and delete the generated API's hosted data |
+| GET/POST/PUT/PATCH/DELETE | `/api/v1/deployments/{id}/{path}` | API-key protected gateway to the generated app |
 | GET | `/projects/{id}/runs` | run history |
 | GET | `/admin/overview` | admin-only platform totals and recent runs |
 | GET | `/admin/runs` | paginated cross-user run inventory; status, prompt, RAG, acceptance, failure, and date filters |
@@ -148,6 +153,10 @@ Conventions
 - Try API is owner-only and available only for succeeded runs with passing sandbox tests.
   Its Docker container has no network or published port, shares no database with the platform,
   and expires after 15 minutes. It is an in-app preview, not a deployed API URL.
+- Published APIs use the platform backend as their public gateway. The generated app remains in
+  a network-isolated Docker container with a named MongoDB data volume. The owner may publish one
+  passed run, rotate its one-time API key, or unpublish and delete the volume. The gateway accepts
+  JSON requests up to 16 KB and allows 60 requests per minute per deployment.
 - `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.

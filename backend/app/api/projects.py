@@ -8,7 +8,8 @@ from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import UsageLimitError
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
-from app.models import Project, Run
+from app.models import Deployment, Project, Run
+from app.sandbox.deployment import destroy_deployment
 from app.schemas.api import ProjectCreate, ProjectDeleteResponse, ProjectResponse
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,11 @@ async def delete_project(project_id: str, user: CurrentUser) -> ProjectDeleteRes
     # carry on writing state for a run that no longer exists.
     for run_id in run_ids:
         executor.cancel(run_id)
+
+    deployments = await Deployment.find(Deployment.project_id == project_id).to_list()
+    for deployment in deployments:
+        await destroy_deployment(str(deployment.id))
+        await deployment.delete()
 
     artifacts_deleted = await delete_run_artifacts(run_ids)
     runs_deleted = (await Run.find(Run.project_id == project_id).delete()).deleted_count

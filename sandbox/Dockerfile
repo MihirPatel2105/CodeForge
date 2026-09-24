@@ -52,7 +52,8 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY probe.py /usr/local/bin/probe.py
 COPY preview_entrypoint.sh /usr/local/bin/preview_entrypoint.sh
 COPY preview_request.py /usr/local/bin/preview_request.py
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/preview_entrypoint.sh
+COPY deployment_entrypoint.sh /usr/local/bin/deployment_entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/preview_entrypoint.sh /usr/local/bin/deployment_entrypoint.sh
 
 USER mongodb
 WORKDIR /app

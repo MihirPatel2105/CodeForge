@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Play, RotateCcw } from "lucide-react";
+import { ArrowLeft, Copy, Play, RotateCcw } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/lib/use-current-user";
 import { api, ApiError } from "@/lib/api";
-import type { PreviewInfo, PreviewOperation, PreviewResult } from "@/lib/types";
+import type { DeploymentInfo, PreviewInfo, PreviewOperation, PreviewResult } from "@/lib/types";
 
 function displayBody(body: string): string {
   try {
@@ -32,6 +32,10 @@ export default function TryApiPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deployment, setDeployment] = useState<DeploymentInfo | null>(null);
+  const [deploymentLoading, setDeploymentLoading] = useState(true);
+  const [deploymentBusy, setDeploymentBusy] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   const choose = useCallback((operation: PreviewOperation, index: number) => {
     setSelected(index);
@@ -62,7 +66,67 @@ export default function TryApiPage() {
       return;
     }
     void load();
-  }, [load, router, sessionLoading, user]);
+    void api.getDeployment(id)
+      .then(setDeployment)
+      .catch((err: unknown) => {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          setError(err instanceof ApiError ? err.message : "Couldn't load publishing status.");
+        }
+      })
+      .finally(() => setDeploymentLoading(false));
+  }, [id, load, router, sessionLoading, user]);
+
+  async function publish() {
+    setDeploymentBusy(true);
+    setError(null);
+    try {
+      const created = await api.publishRun(id);
+      setDeployment(created);
+      setApiKey(created.api_key);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't publish this API.");
+    } finally {
+      setDeploymentBusy(false);
+    }
+  }
+
+  async function rotateKey() {
+    if (!window.confirm("Replace the API key? Apps using the old key will stop working.")) return;
+    setDeploymentBusy(true);
+    setError(null);
+    try {
+      const updated = await api.rotateDeploymentKey(id);
+      setDeployment(updated);
+      setApiKey(updated.api_key);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't rotate the API key.");
+    } finally {
+      setDeploymentBusy(false);
+    }
+  }
+
+  async function unpublish() {
+    if (!window.confirm("Unpublish this API and permanently delete its hosted data?")) return;
+    setDeploymentBusy(true);
+    setError(null);
+    try {
+      await api.unpublishRun(id);
+      setDeployment(null);
+      setApiKey(null);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't unpublish this API.");
+    } finally {
+      setDeploymentBusy(false);
+    }
+  }
+
+  async function copy(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      setError("Copy failed. Select the text and copy it manually.");
+    }
+  }
 
   async function send() {
     const operation = preview?.operations[selected];
@@ -123,6 +187,48 @@ export default function TryApiPage() {
             Choose an endpoint, edit the example request, and press Send. No setup or API key is needed here.
             This preview stays private, has no public URL, and its data resets after 15 minutes.
           </p>
+        </section>
+
+        <section className="mt-6 rounded-[6px] border border-border bg-surface p-6 md:p-9" aria-labelledby="publish-heading">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">use it outside CodeForge</span>
+              <h2 id="publish-heading" className="font-display mt-2 text-[22px] font-[650] text-fg">Publish your API</h2>
+            </div>
+            {!deploymentLoading && !deployment && <Button onClick={publish} disabled={deploymentBusy}>Publish API</Button>}
+          </div>
+          <p className="mt-3 max-w-[75ch] text-[13px] leading-6 text-fg-muted">
+            Get a stable URL and an API key for apps or server-side scripts. The API works while your CodeForge backend and Docker host are online. One published API per account; up to 60 requests per minute.
+          </p>
+          {deploymentLoading ? <p className="mt-4 text-[12px] text-fg-muted">Checking publishing status…</p> : deployment && (
+            <div className="mt-5 space-y-4">
+              <div>
+                <p className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Base URL</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <code className="min-w-0 flex-1 overflow-x-auto rounded-[3px] border border-border bg-bg px-3 py-2 text-[12px] text-fg">{deployment.url}</code>
+                  <Button variant="outline" size="sm" aria-label="Copy base URL" onClick={() => void copy(deployment.url)}><Copy aria-hidden /></Button>
+                </div>
+              </div>
+              {apiKey ? (
+                <div className="rounded-[4px] border border-warn-bd bg-warn-soft p-4">
+                  <p className="text-[12px] font-[700] text-fg">Save this key now. It is shown only once.</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="min-w-0 flex-1 overflow-x-auto text-[12px] text-fg">{apiKey}</code>
+                    <Button variant="outline" size="sm" aria-label="Copy API key" onClick={() => void copy(apiKey)}><Copy aria-hidden /></Button>
+                  </div>
+                </div>
+              ) : <p className="text-[12px] text-fg-muted">Key: {deployment.key_prefix}… · The full key was shown when published. Rotate it if you lost it.</p>}
+              <div>
+                <p className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Example request</p>
+                <pre className="mt-2 overflow-x-auto rounded-[4px] bg-term-bg p-4 font-mono text-[11px] leading-5 text-term-fg">{`curl -H 'Authorization: Bearer ${apiKey ?? "YOUR_API_KEY"}' '${deployment.url}${preview?.operations.find((item) => item.method === "GET")?.path ?? "/items"}'`}</pre>
+                <p className="mt-2 text-[12px] text-fg-muted">Keep the key on your server, never in browser code. Requests and responses use JSON; hosted data is deleted when you unpublish.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={rotateKey} disabled={deploymentBusy}>Rotate key</Button>
+                <Button variant="destructive" size="sm" onClick={unpublish} disabled={deploymentBusy}>Unpublish and delete data</Button>
+              </div>
+            </div>
+          )}
         </section>
 
         {error && <p role="alert" className="mt-5 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}

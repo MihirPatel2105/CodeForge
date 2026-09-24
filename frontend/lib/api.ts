@@ -37,6 +37,8 @@ import type {
   PreviewCall,
   PreviewInfo,
   PreviewResult,
+  DeploymentInfo,
+  DeploymentCreated,
   RunSummary,
   FileTreeResponse,
   FileHistoryResponse,
@@ -284,6 +286,10 @@ export const api = {
   sendPreviewRequest: (id: string, payload: PreviewCall) =>
     request<PreviewResult>(`/runs/${id}/preview/request`, { method: "POST", body: JSON.stringify(payload) }),
   resetPreview: (id: string) => request<void>(`/runs/${id}/preview`, { method: "DELETE" }),
+  getDeployment: (id: string) => request<DeploymentInfo>(`/runs/${id}/deployment`),
+  publishRun: (id: string) => request<DeploymentCreated>(`/runs/${id}/deployment`, { method: "POST" }),
+  rotateDeploymentKey: (id: string) => request<DeploymentCreated>(`/runs/${id}/deployment/rotate-key`, { method: "POST" }),
+  unpublishRun: (id: string) => request<void>(`/runs/${id}/deployment`, { method: "DELETE" }),
   getRunFiles: (id: string) => request<FileTreeResponse>(`/runs/${id}/files`),
   getRunFileHistory: (id: string) => request<FileHistoryResponse>(`/runs/${id}/file-history`),
   approveRun: (id: string, payload: ApprovalRequest) =>

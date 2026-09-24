@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
 from app.models import (
+    Deployment,
     Device,
     LoginSession,
     PasskeyChallenge,
@@ -17,6 +18,7 @@ from app.models import (
     SignInAlert,
     User,
 )
+from app.sandbox.deployment import destroy_deployment
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,11 @@ async def delete_user_account(user: User) -> AccountDeletionResult:
 
     for run_id in run_ids:
         executor.cancel(run_id)
+
+    deployments = await Deployment.find(Deployment.user_id == user_id).to_list()
+    for deployment in deployments:
+        await destroy_deployment(str(deployment.id))
+        await deployment.delete()
 
     artifacts_deleted = await delete_run_artifacts(run_ids)
     runs_deleted = (await Run.find(Run.user_id == user_id).delete()).deleted_count

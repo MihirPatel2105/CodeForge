@@ -612,6 +612,19 @@ class PreviewResult(BaseModel):
     session_started: bool
 
 
+class DeploymentInfo(BaseModel):
+    id: str
+    run_id: str
+    url: str
+    key_prefix: str
+    status: Literal["active", "deleting"]
+    created_at: datetime
+
+
+class DeploymentCreated(DeploymentInfo):
+    api_key: str
+
+
 class FileTreeResponse(BaseModel):
     run_id: str
     files: list[GeneratedFile] = Field(default_factory=list)

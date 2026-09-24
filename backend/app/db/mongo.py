@@ -27,6 +27,7 @@ async def connect() -> None:
     _client = AsyncMongoClient(settings.mongo_uri)
     _database = _client[settings.mongo_db]
     await init_beanie(database=_database, document_models=DOCUMENT_MODELS)
+    await _database.deployment_rate_limits.create_index("expires_at", expireAfterSeconds=0)
 
 
 async def disconnect() -> None:

@@ -34,6 +34,8 @@ COLLECTIONS = (
     "sign_in_alerts",
     "projects",
     "runs",
+    "deployments",
+    "deployment_rate_limits",
     "admin_audit_logs",
     # GridFS is two collections and was previously missed here, so artifacts leaked
     # between tests — harmless until a test asserted on the bucket being empty, which

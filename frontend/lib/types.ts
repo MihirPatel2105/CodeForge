@@ -433,6 +433,19 @@ export interface PreviewResult {
   session_started: boolean;
 }
 
+export interface DeploymentInfo {
+  id: string;
+  run_id: string;
+  url: string;
+  key_prefix: string;
+  status: "active" | "deleting";
+  created_at: string;
+}
+
+export interface DeploymentCreated extends DeploymentInfo {
+  api_key: string;
+}
+
 export interface RunMetrics {
   generation_succeeded: boolean;
   tests_passed: boolean;

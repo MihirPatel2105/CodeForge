@@ -22,6 +22,9 @@ deliberately out of scope and belong in the Future Scope chapter. Expect faculty
 | 5. Deployment | — | Out of scope — future work |
 | 6. Maintenance | — | Out of scope — future work |
 
+2026-09-24 extension: owners can publish a passing API through a bounded CodeForge
+gateway. This add-on does not change the original phase gates or evaluation definition.
+
 ---
 
 ## Build phases

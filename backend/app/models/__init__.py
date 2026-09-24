@@ -1,4 +1,5 @@
 from app.models.admin_audit import AdminAuditLog
+from app.models.deployment import Deployment
 from app.models.device import Device
 from app.models.login_session import LoginSession
 from app.models.passkey import PasskeyChallenge, PasskeyCredential
@@ -17,6 +18,7 @@ DOCUMENT_MODELS = [
     PasswordResetToken,
     RevokedToken,
     Device,
+    Deployment,
     LoginSession,
     PasskeyCredential,
     PasskeyChallenge,
@@ -30,6 +32,7 @@ __all__ = [
     "AdminAuditLog",
     "DOCUMENT_MODELS",
     "Device",
+    "Deployment",
     "LoginSession",
     "PasskeyChallenge",
     "PasskeyCredential",

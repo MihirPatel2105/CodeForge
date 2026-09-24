@@ -29,6 +29,11 @@ CodeForge automates classic SDLC phases 1–4 (Requirement Analysis, Design, Imp
 plus a code-review quality gate. Deployment and maintenance of generated applications are explicitly
 outside its scope.
 
+**2026-09-24 extension:** The owner may publish one passing generated API through a
+CodeForge-managed URL and API key. Generated code remains in a network-isolated container;
+the platform backend handles ingress, key verification, and lifecycle. This extension does
+not alter the agent pipeline or the original evaluation criteria.
+
 The system's distinguishing contribution is not code generation itself but the **conditional cyclic
 review ↔ test feedback loop**: generated code is reviewed and tested, and failures route back to the
 Coder for revision under a bounded retry policy.
@@ -331,7 +336,8 @@ taxonomy reported in Phase 8.
 
 The following are outside this specification and are recorded as future work:
 
-- Deployment and lifecycle management of generated applications (classic SDLC phases 5–6).
+- Full deployment and maintenance automation (classic SDLC phases 5–6); the opt-in
+  CodeForge-hosted API extension in §1.2 provides a bounded publishing path only.
 - Generation of anything other than CRUD REST APIs within the stated domain.
 - Multi-user collaboration on a single run.
 - Editing generated code within the platform.

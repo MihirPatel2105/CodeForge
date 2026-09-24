@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
 from app.api.contact import router as contact_router
+from app.api.deployments import router as deployments_router
 from app.api.health import router as health_router
 from app.api.passkeys import router as passkeys_router
 from app.api.preview import router as preview_router
@@ -91,6 +92,7 @@ def create_app() -> FastAPI:
     app.include_router(passkeys_router)
     app.include_router(admin_router)
     app.include_router(contact_router)
+    app.include_router(deployments_router)
     app.include_router(projects_router)
     app.include_router(preview_router)
     app.include_router(runs_router)
