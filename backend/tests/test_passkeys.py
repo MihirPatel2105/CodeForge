@@ -56,7 +56,7 @@ def test_registration_requires_password_and_challenge_cannot_be_replayed(
     assert len(listing.json()) == 1
 
 
-def test_passkey_login_issues_session_and_preserves_totp(client, registered_user, monkeypatch):
+def test_passkey_login_and_passkey_only_password_mfa(client, registered_user, monkeypatch):
     headers = registered_user["headers"]
     # Reuse registration so the Beanie insert happens inside the TestClient portal.
     options = client.post(
@@ -97,6 +97,38 @@ def test_passkey_login_issues_session_and_preserves_totp(client, registered_user
     assert signed_in.status_code == 200
     assert client.post("/auth/passkeys/login/verify", json=login_payload).status_code == 401
 
+    password_login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    ).json()
+    assert password_login["mfa_methods"] == ["passkey"]
+    assert password_login["access_token"] is None
+    ticket = password_login["mfa_ticket"]
+    assert (
+        client.post(
+            "/auth/login/complete", json={"ticket": ticket, "totp_code": "123456"}
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post("/auth/passkeys/mfa/options", json={"ticket": "invalid-ticket"}).status_code
+        == 401
+    )
+    mfa_options = client.post("/auth/passkeys/mfa/options", json={"ticket": ticket})
+    assert mfa_options.status_code == 200
+    assert mfa_options.json()["options"]["userVerification"] == "required"
+    completed = client.post(
+        "/auth/passkeys/mfa/verify",
+        json={
+            "ticket": ticket,
+            "challenge_id": mfa_options.json()["challenge_id"],
+            "credential": {"id": "Y3JlZGVudGlhbC1vbmU"},
+        },
+    )
+    assert completed.status_code == 200
+    assert completed.json()["access_token"]
+    assert client.post("/auth/passkeys/mfa/options", json={"ticket": ticket}).status_code == 401
+
 
 def test_remove_passkey_requires_password_and_owner(client, registered_user, monkeypatch):
     headers = registered_user["headers"]
@@ -132,9 +164,17 @@ def test_remove_passkey_requires_password_and_owner(client, registered_user, mon
         == 204
     )
     assert client.get("/auth/passkeys", headers=headers).json() == []
+    password_login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    )
+    assert password_login.json()["access_token"]
+    assert password_login.json()["mfa_required"] is False
 
 
-def test_passkey_login_keeps_totp_required(client, registered_user, monkeypatch):
+def test_passkey_login_skips_totp_and_password_mfa_offers_both(
+    client, registered_user, monkeypatch
+):
     headers = registered_user["headers"]
     setup = client.post(
         "/auth/totp/setup",
@@ -182,33 +222,25 @@ def test_passkey_login_keeps_totp_required(client, registered_user, monkeypatch)
         },
     )
     assert response.status_code == 200
-    assert response.json()["mfa_required"] is True
-    assert response.json()["access_token"] is None
-    ticket = response.json()["mfa_ticket"]
-    wrong = client.post(
-        "/auth/passkeys/login/complete", json={"ticket": ticket, "totp_code": "000000"}
-    )
-    assert wrong.status_code == 401
-    assert (
-        client.post(
-            "/auth/passkeys/login/complete", json={"ticket": ticket, "totp_code": code}
-        ).status_code
-        == 401
-    )
-    fresh_options = client.post("/auth/passkeys/login/options").json()
-    fresh = client.post(
-        "/auth/passkeys/login/verify",
+    assert response.json()["access_token"]
+
+    password_login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    ).json()
+    assert password_login["mfa_methods"] == ["totp", "passkey"]
+    ticket = password_login["mfa_ticket"]
+    mfa_options = client.post("/auth/passkeys/mfa/options", json={"ticket": ticket}).json()
+    completed = client.post(
+        "/auth/passkeys/mfa/verify",
         json={
-            "challenge_id": fresh_options["challenge_id"],
+            "ticket": ticket,
+            "challenge_id": mfa_options["challenge_id"],
             "credential": {"id": "Y3JlZGVudGlhbC10d28"},
         },
     )
-    complete = client.post(
-        "/auth/passkeys/login/complete",
-        json={"ticket": fresh.json()["mfa_ticket"], "totp_code": code},
-    )
-    assert complete.status_code == 200
-    assert complete.json()["access_token"]
+    assert completed.status_code == 200
+    assert completed.json()["access_token"]
 
 
 def test_password_reset_removes_passkeys(client, registered_user, monkeypatch):

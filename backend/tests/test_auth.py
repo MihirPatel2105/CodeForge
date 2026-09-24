@@ -111,8 +111,22 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
     assert password_only.status_code == 200
     assert password_only.json()["mfa_required"] is True
     assert password_only.json()["access_token"] is None
+    assert password_only.json()["mfa_methods"] == ["totp"]
+    ticket = password_only.json()["mfa_ticket"]
+    assert ticket
 
-    with_totp = client.post(
+    completed = client.post(
+        "/auth/login/complete",
+        json={"ticket": ticket, "totp_code": _totp(secret, int(time.time()) // 30)},
+    )
+    assert completed.status_code == 200
+    assert completed.json()["access_token"]
+    assert (
+        client.post("/auth/login/complete", json={"ticket": ticket, "totp_code": code}).status_code
+        == 401
+    )
+
+    old_one_step_payload = client.post(
         "/auth/login",
         json={
             "email": registered_user["email"],
@@ -120,8 +134,38 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
             "totp_code": _totp(secret, int(time.time()) // 30),
         },
     )
-    assert with_totp.status_code == 200
-    assert with_totp.json()["access_token"]
+    assert old_one_step_payload.status_code == 200
+    assert old_one_step_payload.json()["mfa_required"] is True
+    assert old_one_step_payload.json()["access_token"] is None
+
+
+def test_password_mfa_ticket_allows_five_code_attempts(client, registered_user):
+    setup = client.post(
+        "/auth/totp/setup",
+        json={"current_password": registered_user["password"]},
+        headers=registered_user["headers"],
+    )
+    secret = setup.json()["secret"]
+    code = _totp(secret, int(time.time()) // 30)
+    assert (
+        client.post(
+            "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
+        ).status_code
+        == 204
+    )
+    ticket = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    ).json()["mfa_ticket"]
+    for _ in range(5):
+        assert (
+            client.post(
+                "/auth/login/complete", json={"ticket": ticket, "totp_code": "000000"}
+            ).status_code
+            == 401
+        )
+    blocked = client.post("/auth/login/complete", json={"ticket": ticket, "totp_code": code})
+    assert blocked.status_code == 429
 
 
 def test_normal_user_totp_setup_requires_current_password(client, registered_user):

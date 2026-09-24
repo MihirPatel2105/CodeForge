@@ -56,5 +56,5 @@ test("admin settings expose two-factor and protected-account controls", async ({
   await page.getByRole("link", { name: /two-factor authentication/i }).click();
   await expect(page).toHaveURL(/\/profile\/settings\/2fa$/);
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
-  await expect(page.getByText(/two-factor protection is (active|off)/i)).toBeVisible();
+  await expect(page.getByText(/authenticator codes are (on|off)/i)).toBeVisible();
 });

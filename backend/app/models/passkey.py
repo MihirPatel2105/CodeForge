@@ -30,6 +30,8 @@ class PasskeyChallenge(Document):
     purpose: str
     user_id: str | None = None
     expires_at: datetime
+    attempts: int = 0
+    token_version: int | None = None
 
     class Settings:
         name = "passkey_challenges"

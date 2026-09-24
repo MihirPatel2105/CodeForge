@@ -94,13 +94,19 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-    totp_code: str | None = Field(default=None, min_length=6, max_length=8)
 
 
 class LoginResponse(BaseModel):
     access_token: str | None = None
     token_type: str = "bearer"
     mfa_required: bool = False
+    mfa_ticket: str | None = None
+    mfa_methods: list[Literal["totp", "passkey"]] = Field(default_factory=list)
+
+
+class LoginCompleteRequest(BaseModel):
+    ticket: str
+    totp_code: str = Field(min_length=6, max_length=8)
 
 
 class TokenResponse(BaseModel):

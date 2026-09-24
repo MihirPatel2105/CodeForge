@@ -1,4 +1,4 @@
-"""Optional WebAuthn passkeys; passwords and existing TOTP remain available."""
+"""User-verified WebAuthn passkeys for direct and password-second-step sign-in."""
 
 import base64
 import json
@@ -25,7 +25,12 @@ from webauthn.helpers.structs import (
     UserVerificationRequirement,
 )
 
-from app.api.auth import _send_quietly, finish_login
+from app.api.auth import (
+    _send_quietly,
+    consume_password_mfa_ticket,
+    finish_login,
+    password_mfa_user,
+)
 from app.config import settings
 from app.core.deps import CurrentUser
 from app.core.email import send_security_alert_email
@@ -36,7 +41,7 @@ from app.core.exceptions import (
     NotFoundError,
     RateLimitError,
 )
-from app.core.security import decrypt_totp_secret, hash_reset_token, verify_password, verify_totp
+from app.core.security import decrypt_totp_secret, verify_password, verify_totp
 from app.models import PasskeyChallenge, PasskeyCredential, User
 
 router = APIRouter(prefix="/auth/passkeys", tags=["auth"])
@@ -128,15 +133,16 @@ class PasskeyAssertion(BaseModel):
     credential: dict
 
 
-class PasskeyMfa(BaseModel):
+class PasswordMfaOptions(BaseModel):
     ticket: str
-    totp_code: str = Field(min_length=6, max_length=8)
+
+
+class PasswordMfaAssertion(PasskeyAssertion):
+    ticket: str
 
 
 class PasskeyLoginResult(BaseModel):
-    access_token: str | None = None
-    mfa_required: bool = False
-    mfa_ticket: str | None = None
+    access_token: str
 
 
 class PasskeyInfo(BaseModel):
@@ -268,15 +274,51 @@ async def login_options() -> PasskeyOptions:
 async def login_passkey(
     payload: PasskeyAssertion, background: BackgroundTasks, request: Request
 ) -> PasskeyLoginResult:
-    challenge = await _consume(payload.challenge_id, "login")
+    user = await _verify_login_assertion(payload, "login")
+    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
+
+
+@router.post("/mfa/options", response_model=PasskeyOptions)
+async def password_mfa_options(payload: PasswordMfaOptions) -> PasskeyOptions:
+    user = await password_mfa_user(payload.ticket)
+    credentials = await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).to_list()
+    if not credentials:
+        raise AuthError("No passkey is available for this account. Sign in again.")
+    options = generate_authentication_options(
+        rp_id=_rp_id(),
+        user_verification=UserVerificationRequirement.REQUIRED,
+        allow_credentials=[
+            PublicKeyCredentialDescriptor(id=base64url_to_bytes(item.credential_id))
+            for item in credentials
+        ],
+    )
+    challenge_id = await _new_challenge("password_mfa_passkey", options.challenge, str(user.id))
+    return PasskeyOptions(challenge_id=challenge_id, options=json.loads(options_to_json(options)))
+
+
+@router.post("/mfa/verify", response_model=PasskeyLoginResult)
+async def password_mfa_verify(
+    payload: PasswordMfaAssertion, background: BackgroundTasks, request: Request
+) -> PasskeyLoginResult:
+    user = await password_mfa_user(payload.ticket)
+    await _verify_login_assertion(payload, "password_mfa_passkey", str(user.id))
+    user = await password_mfa_user(payload.ticket)
+    await consume_password_mfa_ticket(payload.ticket, user)
+    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
+
+
+async def _verify_login_assertion(
+    payload: PasskeyAssertion, purpose: str, user_id: str | None = None
+) -> User:
+    challenge = await _consume(payload.challenge_id, purpose, user_id)
     credential_id = payload.credential.get("id")
     if not isinstance(credential_id, str):
         raise AuthError("Passkey verification failed")
     credential = await PasskeyCredential.find_one(PasskeyCredential.credential_id == credential_id)
-    if credential is None:
+    if credential is None or (user_id is not None and credential.user_id != user_id):
         raise AuthError("Passkey verification failed")
     user = await User.get(credential.user_id)
-    if user is None:
+    if user is None or (challenge.user_id is not None and challenge.user_id != str(user.id)):
         raise AuthError("Passkey verification failed")
     try:
         verified = verify_authentication_response(
@@ -305,29 +347,4 @@ async def login_passkey(
     credential.sign_count = verified.new_sign_count
     credential.last_used_at = _now()
     await credential.save()
-    if user.totp_enabled:
-        ticket = secrets.token_urlsafe(32)
-        await PasskeyChallenge(
-            challenge_id=hash_reset_token(ticket),
-            challenge="",
-            purpose="mfa",
-            user_id=str(user.id),
-            expires_at=_now() + CHALLENGE_LIFETIME,
-        ).insert()
-        return PasskeyLoginResult(mfa_required=True, mfa_ticket=ticket)
-    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
-
-
-@router.post("/login/complete", response_model=PasskeyLoginResult)
-async def complete_passkey_login(
-    payload: PasskeyMfa, background: BackgroundTasks, request: Request
-) -> PasskeyLoginResult:
-    challenge = await _consume(hash_reset_token(payload.ticket), "mfa")
-    user = await User.get(challenge.user_id) if challenge.user_id else None
-    if user is None or not user.totp_enabled or not user.totp_secret_encrypted:
-        raise AuthError("This sign-in request is invalid or has expired. Try again.")
-    if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
-        raise AuthError("The two-factor code is not correct. Start passkey sign-in again.")
-    if user.is_suspended or user.password_reset_required:
-        raise AuthError("This account cannot sign in right now.")
-    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
+    return user

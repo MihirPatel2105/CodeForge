@@ -261,22 +261,22 @@ export default function SettingsPage() {
                 icon={Fingerprint}
                 label="Passkeys"
                 title="Sign in without typing a password"
-                description="Add or remove passkeys. Your password remains available as a backup."
+                description="Add or remove passkeys for direct sign-in and password verification."
                 href="/profile/settings/passkeys"
                 action="Manage passkeys"
               />
               <SecurityMethodRow
                 icon={ShieldCheck}
-                label="Two-factor authentication"
+                label="Authenticator code"
                 title={
                   user.totp_enabled
-                    ? "Authenticator protection is on"
-                    : "Protect your sign-in"
+                    ? "Authenticator codes are on"
+                    : "Add authenticator codes"
                 }
                 description={
                   user.totp_enabled
-                    ? "Manage the authenticator code required after sign-in."
-                    : "Add a time-based authenticator with a QR code or manual key."
+                    ? "Use a code after password sign-in, or choose a saved passkey instead."
+                    : "Add a time-based code as another verification method."
                 }
                 href="/profile/settings/2fa"
                 action={user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}

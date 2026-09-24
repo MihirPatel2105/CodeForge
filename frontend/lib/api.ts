@@ -168,6 +168,10 @@ export const api = {
     }),
   login: (payload: LoginRequest) =>
     request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
+  completePasswordLogin: (ticket: string, totpCode: string) =>
+    request<TokenResponse>("/auth/login/complete", {
+      method: "POST", body: JSON.stringify({ ticket, totp_code: totpCode }),
+    }),
   passkeys: () => request<PasskeyInfo[]>("/auth/passkeys"),
   passkeyRegistrationOptions: (currentPassword: string, totpCode?: string) =>
     request<PasskeyOptions<PublicKeyCredentialCreationOptionsJSON>>("/auth/passkeys/register/options", {
@@ -187,9 +191,13 @@ export const api = {
     request<PasskeyLoginResult>("/auth/passkeys/login/verify", {
       method: "POST", body: JSON.stringify({ challenge_id: challengeId, credential }),
     }),
-  completePasskeyLogin: (ticket: string, totpCode: string) =>
-    request<PasskeyLoginResult>("/auth/passkeys/login/complete", {
-      method: "POST", body: JSON.stringify({ ticket, totp_code: totpCode }),
+  passwordMfaPasskeyOptions: (ticket: string) =>
+    request<PasskeyOptions<PublicKeyCredentialRequestOptionsJSON>>("/auth/passkeys/mfa/options", {
+      method: "POST", body: JSON.stringify({ ticket }),
+    }),
+  verifyPasswordMfaPasskey: (ticket: string, challengeId: string, credential: AuthenticationResponseJSON) =>
+    request<PasskeyLoginResult>("/auth/passkeys/mfa/verify", {
+      method: "POST", body: JSON.stringify({ ticket, challenge_id: challengeId, credential }),
     }),
   me: () => request<UserResponse>("/auth/me"),
   setupTotp: (currentPassword: string) =>

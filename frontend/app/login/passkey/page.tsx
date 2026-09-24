@@ -10,19 +10,17 @@ import {
 import { ShieldCheck } from "lucide-react";
 import { AuthAside } from "@/components/auth/auth-aside";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { api, ApiError, setToken } from "@/lib/api";
+import { clearPendingPasswordMfa } from "@/lib/password-mfa";
 
 export default function PasskeyLoginPage() {
   const router = useRouter();
-  const [ticket, setTicket] = useState<string | null>(null);
-  const [totpCode, setTotpCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function finish(token: string | null) {
     if (!token) throw new Error("The server did not return a session.");
+    clearPendingPasswordMfa();
     setToken(token);
     const user = await api.me();
     router.replace(user.is_admin ? "/admin" : "/projects");
@@ -41,13 +39,7 @@ export default function PasskeyLoginPage() {
       const { challenge_id, options } = await api.passkeyLoginOptions();
       const credential = await startAuthentication({ optionsJSON: options });
       const result = await api.verifyPasskeyLogin(challenge_id, credential);
-      if (result.mfa_required) {
-        if (!result.mfa_ticket)
-          throw new Error("The server did not return a 2FA request.");
-        setTicket(result.mfa_ticket);
-      } else {
-        await finish(result.access_token);
-      }
+      await finish(result.access_token);
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -55,27 +47,6 @@ export default function PasskeyLoginPage() {
           : err instanceof Error
             ? err.message
             : "Passkey sign-in failed.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function complete(event: React.FormEvent) {
-    event.preventDefault();
-    if (!ticket) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await api.completePasskeyLogin(ticket, totpCode);
-      await finish(result.access_token);
-    } catch (err) {
-      setTicket(null);
-      setTotpCode("");
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not finish sign-in. Try again.",
       );
     } finally {
       setBusy(false);
@@ -95,42 +66,16 @@ export default function PasskeyLoginPage() {
             Sign in with a passkey
           </h1>
           <p className="mt-3 text-[14px] leading-6 text-fg-muted">
-            Use your device unlock or password manager. No email or password
-            needed.
+            Use your device unlock or password manager. No email, password, or extra authenticator code needed.
           </p>
-          {ticket ? (
-            <form onSubmit={complete} className="mt-7 space-y-4">
-              <Label htmlFor="passkey-totp">AUTHENTICATOR CODE</Label>
-              <Input
-                id="passkey-totp"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                required
-                maxLength={6}
-                value={totpCode}
-                onChange={(event) =>
-                  setTotpCode(event.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-              />
-              <Button
-                type="submit"
-                disabled={busy || totpCode.length !== 6}
-                className="h-[50px] w-full rounded-[3px]"
-              >
-                {busy ? "Verifying…" : "Finish sign-in"}
-              </Button>
-            </form>
-          ) : (
-            <Button
-              type="button"
-              onClick={signIn}
-              disabled={busy}
-              className="mt-7 h-[50px] w-full rounded-[3px]"
-            >
-              {busy ? "Waiting for passkey…" : "Continue with passkey"}
-            </Button>
-          )}
+          <Button
+            type="button"
+            onClick={signIn}
+            disabled={busy}
+            className="mt-7 h-[50px] w-full rounded-[3px]"
+          >
+            {busy ? "Waiting for passkey…" : "Continue with passkey"}
+          </Button>
           {error && (
             <p
               role="alert"

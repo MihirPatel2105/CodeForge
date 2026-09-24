@@ -6,11 +6,13 @@ and mails a code, `verify-email` exchanges the code for an account and a session
 """
 
 import logging
+import secrets
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Request, status
+from pymongo import ReturnDocument
 
 from app.config import settings
 from app.core.account_deletion import delete_user_account
@@ -24,7 +26,13 @@ from app.core.email import (
     send_verification_code,
     send_welcome_email,
 )
-from app.core.exceptions import AuthError, ConflictError, NotFoundError, RateLimitError
+from app.core.exceptions import (
+    AccountSuspendedError,
+    AuthError,
+    ConflictError,
+    NotFoundError,
+    RateLimitError,
+)
 from app.core.login_activity import issue_session, revoke_device_sessions
 from app.core.security import (
     decrypt_totp_secret,
@@ -58,6 +66,7 @@ from app.schemas.api import (
     DeviceResponse,
     ForgotPasswordRequest,
     ForgotPasswordResponse,
+    LoginCompleteRequest,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
@@ -78,6 +87,8 @@ from app.schemas.api import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+PASSWORD_MFA_LIFETIME = timedelta(minutes=5)
+PASSWORD_MFA_MAX_ATTEMPTS = 5
 
 
 def _now() -> datetime:
@@ -280,42 +291,113 @@ async def login(
         raise RateLimitError("Too many failed attempts. Try again after the account lock expires.")
 
     if not verify_password(payload.password, user.hashed_password):
-        user.failed_login_attempts += 1
-        if user.failed_login_attempts >= settings.login_max_attempts:
-            user.locked_until = now + timedelta(minutes=settings.login_lockout_minutes)
-            user.failed_login_attempts = 0
-            background.add_task(
-                _send_quietly,
-                "Security alert",
-                send_security_alert_email,
-                to=user.email,
-                title="Account temporarily locked",
-                detail=(
-                    f"CodeForge blocked sign-in for {settings.login_lockout_minutes} minutes "
-                    "after repeated incorrect passwords."
-                ),
-            )
-        await user.save()
+        await _record_failed_login(user, background)
         raise AuthError("Incorrect email or password")
 
     if user.is_suspended:
-        from app.core.exceptions import AccountSuspendedError
-
         raise AccountSuspendedError("This account is suspended. Contact the administrator.")
 
     if user.password_reset_required:
         raise AuthError("Reset your password before signing in again.")
 
+    passkey = await PasskeyCredential.find_one(PasskeyCredential.user_id == str(user.id))
+    methods: list[str] = []
     if user.totp_enabled:
-        if not payload.totp_code:
-            return LoginResponse(mfa_required=True)
-        if not user.totp_secret_encrypted or not verify_totp(
-            payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)
-        ):
-            raise AuthError("The two-factor code is not correct")
+        methods.append("totp")
+    if passkey is not None:
+        methods.append("passkey")
+
+    if methods:
+        ticket = secrets.token_urlsafe(32)
+        await PasskeyChallenge(
+            challenge_id=hash_reset_token(ticket),
+            challenge="",
+            purpose="password_mfa",
+            user_id=str(user.id),
+            expires_at=now + PASSWORD_MFA_LIFETIME,
+            token_version=user.token_version,
+        ).insert()
+        return LoginResponse(mfa_required=True, mfa_ticket=ticket, mfa_methods=methods)
 
     token = await finish_login(user, background, request)
     return LoginResponse(access_token=token)
+
+
+async def _record_failed_login(user: User, background: BackgroundTasks) -> None:
+    user.failed_login_attempts += 1
+    if user.failed_login_attempts >= settings.login_max_attempts:
+        user.locked_until = _now() + timedelta(minutes=settings.login_lockout_minutes)
+        user.failed_login_attempts = 0
+        background.add_task(
+            _send_quietly,
+            "Security alert",
+            send_security_alert_email,
+            to=user.email,
+            title="Account temporarily locked",
+            detail=(
+                f"CodeForge blocked sign-in for {settings.login_lockout_minutes} minutes "
+                "after repeated failed attempts."
+            ),
+        )
+    await user.save()
+
+
+async def password_mfa_user(ticket: str) -> User:
+    challenge = await PasskeyChallenge.find_one(
+        PasskeyChallenge.challenge_id == hash_reset_token(ticket),
+        PasskeyChallenge.purpose == "password_mfa",
+    )
+    if challenge is None or _as_utc(challenge.expires_at) <= _now() or not challenge.user_id:
+        raise AuthError("This verification request has expired. Sign in again.")
+    user = await User.get(challenge.user_id)
+    if user is None or challenge.token_version != user.token_version:
+        raise AuthError("This verification request has expired. Sign in again.")
+    if user.is_suspended or user.password_reset_required:
+        raise AuthError("This account cannot sign in right now.")
+    if user.locked_until and _as_utc(user.locked_until) > _now():
+        raise RateLimitError("Too many failed attempts. Try again after the account lock expires.")
+    return user
+
+
+async def consume_password_mfa_ticket(ticket: str, user: User) -> None:
+    consumed = await PasskeyChallenge.get_pymongo_collection().find_one_and_delete(
+        {
+            "challenge_id": hash_reset_token(ticket),
+            "purpose": "password_mfa",
+            "user_id": str(user.id),
+            "expires_at": {"$gt": _now()},
+            "token_version": user.token_version,
+        }
+    )
+    if consumed is None:
+        raise AuthError("This verification request has expired. Sign in again.")
+
+
+@router.post("/login/complete", response_model=TokenResponse)
+async def complete_password_login(
+    payload: LoginCompleteRequest, background: BackgroundTasks, request: Request
+) -> TokenResponse:
+    user = await password_mfa_user(payload.ticket)
+    if not user.totp_enabled or not user.totp_secret_encrypted:
+        raise AuthError("Authenticator codes are not enabled for this account.")
+    attempted = await PasskeyChallenge.get_pymongo_collection().find_one_and_update(
+        {
+            "challenge_id": hash_reset_token(payload.ticket),
+            "purpose": "password_mfa",
+            "user_id": str(user.id),
+            "expires_at": {"$gt": _now()},
+            "attempts": {"$lt": PASSWORD_MFA_MAX_ATTEMPTS},
+        },
+        {"$inc": {"attempts": 1}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if attempted is None:
+        raise RateLimitError("Too many verification attempts. Sign in again.")
+    if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
+        await _record_failed_login(user, background)
+        raise AuthError("The two-factor code is not correct")
+    await consume_password_mfa_ticket(payload.ticket, user)
+    return TokenResponse(access_token=await finish_login(user, background, request))
 
 
 async def finish_login(user: User, background: BackgroundTasks, request: Request) -> str:

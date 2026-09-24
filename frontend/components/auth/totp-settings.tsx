@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Check,
   CheckCircle2,
   Copy,
+  Fingerprint,
   KeyRound,
   LockKeyhole,
   QrCode,
@@ -140,8 +142,8 @@ export function TotpSettings({
             </span>
             <div>
               <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-faint")}>security status</span>
-              <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Two-factor protection is active" : "Two-factor protection is off"}</h2>
-              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "Sign-in now requires a rotating code from your authenticator app, even when you use a passkey." : "Add a rotating authenticator code so a stolen password alone cannot open your account."}</p>
+              <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Authenticator codes are on" : "Authenticator codes are off"}</h2>
+              <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "After your password, choose an authenticator code or a saved passkey. Direct passkey sign-in needs no extra code." : "Add a rotating authenticator code as another way to verify after your password."}</p>
             </div>
           </div>
           <span className={cn("inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
@@ -293,6 +295,17 @@ export function TotpSettings({
           </div>
         </section>
       )}
+
+      <section className="flex flex-col gap-4 rounded-[7px] border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div className="flex items-start gap-3">
+          <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
+          <div>
+            <h2 className="text-[14px] font-[700] text-fg">Prefer a passkey?</h2>
+            <p className="mt-1 text-[12px] leading-5 text-fg-muted">A saved passkey is also available after password sign-in, and works on its own for direct sign-in.</p>
+          </div>
+        </div>
+        <Link href="/profile/settings/passkeys" className="shrink-0 font-mono text-[11px] font-[700] uppercase tracking-[0.1em] text-accent underline underline-offset-4">Manage passkeys</Link>
+      </section>
 
       {error && !setupOpen ? <p role="alert" className="rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
       {message ? <p role="status" className="flex items-center gap-2 rounded-[4px] border border-ok-bd bg-ok-soft px-4 py-3 text-[12.5px] text-ok"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{message}</p> : null}

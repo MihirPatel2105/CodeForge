@@ -56,13 +56,14 @@ export interface RegisterRequest {
 export interface LoginRequest {
   email: string;
   password: string;
-  totp_code?: string;
 }
 
 export interface LoginResponse {
   access_token: string | null;
   token_type: string;
   mfa_required: boolean;
+  mfa_ticket: string | null;
+  mfa_methods: Array<"totp" | "passkey">;
 }
 
 export interface PasskeyInfo {
@@ -78,9 +79,7 @@ export interface PasskeyOptions<T> {
 }
 
 export interface PasskeyLoginResult {
-  access_token: string | null;
-  mfa_required: boolean;
-  mfa_ticket: string | null;
+  access_token: string;
 }
 
 export interface TokenResponse {

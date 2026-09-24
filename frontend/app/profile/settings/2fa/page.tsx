@@ -21,7 +21,7 @@ export default function SettingsTwoFactorPage() {
     <SecuritySettingsLayout
       current="/profile/settings/2fa"
       title="Two-factor authentication"
-      description="Add a time-based authenticator code at sign-in, including passkey sign-in. Set it up with a QR code or a manual key."
+      description="Use an authenticator code after password sign-in. If you also have a passkey, you can choose either method; direct passkey sign-in needs no extra code."
     >
       <TotpSettings initiallyEnabled={user.totp_enabled} accountEmail={user.email} />
     </SecuritySettingsLayout>

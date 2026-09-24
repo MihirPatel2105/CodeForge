@@ -92,15 +92,17 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 |---|---|---|
 | GET | `/health` | liveness |
 | POST | `/auth/register` | create user → JWT |
-| POST | `/auth/login` | JWT |
+| POST | `/auth/login` | JWT, or a five-minute password-verification ticket with available methods |
+| POST | `/auth/login/complete` | exchange the password ticket and authenticator code for a JWT |
 | GET | `/auth/me` | current user |
 | GET | `/auth/devices` | active browser sessions grouped by device |
 | POST | `/auth/devices/{id}/sign-out` | revoke all current tokens for one owned device |
 | POST | `/auth/sign-in-alert/respond` | one-time email response: `me` or `not_me`; the latter revokes all sessions |
 | GET/POST | `/auth/passkeys` | list passkeys; registration options/verify and password-confirmed deletion |
 | POST | `/auth/passkeys/login/options` | issue a five-minute discoverable-credential challenge |
-| POST | `/auth/passkeys/login/verify` | verify signed assertion; issue JWT or a one-time TOTP ticket |
-| POST | `/auth/passkeys/login/complete` | exchange TOTP ticket and code for a JWT |
+| POST | `/auth/passkeys/login/verify` | verify a user-verified passkey assertion and issue a JWT |
+| POST | `/auth/passkeys/mfa/options` | create a user-bound passkey challenge for a password-verification ticket |
+| POST | `/auth/passkeys/mfa/verify` | exchange the password ticket and a user-verified passkey assertion for a JWT |
 | POST | `/projects` | create project |
 | GET | `/projects` | list user's projects |
 | GET | `/projects/{id}` | project detail |
@@ -144,8 +146,10 @@ Conventions
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.
   Optional passkeys require user verification. Enrollment/removal requires the current password
-  and TOTP if enabled; passkey sign-in still requires TOTP when enabled. Password sign-in and
-  recovery remain available. Challenges and MFA tickets are single-use and expire after five minutes.
+  and TOTP if enabled. After a correct password, accounts with TOTP and/or passkeys receive a
+  five-minute ticket and may verify with either enrolled method; authenticator-code attempts are
+  limited per ticket. Direct user-verified passkey sign-in issues a session without another code.
+  Password sign-in and recovery remain available. Challenges and tickets are single-use.
   A password reset or "not me" sign-in response removes passkeys so an unrecognized credential
   cannot reopen a recovered account.
   TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the

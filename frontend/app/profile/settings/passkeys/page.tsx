@@ -70,7 +70,7 @@ export default function PasskeysPage() {
       setLabel("");
       setPassword("");
       setTotpCode("");
-      setMessage("Passkey added. You can now use it to sign in.");
+      setMessage("Passkey added. You can use it to sign in directly or verify after your password.");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -85,7 +85,10 @@ export default function PasskeysPage() {
   }
 
   async function removePasskey(id: string, name: string) {
-    if (!window.confirm(`Remove “${name}” from this account?`)) return;
+    const lastMethodWarning = passkeys.length === 1 && !user?.totp_enabled
+      ? " This is your only second-step method, so password sign-in will no longer require verification."
+      : "";
+    if (!window.confirm(`Remove “${name}” from this account?${lastMethodWarning}`)) return;
     setError(null);
     setMessage(null);
     setBusy(true);
@@ -112,7 +115,7 @@ export default function PasskeysPage() {
     <SecuritySettingsLayout
       current="/profile/settings/passkeys"
       title="Passkeys"
-      description="Sign in using your device unlock instead of typing your password. Your password remains available, and 2FA still applies when enabled."
+      description="Use a passkey to sign in directly, or as the second step after your password. Direct passkey sign-in does not need an extra authenticator code."
     >
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
@@ -125,6 +128,9 @@ export default function PasskeysPage() {
             <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Add a passkey</h2>
             <p className="mt-2 text-[13px] leading-5 text-fg-muted">
               Confirm your account, then follow your browser&apos;s prompt.
+            </p>
+            <p className="mt-3 text-[12px] leading-5 text-fg-muted">
+              Once saved, a passkey becomes a verification option after password sign-in. If it is your only saved method, it will be required.
             </p>
             <div className="mt-6 space-y-5">
               <div>
@@ -206,7 +212,7 @@ export default function PasskeysPage() {
                 <Fingerprint className="mx-auto h-7 w-7 text-fg-faint" aria-hidden />
                 <p className="mt-3 text-[14px] font-[600] text-fg">No passkeys yet</p>
                 <p className="mx-auto mt-1 max-w-[34ch] text-[12px] leading-5 text-fg-muted">
-                  Add one on this page to use your device unlock at sign-in.
+                  Add one to use your device unlock at sign-in or after entering your password.
                 </p>
               </div>
             ) : (

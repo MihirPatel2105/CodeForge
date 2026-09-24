@@ -14,6 +14,7 @@ import { AuthAside } from "@/components/auth/auth-aside";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { VerifyStep } from "@/components/auth/verify-step";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { clearPendingPasswordMfa, savePendingPasswordMfa } from "@/lib/password-mfa";
 
 type Mode = "signin" | "register";
 
@@ -58,8 +59,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [totpCode, setTotpCode] = useState("");
-  const [mfaRequired, setMfaRequired] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // Set only when the server asks for a code, which it does when it has SMTP configured.
@@ -103,10 +102,19 @@ export function AuthForm({ mode }: { mode: Mode }) {
         }
         setToken(result.access_token);
       } else {
-        const result = await api.login({ email, password, ...(mfaRequired ? { totp_code: totpCode } : {}) });
+        const result = await api.login({ email, password });
         if (result.mfa_required) {
-          setMfaRequired(true);
-          setError(null);
+          if (!result.mfa_ticket || !result.mfa_methods?.length) {
+            setError("The server did not return a verification method. Try again.");
+            return;
+          }
+          savePendingPasswordMfa({
+            ticket: result.mfa_ticket,
+            email,
+            methods: result.mfa_methods,
+          });
+          setPassword("");
+          router.push("/login/verify");
           return;
         }
         if (!result.access_token) {
@@ -114,6 +122,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           return;
         }
         const { access_token } = result;
+        clearPendingPasswordMfa();
         setToken(access_token);
         // The backend decides whether this session is administrative. Do not branch on
         // the typed email here: ADMIN_EMAIL is configuration, and duplicating that
@@ -229,24 +238,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 />
               </div>
 
-              {!registering && mfaRequired ? (
-                <div className="flex flex-col gap-[6px]">
-                  <Label htmlFor="totp_code" className={LABEL}>AUTHENTICATOR CODE</Label>
-                  <Input
-                    id="totp_code"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    required
-                    maxLength={6}
-                    value={totpCode}
-                    onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className={FIELD}
-                    placeholder="000000"
-                  />
-                  <p className="text-[12px] leading-5 text-fg-muted">Enter the six-digit code from your authenticator app.</p>
-                </div>
-              ) : null}
-
               <div className="flex flex-col gap-[6px]">
                 <div className="flex items-baseline justify-between">
                   <Label htmlFor="password" className={LABEL}>
@@ -335,7 +326,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
               </Button>
             </form>
 
-            {!registering && !mfaRequired && (
+            {!registering && (
               <Link href="/login/passkey" className="mt-4 flex h-[46px] items-center justify-center rounded-[3px] border border-border-strong font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-bg">
                 Sign in with a passkey
               </Link>

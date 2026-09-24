@@ -384,12 +384,8 @@ def test_admin_totp_setup_changes_login_to_two_step(client, admin_user):
     assert first.json()["access_token"] is None
 
     second = client.post(
-        "/auth/login",
-        json={
-            "email": admin_user["email"],
-            "password": admin_user["password"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
-        },
+        "/auth/login/complete",
+        json={"ticket": first.json()["mfa_ticket"], "totp_code": code},
     )
     assert second.status_code == 200
     assert second.json()["access_token"]
