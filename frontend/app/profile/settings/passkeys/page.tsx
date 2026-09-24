@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   startRegistration,
   browserSupportsWebAuthn,
 } from "@simplewebauthn/browser";
-import { ArrowLeft, KeyRound } from "lucide-react";
-import { AppHeader } from "@/components/dashboard/app-header";
+import { Fingerprint, KeyRound, LockKeyhole, Plus, ShieldCheck } from "lucide-react";
+import { SecuritySettingsLayout } from "@/components/auth/security-settings-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +19,8 @@ export default function PasskeysPage() {
   const router = useRouter();
   const { user, loading } = useSession();
   const [passkeys, setPasskeys] = useState<PasskeyInfo[]>([]);
+  const [loadingPasskeys, setLoadingPasskeys] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [label, setLabel] = useState("");
   const [password, setPassword] = useState("");
   const [totpCode, setTotpCode] = useState("");
@@ -36,11 +37,13 @@ export default function PasskeysPage() {
     api
       .passkeys()
       .then(setPasskeys)
-      .catch((err) =>
+      .catch((err) => {
+        setLoadFailed(true);
         setError(
           err instanceof ApiError ? err.message : "Could not load passkeys.",
-        ),
-      );
+        );
+      })
+      .finally(() => setLoadingPasskeys(false));
   }, [user]);
 
   async function addPasskey(event: React.FormEvent) {
@@ -106,42 +109,24 @@ export default function PasskeysPage() {
   if (loading || !user) return null;
 
   return (
-    <div className="cf-account min-h-screen bg-bg">
-      <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-6 py-10 md:px-10 md:py-14 lg:px-14">
-        <Link
-          href="/profile/settings"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint hover:text-fg"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-          Back to settings
-        </Link>
-        <header className="mt-5 border-b border-rule pb-7">
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
-            <KeyRound className="h-3 w-3" aria-hidden />
-            account security
-          </span>
-          <h1 className="font-display mt-5 text-[32px] font-[650] tracking-[-0.055em] text-fg md:text-[42px]">
-            Passkeys
-          </h1>
-          <p className="mt-3 max-w-[72ch] text-[14px] leading-6 text-fg-muted">
-            Sign in with your device unlock instead of typing your password.
-            Your password and recovery options remain available. If 2FA is
-            enabled, you will still enter your authenticator code.
-          </p>
-        </header>
-        <div className="mt-7 grid gap-6 lg:grid-cols-2">
+    <SecuritySettingsLayout
+      current="/profile/settings/passkeys"
+      title="Passkeys"
+      description="Sign in using your device unlock instead of typing your password. Your password remains available, and 2FA still applies when enabled."
+    >
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
             onSubmit={addPasskey}
-            className="rounded-[6px] border border-border bg-surface p-6 shadow-[0_16px_45px_rgba(22,24,28,0.045)]"
+            className="rounded-[6px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:px-7"
           >
-            <h2 className="font-display text-[21px] font-[650] text-fg">
-              Add a passkey
-            </h2>
-            <p className="mt-2 text-[13px] text-fg-muted">
+            <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">
+              New passkey
+            </span>
+            <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Add a passkey</h2>
+            <p className="mt-2 text-[13px] leading-5 text-fg-muted">
               Confirm your account, then follow your browser&apos;s prompt.
             </p>
-            <div className="mt-5 space-y-4">
+            <div className="mt-6 space-y-5">
               <div>
                 <Label htmlFor="passkey-label">PASSKEY NAME</Label>
                 <Input
@@ -150,9 +135,10 @@ export default function PasskeysPage() {
                   maxLength={60}
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
-                  placeholder="My laptop"
-                  className="mt-2"
+                  placeholder="e.g. My laptop"
+                  className="mt-2 h-11 rounded-[3px] bg-bg"
                 />
+                <p className="mt-1.5 text-[11px] text-fg-faint">Only you can see this name.</p>
               </div>
               <div>
                 <Label htmlFor="passkey-password">CURRENT PASSWORD</Label>
@@ -163,7 +149,7 @@ export default function PasskeysPage() {
                   required
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="mt-2"
+                  className="mt-2 h-11 rounded-[3px] bg-bg"
                 />
               </div>
               {user.totp_enabled && (
@@ -181,46 +167,73 @@ export default function PasskeysPage() {
                         event.target.value.replace(/\D/g, "").slice(0, 6),
                       )
                     }
-                    className="mt-2"
+                    className="mt-2 h-11 rounded-[3px] bg-bg font-mono tracking-[0.2em]"
                   />
                 </div>
               )}
+              <p className="flex items-start gap-2 rounded-[4px] border border-rule bg-bg px-3 py-2.5 text-[12px] leading-5 text-fg-muted">
+                <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+                Your password confirms this change. The passkey stays on the device or password manager you choose.
+              </p>
               <Button
                 type="submit"
-                disabled={busy || passkeys.length >= 10}
-                className="rounded-[3px]"
+                disabled={busy || loadingPasskeys || loadFailed || passkeys.length >= 10}
+                className="h-11 w-full gap-2 rounded-[3px] sm:w-auto"
               >
-                {busy ? "Working…" : "Add passkey"}
+                {!busy && <Plus className="h-4 w-4" aria-hidden />}
+                {busy ? "Adding passkey…" : "Add passkey"}
               </Button>
             </div>
           </form>
-          <section className="rounded-[6px] border border-border bg-surface p-6 shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
-            <h2 className="font-display text-[21px] font-[650] text-fg">
-              Your passkeys
-            </h2>
-            {passkeys.length === 0 ? (
-              <p className="mt-4 text-[13px] text-fg-muted">No passkeys yet.</p>
+          <section className="rounded-[6px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:px-7">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint">Saved methods</span>
+                <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Your passkeys</h2>
+              </div>
+              <span className="rounded-[3px] border border-border bg-bg px-2.5 py-1 font-mono text-[11px] font-[700] text-fg-muted">
+                {passkeys.length} / 10
+              </span>
+            </div>
+            {loadingPasskeys ? (
+              <p role="status" className="mt-6 text-[13px] text-fg-muted">Loading passkeys…</p>
+            ) : loadFailed ? (
+              <p className="mt-6 text-[13px] leading-5 text-fg-muted">
+                Passkeys could not be loaded. Refresh this page to try again.
+              </p>
+            ) : passkeys.length === 0 ? (
+              <div className="mt-6 rounded-[5px] border border-dashed border-border-strong bg-bg px-5 py-8 text-center">
+                <Fingerprint className="mx-auto h-7 w-7 text-fg-faint" aria-hidden />
+                <p className="mt-3 text-[14px] font-[600] text-fg">No passkeys yet</p>
+                <p className="mx-auto mt-1 max-w-[34ch] text-[12px] leading-5 text-fg-muted">
+                  Add one on this page to use your device unlock at sign-in.
+                </p>
+              </div>
             ) : (
               <ul className="mt-4 divide-y divide-rule">
                 {passkeys.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-4 py-4"
+                    className="flex flex-wrap items-center justify-between gap-4 py-4"
                   >
-                    <div>
-                      <p className="text-[14px] font-[600] text-fg">
-                        {item.label}
-                      </p>
-                      <p className="mt-1 text-[12px] text-fg-muted">
-                        Added {new Date(item.created_at).toLocaleDateString()}
-                      </p>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent">
+                        <KeyRound className="h-4 w-4" aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="break-words text-[14px] font-[600] text-fg">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-[12px] text-fg-muted">
+                          Added {new Date(item.created_at).toLocaleDateString()}
+                          {item.last_used_at && ` · Last used ${new Date(item.last_used_at).toLocaleDateString()}`}
+                        </p>
+                      </div>
                     </div>
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={
-                        busy || !password || (user.totp_enabled && !totpCode)
-                      }
+                      disabled={busy || !password || (user.totp_enabled && totpCode.length !== 6)}
                       onClick={() => removePasskey(item.id, item.label)}
                     >
                       Remove
@@ -229,13 +242,13 @@ export default function PasskeysPage() {
                 ))}
               </ul>
             )}
-            <p className="mt-5 text-[12px] leading-5 text-fg-muted">
-              To remove a passkey, enter your current password
-              {user.totp_enabled ? " and authenticator code" : ""} in the form
-              on the left.
+            <p className="mt-5 flex items-start gap-2 border-t border-rule pt-4 text-[12px] leading-5 text-fg-muted">
+              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+              To remove a passkey, first enter your current password
+              {user.totp_enabled ? " and authenticator code" : ""} in the form.
             </p>
           </section>
-        </div>
+      </div>
         {error && (
           <p
             role="alert"
@@ -252,7 +265,6 @@ export default function PasskeysPage() {
             {message}
           </p>
         )}
-      </main>
-    </div>
+    </SecuritySettingsLayout>
   );
 }
