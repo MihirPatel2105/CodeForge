@@ -29,6 +29,8 @@ COLLECTIONS = (
     "revoked_tokens",
     "devices",
     "login_sessions",
+    "passkey_credentials",
+    "passkey_challenges",
     "sign_in_alerts",
     "projects",
     "runs",

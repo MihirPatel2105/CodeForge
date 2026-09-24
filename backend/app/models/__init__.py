@@ -1,6 +1,7 @@
 from app.models.admin_audit import AdminAuditLog
 from app.models.device import Device
 from app.models.login_session import LoginSession
+from app.models.passkey import PasskeyChallenge, PasskeyCredential
 from app.models.password_reset import PasswordResetToken
 from app.models.pending_signup import PendingSignup
 from app.models.project import Project
@@ -17,6 +18,8 @@ DOCUMENT_MODELS = [
     RevokedToken,
     Device,
     LoginSession,
+    PasskeyCredential,
+    PasskeyChallenge,
     SignInAlert,
     Project,
     Run,
@@ -28,6 +31,8 @@ __all__ = [
     "DOCUMENT_MODELS",
     "Device",
     "LoginSession",
+    "PasskeyChallenge",
+    "PasskeyCredential",
     "PasswordResetToken",
     "PendingSignup",
     "Project",

@@ -9,6 +9,9 @@
  */
 
 import type {
+  PasskeyInfo,
+  PasskeyOptions,
+  PasskeyLoginResult,
   TokenResponse,
   LoginResponse,
   DeviceResponse,
@@ -51,6 +54,7 @@ import type {
   AdminActionResponse,
   ErrorResponse,
 } from "./types";
+import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON, RegistrationResponseJSON, AuthenticationResponseJSON } from "@simplewebauthn/browser";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -164,6 +168,29 @@ export const api = {
     }),
   login: (payload: LoginRequest) =>
     request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
+  passkeys: () => request<PasskeyInfo[]>("/auth/passkeys"),
+  passkeyRegistrationOptions: (currentPassword: string, totpCode?: string) =>
+    request<PasskeyOptions<PublicKeyCredentialCreationOptionsJSON>>("/auth/passkeys/register/options", {
+      method: "POST", body: JSON.stringify({ current_password: currentPassword, totp_code: totpCode }),
+    }),
+  registerPasskey: (challengeId: string, credential: RegistrationResponseJSON, label: string) =>
+    request<PasskeyInfo>("/auth/passkeys/register/verify", {
+      method: "POST", body: JSON.stringify({ challenge_id: challengeId, credential, label }),
+    }),
+  deletePasskey: (id: string, currentPassword: string, totpCode?: string) =>
+    request<void>(`/auth/passkeys/${encodeURIComponent(id)}/delete`, {
+      method: "POST", body: JSON.stringify({ current_password: currentPassword, totp_code: totpCode }),
+    }),
+  passkeyLoginOptions: () =>
+    request<PasskeyOptions<PublicKeyCredentialRequestOptionsJSON>>("/auth/passkeys/login/options", { method: "POST" }),
+  verifyPasskeyLogin: (challengeId: string, credential: AuthenticationResponseJSON) =>
+    request<PasskeyLoginResult>("/auth/passkeys/login/verify", {
+      method: "POST", body: JSON.stringify({ challenge_id: challengeId, credential }),
+    }),
+  completePasskeyLogin: (ticket: string, totpCode: string) =>
+    request<PasskeyLoginResult>("/auth/passkeys/login/complete", {
+      method: "POST", body: JSON.stringify({ ticket, totp_code: totpCode }),
+    }),
   me: () => request<UserResponse>("/auth/me"),
   setupTotp: (currentPassword: string) =>
     request<TotpSetupResponse>("/auth/totp/setup", { method: "POST", body: JSON.stringify({ current_password: currentPassword }) }),

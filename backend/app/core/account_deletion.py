@@ -8,6 +8,8 @@ from app.graph import executor
 from app.models import (
     Device,
     LoginSession,
+    PasskeyChallenge,
+    PasskeyCredential,
     PasswordResetToken,
     PendingSignup,
     Project,
@@ -45,6 +47,8 @@ async def delete_user_account(user: User) -> AccountDeletionResult:
     await PasswordResetToken.find(PasswordResetToken.user_id == user_id).delete()
     await SignInAlert.find(SignInAlert.user_id == user_id).delete()
     await LoginSession.find(LoginSession.user_id == user_id).delete()
+    await PasskeyChallenge.find(PasskeyChallenge.user_id == user_id).delete()
+    await PasskeyCredential.find(PasskeyCredential.user_id == user_id).delete()
     await Device.find(Device.user_id == user_id).delete()
     await PendingSignup.find(PendingSignup.email == user.email).delete()
     await user.delete()

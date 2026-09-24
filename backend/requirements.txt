@@ -20,3 +20,4 @@ langgraph-checkpoint-mongodb  # MongoDBSaver: resumable runs
 pytest
 httpx
 aiosmtplib  # async SMTP; stdlib smtplib blocks the event loop
+webauthn==3.0.0  # WebAuthn ceremony generation and cryptographic verification

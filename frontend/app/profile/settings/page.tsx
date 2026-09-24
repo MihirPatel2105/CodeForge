@@ -237,6 +237,18 @@ export default function SettingsPage() {
         ) : null}
 
         {user ? (
+          <section className="mt-6 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+            <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
+              <div className="flex items-start gap-4">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg"><KeyRound className="h-4 w-4 text-accent" aria-hidden /></span>
+                <div><span className={LABEL}>passkeys</span><h2 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Sign in without typing a password</h2><p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">Add or remove passkeys for this account. Your password stays available as a backup.</p></div>
+              </div>
+              <Link href="/profile/settings/passkeys" className="group inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[3px] bg-fg px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-bg transition-colors hover:bg-fg/90">Manage passkeys<ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+            </div>
+          </section>
+        ) : null}
+
+        {user ? (
           <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-surface shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
             <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
               <div className="flex items-start gap-4">

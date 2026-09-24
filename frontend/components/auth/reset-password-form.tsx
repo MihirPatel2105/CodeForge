@@ -88,7 +88,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           </h1>
           <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
             Choose a strong password you have not used here before. You&apos;ll be
-            signed in when the reset succeeds.
+            signed in when the reset succeeds. Existing passkeys will be removed; you can add them again in Settings.
           </p>
           <p className="mt-3 text-[13px] leading-[1.5] text-fg-muted">
             Remembered it?{" "}

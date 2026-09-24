@@ -43,6 +43,8 @@ from app.core.security import (
 from app.models import (
     Device,
     LoginSession,
+    PasskeyChallenge,
+    PasskeyCredential,
     PasswordResetToken,
     PendingSignup,
     RevokedToken,
@@ -312,11 +314,17 @@ async def login(
         ):
             raise AuthError("The two-factor code is not correct")
 
+    token = await finish_login(user, background, request)
+    return LoginResponse(access_token=token)
+
+
+async def finish_login(user: User, background: BackgroundTasks, request: Request) -> str:
+    """Apply the same session and new-device alert rules to every sign-in method."""
+    now = _now()
     user.failed_login_attempts = 0
     user.locked_until = None
     user.last_login_at = now
     await user.save()
-
     token, device, is_new = await issue_session(user, request)
     if is_new and user.email_verified and settings.email_verification_enabled:
         alert_token = generate_reset_token()
@@ -336,7 +344,7 @@ async def login(
             occurred_at=now,
             review_url=f"{settings.app_base_url}/sign-in-alert/{alert_token}",
         )
-    return LoginResponse(access_token=token)
+    return token
 
 
 @router.post("/totp/setup", response_model=TotpSetupResponse)
@@ -462,6 +470,10 @@ async def reset_password(
     # Single-use: gone whether it succeeded or not, so the same link cannot be replayed.
     await reset.delete()
     await SignInAlert.find(SignInAlert.user_id == str(user.id)).delete()
+    # A reset link is the recovery path after credential compromise. A passkey added
+    # by the attacker must not survive the reset and reopen the account.
+    await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).delete()
+    await PasskeyChallenge.find(PasskeyChallenge.user_id == str(user.id)).delete()
 
     background.add_task(
         _send_quietly,
@@ -614,12 +626,14 @@ async def respond_to_sign_in_alert(payload: SignInAlertResponseRequest) -> SignI
         user.token_version += 1
         user.password_reset_required = True
         await user.save()
+        await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).delete()
+        await PasskeyChallenge.find(PasskeyChallenge.user_id == str(user.id)).delete()
         device = await Device.find_one(
             Device.user_id == alert.user_id, Device.device_hash == alert.device_hash
         )
         if device is not None:
             await device.delete()
-        message = "All sessions have ended. Reset your password before signing in again."
+        message = "All sessions and passkeys ended. Reset your password before signing in again."
     else:
         message = "Sign-in confirmed. Your sessions are unchanged."
     alert.resolved_at = _now()

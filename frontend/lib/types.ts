@@ -65,6 +65,24 @@ export interface LoginResponse {
   mfa_required: boolean;
 }
 
+export interface PasskeyInfo {
+  id: string;
+  label: string;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+export interface PasskeyOptions<T> {
+  challenge_id: string;
+  options: T;
+}
+
+export interface PasskeyLoginResult {
+  access_token: string | null;
+  mfa_required: boolean;
+  mfa_ticket: string | null;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;

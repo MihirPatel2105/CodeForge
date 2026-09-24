@@ -335,6 +335,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
               </Button>
             </form>
 
+            {!registering && !mfaRequired && (
+              <Link href="/login/passkey" className="mt-4 flex h-[46px] items-center justify-center rounded-[3px] border border-border-strong font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-bg">
+                Sign in with a passkey
+              </Link>
+            )}
+
             <div className="mt-6 flex items-center justify-center gap-2 border-t border-rule pt-5 text-center">
               <ShieldCheck className="h-3.5 w-3.5 text-ok" aria-hidden />
               <p className="font-mono text-[9px] font-[600] uppercase tracking-[0.1em] text-fg-faint">
