@@ -5,6 +5,8 @@ import { PauseCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import type { ApprovalSnapshot } from "@/lib/run-reducer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface ApprovalBarProps {
   approval: ApprovalSnapshot;
@@ -53,16 +55,15 @@ function factChips(phase: string, payload: Record<string, unknown>): FactChip[] 
     .filter((c): c is FactChip => c.value != null);
 }
 
-/** Twice per run the pipeline pauses and waits for a human (docs/UI_BRIEF.md §4.4) —
- * this must be unmissable, hence the hazard band and the sticky position above the
- * playback/nav bar rather than inline in the flow. */
+/** The paused checkpoint sits immediately after the run summary so it is visible
+ * before the user starts inspecting the long evidence workbench. */
 export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps) {
   const [note, setNote] = useState("");
   const chips = factChips(approval.phase, approval.payload);
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <div className="sticky bottom-4 z-30 mt-5 overflow-hidden rounded-[6px] border-2 border-warn bg-surface shadow-[0_-8px_34px_rgba(20,22,26,.16)]">
+    <section className="mt-5 overflow-hidden rounded-[6px] border-2 border-warn bg-surface shadow-[0_12px_32px_rgba(20,22,26,.09)]" aria-labelledby="approval-heading">
       <div
         aria-hidden
         className="h-1 motion-safe:animate-[cfShift_0.8s_linear_infinite]"
@@ -71,7 +72,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             "repeating-linear-gradient(115deg, var(--warn) 0 12px, transparent 12px 24px)",
         }}
       />
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-4 px-4 py-4 sm:px-5">
         <div className="flex items-center gap-3">
           <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-warn-soft">
             <PauseCircle
@@ -81,11 +82,11 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
           </span>
           <div className="flex flex-col gap-[2px]">
             <span className={cn(typeScale.label, "text-warn")}>AWAITING APPROVAL</span>
-            <span className="text-[16.5px] font-[650] text-fg">{title}</span>
+            <h2 id="approval-heading" className="text-[17px] font-[650] text-fg">{title}</h2>
           </div>
         </div>
 
-        <div className="h-9 w-px shrink-0 bg-border" aria-hidden />
+        <div className="hidden h-9 w-px shrink-0 bg-border lg:block" aria-hidden />
 
         <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2">
           {chips.map((chip) => (
@@ -98,30 +99,37 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
           ))}
         </div>
 
-        <input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Optional note for the agents…"
-          className="h-9 w-[210px] shrink-0 rounded-[3px] border border-border-strong bg-bg px-3 text-[13px] text-fg placeholder:text-fg-faint focus:outline-none"
-        />
+        <div className="w-full min-w-0 sm:w-auto sm:flex-1 lg:max-w-[240px]">
+          <label htmlFor="approval-note" className={cn(typeScale.label, "mb-1.5 block text-fg-muted")}>Note to agents (optional)</label>
+          <Input
+            id="approval-note"
+            name="approval_note"
+            autoComplete="off"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Add context for the next step…"
+            className="h-11 rounded-[3px] border-border-strong bg-bg text-[14px]"
+          />
+        </div>
 
-        <div className="flex shrink-0 gap-2">
-          <button
+        <div className="flex w-full gap-2 sm:w-auto sm:shrink-0 sm:self-end">
+          <Button
             type="button"
+            variant="outline"
             onClick={() => onReject(note)}
-            className="rounded-[3px] border border-border-strong px-[14px] py-[9px] text-[13.5px] font-[650] text-danger hover:bg-danger-soft"
+            className="h-11 flex-1 rounded-[3px] border-border-strong px-4 text-[13px] text-danger hover:bg-danger-soft sm:flex-none"
           >
             Reject
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => onApprove(note)}
-            className="rounded-[3px] bg-fg px-[16px] py-[9px] text-[14px] font-[700] text-surface"
+            className="h-11 flex-1 rounded-[3px] px-5 text-[13px] sm:flex-none"
           >
             Approve
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

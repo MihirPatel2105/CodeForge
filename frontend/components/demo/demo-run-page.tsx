@@ -6,6 +6,8 @@ import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "luc
 import { AppHeader } from "@/components/dashboard/app-header";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
+import { RunStory } from "@/components/dashboard/run-story";
+import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
 import { ResultSummary } from "@/components/dashboard/result-summary";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
@@ -17,8 +19,6 @@ import { useCurrentUser } from "@/lib/use-current-user";
 import { cn } from "@/lib/utils";
 
 const EVENT_INTERVAL_MS = 980;
-
-type EvidenceView = "timeline" | "code" | "terminal" | "tests";
 
 export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const user = useCurrentUser();
@@ -183,6 +183,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
+          <RunStory snapshot={snapshot} />
           <div ref={pipelineViewport} className="cf-run-scroll snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
             <div className="min-w-[1180px]">
               <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
@@ -215,39 +216,23 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
             <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint sm:block">events · code · sandbox · tests</span>
           </div>
 
-          <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-[4px] border border-border bg-surface xl:hidden" role="tablist" aria-label="Demo evidence">
-            {(["timeline", "code", "terminal", "tests"] as const).map((view) => (
-              <button
-                key={view}
-                type="button"
-                role="tab"
-                aria-selected={mobileEvidence === view}
-                onClick={() => setMobileEvidence(view)}
-                className={cn(
-                  "border-r border-border px-2 py-3 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] last:border-r-0",
-                  mobileEvidence === view ? "bg-fg text-surface" : "bg-surface text-fg-muted hover:bg-surface-2",
-                )}
-              >
-                {view}
-              </button>
-            ))}
-          </div>
+          <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="demo-evidence" label="Demo evidence" />
 
           <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
-            <div className={cn("h-[520px] xl:block xl:h-[648px]", mobileEvidence !== "timeline" && "hidden")}>
+            <div id="demo-evidence-panel-timeline" role="tabpanel" aria-labelledby="demo-evidence-tab-timeline" className={cn("h-[520px] xl:block xl:h-[648px]", mobileEvidence !== "timeline" && "hidden")}>
               <TimelinePanel entries={snapshot.timeline} />
             </div>
 
             <div className={cn("min-w-0 flex-col gap-3 xl:flex", mobileEvidence === "timeline" ? "hidden" : "flex")}>
-              <div className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}>
+              <div id="demo-evidence-panel-code" role="tabpanel" aria-labelledby="demo-evidence-tab-code" className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}>
                 <CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />
               </div>
 
               <div className={cn("flex-col gap-3 md:flex-row xl:flex", mobileEvidence === "terminal" || mobileEvidence === "tests" ? "flex" : "hidden")}>
-                <div className={cn("min-w-0 flex-1 xl:block", mobileEvidence !== "terminal" && "hidden")}>
+                <div id="demo-evidence-panel-terminal" role="tabpanel" aria-labelledby="demo-evidence-tab-terminal" className={cn("min-w-0 flex-1 xl:block", mobileEvidence !== "terminal" && "hidden")}>
                   <TerminalPanel lines={snapshot.terminalLines} image={snapshot.agents.sandbox.model} running={snapshot.agents.sandbox.state === "working"} />
                 </div>
-                <div className={cn("xl:block", mobileEvidence !== "tests" && "hidden")}>
+                <div id="demo-evidence-panel-tests" role="tabpanel" aria-labelledby="demo-evidence-tab-tests" className={cn("xl:block", mobileEvidence !== "tests" && "hidden")}>
                   <TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />
                 </div>
               </div>

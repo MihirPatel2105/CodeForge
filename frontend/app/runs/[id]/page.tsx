@@ -7,6 +7,8 @@ import { ArrowLeft, FileCode2, FlaskConical, ListTree, RotateCcw, ShieldCheck } 
 import { useRunStream } from "@/lib/use-run-stream";
 import { api, getToken, downloadLatestFileTree, ApiError } from "@/lib/api";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
+import { RunStory } from "@/components/dashboard/run-story";
+import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { buildHunks } from "@/lib/diff";
@@ -39,7 +41,7 @@ export default function LiveRunPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [runProjectId, setRunProjectId] = useState<string | null>(null);
-  const [mobileEvidence, setMobileEvidence] = useState<"timeline" | "code" | "terminal" | "tests">("timeline");
+  const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
   const pipelineViewport = useRef<HTMLDivElement>(null);
 
   // `replace`, not `push`: a signed-out visitor should not be able to press Back and
@@ -269,6 +271,14 @@ export default function LiveRunPage() {
           </p>
         )}
 
+        {snapshot.approval && (
+          <ApprovalBar
+            approval={snapshot.approval}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        )}
+
         <section className="mt-7 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.055)]" aria-labelledby="agent-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-4 sm:px-6">
             <div>
@@ -280,6 +290,7 @@ export default function LiveRunPage() {
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
+          <RunStory snapshot={snapshot} />
           <div ref={pipelineViewport} className="cf-run-scroll snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
             <div className="min-w-[1180px]">
               <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
@@ -313,32 +324,7 @@ export default function LiveRunPage() {
             <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint sm:block">events · code · sandbox · tests</span>
           </div>
 
-          <div
-            className="mb-4 grid grid-cols-4 overflow-hidden rounded-[4px] border border-border bg-surface xl:hidden"
-            role="tablist"
-            aria-label="Run evidence"
-          >
-            {(["timeline", "code", "terminal", "tests"] as const).map((view) => (
-              <button
-                key={view}
-                type="button"
-                role="tab"
-                id={`evidence-tab-${view}`}
-                aria-controls={`evidence-panel-${view}`}
-                aria-selected={mobileEvidence === view}
-                tabIndex={mobileEvidence === view ? 0 : -1}
-                onClick={() => setMobileEvidence(view)}
-                className={cn(
-                  "border-r border-border px-2 py-3 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] last:border-r-0",
-                  mobileEvidence === view
-                    ? "bg-fg text-surface"
-                    : "bg-surface text-fg-muted hover:bg-surface-2",
-                )}
-              >
-                {view}
-              </button>
-            ))}
-          </div>
+          <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="evidence" label="Run evidence" />
 
           <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
             <div
@@ -386,13 +372,6 @@ export default function LiveRunPage() {
           </div>
         </section>
 
-        {snapshot.approval && (
-          <ApprovalBar
-            approval={snapshot.approval}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
-        )}
       </main>
     </div>
   );
