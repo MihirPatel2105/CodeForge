@@ -195,7 +195,7 @@ export default function LiveRunPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
         <Link
           href="/projects"
           className="inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-fg-faint transition-colors hover:text-accent"
@@ -204,9 +204,9 @@ export default function LiveRunPage() {
           Projects
         </Link>
 
-        <header className="cf-run-hero mt-4 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.075)]">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_350px]">
-            <div className="relative px-5 py-5 sm:px-7 sm:py-6 lg:px-7">
+        <header className="cf-run-hero mt-3 overflow-hidden rounded-[6px] border border-border bg-surface">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
+            <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span
                   className={cn(
@@ -230,10 +230,10 @@ export default function LiveRunPage() {
                 </span>
               </div>
 
-              <p className="mt-4 font-mono text-[9px] font-[650] uppercase tracking-[0.14em] text-accent">
+              <p className="mt-3 font-mono text-[11px] font-[650] uppercase tracking-[0.14em] text-accent">
                 API build request
               </p>
-              <h1 className="font-display mt-2 max-w-[60ch] text-[16px] font-[650] leading-[1.3] tracking-[-0.035em] text-fg sm:text-[18px]">
+              <h1 className="font-display mt-2 max-w-[60ch] text-[19px] font-[650] leading-[1.3] tracking-[-0.035em] text-fg sm:text-[21px]">
                 {snapshot.prompt ?? "Preparing the agent workflow…"}
               </h1>
 
@@ -279,11 +279,11 @@ export default function LiveRunPage() {
           />
         )}
 
-        <section className="mt-7 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.055)]" aria-labelledby="agent-pipeline-heading">
-          <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-4 sm:px-6">
+        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-[6px] border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
+          <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
               <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">live orchestration</span>
-              <h2 id="agent-pipeline-heading" className="font-display mt-1.5 text-[19px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
+              <h2 id="agent-pipeline-heading" className="font-display mt-1 text-[22px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
               <span className="sm:hidden">swipe to inspect →</span>

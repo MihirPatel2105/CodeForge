@@ -64,14 +64,15 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   const t = tone[STATE_TONE[state]];
   const working = state === "working";
   const failed = state === "failed";
+  const stateRail = loopHighlight ? "bg-loop" : working ? "bg-accent" : state === "done" ? "bg-ok" : failed ? "bg-danger" : "bg-border-strong";
 
   return (
     <div
       className={cn(
-        "flex flex-1 snap-center flex-col gap-[7px] rounded-[3px] border-[1.5px] bg-surface px-[13px] pt-3 pb-[11px]",
+        "relative flex flex-1 snap-center flex-col gap-[7px] overflow-hidden rounded-[3px] border-[1.5px] bg-surface px-[13px] pt-[15px] pb-[11px]",
         "transition-[transform,box-shadow,border-color,opacity] duration-300 ease-out",
-        state === "idle" && "border-border opacity-[0.72]",
-        working && "-translate-y-[3px] border-accent-bd shadow-[0_4px_16px_rgba(67,56,202,.15)]",
+        state === "idle" && "border-border opacity-[0.86]",
+        working && "-translate-y-[3px] border-accent-bd bg-accent-soft/20 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]",
         state === "done" && "border-ok-bd",
         failed && "border-danger-bd",
         // Reads as "ran, then was interrupted": not faded as far as idle, which means
@@ -83,11 +84,12 @@ export function AgentCard({ data }: { data: AgentCardData }) {
         // fires, and the trigger must lift regardless of its own state.
         dimmed && "opacity-[0.32]",
         loopHighlight &&
-          "-translate-y-[3px] border-loop-bd shadow-[0_6px_22px_rgba(109,40,217,.28)]",
+          "-translate-y-[3px] border-loop-bd shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]",
       )}
       data-stage={data.id}
       data-state={state}
     >
+      <span className={cn("absolute inset-x-0 top-0 h-[3px]", stateRail)} aria-hidden />
       {/* Row 1: numbered square, name, iteration badge */}
       <div className="flex items-center gap-[7px]">
         <span
@@ -118,7 +120,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       </div>
 
       {/* Row 2: job line — fixed height so all six cards align regardless of wrap */}
-      <p className="min-h-[32px] text-[12px] leading-[1.35] text-fg-muted">{job}</p>
+      <p className="min-h-[36px] text-[13px] leading-[1.35] text-fg-muted">{job}</p>
 
       {/* Row 3: state pill */}
       <span
@@ -150,7 +152,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
           card and shove a later stage off the screen. */}
       <p
         className={cn(
-          "line-clamp-3 min-h-[34px] break-words text-[12.5px] leading-[1.35]",
+          "line-clamp-3 min-h-[36px] break-words text-[13.5px] leading-[1.35]",
           failed ? "text-danger" : "text-fg",
         )}
       >

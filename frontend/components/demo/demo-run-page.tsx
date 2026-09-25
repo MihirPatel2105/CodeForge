@@ -92,7 +92,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-fg-faint transition-colors hover:text-accent"
@@ -101,9 +101,9 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           Home
         </Link>
 
-        <header className="cf-run-hero mt-4 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.075)]">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_330px]">
-            <div className="relative px-5 py-5 sm:px-7 sm:py-6 lg:px-7">
+        <header className="cf-run-hero mt-3 overflow-hidden rounded-[6px] border border-border bg-surface">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
+            <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 font-mono text-[10px] font-[750] uppercase tracking-[0.1em] text-accent">
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
@@ -113,16 +113,16 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   no model calls · no login required
                 </span>
               </div>
-              <p className="mt-5 font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-accent">
+              <p className="mt-3 font-mono text-[11px] font-[650] uppercase tracking-[0.14em] text-accent">
                 {demo.label} API workflow
               </p>
               <h1 className="font-display mt-2 max-w-[60ch] text-[22px] font-[650] leading-[1.25] tracking-[-0.04em] text-fg sm:text-[27px]">
                 {demo.title}
               </h1>
-              <p className="mt-3 max-w-[78ch] text-[14px] leading-[1.6] text-fg-muted">{demo.prompt}</p>
+              <p className="mt-2 max-w-[78ch] text-[15px] leading-[1.5] text-fg-muted">{demo.prompt}</p>
             </div>
 
-            <div className="flex flex-col justify-between border-t border-rule bg-surface-2/45 px-5 py-5 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
+            <div className="flex flex-col justify-between border-t border-rule bg-surface-2/45 px-5 py-4 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
               <div>
                 <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">
                   replay controls
@@ -156,7 +156,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   </button>
                 </div>
               </div>
-              <div className="mt-5">
+              <div className="mt-3">
                 <div className="flex items-center justify-between font-mono text-[9px] font-[650] uppercase tracking-[0.1em] text-fg-faint">
                   <span>{isComplete ? "replay complete" : "agents are working"}</span>
                   <span>{Math.round(((eventIndex + 1) / demo.events.length) * 100)}%</span>
@@ -172,11 +172,11 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           </div>
         </header>
 
-        <section className="mt-7 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.055)]" aria-labelledby="demo-pipeline-heading">
-          <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-4 sm:px-6">
+        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-[6px] border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
+          <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
               <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">recorded orchestration</span>
-              <h2 id="demo-pipeline-heading" className="font-display mt-1.5 text-[19px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
+              <h2 id="demo-pipeline-heading" className="font-display mt-1 text-[22px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
               <span className="sm:hidden">swipe to inspect →</span>
