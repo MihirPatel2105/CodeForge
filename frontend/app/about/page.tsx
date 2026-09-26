@@ -83,7 +83,7 @@ export default function AboutPage() {
       <SiteHeader />
       <main>
         <section className="cf-about-hero relative border-b border-rule">
-          <div className="relative z-10 mx-auto grid min-h-[calc(100svh-58px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(480px,1.1fr)] lg:px-14">
+          <div className="relative z-10 mx-auto grid min-h-[calc(100svh-64px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(480px,1.1fr)] lg:px-14">
             <div className="max-w-[690px]">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">
                 <Eye className="h-3.5 w-3.5" aria-hidden />

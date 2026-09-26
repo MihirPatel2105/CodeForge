@@ -27,7 +27,7 @@ export default function LandingPage() {
 
       {/* Start with the prompt and the tested output it produces. */}
       <section className="cf-home-hero cf-grid border-b border-rule">
-        <div className="relative mx-auto grid min-h-[calc(100svh-58px)] w-full max-w-[1536px] items-center gap-x-16 gap-y-12 px-6 py-16 md:px-10 lg:grid-cols-[1fr_29rem] lg:px-14">
+        <div className="relative mx-auto grid min-h-[calc(100svh-64px)] w-full max-w-[1536px] items-center gap-x-16 gap-y-12 px-6 py-16 md:px-10 lg:grid-cols-[1fr_29rem] lg:px-14">
           <HeroDemo />
         </div>
       </section>
