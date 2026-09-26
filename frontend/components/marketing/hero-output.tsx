@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check, FileCode2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokenizePythonLine } from "@/lib/python-highlight";
 
@@ -72,32 +73,33 @@ export function HeroOutput({
   }, [shown, done, demo.lines.length, reduceMotion]);
 
   return (
-    <div className="cf-invert cf-lift cf-home-output relative w-full overflow-hidden rounded-2xl border border-border bg-bg p-4 shadow-[0_28px_80px_rgba(22,24,28,0.16)] sm:p-5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
-      <div className="mb-4 flex items-baseline justify-between">
-        <span className={label}>what it writes</span>
+    <div className="cf-home-output relative w-full overflow-hidden rounded-[28px] border border-border bg-white p-4 shadow-[0_28px_70px_rgba(34,48,78,0.12),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3 px-1">
+        <span className={label}>Generated output</span>
         <span
           className={cn(
-            "font-mono text-[10.5px] font-[600] uppercase tracking-[0.12em] transition-colors duration-500",
-            done ? "text-ok" : "text-fg-faint",
+            "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-[650] transition-colors duration-500",
+            done ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent",
           )}
         >
-          {done ? "passed" : "writing"}
+          {done ? <Check className="h-3 w-3" aria-hidden /> : <span className="h-1.5 w-1.5 rounded-full bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]" aria-hidden />}
+          {done ? "Tests passed" : "Writing code"}
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-        <div className="flex items-center justify-between border-b border-rule px-4 py-[9px]">
-          <span className="font-mono text-[12px] font-[600] text-fg">{demo.file}</span>
-          <span className="font-mono text-[11px] text-fg-faint">
-            {String(reduceMotion ? demo.lines.length : Math.min(shown, demo.lines.length)).padStart(2, "0")}/{demo.lines.length}
+      <div className="overflow-hidden rounded-[20px] border border-border bg-white shadow-[0_2px_8px_rgba(35,50,81,0.035)]">
+        <div className="flex items-center justify-between gap-3 border-b border-rule bg-surface-2/70 px-4 py-3">
+          <span className="inline-flex min-w-0 items-center gap-2.5 text-[12px] font-[650] text-fg">
+            <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+            <span className="truncate font-mono">{demo.file}</span>
           </span>
+          <span className="shrink-0 text-[11px] text-fg-faint">Python · {demo.lines.length} lines</span>
         </div>
 
         {/* Fixed height so the card never resizes as lines land — a hero that jumps
             while you read the headline beside it is worse than one that sits still. */}
-        <div className="h-[236px] bg-code-bg px-4 py-3">
-          <ol className="font-mono text-[12.5px] leading-[1.85]">
+        <div className="h-[254px] overflow-x-auto bg-code-bg px-4 py-3.5">
+          <ol className="min-w-max font-mono text-[12.5px] leading-[1.8]">
             {demo.lines.map((line, i) => {
               const visible = reduceMotion || i < shown;
               const newest = i === shown - 1;
@@ -105,11 +107,11 @@ export function HeroOutput({
                 <li
                   key={i}
                   className={cn(
-                    "flex gap-3 transition-opacity duration-300",
+                    "flex gap-4 transition-opacity duration-300",
                     visible ? "opacity-100" : "opacity-0",
                   )}
                 >
-                  <span className="w-[14px] shrink-0 text-right text-code-com">{i + 1}</span>
+                  <span className="w-[18px] shrink-0 select-none text-right text-code-com">{i + 1}</span>
                   <span className="text-code-fg">
                     {tokenizePythonLine(line).map((token, t) => (
                       <span key={t} className={token.cls ? TOKEN_CLASS[token.cls] : undefined}>
@@ -129,7 +131,7 @@ export function HeroOutput({
 
         {/* The verdict. Only meaningful once the file exists, so it stays reserved
             rather than absent — the card keeps one height either way. */}
-        <div className="flex items-center gap-[9px] border-t border-rule px-4 py-[11px]">
+        <div className={cn("flex min-h-12 items-center gap-2.5 border-t border-rule px-4 py-3", done ? "bg-ok-soft/55" : "bg-surface-2/55")}>
           <span
             aria-hidden
             className={cn(
@@ -139,7 +141,7 @@ export function HeroOutput({
           />
           <span
             className={cn(
-              "font-mono text-[12px] transition-colors duration-500",
+              "text-[12px] font-[650] transition-colors duration-500",
               done ? "font-[600] text-ok" : "text-fg-faint",
             )}
           >

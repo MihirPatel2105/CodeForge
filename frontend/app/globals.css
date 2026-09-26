@@ -323,31 +323,13 @@
 }
 
 .cf-home-output {
-  --code-bg: #0f1116;
-  --code-fg: #e4e7ec;
-  --code-kw: #b794ff;
-  --code-str: #7fd8ae;
-  --code-com: #626a76;
-  --code-fn: #8bb8ff;
-  --code-num: #f0a860;
-}
-
-.cf-home-output::after {
-  content: "";
-  position: absolute;
-  right: -20%;
-  bottom: -55%;
-  width: 70%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(139, 147, 248, 0.06);
-  filter: blur(42px);
-  pointer-events: none;
-}
-
-.cf-home-output > * {
-  position: relative;
-  z-index: 1;
+  --code-bg: #fbfcff;
+  --code-fg: #273244;
+  --code-kw: #6943ad;
+  --code-str: #147a62;
+  --code-com: #8692a3;
+  --code-fn: #245cbd;
+  --code-num: #a45d16;
 }
 
 .cf-home-walkthrough {

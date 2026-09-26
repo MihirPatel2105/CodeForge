@@ -166,16 +166,16 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
   return (
     <li
       className={cn(
-        "relative min-h-[140px] border bg-surface p-4 transition-[border-color,background-color,opacity,transform] duration-500",
+        "relative min-h-[150px] overflow-hidden rounded-[18px] border bg-surface p-4 shadow-[0_2px_9px_rgba(35,50,81,0.035)] transition-[border-color,background-color,box-shadow] duration-300",
         agent.position,
-        state === "working" && "border-accent-bd bg-accent-soft/55 shadow-[0_12px_34px_rgba(67,56,202,0.08)]",
-        state === "done" && "border-ok-bd",
-        state === "returned" && "border-danger-bd bg-danger-soft/45",
-        state === "queued" && "border-border opacity-55",
+        state === "working" && "border-accent-bd bg-accent-soft/65 shadow-[0_10px_28px_rgba(63,71,201,0.1)]",
+        state === "done" && "border-ok-bd bg-white",
+        state === "returned" && "border-danger-bd bg-danger-soft/65",
+        state === "queued" && "border-border bg-white/80",
       )}
     >
       {state === "working" && (
-        <span className="absolute inset-x-0 top-0 h-[2px] overflow-hidden bg-accent-bd" aria-hidden>
+        <span className="absolute inset-x-0 top-0 h-[3px] overflow-hidden bg-accent-bd" aria-hidden>
           <span className="block h-full w-1/3 bg-accent motion-safe:animate-[cfBar_1.35s_ease-in-out_infinite]" />
         </span>
       )}
@@ -183,7 +183,7 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className={cn(
-            "grid h-6 w-6 place-items-center font-mono text-[10px] font-[700]",
+            "grid h-7 w-7 shrink-0 place-items-center rounded-lg font-mono text-[10px] font-[700]",
             state === "working" && "bg-accent-soft text-accent",
             state === "done" && "bg-ok-soft text-ok",
             state === "returned" && "bg-danger-soft text-danger",
@@ -191,11 +191,11 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
           )}>
             {String(index + 1).padStart(2, "0")}
           </span>
-          <span className="font-display text-[13px] font-[700] tracking-[-0.025em] text-fg">{agent.name}</span>
+          <span className="font-display text-[14px] font-[700] tracking-[-0.025em] text-fg">{agent.name}</span>
         </div>
 
         <span className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-[9px] font-[700] uppercase tracking-[0.09em]",
+          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-surface-2 px-2 py-1 text-[10px] font-[650]",
           state === "working" && "text-accent",
           state === "done" && "text-ok",
           state === "returned" && "text-danger",
@@ -212,10 +212,10 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
         </span>
       </div>
 
-      <p className="mt-4 text-[12px] leading-[1.45] text-fg-muted">{agent.role}</p>
+      <p className="mt-4 text-[12px] leading-[1.5] text-fg-muted">{agent.role}</p>
 
       <div className="absolute inset-x-4 bottom-3.5 flex items-center justify-between gap-3 border-t border-rule pt-2.5">
-        <span className="truncate font-mono text-[9.5px] text-fg-faint">
+        <span className="truncate text-[11px] text-fg-muted">
           {state === "done" ? agent.output : state === "working" ? "processing…" : "waiting"}
         </span>
         {agent.name === "Coder" && iteration > 1 && (
@@ -233,26 +233,25 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
   const complete = step.id === "complete";
 
   return (
-    <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-xl border border-border bg-bg p-4 shadow-[0_30px_90px_rgba(18,20,24,0.16)] sm:p-5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-4">
+    <div className="relative overflow-hidden rounded-[28px] border border-border bg-[#f7f9fd] p-4 shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-1 pb-4">
         <div>
-          <span className="font-mono text-[9px] font-[700] uppercase tracking-[0.15em] text-fg-faint">live agent run</span>
-          <p className="mt-1.5 font-mono text-[11px] text-fg">library-api / run_01</p>
+          <span className="text-[12px] font-[650] text-fg-muted">Live agent run</span>
+          <p className="mt-1 font-mono text-[12px] font-[600] text-fg">library-api <span className="text-fg-faint">/ run_01</span></p>
         </div>
         <div className="flex items-center gap-2">
           {iteration > 1 && (
-            <span className="rounded-full border border-loop-bd bg-loop-soft px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] text-loop">loop {iteration - 1}</span>
+            <span className="rounded-full border border-loop-bd bg-loop-soft px-2.5 py-1 text-[11px] font-[650] text-loop">Loop {iteration - 1}</span>
           )}
           <span className={cn(
-            "inline-flex items-center gap-2 border px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em]",
+            "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-[650]",
             complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent",
           )}>
             <span className={cn(
               "h-1.5 w-1.5 rounded-full",
               complete ? "bg-ok" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]",
             )} aria-hidden />
-            {complete ? "succeeded" : loopFiring ? "returning" : "running"}
+            {complete ? "Succeeded" : loopFiring ? "Returning" : "Running"}
           </span>
         </div>
       </div>
@@ -265,11 +264,11 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
         </ol>
 
         <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block" aria-hidden>
-          <span className="absolute left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">→</span>
-          <span className="absolute left-2/3 top-1/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">→</span>
-          <span className="absolute left-[83.33%] top-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">↓</span>
-          <span className="absolute left-2/3 top-3/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">←</span>
-          <span className="absolute left-1/3 top-3/4 -translate-x-1/2 -translate-y-1/2 bg-bg px-1 font-mono text-[13px] text-fg-faint">←</span>
+          <span className="absolute left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
+          <span className="absolute left-2/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
+          <span className="absolute left-[83.33%] top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">↓</span>
+          <span className="absolute left-2/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
+          <span className="absolute left-1/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
         </div>
 
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 z-20 hidden h-full w-full overflow-visible sm:block" aria-hidden>
@@ -291,26 +290,26 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
         </svg>
 
         <span className={cn(
-          "absolute -right-2 top-1/2 z-30 hidden -translate-y-1/2 rounded-full border px-2 py-1 font-mono text-[8px] font-[700] uppercase tracking-[0.08em] sm:block",
-          loopFiring ? "border-loop-bd bg-loop-soft text-loop motion-safe:animate-[cfPop_.34s_ease-out]" : "border-border bg-bg text-fg-faint",
+          "absolute -right-2 top-1/2 z-30 hidden -translate-y-1/2 rounded-full border px-2.5 py-1 text-[10px] font-[650] sm:block",
+          loopFiring ? "border-loop-bd bg-loop-soft text-loop motion-safe:animate-[cfPop_.34s_ease-out]" : "border-border bg-white text-fg-muted",
         )}>
-          back to coder
+          Back to Coder
         </span>
       </div>
 
       <div key={step.id} className={cn(
-        "mt-4 flex items-start gap-3 border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out]",
+        "mt-4 flex items-start gap-3 rounded-2xl border px-4 py-3.5 motion-safe:animate-[cfFade_.28s_ease-out]",
         loopFiring ? "border-loop-bd bg-loop-soft" : complete ? "border-ok-bd bg-ok-soft" : "border-border bg-surface",
       )}>
         <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full", loopFiring ? "bg-loop" : complete ? "bg-ok" : "bg-accent")} aria-hidden />
         <div>
           <span className={cn(
-            "font-mono text-[9px] font-[700] uppercase tracking-[0.1em]",
+            "text-[11px] font-[700]",
             loopFiring ? "text-loop" : complete ? "text-ok" : "text-fg-faint",
           )}>
             {loopFiring ? "feedback loop" : complete ? "run result" : `${AGENTS[Math.min(step.stage, 5)].name} activity`}
           </span>
-          <p className="mt-1 text-[11.5px] leading-[1.45] text-fg-muted">{step.lines[0].text}</p>
+          <p className="mt-1 text-[12px] leading-[1.5] text-fg-muted">{step.lines[0].text}</p>
         </div>
       </div>
     </div>

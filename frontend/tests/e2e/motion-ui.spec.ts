@@ -13,7 +13,8 @@ test("all sections are available before scrolling and reduced motion stays still
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByText("10/10")).toBeVisible();
+  await expect(page.getByText("Tests passed", { exact: true })).toBeVisible();
+  await expect(page.getByText("8 passed in 1.42s").first()).toBeVisible();
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
