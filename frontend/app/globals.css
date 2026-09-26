@@ -525,15 +525,136 @@
 
 /* Entry pages keep the form primary, with a quiet product preview on wide screens. */
 .cf-auth-entry {
+  position: relative;
+  overflow-x: clip;
   background:
+    radial-gradient(ellipse at 4% 54%, rgba(92, 108, 208, 0.075), transparent 26rem),
+    radial-gradient(ellipse at 97% 67%, rgba(92, 108, 208, 0.06), transparent 28rem),
     radial-gradient(circle at 50% -12%, rgba(80, 95, 214, 0.1), transparent 32rem),
     linear-gradient(180deg, #fbfcfe 0%, var(--bg) 100%);
+}
+
+.cf-auth-entry::before,
+.cf-auth-entry::after {
+  content: "";
+  position: fixed;
+  top: 17%;
+  width: 25rem;
+  height: 42rem;
+  border: 1px solid rgba(63, 71, 201, 0.09);
+  border-radius: 48% 52% 46% 54% / 55% 43% 57% 45%;
+  pointer-events: none;
+}
+
+.cf-auth-entry::before {
+  left: -18rem;
+  transform: rotate(-13deg);
+}
+
+.cf-auth-entry::after {
+  right: -18rem;
+  transform: rotate(13deg);
 }
 
 .cf-auth-proof {
   background:
     radial-gradient(circle at 90% 4%, rgba(100, 116, 230, 0.11), transparent 18rem),
     linear-gradient(155deg, #f9faff 0%, #f2f5fd 100%);
+}
+
+@media (max-width: 1023px) {
+  .cf-auth-entry::before,
+  .cf-auth-entry::after {
+    display: none;
+  }
+}
+
+/* Short desktop windows retain the full card without shrinking form controls. */
+@media (min-width: 1024px) and (max-height: 900px) {
+  .cf-auth-header {
+    height: 64px;
+  }
+
+  .cf-auth-stage {
+    min-height: calc(100dvh - 64px);
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .cf-auth-form-pane,
+  .cf-auth-proof {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .cf-auth-form-pane form {
+    margin-top: 20px;
+    row-gap: 12px;
+  }
+
+  .cf-auth-form-pane .cf-auth-eyebrow {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .cf-auth-form-pane h1 + p {
+    margin-top: 8px;
+  }
+
+  .cf-auth-form-pane .cf-auth-rules {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .cf-auth-form-pane .cf-auth-rules p {
+    margin-bottom: 6px;
+  }
+
+  .cf-auth-form-pane .cf-auth-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+
+  .cf-auth-proof h2 {
+    margin-top: 16px;
+  }
+
+  .cf-auth-proof ol {
+    margin-top: 22px;
+  }
+
+  .cf-auth-proof ol li + li {
+    margin-top: 12px;
+  }
+
+  .cf-auth-proof > div:last-child {
+    padding-top: 20px;
+  }
+
+  .cf-auth-proof > div:last-child > a {
+    margin-top: 12px;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 760px) {
+  .cf-auth-stage {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .cf-auth-form-pane,
+  .cf-auth-proof {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .cf-auth-form-pane form {
+    row-gap: 10px;
+  }
+
+  .cf-auth-form-pane h1 {
+    font-size: 34px;
+  }
 }
 
 /* Other authentication routes still use the dark proof panel. */

@@ -67,7 +67,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <AuthEntryShell label="Set a new password" proof="recovery">
           <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><KeyRound className="h-5 w-5" aria-hidden /></span>
-          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Account recovery</div>
+          <div className="cf-auth-eyebrow mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Account recovery</div>
           <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
             Set a new password
           </h1>
@@ -105,7 +105,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
               </div>
             </div>
 
-            <div id="reset-password-rules" className="rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
+            <div id="reset-password-rules" className="cf-auth-rules rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
             <p className="mb-2.5 text-[12px] font-[650] text-fg-muted">Use a password with</p>
             <ul className="grid gap-x-4 gap-y-2 sm:grid-cols-2" aria-live="polite">
               {PASSWORD_RULES.map((rule) => {
@@ -184,7 +184,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </Button>
           </form>
 
-          <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">Remembered it? <Link href="/login" className="font-[700] text-accent hover:underline hover:underline-offset-4">Sign in</Link></p>
+          <p className="cf-auth-footer mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">Remembered it? <Link href="/login" className="font-[700] text-accent hover:underline hover:underline-offset-4">Sign in</Link></p>
     </AuthEntryShell>
   );
 }

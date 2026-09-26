@@ -151,7 +151,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 />
               ) : (
                 <>
-                  <div className="mb-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent">
+                  <div className="cf-auth-eyebrow mb-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent">
                     <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
                     {registering ? "Your new workspace" : "Your workspace"}
                   </div>
@@ -194,7 +194,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                     </div>
 
                     {registering && (
-                      <div id="password-rules" className="rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
+                      <div id="password-rules" className="cf-auth-rules rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
                         <p className="mb-2.5 text-[12px] font-[650] text-fg-muted">Use a password with</p>
                         <ul className="grid gap-x-4 gap-y-2 sm:grid-cols-2" aria-live="polite">
                           {PASSWORD_RULES.map((rule) => {
@@ -229,7 +229,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                     </>
                   )}
 
-                  <p className="mt-7 text-center text-[13px] text-fg-muted">
+                  <p className="cf-auth-footer mt-7 text-center text-[13px] text-fg-muted">
                     {copy.altPrompt}{" "}
                     <Link href={copy.altHref} className="font-[700] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{copy.altLabel}</Link>
                   </p>
