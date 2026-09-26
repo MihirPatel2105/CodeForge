@@ -15,6 +15,7 @@ import { buildHunks } from "@/lib/diff";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { ApprovalBar } from "@/components/dashboard/approval-bar";
+import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { ResultSummary } from "@/components/dashboard/result-summary";
 import { displayStatus, tone } from "@/lib/tone";
 import { cn } from "@/lib/utils";
@@ -271,13 +272,16 @@ export default function LiveRunPage() {
           </p>
         )}
 
-        {snapshot.approval && (
-          <ApprovalBar
-            approval={snapshot.approval}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
-        )}
+        <ApprovalPresence show={snapshot.approval != null}>
+          {snapshot.approval && (
+            <ApprovalBar
+              key={snapshot.approval.phase}
+              approval={snapshot.approval}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          )}
+        </ApprovalPresence>
 
         <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">

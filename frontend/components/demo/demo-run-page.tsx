@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
 import { RunStory } from "@/components/dashboard/run-story";
@@ -172,17 +173,21 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           </div>
         </header>
 
-        {snapshot.approval && (
-          <div className="mt-5 flex items-start gap-3 rounded-xl border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-            <div>
-              <p className="text-[13px] font-[700]">Human checkpoint</p>
-              <p className="mt-1 text-[13.5px] leading-5 text-fg-muted">
-                This recorded run pauses for approval before continuing. The replay resumes automatically.
-              </p>
+        <ApprovalPresence show={snapshot.approval != null}>
+          {snapshot.approval && (
+            <div className="mt-5 flex items-start gap-3 rounded-[24px] border border-warn-bd bg-[#fffaf3] px-5 py-4 shadow-[0_18px_48px_rgba(64,48,25,0.09)]" role="status">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-white text-warn">
+                <ShieldCheck className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <p className="text-[13px] font-[700] text-warn">Human checkpoint</p>
+                <p className="mt-1 text-[13.5px] leading-5 text-fg-muted">
+                  This recorded run pauses for approval before continuing. The replay resumes automatically.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </ApprovalPresence>
 
         <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">

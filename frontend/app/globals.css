@@ -1094,14 +1094,3 @@
     top: 0px;
   }
 }
-
-/* Approval bar hazard band (design_handoff/README.md "Approval bar") — a drifting
-   diagonal stripe that says "stopped" without competing with the loop's violet. */
-@keyframes cfShift {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 28px 0;
-  }
-}
