@@ -53,7 +53,8 @@ _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-s
 _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 
 # The email mark is drawn with a table cell and inline CSS — an indigo tile with
-# white "CF" — rather than being an image. Both image techniques were tried against real Gmail
+# a white return arrow for the review loop — rather than being an image. Both image
+# techniques were tried against real Gmail
 # delivery and both failed, so do not reach for either again:
 #
 #   data: URI  — Gmail, Outlook and Yahoo refuse to render one in an <img src>. The mark
@@ -76,7 +77,7 @@ _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 # Vercel: an <img> pointing at a deployed asset would restore the real mark for everyone.
 # Until then, type and a coloured tile survive everywhere and need nothing.
 _BRAND = "#3f47c9"
-_MARK_LETTER = "CF"
+_MARK_GLYPH = "↶"
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
@@ -100,14 +101,14 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
                   border-radius:{_RADIUS};">
 
       <!-- Wordmark. The tile is a styled table cell, not an image — see the note above
-           `_MARK_LETTER` for why every image technique was abandoned. Outlook ignores
+           `_MARK_GLYPH` for why every image technique was abandoned. Outlook ignores
            border-radius and renders a square tile, which is a fine degradation. -->
       <tr><td style="padding:26px 30px 0 30px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
           <td width="30" height="30" align="center" valign="middle"
               style="width:30px;height:30px;background:{_BRAND};border-radius:8px;
-                     font-family:{_SANS};font-size:12px;font-weight:800;line-height:30px;
-                     color:{_SURFACE};text-align:center;">{_MARK_LETTER}</td>
+                     font-family:{_SANS};font-size:22px;font-weight:700;line-height:30px;
+                     color:{_SURFACE};text-align:center;">{_MARK_GLYPH}</td>
           <td style="padding-left:9px;">
             <span style="font-family:{_SANS};font-size:18px;font-weight:750;
                          color:{_FG};letter-spacing:-0.06em;">Code</span><span
