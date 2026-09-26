@@ -108,7 +108,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <section className="cf-account-hero relative overflow-hidden rounded-[7px] border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.07)]">
+        <section className="cf-account-hero relative overflow-hidden rounded-xl border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.07)]">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_31rem]">
             <div className="relative z-10 flex min-h-[290px] flex-col justify-between p-7 md:p-10">
               <div>
@@ -118,7 +118,7 @@ export default function ProfilePage() {
                 </span>
 
                 <div className="mt-8 flex items-center gap-5">
-                  <span className="grid h-20 w-20 shrink-0 place-items-center rounded-[5px] border border-border-strong bg-fg font-mono text-[25px] font-[700] tracking-[0.04em] text-surface shadow-[0_12px_30px_rgba(22,24,28,0.16)]">
+                  <span className="grid h-20 w-20 shrink-0 place-items-center rounded-xl border border-border-strong bg-fg font-mono text-[25px] font-[700] tracking-[0.04em] text-surface shadow-[0_12px_30px_rgba(22,24,28,0.16)]">
                     {user?.initials ?? "—"}
                   </span>
                   <div className="min-w-0">
@@ -165,7 +165,7 @@ export default function ProfilePage() {
         </section>
 
         {error && (
-          <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3">
+          <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3">
             <p className="text-[13px] text-danger">{error}</p>
             <Button variant="outline" size="sm" onClick={() => void load(isAdmin)}>
               Retry activity
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         )}
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>{isAdmin ? "operator record" : "account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
@@ -196,7 +196,7 @@ export default function ProfilePage() {
             </dl>
           </section>
 
-          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>quick access</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
@@ -278,7 +278,7 @@ function ProfileMetric({
       )}
     >
       <div className="flex items-center gap-3">
-        <span className="grid h-8 w-8 place-items-center rounded-[3px] border border-border bg-surface">
+        <span className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface">
           <Icon className="h-3.5 w-3.5 text-accent" aria-hidden />
         </span>
         <dt className="font-mono text-[9px] font-[700] uppercase tracking-[0.13em] text-fg-faint">
@@ -306,9 +306,9 @@ function AccountLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-[4px] border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-surface-2"
+      className="group flex items-center gap-4 rounded-lg border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-surface-2"
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
         <Icon className="h-4 w-4 text-accent" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">

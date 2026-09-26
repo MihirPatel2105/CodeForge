@@ -83,7 +83,7 @@ function AgentCard({
   return (
     <li
       className={cn(
-        "relative min-h-[104px] overflow-hidden rounded-[4px] border px-3 py-3.5 transition-[border-color,background-color,opacity,transform] duration-500",
+        "relative min-h-[104px] overflow-hidden rounded-lg border px-3 py-3.5 transition-[border-color,background-color,opacity,transform] duration-500",
         state === "working" && "border-accent-bd bg-accent-soft/60 shadow-[0_10px_24px_rgba(67,56,202,0.07)]",
         state === "done" && "border-ok-bd bg-surface",
         state === "returned" && "border-loop-bd bg-loop-soft/60",
@@ -99,7 +99,7 @@ function AgentCard({
       <div className="flex items-center justify-between gap-2">
         <span
           className={cn(
-            "grid h-5 w-5 place-items-center rounded-[3px] font-mono text-[8px] font-[700]",
+            "grid h-5 w-5 place-items-center rounded-lg font-mono text-[8px] font-[700]",
             state === "working" && "bg-accent-soft text-accent",
             state === "done" && "bg-ok-soft text-ok",
             state === "returned" && "bg-loop-soft text-loop",
@@ -156,7 +156,7 @@ export function AboutProcessProof() {
   }, [activeStep, isPaused, prefersReducedMotion]);
 
   return (
-    <div className="cf-about-proof relative mx-auto w-full max-w-[680px] overflow-hidden rounded-[8px] border border-border bg-surface shadow-[0_30px_90px_rgba(22,24,28,0.12)]">
+    <div className="cf-about-proof relative mx-auto w-full max-w-[680px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_30px_90px_rgba(22,24,28,0.12)]">
       <div className="relative border-b border-border bg-fg text-surface">
         <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -169,7 +169,7 @@ export function AboutProcessProof() {
               <button
                 type="button"
                 onClick={() => setIsPaused((current) => !current)}
-                className="grid h-7 w-7 place-items-center rounded-[3px] border border-white/15 text-surface transition-colors hover:border-white/35 hover:bg-white/10"
+                className="grid h-7 w-7 place-items-center rounded-lg border border-white/15 text-surface transition-colors hover:border-white/35 hover:bg-white/10"
                 aria-label={isPaused ? "Resume recorded run" : "Pause recorded run"}
               >
                 {isPaused ? <Play className="h-3 w-3" fill="currentColor" aria-hidden /> : <Pause className="h-3 w-3" fill="currentColor" aria-hidden />}
@@ -184,7 +184,7 @@ export function AboutProcessProof() {
 
       <div className="grid md:grid-cols-[1fr_7.5rem]">
         <div className="p-4 sm:p-6">
-          <div className="rounded-[4px] border border-border bg-bg px-4 py-3">
+          <div className="rounded-lg border border-border bg-bg px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <span className="font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-fg-faint">your request</span>
               <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-fg-faint">run / 014</span>
@@ -201,7 +201,7 @@ export function AboutProcessProof() {
           <div
             key={step.id}
             className={cn(
-              "mt-3 flex min-h-[48px] items-center gap-3 rounded-[4px] border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:px-4",
+              "mt-3 flex min-h-[48px] items-center gap-3 rounded-lg border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:px-4",
               looping ? "border-loop-bd bg-loop-soft text-loop" : complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent",
             )}
             aria-live="polite"

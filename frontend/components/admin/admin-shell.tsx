@@ -58,7 +58,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <div className="absolute inset-x-4 bottom-7 rounded-[3px] border border-ok-bd bg-ok-soft p-3">
+          <div className="absolute inset-x-4 bottom-7 rounded-lg border border-ok-bd bg-ok-soft p-3">
             <div className="flex items-center gap-2 text-ok">
               <Activity className="h-4 w-4" aria-hidden />
               <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.1em]">

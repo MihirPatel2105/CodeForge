@@ -125,7 +125,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       {/* Row 3: state pill */}
       <span
         className={cn(
-          "inline-flex w-fit items-center gap-[5px] rounded-[2px] px-2 py-[3px]",
+          "inline-flex w-fit items-center gap-[5px] rounded-lg px-2 py-[3px]",
           typeScale.label,
           t.soft,
         )}

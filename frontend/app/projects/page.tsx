@@ -148,7 +148,7 @@ export default function ProjectsPage() {
         )}
 
         {error && (
-          <p className="mt-6 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <p className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             {error}
           </p>
         )}
@@ -308,7 +308,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
           <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-[5px]">
             <span
               className={cn(
-                "w-fit rounded-[2px] px-2 py-[3px] text-[11px] font-[650]",
+                "w-fit rounded-lg px-2 py-[3px] text-[11px] font-[650]",
                 tone[lastMeta.tone].soft,
               )}
             >
@@ -335,7 +335,7 @@ function NewProjectCard({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="cf-project-new group relative flex min-h-[258px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
+      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
         <FolderPlus className="h-[19px] w-[19px]" aria-hidden />
       </span>
 
@@ -369,7 +369,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function EmptyState({ onNewProject }: { onNewProject: () => void }) {
   return (
     <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-border px-6 py-20 text-center shadow-[0_10px_30px_rgba(27,41,70,0.035)]">
-      <div className="relative flex h-14 w-14 items-center justify-center rounded-[5px] border border-accent-bd bg-accent-soft">
+      <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-accent-bd bg-accent-soft">
         <FolderPlus className="h-6 w-6 text-accent" aria-hidden />
       </div>
       <span className={cn(LABEL, "mt-6 text-accent")}>empty workspace</span>
@@ -401,12 +401,12 @@ function LoadingState() {
         {[0, 1].map((item) => (
           <div
             key={item}
-            className="min-h-[258px] animate-pulse rounded-[6px] border border-border bg-surface p-6"
+            className="min-h-[258px] animate-pulse rounded-xl border border-border bg-surface p-6"
           >
             <div className="h-2.5 w-28 rounded bg-border" />
             <div className="mt-5 h-6 w-44 rounded bg-border" />
             <div className="mt-3 h-3 w-3/4 rounded bg-border" />
-            <div className="mt-8 h-14 rounded-[3px] bg-bg" />
+            <div className="mt-8 h-14 rounded-lg bg-bg" />
           </div>
         ))}
       </div>
@@ -438,7 +438,7 @@ function NewProjectDialogContent({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <DialogContent className="rounded-[6px] border-border p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)]">
+    <DialogContent className="rounded-xl border-border p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)]">
       <div className="border-b border-rule bg-surface-2 px-6 py-5">
         <DialogHeader>
           <span className={LABEL}>create workspace</span>

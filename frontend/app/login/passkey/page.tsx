@@ -57,7 +57,7 @@ export default function PasskeyLoginPage() {
     <div className="cf-auth relative flex min-h-screen bg-bg">
       <AuthAside />
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
             <ShieldCheck className="h-3 w-3" aria-hidden />
             secure access
@@ -72,14 +72,14 @@ export default function PasskeyLoginPage() {
             type="button"
             onClick={signIn}
             disabled={busy}
-            className="mt-7 h-[50px] w-full rounded-[3px]"
+            className="mt-7 h-[50px] w-full rounded-lg"
           >
             {busy ? "Waiting for passkey…" : "Continue with passkey"}
           </Button>
           {error && (
             <p
               role="alert"
-              className="mt-5 rounded-[3px] border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger"
+              className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger"
             >
               {error}
             </p>

@@ -57,7 +57,7 @@ export function MessageEntry({ time, agent, text, variant = "default" }: Message
   return (
     <div
       className={cn(
-        "grid grid-cols-[70px_78px_1fr] items-start gap-x-[10px] rounded-[3px] border-l-[3px] px-[10px] py-2",
+        "grid grid-cols-[70px_78px_1fr] items-start gap-x-[10px] rounded-lg border-l-[3px] px-[10px] py-2",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         k.rule,
         k.bg,
@@ -87,7 +87,7 @@ export function FindingEntry({ time, agent, file, line, issue, fixHint }: Findin
   return (
     <div
       className={cn(
-        "grid grid-cols-[70px_1fr] gap-x-[10px] rounded-[3px] border border-danger-bd border-l-[3px] border-l-danger",
+        "grid grid-cols-[70px_1fr] gap-x-[10px] rounded-lg border border-danger-bd border-l-[3px] border-l-danger",
         "bg-danger-soft px-[10px] py-2",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}
@@ -127,7 +127,7 @@ export function LoopEntry({ time, text }: LoopEntryProps) {
   return (
     <div
       className={cn(
-        "my-[5px] flex items-center gap-3 rounded-[3px] bg-loop px-[14px] py-[10px] text-surface",
+        "my-[5px] flex items-center gap-3 rounded-lg bg-loop px-[14px] py-[10px] text-surface",
         "shadow-[0_4px_14px_rgba(109,40,217,.28)]",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}

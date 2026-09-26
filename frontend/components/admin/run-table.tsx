@@ -14,7 +14,7 @@ export function AdminRunTable({
   emptyLabel?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
+    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] border-collapse text-left">
           <thead className="bg-surface-2">
@@ -62,7 +62,7 @@ export function AdminRunTable({
                     <Link
                       href={`/admin/runs/${run.id}`}
                       aria-label={`Open run ${run.id}`}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-[3px] border border-border text-fg-faint transition-colors hover:border-fg hover:text-fg"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-fg-faint transition-colors hover:border-fg hover:text-fg"
                     >
                       <ArrowUpRight className="h-4 w-4" aria-hidden />
                     </Link>

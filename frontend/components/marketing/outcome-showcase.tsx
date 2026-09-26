@@ -147,7 +147,7 @@ export function OutcomeShowcase() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
-          <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-[6px] border border-border bg-bg shadow-[0_28px_80px_rgba(22,24,28,0.16)]">
+          <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-xl border border-border bg-bg shadow-[0_28px_80px_rgba(22,24,28,0.16)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-ok" aria-hidden />
@@ -183,7 +183,7 @@ export function OutcomeShowcase() {
                         >
                           <span className="truncate">{file.name}</span>
                           {file.status === "new" && (
-                            <span className="ml-2 rounded-[2px] bg-ok-soft px-1.5 py-0.5 text-[7px] font-[700] uppercase text-ok">
+                            <span className="ml-2 rounded-lg bg-ok-soft px-1.5 py-0.5 text-[7px] font-[700] uppercase text-ok">
                               new
                             </span>
                           )}
@@ -237,9 +237,9 @@ export function OutcomeShowcase() {
               return (
                 <li
                   key={item.title}
-                  className="cf-home-deliverable group grid grid-cols-[auto_1fr_auto] gap-x-4 rounded-[5px] border border-border bg-surface/82 px-5 py-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(22,24,28,0.06)]"
+                  className="cf-home-deliverable group grid grid-cols-[auto_1fr_auto] gap-x-4 rounded-xl border border-border bg-surface/82 px-5 py-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(22,24,28,0.06)]"
                 >
-                  <span className="grid h-9 w-9 place-items-center rounded-[4px] border border-border bg-bg text-accent">
+                  <span className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-bg text-accent">
                     <Icon className="h-4 w-4" aria-hidden />
                   </span>
                   <div>

@@ -266,7 +266,7 @@ export default function LiveRunPage() {
         </header>
 
         {actionError && (
-          <p role="alert" className="mt-4 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             {actionError}
           </p>
         )}
@@ -310,7 +310,7 @@ export default function LiveRunPage() {
         )}
 
         {downloadError && (
-          <p role="alert" className="mt-3 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <p role="alert" className="mt-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             {downloadError}
           </p>
         )}

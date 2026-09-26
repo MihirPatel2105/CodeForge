@@ -133,7 +133,7 @@ export function ProjectDetail({
             <div className="cf-project-composer-head border-b border-rule px-5 py-5">
               <span className={LABEL}>new agent run</span>
               <div className="mt-3 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
                   <Play className="h-4 w-4 fill-current" aria-hidden />
                 </span>
                 <div>
@@ -164,9 +164,9 @@ export function ProjectDetail({
                 />
               </div>
 
-              <div className="rounded-[4px] border border-border bg-surface-2/70 p-3.5">
+              <div className="rounded-lg border border-border bg-surface-2/70 p-3.5">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[3px] border border-border bg-surface text-fg-muted">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-fg-muted">
                     <BookOpen className="h-4 w-4" aria-hidden />
                   </span>
                   <label htmlFor="rag-enabled" className="min-w-0 flex-1 cursor-pointer">
@@ -187,7 +187,7 @@ export function ProjectDetail({
               {error && (
                 <p
                   role="alert"
-                  className="rounded-[3px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+                  className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
                 >
                   {error}
                 </p>
@@ -241,7 +241,7 @@ export function ProjectDetail({
 
             {history.length === 0 ? (
               <div className="cf-project-history-empty flex min-h-[330px] flex-col items-center justify-center px-6 py-20 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent">
+                <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
                   <Play className="h-4 w-4 fill-current" aria-hidden />
                 </span>
                 <p className="font-display mt-5 text-[18px] font-[650] tracking-[-0.035em] text-fg">
@@ -279,7 +279,7 @@ export function ProjectDetail({
                       </span>
                       <span
                         className={cn(
-                          "inline-flex w-fit rounded-[2px] px-2 py-[3px] text-[11px] font-[650]",
+                          "inline-flex w-fit rounded-lg px-2 py-[3px] text-[11px] font-[650]",
                           tone[meta.tone].soft,
                         )}
                       >
@@ -311,9 +311,9 @@ export function ProjectDetail({
         {/* Deleting sits at the very bottom, well past the things you came here to do.
             It is irreversible and takes the run history and stored code with it, so it
             should never be the thing your hand lands on. */}
-        <section className="mt-14 flex flex-wrap items-center justify-between gap-5 rounded-[6px] border border-danger-bd/70 bg-danger-soft/35 px-5 py-5 md:px-6">
+        <section className="mt-14 flex flex-wrap items-center justify-between gap-5 rounded-xl border border-danger-bd/70 bg-danger-soft/35 px-5 py-5 md:px-6">
           <div className="flex items-start gap-3.5">
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[3px] border border-danger-bd bg-surface text-danger">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-danger-bd bg-surface text-danger">
               <Trash2 className="h-4 w-4" aria-hidden />
             </span>
             <div>
@@ -330,7 +330,7 @@ export function ProjectDetail({
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
-            className="shrink-0 rounded-[3px] border border-danger-bd bg-surface px-5 py-[11px] font-mono text-[10.5px] font-[650] uppercase tracking-[0.12em] text-danger transition-colors hover:bg-danger-soft"
+            className="shrink-0 rounded-lg border border-danger-bd bg-surface px-5 py-[11px] font-mono text-[10.5px] font-[650] uppercase tracking-[0.12em] text-danger transition-colors hover:bg-danger-soft"
           >
             Delete project
           </button>
@@ -389,7 +389,7 @@ function DeleteProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-[6px] border-danger-bd p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)]">
+      <DialogContent className="rounded-xl border-danger-bd p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)]">
         <div className="border-b border-danger-bd bg-danger-soft px-6 py-5">
           <DialogHeader>
             <span className={cn(LABEL, "text-danger")}>destructive action</span>
@@ -415,13 +415,13 @@ function DeleteProjectDialog({
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
               autoComplete="off"
-              className="h-11 rounded-[2px] border-border-strong bg-surface text-[14.5px] focus-visible:border-fg focus-visible:ring-0"
+              className="h-11 rounded-lg border-border-strong bg-surface text-[14.5px] focus-visible:border-fg focus-visible:ring-0"
             />
           </div>
           {error && (
             <p
               role="alert"
-              className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+              className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
             >
               {error}
             </p>

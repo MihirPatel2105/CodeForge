@@ -71,7 +71,7 @@ export function DeviceList() {
               variant="outline"
               disabled={ending !== null}
               onClick={() => void endDevice(device)}
-              className="h-9 rounded-[3px] text-[11px]"
+              className="h-9 rounded-lg text-[11px]"
             >
               <LogOut className="mr-2 h-3.5 w-3.5" aria-hidden />
               {ending === device.id ? "Signing out…" : "Sign out"}

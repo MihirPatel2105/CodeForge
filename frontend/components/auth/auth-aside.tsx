@@ -178,7 +178,7 @@ export function AuthAside() {
         </dl>
       </div>
 
-      <div className="mt-9 shrink-0 rounded-[6px] border border-border bg-surface/55 p-5 shadow-[0_26px_70px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+      <div className="mt-9 shrink-0 rounded-xl border border-border bg-surface/55 p-5 shadow-[0_26px_70px_rgba(0,0,0,0.18)] backdrop-blur-sm">
         <div className="mb-5 flex items-center justify-between">
           {/* Labelled honestly: this is a recording on a loop, not a live run. */}
           <span className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-fg-faint">

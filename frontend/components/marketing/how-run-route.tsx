@@ -104,7 +104,7 @@ export function HowRunRoute() {
   }, [activeStep, approval, complete, isPaused, looping, prefersReducedMotion]);
 
   return (
-    <div className="cf-frame mx-auto w-full max-w-[600px] overflow-hidden rounded-[8px] border border-border bg-surface shadow-[0_28px_80px_rgba(22,24,28,0.11)]">
+    <div className="cf-frame mx-auto w-full max-w-[600px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_80px_rgba(22,24,28,0.11)]">
       <div className="relative border-b border-border bg-fg px-4 py-3.5 text-surface sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -117,7 +117,7 @@ export function HowRunRoute() {
               <button
                 type="button"
                 onClick={() => setIsPaused((current) => !current)}
-                className="grid h-7 w-7 place-items-center rounded-[3px] border border-white/15 text-surface transition-colors hover:border-white/35 hover:bg-white/10"
+                className="grid h-7 w-7 place-items-center rounded-lg border border-white/15 text-surface transition-colors hover:border-white/35 hover:bg-white/10"
                 aria-label={isPaused ? "Resume recorded route" : "Pause recorded route"}
               >
                 {isPaused ? <Play className="h-3 w-3" fill="currentColor" aria-hidden /> : <Pause className="h-3 w-3" fill="currentColor" aria-hidden />}
@@ -148,7 +148,7 @@ export function HowRunRoute() {
           const state = stateForAgent(index, visibleStep);
           return (
             <li key={agent.name} className={cn("relative flex min-h-[68px] items-center gap-3 border-b border-rule py-2.5 transition-opacity duration-500 last:border-b-0 sm:gap-4", state === "queued" && "opacity-42")}>
-              <span className={cn("relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-[3px] border font-mono text-[8px] font-[700] transition-colors duration-300", state === "done" && "border-ok-bd bg-ok-soft text-ok", state === "running" && "border-accent-bd bg-accent-soft text-accent", state === "approval" && "border-warn-bd bg-warn-soft text-warn", state === "returned" && "border-loop-bd bg-loop-soft text-loop", state === "queued" && "border-border bg-surface text-fg-faint")}>{index + 1}</span>
+              <span className={cn("relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg border font-mono text-[8px] font-[700] transition-colors duration-300", state === "done" && "border-ok-bd bg-ok-soft text-ok", state === "running" && "border-accent-bd bg-accent-soft text-accent", state === "approval" && "border-warn-bd bg-warn-soft text-warn", state === "returned" && "border-loop-bd bg-loop-soft text-loop", state === "queued" && "border-border bg-surface text-fg-faint")}>{index + 1}</span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-display text-[12px] font-[650] text-fg sm:text-[13px]">{agent.name}</p>
@@ -166,7 +166,7 @@ export function HowRunRoute() {
         })}
       </ol>
 
-      <div key={step.id} className={cn("m-4 flex min-h-[48px] items-center justify-between gap-3 rounded-[4px] border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:m-5 sm:px-4", approval ? "border-warn-bd bg-warn-soft text-warn" : looping ? "border-loop-bd bg-loop-soft text-loop" : complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent")} aria-live="polite">
+      <div key={step.id} className={cn("m-4 flex min-h-[48px] items-center justify-between gap-3 rounded-lg border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:m-5 sm:px-4", approval ? "border-warn-bd bg-warn-soft text-warn" : looping ? "border-loop-bd bg-loop-soft text-loop" : complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent")} aria-live="polite">
         <div className="flex min-w-0 items-center gap-2.5">
           {approval ? <Pause className="h-3.5 w-3.5 shrink-0" fill="currentColor" aria-hidden /> : looping ? <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden /> : complete ? <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden /> : <LoaderCircle className="h-3.5 w-3.5 shrink-0 motion-safe:animate-spin" aria-hidden />}
           <p className="font-mono text-[7.5px] font-[700] uppercase leading-[1.45] tracking-[0.09em] sm:text-[8px]">{step.event}</p>

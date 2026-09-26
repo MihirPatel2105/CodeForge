@@ -77,13 +77,13 @@ export function LoopDemo() {
   const current = BEATS[beat];
 
   return (
-    <div className="rounded-[4px] border border-border bg-surface p-6 sm:p-8">
+    <div className="rounded-lg border border-border bg-surface p-6 sm:p-8">
       <div className="relative mx-auto flex max-w-[420px] items-center justify-between gap-4">
         {STAGES.map((stage, i) => (
           <div
             key={stage}
             className={cn(
-              "flex-1 rounded-[3px] border px-4 py-[14px] text-center transition-colors duration-300",
+              "flex-1 rounded-lg border px-4 py-[14px] text-center transition-colors duration-300",
               current.active === i
                 ? "border-accent-bd bg-accent-soft"
                 : "border-border bg-bg",
@@ -148,7 +148,7 @@ export function LoopDemo() {
       </div>
 
       {/* The line the timeline would show at this beat. */}
-      <div className="mt-8 rounded-[3px] border border-border bg-bg px-4 py-[14px]">
+      <div className="mt-8 rounded-lg border border-border bg-bg px-4 py-[14px]">
         <div className="flex items-baseline gap-[10px]">
           <span
             className={cn(

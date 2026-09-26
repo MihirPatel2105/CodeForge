@@ -29,7 +29,7 @@ import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const LABEL = "font-mono text-[10px] font-[700] uppercase tracking-[0.14em]";
-const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-[3px] border-0 bg-transparent px-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
+const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-lg border-0 bg-transparent px-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
 
 export function TotpSettings({
   initiallyEnabled,
@@ -131,13 +131,13 @@ export function TotpSettings({
     <div className="space-y-6">
       <section
         className={cn(
-          "overflow-hidden rounded-[7px] border shadow-[0_18px_50px_rgba(22,24,28,0.05)]",
+          "overflow-hidden rounded-xl border shadow-[0_18px_50px_rgba(22,24,28,0.05)]",
           enabled ? "border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
         )}
       >
         <div className="flex flex-col justify-between gap-5 px-6 py-6 md:flex-row md:items-center md:px-7">
           <div className="flex items-start gap-4">
-            <span className={cn("grid h-12 w-12 shrink-0 place-items-center rounded-[5px] border", enabled ? "border-ok-bd bg-surface text-ok" : "border-border bg-bg text-fg-faint")}>
+            <span className={cn("grid h-12 w-12 shrink-0 place-items-center rounded-xl border", enabled ? "border-ok-bd bg-surface text-ok" : "border-border bg-bg text-fg-faint")}>
               {enabled ? <ShieldCheck className="h-5 w-5" aria-hidden /> : <ShieldOff className="h-5 w-5" aria-hidden />}
             </span>
             <div>
@@ -155,23 +155,23 @@ export function TotpSettings({
 
       {!enabled ? (
         <>
-          <ol className="grid overflow-hidden rounded-[6px] border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
+          <ol className="grid overflow-hidden rounded-xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
             <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
             <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
-            <section className="grid overflow-hidden rounded-[7px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)] lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="grid overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)] lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="px-6 py-7 md:px-8 md:py-8">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
+                  <span className="grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
                   <div><span className={cn(LABEL, "text-accent")}>step 01</span><h2 className="font-display mt-1 text-[21px] font-[650] tracking-[-0.04em] text-fg">Confirm your password</h2></div>
                 </div>
                 <p className="mt-5 max-w-[60ch] text-[13px] leading-6 text-fg-muted">Re-enter your current password before CodeForge creates a new authenticator secret.</p>
                 <label htmlFor="totp-current-password" className={cn(LABEL, "mt-6 block text-fg-faint")}>current password</label>
-                <Input id="totp-current-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-12 max-w-xl rounded-[3px] bg-bg" />
-                <Button onClick={startSetup} disabled={busy || !password} className="mt-4 h-11 gap-2 rounded-[3px] px-5">
+                <Input id="totp-current-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-12 max-w-xl rounded-lg bg-bg" />
+                <Button onClick={startSetup} disabled={busy || !password} className="mt-4 h-11 gap-2 rounded-lg px-5">
                   {busy ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden /> : <KeyRound className="h-4 w-4" aria-hidden />}
                   {busy ? "Creating setup…" : "Continue securely"}
                 </Button>
@@ -187,7 +187,7 @@ export function TotpSettings({
             </section>
           ) : (
             <>
-              <section className="rounded-[7px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
+              <section className="rounded-xl border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
                 <span className={cn(LABEL, "text-accent")}>step 02</span>
                 <div className="mt-2 flex items-start gap-3">
                   <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />
@@ -196,14 +196,14 @@ export function TotpSettings({
                     <p className="mt-2 text-[13px] leading-5 text-fg-muted">Choose a QR code or manual setup key in the pop-up. Both connect the same account: {accountEmail}</p>
                   </div>
                 </div>
-                <Button type="button" onClick={() => setSetupOpen(true)} className="mt-5 h-11 gap-2 rounded-[3px] px-5">
+                <Button type="button" onClick={() => setSetupOpen(true)} className="mt-5 h-11 gap-2 rounded-lg px-5">
                   {setupStage === "verify" ? <Smartphone className="h-4 w-4" aria-hidden /> : <QrCode className="h-4 w-4" aria-hidden />}
                   {setupStage === "verify" ? "Continue verification" : "Open QR code or setup key"}
                 </Button>
               </section>
 
               <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
-                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-[7px] border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
+                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
                   <DialogHeader className="border-b border-rule px-6 py-6 pr-14">
                     <span className={cn(LABEL, "text-accent")}>{setupStage === "method" ? "step 02 · authenticator setup" : "step 03 · verification"}</span>
                     <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">{setupStage === "method" ? "Add CodeForge to your app" : "Verify your authenticator"}</DialogTitle>
@@ -212,11 +212,11 @@ export function TotpSettings({
 
                   {setupStage === "method" ? (
                     <div className="px-6 py-6">
-                      <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-[5px] border border-border bg-bg p-1">
+                      <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-xl border border-border bg-bg p-1">
                         <span
                           aria-hidden
                           className={cn(
-                            "pointer-events-none absolute inset-y-[5px] w-[calc(50%-5px)] rounded-[3px] border border-accent-bd bg-accent-soft shadow-sm transition-[left] duration-200 motion-reduce:transition-none",
+                            "pointer-events-none absolute inset-y-[5px] w-[calc(50%-5px)] rounded-lg border border-accent-bd bg-accent-soft shadow-sm transition-[left] duration-200 motion-reduce:transition-none",
                             setupMethod === "qr" ? "left-[5px]" : "left-1/2",
                           )}
                         />
@@ -231,7 +231,7 @@ export function TotpSettings({
                       {setupMethod === "qr" ? <div className="pt-6">
                         <h3 className="text-[14px] font-[700] text-fg">Scan the QR code</h3>
                         <p className="mt-2 text-[12px] leading-5 text-fg-muted">In your authenticator app, add a new account and scan this code.</p>
-                        <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-[8px] border border-border bg-white p-4 shadow-sm">
+                        <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-xl border border-border bg-white p-4 shadow-sm">
                           <QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden />
                         </div>
                       </div> : null}
@@ -239,21 +239,21 @@ export function TotpSettings({
                       {setupMethod === "key" ? <div className="pt-6">
                         <h3 className="text-[14px] font-[700] text-fg">Enter the setup key</h3>
                         <p className="mt-2 text-[12px] leading-5 text-fg-muted">Choose manual entry in your authenticator app. Use account name <strong>CodeForge</strong> and select <strong>Time based</strong>.</p>
-                        <div className="mt-5 rounded-[4px] border border-border bg-bg p-4">
+                        <div className="mt-5 rounded-lg border border-border bg-bg p-4">
                           <span className={cn(LABEL, "text-fg-faint")}>setup key</span>
                           <code className="mt-2 block break-all font-mono text-[15px] font-[700] leading-7 tracking-[0.12em] text-fg">{secret}</code>
                         </div>
-                        <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-[3px]">
+                        <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-lg">
                           {copied ? <Check className="h-4 w-4 text-ok" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
                           {copied ? "Setup key copied" : "Copy setup key"}
                         </Button>
                       </div> : null}
 
-                    <p className="mt-6 flex items-start gap-3 rounded-[4px] border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted">
+                    <p className="mt-6 flex items-start gap-3 rounded-lg border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted">
                       <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />
                       Treat the QR code and setup key like a password. Do not share or save them in screenshots.
                     </p>
-                    {error ? <p role="alert" className="mt-4 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                    {error ? <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
                     </div>
                   ) : (
                     <form onSubmit={(event) => { event.preventDefault(); void verify(); }}>
@@ -263,22 +263,22 @@ export function TotpSettings({
                           <p id="totp-code-help" className="text-[13px] leading-5 text-fg-muted">Enter the current six-digit code shown for CodeForge. Codes refresh every 30 seconds.</p>
                         </div>
                         <label htmlFor="totp-verification-code" className={cn(LABEL, "mt-6 block text-fg-faint")}>six-digit authenticator code</label>
-                        <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 w-full max-w-xs rounded-[3px] bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
-                        {error ? <p role="alert" className="mt-4 rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                        <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 w-full max-w-xs rounded-lg bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
+                        {error ? <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
-                        <Button type="button" variant="ghost" onClick={() => { setError(null); setSetupStage("method"); }} className="h-10 rounded-[3px] px-2 text-fg-muted">Back to setup</Button>
-                        <Button type="submit" disabled={busy || code.length !== 6} className="h-10 gap-2 rounded-[3px] px-4"><ShieldCheck className="h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Verify and enable 2FA"}</Button>
+                        <Button type="button" variant="ghost" onClick={() => { setError(null); setSetupStage("method"); }} className="h-10 rounded-lg px-2 text-fg-muted">Back to setup</Button>
+                        <Button type="submit" disabled={busy || code.length !== 6} className="h-10 gap-2 rounded-lg px-4"><ShieldCheck className="h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Verify and enable 2FA"}</Button>
                       </div>
                     </form>
                   )}
 
                   {setupStage === "method" ? <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
-                    <Button type="button" variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-10 gap-2 rounded-[3px] px-2 text-fg-muted">
+                    <Button type="button" variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-10 gap-2 rounded-lg px-2 text-fg-muted">
                       <RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden />
                       Generate new key
                     </Button>
-                    <Button type="button" onClick={() => { setError(null); setSetupStage("verify"); }} className="h-10 rounded-[3px] px-4">Continue to verification</Button>
+                    <Button type="button" onClick={() => { setError(null); setSetupStage("verify"); }} className="h-10 rounded-lg px-4">Continue to verification</Button>
                   </div> : null}
                 </DialogContent>
               </Dialog>
@@ -286,17 +286,17 @@ export function TotpSettings({
           )}
         </>
       ) : (
-        <section className="rounded-[7px] border border-danger-bd bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
+        <section className="rounded-xl border border-danger-bd bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
           <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">This removes the second sign-in check. Confirm with both your password and a current authenticator code.</p></div>
           <div className="grid gap-4 px-6 py-6 md:grid-cols-2 md:px-8">
-            <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-[3px] bg-bg" /></div>
-            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>authenticator code</label><Input id="totp-disable-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-11 rounded-[3px] bg-bg font-mono tracking-[0.2em]" /></div>
-            <Button variant="outline" onClick={disable} disabled={busy || !password || code.length !== 6} className="h-11 gap-2 rounded-[3px] border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
+            <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-lg bg-bg" /></div>
+            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>authenticator code</label><Input id="totp-disable-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" /></div>
+            <Button variant="outline" onClick={disable} disabled={busy || !password || code.length !== 6} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
           </div>
         </section>
       )}
 
-      <section className="flex flex-col gap-4 rounded-[7px] border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
+      <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div className="flex items-start gap-3">
           <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
           <div>
@@ -307,8 +307,8 @@ export function TotpSettings({
         <Link href="/profile/settings/passkeys" className="shrink-0 font-mono text-[11px] font-[700] uppercase tracking-[0.1em] text-accent underline underline-offset-4">Manage passkeys</Link>
       </section>
 
-      {error && !setupOpen ? <p role="alert" className="rounded-[4px] border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
-      {message ? <p role="status" className="flex items-center gap-2 rounded-[4px] border border-ok-bd bg-ok-soft px-4 py-3 text-[12.5px] text-ok"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{message}</p> : null}
+      {error && !setupOpen ? <p role="alert" className="rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+      {message ? <p role="status" className="flex items-center gap-2 rounded-lg border border-ok-bd bg-ok-soft px-4 py-3 text-[12.5px] text-ok"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{message}</p> : null}
     </div>
   );
 }

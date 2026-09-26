@@ -14,7 +14,7 @@ import { CONTACT_ADDRESS, CONTACT_EMAIL } from "@/lib/contact-details";
  */
 
 const ACTION =
-  "inline-flex items-center justify-center rounded-[2px] bg-fg px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88";
+  "inline-flex items-center justify-center rounded-lg bg-fg px-7 py-[15px] font-mono text-[12.5px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88";
 
 export function ClosingBanner() {
   const user = useCurrentUser();

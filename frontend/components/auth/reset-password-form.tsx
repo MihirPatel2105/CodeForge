@@ -14,7 +14,7 @@ import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { LogoMark } from "@/components/brand/logo-mark";
 
 const FIELD =
-  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
   "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
@@ -70,7 +70,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <ResetPasswordAside />
 
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-[6px] lg:hidden">
             <LogoMark className="h-8 w-8" />
             <span className="cf-wordmark text-fg">
@@ -127,7 +127,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             </div>
 
             <ul
-              className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-[4px] border border-rule bg-bg/70 p-4 sm:grid-cols-2"
+              className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-lg border border-rule bg-bg/70 p-4 sm:grid-cols-2"
               aria-live="polite"
             >
               {PASSWORD_RULES.map((rule) => {
@@ -136,7 +136,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   <li key={rule.id} className="flex items-center gap-[9px]">
                     <span
                       className={cn(
-                        "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[4px] border transition-colors",
+                        "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-lg border transition-colors",
                         met ? "border-ok bg-ok text-surface" : "border-border-strong bg-transparent",
                       )}
                     >
@@ -186,7 +186,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             {error && (
               <p
                 role="alert"
-                className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+                className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
               >
                 {error}
               </p>
@@ -195,14 +195,14 @@ export function ResetPasswordForm({ token }: { token: string }) {
             <Button
               type="submit"
               disabled={submitting}
-              className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
+              className="mt-1 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
             >
               {submitting ? "Saving…" : "Save new password"}
             </Button>
           </form>
 
           <div className="mt-6 flex items-start gap-3 border-t border-rule pt-5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[3px] border border-border bg-bg text-fg-faint">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-bg text-fg-faint">
               <KeyRound className="h-3.5 w-3.5" aria-hidden />
             </span>
             <p className="pt-0.5 text-[12.5px] leading-[1.55] text-fg-faint">

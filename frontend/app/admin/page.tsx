@@ -75,7 +75,7 @@ export default function AdminPage() {
         </div>
         <div className="min-w-0">
           <AdminSectionHeading eyebrow="04 / system" title="Service posture" id="service-heading" />
-          <div className="mt-5 overflow-hidden rounded-[6px] border border-border bg-surface">
+          <div className="mt-5 overflow-hidden rounded-xl border border-border bg-surface">
             {(health?.services ?? []).map((service) => (
               <div key={service.name} className="border-b border-rule px-4 py-4 last:border-b-0">
                 <div className="flex items-center justify-between gap-4"><span className="text-[13px] font-[650] text-fg">{service.name}</span><HealthPill status={service.status} /></div>
@@ -92,11 +92,11 @@ export default function AdminPage() {
 }
 
 function RefreshButton({ loading, onClick }: { loading: boolean; onClick: () => void }) {
-  return <Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={onClick} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button>;
+  return <Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={onClick} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button>;
 }
 
 function ErrorBanner({ message }: { message: string }) {
-  return <p role="alert" className="mt-6 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{message}</p>;
+  return <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{message}</p>;
 }
 
 function MetricGrid({ overview, loading }: { overview: AdminOverviewResponse | null; loading: boolean }) {
@@ -113,7 +113,7 @@ function MetricGrid({ overview, loading }: { overview: AdminOverviewResponse | n
     { label: "fallback runs", value: totals?.runs_with_provider_fallbacks, icon: ServerCog, className: "text-warn" },
   ];
   return (
-    <dl className="mt-5 grid overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.05)] sm:grid-cols-2 xl:grid-cols-4">
+    <dl className="mt-5 grid overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.05)] sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map(({ label, value, icon: Icon, className, hint }, index) => (
         <div key={label} className={cn("min-h-[136px] p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "xl:border-t-0", index % 4 !== 0 && "xl:border-l", index % 4 === 0 && "xl:border-l-0", index > 3 && "xl:border-t")}>
           <div className="flex items-center justify-between gap-4"><dt className={ADMIN_LABEL}>{label}</dt><Icon className={cn("h-4 w-4", className)} aria-hidden /></div>

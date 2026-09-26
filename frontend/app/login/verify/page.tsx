@@ -89,7 +89,7 @@ export default function VerifyLoginPage() {
     <div className="cf-auth relative flex min-h-screen bg-bg">
       <AuthAside />
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
             <ShieldCheck className="h-3 w-3" aria-hidden /> second step
           </span>
@@ -108,7 +108,7 @@ export default function VerifyLoginPage() {
                   aria-pressed={method === option}
                   disabled={busy}
                   onClick={() => { setMethod(option); setError(null); }}
-                  className={cn("h-12 gap-2 rounded-[3px] text-[10px]", method === option && "border-accent-bd bg-accent-soft text-accent")}
+                  className={cn("h-12 gap-2 rounded-lg text-[10px]", method === option && "border-accent-bd bg-accent-soft text-accent")}
                 >
                   {option === "totp" ? <KeyRound className="h-4 w-4" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
                   {option === "totp" ? "Authenticator code" : "Passkey"}
@@ -130,26 +130,26 @@ export default function VerifyLoginPage() {
                   value={code}
                   onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="000000"
-                  className="mt-2 h-12 rounded-[3px] border-border-strong bg-bg font-mono tracking-[0.2em]"
+                  className="mt-2 h-12 rounded-lg border-border-strong bg-bg font-mono tracking-[0.2em]"
                 />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>
-              <Button type="submit" disabled={busy || code.length !== 6} className="h-[50px] w-full rounded-[3px]">
+              <Button type="submit" disabled={busy || code.length !== 6} className="h-[50px] w-full rounded-lg">
                 {busy ? "Verifying…" : "Verify and sign in"}
               </Button>
             </form>
           ) : (
             <div className="mt-7">
               <p className="text-[12px] leading-5 text-fg-muted">Use a passkey saved to your device or password manager. Your device may ask for a PIN or biometric check.</p>
-              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-4 h-[50px] w-full gap-2 rounded-[3px]">
+              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-4 h-[50px] w-full gap-2 rounded-lg">
                 <Fingerprint className="h-4 w-4" aria-hidden />
                 {busy ? "Waiting for passkey…" : "Verify with passkey"}
               </Button>
             </div>
           )}
 
-          {error ? <p role="alert" className="mt-5 rounded-[3px] border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger">{error}</p> : null}
-          <Button type="button" variant="ghost" onClick={startAgain} disabled={busy} className="mt-5 h-10 w-full rounded-[3px] text-fg-muted">Start sign-in again</Button>
+          {error ? <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger">{error}</p> : null}
+          <Button type="button" variant="ghost" onClick={startAgain} disabled={busy} className="mt-5 h-10 w-full rounded-lg text-fg-muted">Start sign-in again</Button>
         </div>
       </main>
     </div>

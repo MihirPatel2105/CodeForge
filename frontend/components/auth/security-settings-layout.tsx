@@ -37,7 +37,7 @@ export function SecuritySettingsLayout({
         </Link>
 
         <header className="mt-6 flex flex-col gap-5 border-b border-rule pb-8 sm:flex-row sm:items-start">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[5px] border border-accent-bd bg-accent-soft text-accent">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
             <Icon className="h-5 w-5" aria-hidden />
           </span>
           <div>
@@ -60,7 +60,7 @@ export function SecuritySettingsLayout({
               href={href}
               aria-current={href === current ? "page" : undefined}
               className={cn(
-                "inline-flex h-10 items-center gap-2 rounded-[4px] border px-3.5 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] transition-colors",
+                "inline-flex h-10 items-center gap-2 rounded-lg border px-3.5 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] transition-colors",
                 href === current
                   ? "border-accent-bd bg-accent-soft text-accent"
                   : "border-border bg-surface text-fg-muted hover:border-border-strong hover:text-fg",

@@ -90,11 +90,11 @@
   --color-ink-accent: var(--ink-accent);
   --color-rule: var(--rule);
 
-  --radius-sm: calc(var(--radius) * 0.67);
-  --radius-md: calc(var(--radius) * 0.78);
+  --radius-sm: calc(var(--radius) * 0.83);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.22);
-  --radius-2xl: calc(var(--radius) * 1.44);
+  --radius-xl: calc(var(--radius) * 1.33);
+  --radius-2xl: calc(var(--radius) * 1.33);
   --radius-full: 999px;
 }
 

@@ -50,7 +50,7 @@ export default function ProjectDetailPage() {
           <p className="mt-3 text-[13.5px] leading-[1.6] text-fg-muted">{error}</p>
           <Link
             href="/projects"
-            className="mt-7 rounded-[3px] bg-fg px-5 py-3 font-mono text-[10.5px] font-[650] uppercase tracking-[0.12em] text-surface"
+            className="mt-7 rounded-lg bg-fg px-5 py-3 font-mono text-[10.5px] font-[650] uppercase tracking-[0.12em] text-surface"
           >
             Back to projects
           </Link>
@@ -65,7 +65,7 @@ export default function ProjectDetailPage() {
         <AppHeader />
         <main className="mx-auto w-full max-w-[1320px] px-6 pb-20 pt-12 md:px-10 lg:px-14">
           <div className="h-3 w-24 animate-pulse rounded bg-border" />
-          <div className="mt-6 grid min-h-[240px] overflow-hidden rounded-[6px] border border-border bg-surface lg:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
+          <div className="mt-6 grid min-h-[240px] overflow-hidden rounded-xl border border-border bg-surface lg:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
             <div className="p-8 md:p-10">
               <div className="h-7 w-40 animate-pulse rounded-full bg-accent-soft" />
               <div className="mt-7 h-10 w-64 animate-pulse rounded bg-border" />
@@ -82,8 +82,8 @@ export default function ProjectDetailPage() {
             </div>
           </div>
           <div className="mt-10 grid gap-7 xl:grid-cols-[390px_minmax(0,1fr)]">
-            <div className="h-[430px] animate-pulse rounded-[6px] border border-border bg-surface" />
-            <div className="h-[330px] animate-pulse rounded-[6px] border border-border bg-surface" />
+            <div className="h-[430px] animate-pulse rounded-xl border border-border bg-surface" />
+            <div className="h-[330px] animate-pulse rounded-xl border border-border bg-surface" />
           </div>
           <span className="sr-only">Loading project</span>
         </main>

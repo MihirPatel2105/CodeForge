@@ -173,7 +173,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
         </header>
 
         {snapshot.approval && (
-          <div className="mt-5 flex items-start gap-3 rounded-[6px] border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
+          <div className="mt-5 flex items-start gap-3 rounded-xl border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
             <div>
               <p className="text-[13px] font-[700]">Human checkpoint</p>
@@ -246,7 +246,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           <p className="max-w-[58ch] text-[13.5px] leading-[1.55] text-fg-muted">
             This is a deterministic replay of the CodeForge interface. The real product uses the same workflow with live models and a locked-down sandbox.
           </p>
-          <Link href={user ? "/projects" : "/signup"} className="inline-flex items-center gap-2 rounded-[3px] bg-fg px-5 py-3 font-mono text-[10.5px] font-[700] uppercase tracking-[0.1em] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90">
+          <Link href={user ? "/projects" : "/signup"} className="inline-flex items-center gap-2 rounded-lg bg-fg px-5 py-3 font-mono text-[10.5px] font-[700] uppercase tracking-[0.1em] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90">
             Build your own API
           </Link>
         </div>

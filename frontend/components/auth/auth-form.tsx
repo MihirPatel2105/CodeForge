@@ -42,7 +42,7 @@ const COPY = {
 // Square, hairline, and it goes solid black on focus rather than glowing — the field
 // you are typing in should be the darkest thing on the page.
 const FIELD =
-  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
   "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
@@ -147,7 +147,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
         {pending ? (
-          <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+          <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
             <VerifyStep
               email={pending.email}
               expiresAt={pending.expiresAt}
@@ -158,7 +158,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             />
           </div>
         ) : (
-          <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+          <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
             {/* The brand only appears here when the aside is hidden, so the small-screen
               layout still identifies itself. */}
             <Link href="/" className="mb-8 flex items-center gap-[6px] lg:hidden">
@@ -277,7 +277,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
               {registering && (
                 <ul
-                  className="grid gap-x-4 gap-y-2 rounded-[4px] border border-rule bg-bg/70 px-4 py-3 sm:grid-cols-2"
+                  className="grid gap-x-4 gap-y-2 rounded-lg border border-rule bg-bg/70 px-4 py-3 sm:grid-cols-2"
                   aria-live="polite"
                 >
                   {PASSWORD_RULES.map((rule) => {
@@ -286,7 +286,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       <li key={rule.id} className="flex items-center gap-[9px]">
                         <span
                           className={cn(
-                            "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[4px] border transition-colors",
+                            "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-lg border transition-colors",
                             met
                               ? "border-ok bg-ok text-surface"
                               : "border-border-strong bg-transparent",
@@ -311,7 +311,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
               {error && (
                 <p
                   role="alert"
-                  className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+                  className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
                 >
                   {error}
                 </p>
@@ -320,14 +320,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.13em]"
+                className="mt-1 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.13em]"
               >
                 {submitting ? copy.busy : copy.submit}
               </Button>
             </form>
 
             {!registering && (
-              <Link href="/login/passkey" className="mt-4 flex h-[46px] items-center justify-center rounded-[3px] border border-border-strong font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-bg">
+              <Link href="/login/passkey" className="mt-4 flex h-[46px] items-center justify-center rounded-lg border border-border-strong font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-bg">
                 Sign in with a passkey
               </Link>
             )}

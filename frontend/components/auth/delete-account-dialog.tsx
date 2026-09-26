@@ -10,7 +10,7 @@ import { api, clearToken, ApiError } from "@/lib/api";
 import { DELETE_CONFIRMATION } from "@/lib/types";
 
 const FIELD =
-  "h-11 rounded-[2px] border-border-strong bg-surface px-[13px] text-[14.5px] " +
+  "h-11 rounded-lg border-border-strong bg-surface px-[13px] text-[14.5px] " +
   "focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
@@ -64,7 +64,7 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[440px] rounded-[3px] border border-border-strong bg-surface p-7"
+        className="w-full max-w-[440px] rounded-lg border border-border-strong bg-surface p-7"
       >
         <span className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.16em] text-danger">
           [ permanent ]
@@ -116,7 +116,7 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
           {error && (
             <p
               role="alert"
-              className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+              className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
             >
               {error}
             </p>
@@ -126,7 +126,7 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
             <Button
               type="submit"
               disabled={!armed || deleting}
-              className="h-11 flex-1 rounded-[2px] bg-danger font-mono text-[12px] font-[600] uppercase tracking-[0.12em] text-surface hover:bg-danger/90 disabled:opacity-45"
+              className="h-11 flex-1 rounded-lg bg-danger font-mono text-[12px] font-[600] uppercase tracking-[0.12em] text-surface hover:bg-danger/90 disabled:opacity-45"
             >
               {deleting ? "Deleting…" : "Delete account"}
             </Button>
@@ -135,7 +135,7 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
               variant="outline"
               onClick={onClose}
               disabled={deleting}
-              className="h-11 rounded-[2px] px-6 font-mono text-[12px] font-[600] uppercase tracking-[0.12em]"
+              className="h-11 rounded-lg px-6 font-mono text-[12px] font-[600] uppercase tracking-[0.12em]"
             >
               Cancel
             </Button>

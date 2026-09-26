@@ -91,7 +91,7 @@ export default function SettingsPage() {
           Back to profile
         </Link>
 
-        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-[7px] border border-border bg-surface px-7 py-7 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-9">
+        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-xl border border-border bg-surface px-7 py-7 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-9">
           <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
@@ -108,7 +108,7 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div className="rounded-[5px] border border-border bg-bg/75 px-4 py-3 backdrop-blur-sm">
+            <div className="rounded-xl border border-border bg-bg/75 px-4 py-3 backdrop-blur-sm">
               <span className={LABEL}>signed in as</span>
               <p className="mt-1.5 max-w-[28rem] truncate font-mono text-[11.5px] text-fg">
                 {user?.email ?? "Loading account…"}
@@ -118,10 +118,10 @@ export default function SettingsPage() {
         </section>
 
         {user?.is_admin ? (
-          <section className="mt-6 overflow-hidden rounded-[6px] border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
+          <section className="mt-6 overflow-hidden rounded-xl border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="flex items-start gap-4 px-6 py-6 md:px-7">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-surface">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
                   <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
                 </span>
                 <div>
@@ -166,9 +166,9 @@ export default function SettingsPage() {
         />
 
         <div className="mt-4 grid items-start gap-5 lg:grid-cols-2">
-          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <Laptop className="h-4 w-4 text-accent" aria-hidden />
               </span>
               <div>
@@ -207,16 +207,16 @@ export default function SettingsPage() {
             {sessionError && (
               <p
                 role="alert"
-                className="mx-6 mb-6 rounded-[3px] border border-danger-bd bg-danger-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-danger"
+                className="mx-6 mb-6 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-danger"
               >
                 {sessionError}
               </p>
             )}
           </section>
 
-          <section className="rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-border bg-bg">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <MonitorSmartphone
                   className="h-4 w-4 text-accent"
                   aria-hidden
@@ -246,7 +246,7 @@ export default function SettingsPage() {
         {user ? (
           <section
             aria-label="Sign-in methods"
-            className="mt-4 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]"
+            className="mt-4 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]"
           >
             <ul className="divide-y divide-rule">
               <SecurityMethodRow
@@ -300,8 +300,8 @@ export default function SettingsPage() {
         <section
           className={
             user?.is_admin
-              ? "mt-4 overflow-hidden rounded-[6px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
-              : "mt-4 overflow-hidden rounded-[6px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
+              ? "mt-4 overflow-hidden rounded-xl border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
+              : "mt-4 overflow-hidden rounded-xl border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
           }
         >
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
@@ -309,8 +309,8 @@ export default function SettingsPage() {
               <span
                 className={
                   user?.is_admin
-                    ? "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-accent-bd bg-surface"
-                    : "grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border border-danger-bd bg-surface"
+                    ? "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface"
+                    : "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-danger-bd bg-surface"
                 }
               >
                 {user?.is_admin ? (
@@ -346,7 +346,7 @@ export default function SettingsPage() {
               <Button
                 disabled
                 variant="outline"
-                className="h-11 shrink-0 rounded-[3px] border-accent-bd px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em]"
+                className="h-11 shrink-0 rounded-lg border-accent-bd px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em]"
               >
                 Protected
               </Button>
@@ -354,7 +354,7 @@ export default function SettingsPage() {
               <Button
                 onClick={() => setConfirming(true)}
                 disabled={!user}
-                className="h-11 shrink-0 rounded-[3px] bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
+                className="h-11 shrink-0 rounded-lg bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
               >
                 Delete account
               </Button>
@@ -422,7 +422,7 @@ function SecurityMethodRow({
     <li className="flex flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
       <div className="flex min-w-0 items-start gap-4">
         <span
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-[4px] border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}
         >
           <Icon className="h-4 w-4 text-accent" aria-hidden />
         </span>
@@ -438,7 +438,7 @@ function SecurityMethodRow({
           </span>
           {status && (
             <span
-              className={`ml-2 rounded-[3px] border px-1.5 py-0.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] ${status === "On" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint"}`}
+              className={`ml-2 rounded-lg border px-1.5 py-0.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] ${status === "On" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint"}`}
             >
               {status}
             </span>
@@ -453,7 +453,7 @@ function SecurityMethodRow({
       </div>
       <Link
         href={href}
-        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-[3px] border border-border-strong px-4 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-fg hover:bg-bg sm:self-auto"
+        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-border-strong px-4 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-fg hover:bg-bg sm:self-auto"
       >
         {action}
         <ArrowRight
@@ -477,7 +477,7 @@ function AdminSettingLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-[4px] px-3 py-2.5 text-[12.5px] font-[650] text-fg transition-colors hover:bg-surface"
+      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12.5px] font-[650] text-fg transition-colors hover:bg-surface"
     >
       <Icon className="h-4 w-4 text-accent" aria-hidden />
       <span className="flex-1">{label}</span>
@@ -519,7 +519,7 @@ function SessionAction({
         onClick={onClick}
         variant="outline"
         disabled={disabled}
-        className="h-10 shrink-0 justify-center rounded-[3px] border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
+        className="h-10 shrink-0 justify-center rounded-lg border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
       >
         {buttonLabel}
       </Button>

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 type Filters = { q: string; status: string; rag_enabled: string; acceptance_level: string; failure_category: string; date_from: string; date_to: string };
 const EMPTY: Filters = { q: "", status: "", rag_enabled: "", acceptance_level: "", failure_category: "", date_from: "", date_to: "" };
-const SELECT = "h-10 rounded-[3px] border border-border bg-surface px-3 text-[12px] text-fg outline-none focus:border-fg";
+const SELECT = "h-10 rounded-lg border border-border bg-surface px-3 text-[12px] text-fg outline-none focus:border-fg";
 
 export default function AdminRunsPage() {
   const router = useRouter();
@@ -64,21 +64,21 @@ export default function AdminRunsPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-[3px]" onClick={() => load(debouncedFilters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
-      {error ? <p role="alert" className="mt-6 rounded-[3px] border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+      <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => load(debouncedFilters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
+      {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
 
-      <form onSubmit={submit} className="mt-7 grid gap-3 rounded-[6px] border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
+      <form onSubmit={submit} className="mt-7 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="relative block">
           <span className="sr-only">Search prompts</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden />
-          <Input value={filters.q} onChange={(event) => set("q", event.target.value)} placeholder="Search run prompt" className="h-10 rounded-[3px] pl-9" />
+          <Input value={filters.q} onChange={(event) => set("q", event.target.value)} placeholder="Search run prompt" className="h-10 rounded-lg pl-9" />
         </label>
         <select aria-label="Run status" className={SELECT} value={filters.status} onChange={(event) => set("status", event.target.value)}><option value="">Any status</option><option value="queued">Queued</option><option value="running">Running</option><option value="awaiting_approval">Awaiting approval</option><option value="succeeded">Succeeded</option><option value="failed_llm">LLM failure</option><option value="failed_sandbox">Sandbox failure</option><option value="failed_max_loops">Max loops</option><option value="cancelled">Cancelled</option><option value="rejected">Rejected</option></select>
         <select aria-label="Acceptance level" className={SELECT} value={filters.acceptance_level} onChange={(event) => set("acceptance_level", event.target.value)}><option value="">Any level</option>{[5,4,3,2,1,0].map((level) => <option key={level} value={`L${level}`}>L{level}</option>)}</select>
         <select aria-label="RAG mode" className={SELECT} value={filters.rag_enabled} onChange={(event) => set("rag_enabled", event.target.value)}><option value="">RAG on or off</option><option value="true">RAG enabled</option><option value="false">RAG disabled</option></select>
         <select aria-label="Failure category" className={SELECT} value={filters.failure_category} onChange={(event) => set("failure_category", event.target.value)}><option value="">Any failure</option><option value="llm">LLM</option><option value="sandbox">Sandbox</option><option value="max_loops">Max loops</option><option value="tests">Tests</option><option value="review">Review</option></select>
-        <Input aria-label="Runs from date" type="date" value={filters.date_from} onChange={(event) => set("date_from", event.target.value)} className="h-10 rounded-[3px]" />
-        <Input aria-label="Runs to date" type="date" value={filters.date_to} onChange={(event) => set("date_to", event.target.value)} className="h-10 rounded-[3px]" />
-        <div className="flex gap-2"><Button type="submit" className="h-10 flex-1 gap-2 rounded-[3px]" disabled={loading}><Filter className="h-4 w-4" aria-hidden />Apply</Button><Button type="button" variant="ghost" className="h-10 rounded-[3px]" onClick={clear}>Clear</Button></div>
+        <Input aria-label="Runs from date" type="date" value={filters.date_from} onChange={(event) => set("date_from", event.target.value)} className="h-10 rounded-lg" />
+        <Input aria-label="Runs to date" type="date" value={filters.date_to} onChange={(event) => set("date_to", event.target.value)} className="h-10 rounded-lg" />
+        <div className="flex gap-2"><Button type="submit" className="h-10 flex-1 gap-2 rounded-lg" disabled={loading}><Filter className="h-4 w-4" aria-hidden />Apply</Button><Button type="button" variant="ghost" className="h-10 rounded-lg" onClick={clear}>Clear</Button></div>
       </form>
       <div className="mt-4 flex items-center justify-between"><p className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-faint">{loading ? "Loading…" : `${pagination?.total ?? runs.length} runs`}</p><p className="text-[11px] text-fg-faint">Newest first · 25 per page</p></div>
       <div className="mt-3"><AdminRunTable runs={runs} /></div>

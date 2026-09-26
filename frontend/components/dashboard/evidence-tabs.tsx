@@ -32,7 +32,7 @@ export function EvidenceTabs({
   }
 
   return (
-    <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-[4px] border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
+    <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-lg border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
       {VIEWS.map((view, index) => (
         <button
           key={view}

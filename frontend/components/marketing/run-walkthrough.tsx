@@ -233,7 +233,7 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
   const complete = step.id === "complete";
 
   return (
-    <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-[6px] border border-border bg-bg p-4 shadow-[0_30px_90px_rgba(18,20,24,0.16)] sm:p-5">
+    <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-xl border border-border bg-bg p-4 shadow-[0_30px_90px_rgba(18,20,24,0.16)] sm:p-5">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-4">
         <div>

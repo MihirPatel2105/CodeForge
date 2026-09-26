@@ -73,9 +73,9 @@ const EVIDENCE = [
 ] as const;
 
 const PRIMARY_ACTION =
-  "inline-flex items-center justify-center gap-2 rounded-[3px] bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90";
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90";
 const SECONDARY_ACTION =
-  "inline-flex items-center justify-center gap-2 rounded-[3px] border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface";
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface";
 
 export default function AboutPage() {
   return (
@@ -135,7 +135,7 @@ export default function AboutPage() {
                   {PRINCIPLES.map(({ icon: Icon, index, title, body }) => (
                     <article key={index} className="group border-b border-r border-rule p-6 transition-colors hover:bg-bg md:p-8">
                       <div className="flex items-center justify-between">
-                        <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-border bg-bg text-accent transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft">
+                        <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-bg text-accent transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft">
                           <Icon className="h-4 w-4" aria-hidden />
                         </span>
                         <span className="font-mono text-[9px] font-[700] tracking-[0.13em] text-fg-faint">{index}</span>
@@ -163,7 +163,7 @@ export default function AboutPage() {
                     easier to explain.
                   </p>
                 </div>
-                <dl className="overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_20px_55px_rgba(22,24,28,0.055)]">
+                <dl className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_20px_55px_rgba(22,24,28,0.055)]">
                   {CONSTRAINTS.map((item, index) => (
                     <div key={item.label} className="grid gap-3 border-b border-rule px-5 py-5 last:border-b-0 sm:grid-cols-[3rem_7rem_1fr] sm:items-start sm:gap-5 md:px-6">
                       <span className="font-mono text-[9px] font-[700] tracking-[0.13em] text-fg-faint">{String(index + 1).padStart(2, "0")}</span>
@@ -198,7 +198,7 @@ export default function AboutPage() {
                     more useful when it leaves enough evidence to continue the work.
                   </p>
                 </div>
-                <div className="mt-12 grid overflow-hidden rounded-[6px] border border-border bg-surface/30 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-12 grid overflow-hidden rounded-xl border border-border bg-surface/30 sm:grid-cols-2 xl:grid-cols-4">
                   {EVIDENCE.map(({ icon: Icon, title, body }) => (
                     <article key={title} className="border-b border-r border-border p-6 last:border-b-0 xl:border-b-0">
                       <Icon className="h-5 w-5 text-accent" aria-hidden />

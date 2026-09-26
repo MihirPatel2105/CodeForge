@@ -107,11 +107,11 @@ export default function HowItWorksPage() {
                 work back to the Coder.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="#stages" className="inline-flex items-center gap-2 rounded-[3px] bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90">
+                <Link href="#stages" className="inline-flex items-center gap-2 rounded-lg bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90">
                   Follow the run
                   <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                 </Link>
-                <Link href="/#how" className="inline-flex items-center gap-2 rounded-[3px] border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface">
+                <Link href="/#how" className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface">
                   Watch it move
                 </Link>
               </div>
@@ -133,7 +133,7 @@ export default function HowItWorksPage() {
                   {STAGES.map(({ icon: Icon, name, job, input, output }, index) => (
                     <li key={name} className="group border-b border-r border-rule p-6 transition-colors hover:bg-bg md:p-7">
                       <div className="flex items-center justify-between">
-                        <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-border bg-bg text-accent group-hover:border-accent-bd group-hover:bg-accent-soft"><Icon className="h-4 w-4" aria-hidden /></span>
+                        <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-bg text-accent group-hover:border-accent-bd group-hover:bg-accent-soft"><Icon className="h-4 w-4" aria-hidden /></span>
                         <span className="font-mono text-[9px] font-[700] tracking-[0.12em] text-fg-faint">{String(index + 1).padStart(2, "0")}</span>
                       </div>
                       <h3 className="font-display mt-7 text-[19px] font-[650] tracking-[-0.04em] text-fg">{name}</h3>
@@ -156,7 +156,7 @@ export default function HowItWorksPage() {
               <SectionLabel index="02" label="control points" />
               <div>
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The run pauses for judgment and loops on evidence.</h2>
-                <div className="mt-12 grid overflow-hidden rounded-[6px] border border-border bg-surface/25 md:grid-cols-3">
+                <div className="mt-12 grid overflow-hidden rounded-xl border border-border bg-surface/25 md:grid-cols-3">
                   {STOPS.map(({ icon: Icon, label, title, body }) => (
                     <article key={label} className="border-b border-r border-border p-6 last:border-b-0 md:border-b-0 md:p-8">
                       <div className="flex items-center gap-3"><Icon className="h-4 w-4 text-accent" aria-hidden /><span className="font-mono text-[8px] font-[700] uppercase tracking-[0.14em] text-accent">{label}</span></div>
@@ -201,7 +201,7 @@ function SectionLabel({ index, label }: { index: string; label: string }) {
 
 function TerminalProof() {
   return (
-    <div className="overflow-hidden rounded-[6px] border border-border bg-term-bg shadow-[0_24px_70px_rgba(22,24,28,0.12)]">
+    <div className="overflow-hidden rounded-xl border border-border bg-term-bg shadow-[0_24px_70px_rgba(22,24,28,0.12)]">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-term-dim">sandbox output</span><span className="h-2 w-2 rounded-full bg-term-pass" /></div>
       <div className="space-y-3 px-5 py-6 font-mono text-[12px] leading-[1.55]"><p className="text-term-dim">$ pytest -q</p><p className="text-term-fg">........</p><p className="text-term-pass">8 passed in 1.42s</p><p className="border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.11em] text-term-dim">process exited with code 0</p></div>
       <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 font-mono text-[8px] font-[700] uppercase tracking-[0.11em]"><span className="text-term-dim">network disabled</span><span className="flex items-center gap-2 text-term-pass"><span className="h-1.5 w-1.5 rounded-full bg-term-pass" />verified</span></div>

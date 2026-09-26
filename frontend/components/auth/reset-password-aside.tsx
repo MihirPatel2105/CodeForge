@@ -61,13 +61,13 @@ export function ResetPasswordAside() {
           access from every older session.
         </p>
 
-        <div className="mt-10 overflow-hidden rounded-[6px] border border-border bg-surface/40">
+        <div className="mt-10 overflow-hidden rounded-xl border border-border bg-surface/40">
           {steps.map(({ icon: Icon, index, title, detail }) => (
             <div
               key={index}
               className="grid grid-cols-[44px_1fr_auto] items-start gap-4 border-b border-border px-5 py-5 last:border-b-0"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-[4px] border border-border bg-surface/50 text-fg-muted">
+              <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-surface/50 text-fg-muted">
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
               <div>

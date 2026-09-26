@@ -10,7 +10,7 @@ import { api, setToken, ApiError } from "@/lib/api";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 
 const FIELD =
-  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
   "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
@@ -105,7 +105,7 @@ export function ChangePasswordForm() {
         </div>
 
         <ul
-          className="grid gap-x-5 gap-y-2 rounded-[4px] border border-rule bg-bg/70 px-4 py-3 sm:grid-cols-2"
+          className="grid gap-x-5 gap-y-2 rounded-lg border border-rule bg-bg/70 px-4 py-3 sm:grid-cols-2"
           aria-live="polite"
         >
           {PASSWORD_RULES.map((rule) => {
@@ -114,7 +114,7 @@ export function ChangePasswordForm() {
               <li key={rule.id} className="flex items-center gap-[9px]">
                 <span
                   className={cn(
-                    "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[4px] border transition-colors",
+                    "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-lg border transition-colors",
                     met ? "border-ok bg-ok text-surface" : "border-border-strong bg-transparent",
                   )}
                 >
@@ -136,7 +136,7 @@ export function ChangePasswordForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+            className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
           >
             {error}
           </p>
@@ -145,7 +145,7 @@ export function ChangePasswordForm() {
         {done && (
           <p
             role="status"
-            className="rounded-[2px] border border-ok-bd bg-ok-soft px-3 py-2 text-[13px] leading-[1.45] text-ok"
+            className="rounded-lg border border-ok-bd bg-ok-soft px-3 py-2 text-[13px] leading-[1.45] text-ok"
           >
             Password changed. Anywhere else you were signed in has been signed out.
           </p>
@@ -154,7 +154,7 @@ export function ChangePasswordForm() {
         <Button
           type="submit"
           disabled={!ready || saving}
-          className="h-11 w-full rounded-[3px] font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] sm:w-auto sm:self-start sm:px-7"
+          className="h-11 w-full rounded-lg font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] sm:w-auto sm:self-start sm:px-7"
         >
           {saving ? "Saving…" : "Change password"}
         </Button>

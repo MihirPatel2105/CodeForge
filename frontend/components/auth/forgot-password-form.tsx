@@ -11,7 +11,7 @@ import { AuthAside } from "@/components/auth/auth-aside";
 import { LogoMark } from "@/components/brand/logo-mark";
 
 const FIELD =
-  "h-12 rounded-[3px] border-border-strong bg-bg px-[14px] text-[14px] " +
+  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
   "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
 const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
@@ -55,7 +55,7 @@ export function ForgotPasswordForm() {
       <AuthAside />
 
       <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-[7px] border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
+        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-[6px] lg:hidden">
             <LogoMark className="h-8 w-8" />
             <span className="cf-wordmark text-fg">
@@ -65,7 +65,7 @@ export function ForgotPasswordForm() {
 
           {sent ? (
             <>
-              <span className="grid h-12 w-12 place-items-center rounded-[5px] border border-ok-bd bg-ok-soft text-ok">
+              <span className="grid h-12 w-12 place-items-center rounded-xl border border-ok-bd bg-ok-soft text-ok">
                 <MailCheck className="h-5 w-5" aria-hidden />
               </span>
               <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok">
@@ -78,7 +78,7 @@ export function ForgotPasswordForm() {
                 If that address has an account, a reset link is on its way. Open the
                 email to choose a new password.
               </p>
-              <div className="mt-6 rounded-[4px] border border-rule bg-bg/70 px-4 py-3">
+              <div className="mt-6 rounded-lg border border-rule bg-bg/70 px-4 py-3">
                 <p className="text-[12.5px] leading-[1.55] text-fg-muted">
                   The link works once and expires after 10 minutes. Existing sessions
                   stay active until the password is changed.
@@ -137,7 +137,7 @@ export function ForgotPasswordForm() {
                 {error && (
                   <p
                     role="alert"
-                    className="rounded-[2px] border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+                    className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
                   >
                     {error}
                   </p>
@@ -146,7 +146,7 @@ export function ForgotPasswordForm() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="mt-1 h-[50px] w-full rounded-[3px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
+                  className="mt-1 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
                 >
                   {submitting ? "Sending…" : "Send reset link"}
                 </Button>

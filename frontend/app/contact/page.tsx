@@ -31,13 +31,13 @@ export default function ContactPage() {
               <p className="mt-7 max-w-[57ch] text-[16px] leading-[1.72] text-fg-muted">Report a bug, ask whether your API fits the current scope, or share an agent decision that surprised you. Specific evidence helps us answer faster.</p>
 
               <div className="mt-9 grid gap-3 sm:grid-cols-2">
-                <a href={`mailto:${CONTACT_EMAIL}`} className="group rounded-[5px] border border-border bg-surface/75 p-5 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface">
-                  <div className="flex items-center justify-between"><span className="grid h-9 w-9 place-items-center rounded-[4px] border border-border bg-bg text-accent"><Mail className="h-4 w-4" aria-hidden /></span><ArrowRight className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5" aria-hidden /></div>
+                <a href={`mailto:${CONTACT_EMAIL}`} className="group rounded-xl border border-border bg-surface/75 p-5 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface">
+                  <div className="flex items-center justify-between"><span className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-bg text-accent"><Mail className="h-4 w-4" aria-hidden /></span><ArrowRight className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5" aria-hidden /></div>
                   <p className="mt-5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-fg-faint">email</p>
                   <p className="mt-1 break-all font-mono text-[12px] text-fg">{CONTACT_EMAIL}</p>
                 </a>
-                <a href={CONTACT_PHONE_HREF} className="group rounded-[5px] border border-border bg-surface/75 p-5 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface">
-                  <div className="flex items-center justify-between"><span className="grid h-9 w-9 place-items-center rounded-[4px] border border-border bg-bg text-accent"><Phone className="h-4 w-4" aria-hidden /></span><ArrowRight className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5" aria-hidden /></div>
+                <a href={CONTACT_PHONE_HREF} className="group rounded-xl border border-border bg-surface/75 p-5 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface">
+                  <div className="flex items-center justify-between"><span className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-bg text-accent"><Phone className="h-4 w-4" aria-hidden /></span><ArrowRight className="h-3.5 w-3.5 text-fg-faint transition-transform group-hover:translate-x-0.5" aria-hidden /></div>
                   <p className="mt-5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-fg-faint">phone</p>
                   <p className="mt-1 font-mono text-[12px] text-fg">{CONTACT_PHONE}</p>
                 </a>
@@ -50,7 +50,7 @@ export default function ContactPage() {
               <div className="mt-5 flex items-center gap-2 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok"><Clock3 className="h-3.5 w-3.5" aria-hidden />Reply target: one to two working days</div>
             </div>
 
-            <div className="rounded-[8px] border border-border bg-surface p-5 shadow-[0_30px_90px_rgba(22,24,28,0.11)] sm:p-7">
+            <div className="rounded-xl border border-border bg-surface p-5 shadow-[0_30px_90px_rgba(22,24,28,0.11)] sm:p-7">
               <div className="mb-7 flex items-center justify-between border-b border-rule pb-5">
                 <div><span className="font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-accent">message desk</span><h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Send the details</h2></div>
                 <span className="flex items-center gap-2 font-mono text-[8px] font-[700] uppercase tracking-[0.11em] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />open</span>
