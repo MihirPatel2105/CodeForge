@@ -15,7 +15,7 @@ export function SiteHeader() {
         <Link
           href="/"
           aria-label="CodeForge home"
-          className="flex w-fit shrink-0 items-center gap-2 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+          className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           <LogoMark className="h-8 w-8 shrink-0" />
           <span className="cf-wordmark text-fg">codeforge</span>
@@ -26,23 +26,23 @@ export function SiteHeader() {
             <>
               <Link
                 href="/projects"
-                className="inline-flex h-10 items-center rounded-full bg-fg px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-fg/90 active:scale-[0.98] sm:px-4"
+                className="inline-flex h-10 items-center rounded-lg bg-fg px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-fg/90 active:scale-[0.98] sm:px-4"
               >
                 Projects
               </Link>
-              <UserAvatar initials={user.initials} name={user.displayName} className="rounded-full" />
+              <UserAvatar initials={user.initials} name={user.displayName} />
             </>
           ) : (
             <>
               <Link
                 href="/login"
-                className="inline-flex h-10 items-center rounded-full px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-3"
+                className="inline-flex h-10 items-center rounded-lg px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-3"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="inline-flex h-10 items-center rounded-full bg-fg px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-fg/90 active:scale-[0.98] sm:px-4"
+                className="inline-flex h-10 items-center rounded-lg bg-fg px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-fg/90 active:scale-[0.98] sm:px-4"
               >
                 <span className="hidden min-[380px]:inline">Get started</span>
                 <span className="min-[380px]:hidden">Start</span>
