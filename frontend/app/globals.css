@@ -523,7 +523,20 @@
   }
 }
 
-/* Authentication combines a dark product proof surface with a quiet form workspace. */
+/* Entry pages keep the form primary, with a quiet product preview on wide screens. */
+.cf-auth-entry {
+  background:
+    radial-gradient(circle at 50% -12%, rgba(80, 95, 214, 0.1), transparent 32rem),
+    linear-gradient(180deg, #fbfcfe 0%, var(--bg) 100%);
+}
+
+.cf-auth-proof {
+  background:
+    radial-gradient(circle at 90% 4%, rgba(100, 116, 230, 0.11), transparent 18rem),
+    linear-gradient(155deg, #f9faff 0%, #f2f5fd 100%);
+}
+
+/* Other authentication routes still use the dark proof panel. */
 .cf-auth {
   overflow-x: clip;
 }

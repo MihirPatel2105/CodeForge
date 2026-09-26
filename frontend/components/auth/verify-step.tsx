@@ -14,7 +14,7 @@ const LENGTH = 6;
  * button offering something that is going to be refused. */
 const RESEND_COOLDOWN = 60;
 
-const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
+const LABEL = "text-[13px] font-[650] text-fg";
 
 /**
  * Second half of sign-up: the code that proves the address is real.
@@ -151,29 +151,29 @@ export function VerifyStep({
 
   return (
     <div className="w-full">
-      <span className="grid h-12 w-12 place-items-center rounded-xl border border-accent/20 bg-accent-soft text-accent">
+      <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
         <MailCheck className="h-5 w-5" aria-hidden />
       </span>
-      <span className="mt-6 inline-flex rounded-full border border-accent/20 bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
-        step 2 of 2
+      <span className="mt-6 inline-flex rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
+        Step 2 of 2
       </span>
 
-      <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
+      <h1 className="font-display mt-5 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
         Check your email
       </h1>
-      <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+      <p className="mt-3 text-[15px] leading-6 text-fg-muted">
         Enter the {LENGTH}-digit code we sent to finish creating your account.
       </p>
-      <div className="mt-5 flex items-center justify-between gap-4 rounded-lg border border-rule bg-bg/70 px-4 py-3">
-        <span className="min-w-0 truncate font-mono text-[11.5px] text-fg">{email}</span>
-        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10.5px] text-fg-faint">
+      <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-2/60 px-4 py-3">
+        <span className="min-w-0 truncate text-[13px] font-[600] text-fg">{email}</span>
+        <span className="flex shrink-0 items-center gap-1.5 text-[12px] text-fg-muted">
           <Clock3 className="h-3.5 w-3.5" aria-hidden />
           <ExpiryCountdown expiresAt={expiry} />
         </span>
       </div>
 
       <div className="mt-7 flex flex-col gap-2">
-        <span className={LABEL}>VERIFICATION CODE</span>
+        <span className={LABEL}>Verification code</span>
         <div className="flex gap-2 sm:gap-[9px]" role="group" aria-label="Verification code">
           {digits.map((digit, i) => (
             <input
@@ -193,9 +193,9 @@ export function VerifyStep({
               aria-label={`Digit ${i + 1}`}
               maxLength={LENGTH}
               className={cn(
-                "h-14 w-full min-w-0 rounded-lg border bg-bg text-center",
+                "h-14 w-full min-w-0 rounded-xl border bg-white text-center",
                 "font-mono text-[20px] font-[600] text-fg outline-none transition-colors",
-                "focus:border-accent focus:shadow-[0_0_0_3px_rgba(89,56,244,0.08)] disabled:opacity-60",
+                "focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60",
                 error ? "border-danger-bd" : "border-border-strong",
               )}
             />
@@ -206,7 +206,7 @@ export function VerifyStep({
       {error && (
         <p
           role="alert"
-          className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+          className="mt-4 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
         >
           {error}
         </p>
@@ -215,7 +215,7 @@ export function VerifyStep({
       {resent && !error && (
         <p
           role="status"
-          className="mt-4 rounded-lg border border-ok-bd bg-ok-soft px-3 py-2 text-[13px] leading-[1.45] text-ok"
+          className="mt-4 rounded-xl border border-ok-bd bg-ok-soft px-4 py-3 text-[13px] leading-5 text-ok"
         >
           A new code is on its way. The previous one no longer works.
         </p>
@@ -225,7 +225,7 @@ export function VerifyStep({
         type="button"
         disabled={submitting || code.length < LENGTH}
         onClick={() => void submit(code)}
-        className="mt-6 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
+        className="mt-6 h-12 w-full rounded-xl text-[14px] font-[650]"
       >
         {submitting ? "Verifying…" : "Verify and continue"}
       </Button>
@@ -235,14 +235,14 @@ export function VerifyStep({
           type="button"
           onClick={() => void resend()}
           disabled={cooldown > 0}
-          className="font-mono text-[11.5px] font-[600] uppercase tracking-[0.11em] text-fg transition-colors hover:text-fg-muted disabled:cursor-not-allowed disabled:text-fg-faint disabled:hover:text-fg-faint"
+          className="min-h-11 rounded-lg px-1 text-[13px] font-[650] text-accent transition-colors hover:text-fg disabled:cursor-not-allowed disabled:text-fg-faint disabled:hover:text-fg-faint"
         >
           {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
         </button>
         <button
           type="button"
           onClick={onStartOver}
-          className="inline-flex items-center gap-1.5 text-[13px] text-fg-muted underline decoration-1 decoration-border-strong underline-offset-[4px] transition-colors hover:decoration-fg hover:text-fg"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg text-[13px] text-fg-muted underline decoration-1 decoration-border-strong underline-offset-[4px] transition-colors hover:decoration-fg hover:text-fg"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Use a different email

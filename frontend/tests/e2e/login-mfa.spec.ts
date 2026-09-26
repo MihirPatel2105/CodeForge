@@ -30,8 +30,8 @@ test("password sign-in offers both saved methods and completes with an authentic
   await page.route("**/auth/login/complete", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ access_token: "verified-token", token_type: "bearer" }) }));
 
   await page.goto("/login");
-  await page.getByLabel("EMAIL").fill(USER.email);
-  await page.getByLabel("PASSWORD").fill("correct-password");
+  await page.getByLabel("Email").fill(USER.email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect(page).toHaveURL(/\/login\/verify$/);
@@ -56,8 +56,8 @@ test("passkey-only verification does not show a code field", async ({ page }) =>
     body: JSON.stringify({ access_token: null, token_type: "bearer", mfa_required: true, mfa_ticket: "test-ticket", mfa_methods: ["passkey"] }),
   }));
   await page.goto("/login");
-  await page.getByLabel("EMAIL").fill(USER.email);
-  await page.getByLabel("PASSWORD").fill("correct-password");
+  await page.getByLabel("Email").fill(USER.email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/login\/verify$/);
   await expect(page.getByRole("button", { name: "Verify with passkey" })).toBeVisible();
@@ -74,8 +74,8 @@ test("administrator can choose passkey or code and code verification opens admin
   await page.route("**/auth/login/complete", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ access_token: "admin-token", token_type: "bearer" }) }));
 
   await page.goto("/login");
-  await page.getByLabel("EMAIL").fill(ADMIN.email);
-  await page.getByLabel("PASSWORD").fill("correct-password");
+  await page.getByLabel("Email").fill(ADMIN.email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect(page).toHaveURL(/\/login\/verify$/);
