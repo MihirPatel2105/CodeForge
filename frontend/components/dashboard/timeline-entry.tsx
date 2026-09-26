@@ -2,14 +2,6 @@ import { RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 
-/**
- * The three timeline entry kinds (docs/UI_BRIEF.md §4.2). All three share a 70px mono
- * time column and a 3px left rule; everything else about their treatment is deliberate
- * severity weighting — `blocking` gets the full-width red card because only a blocking
- * finding triggers the loop, and LOOP breaks the grid entirely because it is the moment
- * the whole demo is built around.
- */
-
 type MessageKind =
   | "default"
   | "file"
@@ -21,23 +13,23 @@ type MessageKind =
 
 const MESSAGE_KIND: Record<
   MessageKind,
-  { rule: string; agent: string; bg?: string; weight?: string }
+  { marker: string; agent: string; bg?: string; weight?: string }
 > = {
-  default: { rule: "border-l-border-strong", agent: "text-fg-muted" },
-  file: { rule: "border-l-accent-bd", agent: "text-accent" },
-  completed: { rule: "border-l-ok-bd", agent: "text-ok-bd", weight: "font-[550]" },
+  default: { marker: "bg-border-strong", agent: "text-fg-muted" },
+  file: { marker: "bg-accent", agent: "text-accent" },
+  completed: { marker: "bg-ok", agent: "text-ok", weight: "font-[550]" },
   "approval-required": {
-    rule: "border-l-warn",
+    marker: "bg-warn",
     agent: "text-warn",
-    bg: "bg-warn-soft",
+    bg: "bg-warn-soft/55",
     weight: "font-[600]",
   },
-  "approval-resolved": { rule: "border-l-ok", agent: "text-ok" },
-  rejected: { rule: "border-l-danger", agent: "text-danger" },
+  "approval-resolved": { marker: "bg-ok", agent: "text-ok" },
+  rejected: { marker: "bg-danger", agent: "text-danger" },
   failed: {
-    rule: "border-l-danger",
+    marker: "bg-danger",
     agent: "text-danger",
-    bg: "bg-danger-soft",
+    bg: "bg-danger-soft/65",
     weight: "font-[600]",
   },
 };
@@ -57,15 +49,19 @@ export function MessageEntry({ time, agent, text, variant = "default" }: Message
   return (
     <div
       className={cn(
-        "grid grid-cols-[70px_78px_1fr] items-start gap-x-[10px] rounded-lg border-l-[3px] px-[10px] py-2",
+        "grid grid-cols-[12px_minmax(0,1fr)] gap-x-2.5 rounded-xl px-2.5 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
-        k.rule,
         k.bg,
       )}
     >
-      <span className={cn(typeScale.metaMono, "text-[12.5px] text-fg-faint")}>{time}</span>
-      <span className={cn(typeScale.label, "text-[11.5px]", k.agent)}>{agent}</span>
-      <span className={cn(typeScale.timelineBody, k.weight, "text-pretty text-fg")}>{text}</span>
+      <span className={cn("mt-[5px] h-2 w-2 rounded-full", k.marker)} aria-hidden />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+          <span className={cn(typeScale.metaMono, "text-[11px] text-fg-faint")}>{time}</span>
+          {agent !== "—" && <span className={cn(typeScale.label, "text-[11px]", k.agent)}>{agent}</span>}
+        </div>
+        <p className={cn(typeScale.timelineBody, k.weight, "mt-1 text-pretty text-fg")}>{text}</p>
+      </div>
     </div>
   );
 }
@@ -87,32 +83,26 @@ export function FindingEntry({ time, agent, file, line, issue, fixHint }: Findin
   return (
     <div
       className={cn(
-        "grid grid-cols-[70px_1fr] gap-x-[10px] rounded-lg border border-danger-bd border-l-[3px] border-l-danger",
-        "bg-danger-soft px-[10px] py-2",
+        "rounded-2xl border border-danger-bd border-l-[3px] border-l-danger bg-danger-soft/75 px-4 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}
     >
-      <span className={cn(typeScale.metaMono, "text-[12.5px] text-fg-faint")}>{time}</span>
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded bg-danger px-[6px] py-[1px] text-[11px] font-extrabold tracking-[0.05em] text-surface uppercase">
-            blocking
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="rounded-full bg-danger px-2 py-0.5 text-[10px] font-[700] text-white">Blocking</span>
+        <span className={cn(typeScale.metaMono, "text-[11px] text-fg-faint")}>{time}</span>
+        <span className={cn(typeScale.label, "text-[11px] text-fg-muted")}>{agent}</span>
+        {file && (
+          <span className="min-w-0 truncate rounded-md bg-white/80 px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">
+            {file}{line != null ? `:${line}` : ""}
           </span>
-          <span className={cn(typeScale.label, "text-[11.5px] text-fg-muted")}>{agent}</span>
-          {file && (
-            <span className={cn(typeScale.metaMono, "text-[12px] text-fg-faint")}>
-              {file}
-              {line != null ? `:${line}` : ""}
-            </span>
-          )}
-        </div>
-        <p className="text-[14.5px] leading-[1.4] font-[550] text-pretty text-fg">{issue}</p>
-        {fixHint && (
-          <p className="text-[13.5px] text-fg-muted">
-            <span className="font-[650]">Fix:</span> {fixHint}
-          </p>
         )}
       </div>
+      <p className="mt-2 text-[14px] leading-[1.45] font-[550] text-pretty text-fg">{issue}</p>
+      {fixHint && (
+        <p className="mt-2 text-[13px] leading-5 text-fg-muted">
+          <span className="font-[650]">Fix:</span> {fixHint}
+        </p>
+      )}
     </div>
   );
 }
@@ -127,17 +117,18 @@ export function LoopEntry({ time, text }: LoopEntryProps) {
   return (
     <div
       className={cn(
-        "my-[5px] flex items-center gap-3 rounded-lg bg-loop px-[14px] py-[10px] text-surface",
-        "shadow-[0_4px_14px_rgba(109,40,217,.28)]",
+        "rounded-2xl border border-loop-bd border-l-[3px] border-l-loop bg-loop-soft px-4 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}
     >
-      <span className={cn(typeScale.metaMono, "text-[12.5px] opacity-80")}>{time}</span>
-      <span className="flex items-center gap-1 rounded-full bg-white/[.18] px-[10px] py-[3px] text-[11px] font-bold tracking-[0.05em] uppercase">
-        <RefreshCw className="h-3 w-3" aria-hidden />
-        LOOP
-      </span>
-      <span className="text-[15px] font-[650]">{text}</span>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-loop text-white">
+          <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+        </span>
+        <span className="text-[12px] font-[700] text-loop">Review loop</span>
+        <span className={cn(typeScale.metaMono, "ml-auto text-[11px] text-fg-faint")}>{time}</span>
+      </div>
+      <p className="mt-2 text-[14px] leading-[1.45] font-[600] text-pretty text-fg">{text}</p>
     </div>
   );
 }

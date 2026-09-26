@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Clock3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { preferredScrollBehavior } from "@/lib/motion";
 import { typeScale } from "@/lib/type-scale";
@@ -53,13 +53,13 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
-      <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface-2/70 px-4 py-[13px]">
-        <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-faint")}>
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-          LIVE TIMELINE
+    <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-surface shadow-[0_16px_45px_rgba(34,48,78,0.06)]">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-white px-4 py-3">
+        <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-muted")}>
+          <Clock3 className="h-4 w-4 text-accent" aria-hidden />
+          Live timeline
         </span>
-        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[10px] text-fg-faint">{entries.length} events</span>
+        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] text-fg-faint" aria-label={`${entries.length} ${entries.length === 1 ? "event" : "events"}`}>{entries.length}</span>
       </div>
 
       {connectionLost && (
@@ -75,14 +75,22 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         </div>
       )}
 
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 bg-[#fbfcff]">
         <div
           ref={viewportRef}
           onScroll={handleScroll}
-          className="cf-run-scroll absolute inset-0 flex flex-col gap-[6px] overflow-y-auto p-3"
+          role="log"
+          aria-label="Live timeline"
+          className="cf-run-scroll absolute inset-0 flex flex-col gap-1.5 overflow-y-auto p-2.5"
         >
         {entries.length === 0 ? (
-          <p className="p-2 text-[13px] text-fg-faint">Nothing yet — the run hasn&apos;t started.</p>
+          <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+              <Clock3 className="h-5 w-5" aria-hidden />
+            </span>
+            <p className="mt-4 text-[15px] font-[650] text-fg">Waiting for activity</p>
+            <p className="mt-1.5 max-w-[32ch] text-[13px] leading-5 text-fg-muted">Agent updates will appear here as the run progresses.</p>
+          </div>
         ) : (
           entries.map((entry, i) => <TimelineEntry key={i} entry={entry} i={i} />)
         )}
