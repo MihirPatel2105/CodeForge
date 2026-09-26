@@ -45,9 +45,7 @@ export function SiteFooter() {
           <div>
             <Link href="/" className="inline-flex items-center gap-[6px]">
               <LogoMark className="h-8 w-8" />
-              <span className="cf-wordmark text-fg">
-                codeforge
-              </span>
+              <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
             </Link>
             <p className="mt-4 max-w-[34ch] text-[13.5px] leading-[1.55] text-fg-muted">
               Five role-based AI agents mapped onto the software development lifecycle,

@@ -247,7 +247,7 @@ def test_no_email_carries_an_image_by_any_technique():
     )
     assert "data:image" not in html
     assert "cid:" not in html
-    assert "codeforge" in html
+    assert "Code" in html and "Forge" in html
 
 
 def test_every_message_carries_a_date(monkeypatch):

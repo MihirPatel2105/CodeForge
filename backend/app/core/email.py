@@ -52,8 +52,8 @@ _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 
-# The mark is drawn with a table cell and inline CSS — a dark rounded tile with a white
-# "C" — rather than being an image. Both image techniques were tried against real Gmail
+# The email mark is drawn with a table cell and inline CSS — an indigo tile with
+# white "CF" — rather than being an image. Both image techniques were tried against real Gmail
 # delivery and both failed, so do not reach for either again:
 #
 #   data: URI  — Gmail, Outlook and Yahoo refuse to render one in an <img src>. The mark
@@ -75,7 +75,8 @@ _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 # public hosting the backend does not have. Worth revisiting once the frontend is on
 # Vercel: an <img> pointing at a deployed asset would restore the real mark for everyone.
 # Until then, type and a coloured tile survive everywhere and need nothing.
-_MARK_LETTER = "C"
+_BRAND = "#3f47c9"
+_MARK_LETTER = "CF"
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
@@ -103,13 +104,15 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
            border-radius and renders a square tile, which is a fine degradation. -->
       <tr><td style="padding:26px 30px 0 30px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td width="24" height="24" align="center" valign="middle"
-              style="width:24px;height:24px;background:{_FG};border-radius:5px;
-                     font-family:{_MONO};font-size:14px;font-weight:700;line-height:24px;
+          <td width="30" height="30" align="center" valign="middle"
+              style="width:30px;height:30px;background:{_BRAND};border-radius:8px;
+                     font-family:{_SANS};font-size:12px;font-weight:800;line-height:30px;
                      color:{_SURFACE};text-align:center;">{_MARK_LETTER}</td>
           <td style="padding-left:9px;">
-            <span style="font-family:{_MONO};font-size:15px;font-weight:700;
-                         color:{_FG};letter-spacing:-0.02em;">codeforge</span>
+            <span style="font-family:{_SANS};font-size:18px;font-weight:750;
+                         color:{_FG};letter-spacing:-0.06em;">Code</span><span
+                  style="font-family:{_SANS};font-size:18px;font-weight:800;
+                         color:{_BRAND};letter-spacing:-0.06em;">Forge</span>
           </td>
         </tr></table>
       </td></tr>

@@ -157,14 +157,19 @@
   --radius: 12px;
 }
 
-/* The brand lockup keeps the construction of the approved logo artwork. */
+/* A precise, readable lockup across navigation, auth, and the compact dashboard. */
 .cf-wordmark {
   display: inline-block;
-  font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", sans-serif;
+  font-family: var(--font-display-stack);
   font-size: 20px;
-  font-weight: 900;
-  letter-spacing: -0.055em;
+  font-weight: 750;
+  letter-spacing: -0.065em;
   line-height: 1;
+}
+
+.cf-wordmark__forge {
+  color: var(--accent);
+  font-weight: 800;
 }
 
 /*

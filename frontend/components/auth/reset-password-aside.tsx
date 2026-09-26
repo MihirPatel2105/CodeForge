@@ -44,9 +44,7 @@ export function ResetPasswordAside() {
             className="inline-flex w-fit items-center gap-[6px] transition-opacity hover:opacity-80"
           >
             <LogoMark className="h-8 w-8" />
-            <span className="cf-wordmark text-fg">
-              codeforge
-            </span>
+            <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
           </Link>
           <span className="rounded-full border border-border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-fg-faint">
             single-use link

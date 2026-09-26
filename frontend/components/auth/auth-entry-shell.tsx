@@ -18,7 +18,7 @@ export function AuthEntryShell({
       <header className="cf-auth-header relative z-10 mx-auto flex h-[76px] max-w-[1160px] items-center justify-between px-5 sm:px-8">
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" aria-label="CodeForge home">
           <LogoMark className="h-8 w-8" />
-          <span className="cf-wordmark text-fg">codeforge</span>
+          <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
         </Link>
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-accent">
           <ArrowLeft className="h-4 w-4" aria-hidden />

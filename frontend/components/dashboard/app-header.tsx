@@ -37,9 +37,7 @@ export function AppHeader() {
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <LogoMark className="h-8 w-8" />
-          <span className="cf-wordmark text-fg">
-            codeforge
-          </span>
+          <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
         </Link>
 
         <Link

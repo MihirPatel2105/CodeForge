@@ -18,7 +18,7 @@ export function SiteHeader() {
           className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           <LogoMark className="h-8 w-8 shrink-0" />
-          <span className="cf-wordmark text-fg">codeforge</span>
+          <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
         </Link>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
