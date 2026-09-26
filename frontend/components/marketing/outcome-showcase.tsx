@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Archive, Check, Code2, FlaskConical, ShieldCheck } from "lucide-react";
+import { Archive, Check, Code2, FileCode2, FlaskConical, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { tokenizePythonLine } from "@/lib/python-highlight";
 
 const DELIVERABLES = [
   {
@@ -37,7 +38,14 @@ const DELIVERABLES = [
 
 type CodeLine = {
   value: string;
-  tone?: string;
+};
+
+const TOKEN_CLASS: Record<string, string> = {
+  kw: "text-code-kw",
+  str: "text-code-str",
+  com: "text-code-com",
+  fn: "text-code-fn",
+  num: "text-code-num",
 };
 
 const FILES: Array<{
@@ -55,10 +63,10 @@ const FILES: Array<{
       { value: "from motor.motor_asyncio import AsyncIOMotorClient" },
       { value: "from models import Book" },
       { value: "" },
-      { value: "async def connect_database():", tone: "text-code-fn" },
-      { value: '    client = AsyncIOMotorClient(\"mongodb://db:27017\")', tone: "text-code-str" },
-      { value: "    await init_beanie(", tone: "text-code-kw" },
-      { value: "        database=client.library, document_models=[Book]", tone: "text-code-str" },
+      { value: "async def connect_database():" },
+      { value: '    client = AsyncIOMotorClient(\"mongodb://db:27017\")' },
+      { value: "    await init_beanie(" },
+      { value: "        database=client.library, document_models=[Book]" },
     ],
   },
   {
@@ -69,11 +77,11 @@ const FILES: Array<{
       { value: "from beanie import Document" },
       { value: "from pydantic import Field" },
       { value: "" },
-      { value: "class Book(Document):", tone: "text-code-fn" },
-      { value: "    title: str", tone: "text-code-str" },
-      { value: "    author: str", tone: "text-code-str" },
-      { value: "    isbn: str = Field(unique=True)", tone: "text-code-str" },
-      { value: "    genre: str | None = None", tone: "text-code-str" },
+      { value: "class Book(Document):" },
+      { value: "    title: str" },
+      { value: "    author: str" },
+      { value: "    isbn: str = Field(unique=True)" },
+      { value: "    genre: str | None = None" },
     ],
   },
   {
@@ -83,12 +91,12 @@ const FILES: Array<{
     lines: [
       { value: "from pydantic import BaseModel, Field" },
       { value: "" },
-      { value: "class BookCreate(BaseModel):", tone: "text-code-fn" },
-      { value: "    title: str = Field(min_length=1)", tone: "text-code-str" },
-      { value: "    author: str = Field(min_length=1)", tone: "text-code-str" },
-      { value: "    isbn: str", tone: "text-code-str" },
-      { value: "    genre: str | None = None", tone: "text-code-str" },
-      { value: "    read: bool = False", tone: "text-code-kw" },
+      { value: "class BookCreate(BaseModel):" },
+      { value: "    title: str = Field(min_length=1)" },
+      { value: "    author: str = Field(min_length=1)" },
+      { value: "    isbn: str" },
+      { value: "    genre: str | None = None" },
+      { value: "    read: bool = False" },
     ],
   },
   {
@@ -99,11 +107,11 @@ const FILES: Array<{
       { value: "from fastapi import FastAPI" },
       { value: "from models import Book" },
       { value: "" },
-      { value: "app = FastAPI()", tone: "text-code-fn" },
+      { value: "app = FastAPI()" },
       { value: "" },
-      { value: '@app.get(\"/books\")', tone: "text-code-kw" },
-      { value: "async def list_books():", tone: "text-code-fn" },
-      { value: "    return await Book.find_all().to_list()", tone: "text-code-str" },
+      { value: '@app.get(\"/books\")' },
+      { value: "async def list_books():" },
+      { value: "    return await Book.find_all().to_list()" },
     ],
   },
   {
@@ -114,11 +122,11 @@ const FILES: Array<{
       { value: "from fastapi.testclient import TestClient" },
       { value: "from main import app" },
       { value: "" },
-      { value: "client = TestClient(app)", tone: "text-code-fn" },
+      { value: "client = TestClient(app)" },
       { value: "" },
-      { value: "def test_list_books():", tone: "text-code-fn" },
-      { value: '    response = client.get(\"/books\")', tone: "text-code-str" },
-      { value: "    assert response.status_code == 200", tone: "text-code-kw" },
+      { value: "def test_list_books():" },
+      { value: '    response = client.get(\"/books\")' },
+      { value: "    assert response.status_code == 200" },
     ],
   },
 ];
@@ -147,24 +155,21 @@ export function OutcomeShowcase() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
-          <div className="cf-invert cf-lift cf-frame overflow-hidden rounded-xl border border-border bg-bg shadow-[0_28px_80px_rgba(22,24,28,0.16)]">
+          <div className="overflow-hidden rounded-[28px] border border-border bg-white shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-4">
               <div className="flex items-center gap-2.5">
-                <span className="h-2 w-2 rounded-full bg-ok" aria-hidden />
-                <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.13em] text-fg">
-                  run complete
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[650] text-ok">
+                  <Check className="h-3 w-3" aria-hidden />
+                  Run complete
                 </span>
+                <span className="text-[11px] text-fg-muted">Ready to inspect</span>
               </div>
-              <span className="font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
-                library-api / run_01
-              </span>
+              <span className="font-mono text-[11px] text-fg-faint">library-api / run_01</span>
             </div>
 
-            <div className="grid min-h-[350px] sm:grid-cols-[9.5rem_1fr]">
-              <div className="border-b border-rule bg-surface p-3 sm:border-b-0 sm:border-r">
-                <span className="px-2 font-mono text-[8.5px] font-[700] uppercase tracking-[0.13em] text-fg-faint">
-                  generated code
-                </span>
+            <div className="grid min-h-[350px] sm:grid-cols-[10.5rem_minmax(0,1fr)]">
+              <div className="min-w-0 border-b border-rule bg-[#f7f9fd] px-3 py-4 sm:border-b-0 sm:border-r">
+                <span className="px-2 text-[11px] font-[650] text-fg-muted">Generated files</span>
                 <ul className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-1">
                   {FILES.map((file) => {
                     const selected = file.name === activeFile.name;
@@ -175,15 +180,15 @@ export function OutcomeShowcase() {
                           aria-pressed={selected}
                           onClick={() => setActiveFileName(file.name)}
                           className={cn(
-                            "flex w-full items-center justify-between border px-2.5 py-2 text-left font-mono text-[10px] transition-[border-color,background-color,color,box-shadow]",
+                            "flex w-full min-w-0 items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left font-mono text-[11px] transition-[border-color,background-color,color,box-shadow]",
                             selected
-                              ? "border-border bg-bg font-[700] text-fg shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
-                              : "border-transparent text-fg-muted hover:border-border hover:bg-bg/60 hover:text-fg",
+                              ? "border-accent-bd bg-white font-[700] text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]"
+                              : "border-transparent text-fg-muted hover:border-border hover:bg-white/70 hover:text-fg",
                           )}
                         >
                           <span className="truncate">{file.name}</span>
                           {file.status === "new" && (
-                            <span className="ml-2 rounded-lg bg-ok-soft px-1.5 py-0.5 text-[7px] font-[700] uppercase text-ok">
+                            <span className="rounded-full bg-ok-soft px-1.5 py-0.5 text-[9px] font-[700] text-ok">
                               new
                             </span>
                           )}
@@ -195,35 +200,35 @@ export function OutcomeShowcase() {
               </div>
 
               <div className="flex min-w-0 flex-col bg-code-bg">
-                <div className="flex items-center justify-between border-b border-rule px-4 py-3">
-                  <span className="font-mono text-[11px] font-[700] text-fg">
-                    {activeFile.name}
+                <div className="flex items-center justify-between gap-3 border-b border-rule bg-white px-4 py-3">
+                  <span className="inline-flex min-w-0 items-center gap-2 font-mono text-[12px] font-[650] text-fg">
+                    <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+                    <span className="truncate">{activeFile.name}</span>
                   </span>
-                  <span className="font-mono text-[9px] text-fg-faint">
-                    {activeFile.bytes}
-                  </span>
+                  <span className="shrink-0 text-[11px] text-fg-faint">{activeFile.bytes}</span>
                 </div>
                 <ol
                   key={activeFile.name}
-                  className="flex-1 overflow-x-auto px-4 py-4 font-mono text-[11.5px] leading-[1.85] motion-safe:animate-[cfFade_.2s_ease-out]"
+                  className="min-h-[260px] flex-1 overflow-x-auto px-4 py-5 font-mono text-[11.5px] leading-[1.85] motion-safe:animate-[cfFade_.2s_ease-out]"
                 >
                   {activeFile.lines.map((line, index) => (
                     <li key={activeFile.name + "-" + index} className="flex min-w-max gap-4">
-                      <span className="w-4 shrink-0 text-right text-code-com">
+                      <span className="w-5 shrink-0 select-none text-right text-code-com">
                         {String(index + 1).padStart(2, "0")}
                       </span>
-                      <span className={line.tone ?? "text-code-fg"}>
-                        {line.value || " "}
+                      <span className="text-code-fg">
+                        {tokenizePythonLine(line.value).map((token, tokenIndex) => (
+                          <span key={tokenIndex} className={token.cls ? TOKEN_CLASS[token.cls] : undefined}>{token.text}</span>
+                        ))}
+                        {line.value.length === 0 && " "}
                       </span>
                     </li>
                   ))}
                 </ol>
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-4 py-3">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-fg-faint">
-                    sandbox output
-                  </span>
-                  <span className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] text-ok">
-                    <Check className="h-3 w-3" aria-hidden />
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-ok-soft/55 px-4 py-3">
+                  <span className="text-[11px] font-[650] text-fg-muted">Sandbox output</span>
+                  <span className="inline-flex items-center gap-2 text-[12px] font-[650] text-ok">
+                    <span className="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden />
                     8 passed in 1.42s
                   </span>
                 </div>
