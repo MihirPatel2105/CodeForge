@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, WrapText } from "lucide-react";
+import { Check, Copy, FileCode2, WrapText } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
@@ -109,19 +109,22 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)] sm:flex-row">
+    <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-border bg-surface shadow-[0_16px_45px_rgba(34,48,78,0.06)] sm:flex-row">
       {/* File rail */}
-      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-surface-2 sm:h-auto sm:w-[196px] sm:border-r sm:border-b-0">
-        <div className={cn("border-b border-border px-3 py-[11px]", typeScale.label, "text-fg-faint")}>
-          GENERATED CODE
+      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-[#f7f9fd] sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
+        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+          <span className="text-[12px] font-[650] text-fg-muted">Generated files</span>
+          <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-[650] text-fg-faint" aria-label={`${files.length} ${files.length === 1 ? "file" : "files"}`}>{files.length}</span>
         </div>
         {files.length === 0 ? (
-          <p className="px-3 py-3 text-[13px] text-fg-faint">
-            No files yet — the Coder writes them one by one.
-          </p>
+          <div className="space-y-2 px-4 py-4" aria-hidden>
+            <div className="h-7 rounded-lg border border-dashed border-border bg-white/60" />
+            <div className="h-7 rounded-lg border border-dashed border-border bg-white/60" />
+            <div className="hidden h-7 rounded-lg border border-dashed border-border bg-white/60 sm:block" />
+          </div>
         ) : (
           <ScrollArea className="flex-1">
-            <ul className="flex flex-col gap-[2px] p-[6px]">
+            <ul className="flex flex-col gap-1 p-2">
               {files.map((f) => {
                 const isSelected = f.path === selectedPath;
                 return (
@@ -134,15 +137,15 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                         setView("current");
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between gap-2 rounded-lg border border-transparent px-2 py-[6px] text-left",
-                        "font-mono text-[13px] text-fg",
-                        isSelected && "border-border-strong bg-surface font-bold",
+                        "flex w-full items-center justify-between gap-2 rounded-xl border border-transparent px-2.5 py-2 text-left",
+                        "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-white hover:text-fg",
+                        isSelected && "border-accent-bd bg-white font-bold text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]",
                       )}
                     >
                       <span className="truncate">{f.path}</span>
                       <span
                         className={cn(
-                          "shrink-0 rounded-lg px-[5px] py-[1px] text-[10px] font-extrabold tracking-[0.06em] uppercase",
+                          "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-[700]",
                           f.status === "new" ? "bg-ok-soft text-ok" : "bg-loop-soft text-loop",
                         )}
                       >
@@ -158,12 +161,13 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
       </div>
 
       {/* Code viewer */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col bg-code-bg">
         {selected && version ? (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-[13px] py-[10px]">
-              <div className="flex min-w-0 items-baseline gap-2">
-                <span className="shrink-0 font-mono text-[13.5px] font-[650] text-fg">{selected.path}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-white px-4 py-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+                <span className="min-w-0 truncate font-mono text-[13px] font-[650] text-fg">{selected.path}</span>
                 <span className="min-w-0 truncate text-[12.5px] text-fg-muted">
                   {selected.status === "new"
                     ? `${selected.bytes.toLocaleString()} bytes · written in the first pass`
@@ -174,7 +178,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {canDiff && (
-                  <div className="flex gap-[2px] rounded-lg bg-surface-2 p-[2px]">
+                  <div className="flex gap-[2px] rounded-xl bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
                     <button
                       key={v}
@@ -224,8 +228,18 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
             </ScrollArea>
           </>
         ) : (
-          <div className="flex flex-1 items-center justify-center text-[13px] text-fg-faint">
-            No files yet — the Coder writes them one by one.
+          <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+              <FileCode2 className="h-5 w-5" aria-hidden />
+            </span>
+            <p className="mt-4 text-[15px] font-[650] text-fg">
+              {files.length === 0 ? "Waiting for generated code" : "Loading file preview"}
+            </p>
+            <p className="mt-1.5 max-w-[36ch] text-[13px] leading-5 text-fg-muted">
+              {files.length === 0
+                ? "Files will appear here as the Coder writes them."
+                : "The file has been written. Its contents will appear shortly."}
+            </p>
           </div>
         )}
       </div>
@@ -237,7 +251,7 @@ function CurrentView({ content, changedLines, wrap }: { content: string; changed
   const lines = content.split("\n");
   const changed = new Set(changedLines);
   return (
-    <div className={cn(typeScale.code, "text-code-fg")}>
+    <div className={cn(typeScale.code, "p-4 text-code-fg")}>
       {lines.map((line, i) => {
         const n = i + 1;
         const isChanged = changed.has(n);
@@ -268,7 +282,7 @@ function DiffView({ oldContent, newContent, wrap }: { oldContent: string; newCon
     return <p className="p-3 text-[13px] text-fg-faint">No changes.</p>;
   }
   return (
-    <div className={cn(typeScale.code, "text-code-fg")}>
+    <div className={cn(typeScale.code, "p-4 text-code-fg")}>
       {hunks.map((hunk, hi) => (
         <div key={hi}>
           {hi > 0 && (
