@@ -172,6 +172,18 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           </div>
         </header>
 
+        {snapshot.approval && (
+          <div className="mt-5 flex items-start gap-3 rounded-[6px] border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+            <div>
+              <p className="font-mono text-[11px] font-[750] uppercase tracking-[0.1em]">Human checkpoint</p>
+              <p className="mt-1 text-[13.5px] leading-5 text-fg-muted">
+                This recorded run pauses for approval before continuing. The replay resumes automatically.
+              </p>
+            </div>
+          </div>
+        )}
+
         <section className="cf-run-pipeline mt-5 overflow-hidden rounded-[6px] border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
@@ -190,16 +202,6 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
             </div>
           </div>
         </section>
-
-        {snapshot.approval && (
-          <div className="mt-5 flex items-center gap-3 rounded-[6px] border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
-            <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden />
-            <div>
-              <p className="font-mono text-[10px] font-[750] uppercase tracking-[0.1em]">Human checkpoint</p>
-              <p className="mt-0.5 text-[13.5px] text-fg-muted">This recorded run pauses for approval before continuing.</p>
-            </div>
-          </div>
-        )}
 
         {snapshot.endedAt && (
           <section className="mt-5" aria-label="Demo run result">

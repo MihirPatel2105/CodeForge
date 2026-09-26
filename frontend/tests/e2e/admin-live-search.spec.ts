@@ -55,6 +55,41 @@ test("all admin text searches update results while typing", async ({ page }) => 
   await expect.poll(() => runQueries.at(-1)).toBe("book");
 
   await page.goto("/admin/audit");
-  await page.getByPlaceholder("Action, for example user.suspended").fill("user.");
+  await page.getByRole("textbox", { name: "Action" }).fill("user.");
   await expect.poll(() => auditQueries.at(-1)).toBe("user.");
+});
+
+test("audit records stay readable and filters can be cleared", async ({ page }) => {
+  const actions: string[] = [];
+  await page.route("http://localhost:8000/admin/audit-log**", (route) => {
+    const action = new URL(route.request().url()).searchParams.get("action") ?? "";
+    actions.push(action);
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        items: action ? [] : [{
+          id: "audit-1",
+          admin_email: "operator@example.com",
+          action: "user.suspended",
+          target_type: "user",
+          target_id: "target-123",
+          reason: "Repeated policy violation",
+          details: {},
+          created_at: "2026-09-23T00:00:00Z",
+        }],
+        pagination: { page: 1, page_size: 25, total: action ? 0 : 1, pages: 1 },
+      }),
+    });
+  });
+
+  await page.goto("/admin/audit");
+  await expect(page.getByRole("table")).toContainText("user.suspended");
+  await expect(page.getByRole("table")).toContainText("Repeated policy violation");
+  await page.getByRole("textbox", { name: "Action" }).fill("missing.action");
+  await expect.poll(() => actions.at(-1)).toBe("missing.action");
+  await expect(page.getByText("No actions found")).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).first().click();
+  await expect.poll(() => actions.at(-1)).toBe("");
+  await expect(page.getByRole("table")).toContainText("user.suspended");
 });

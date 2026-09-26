@@ -40,7 +40,7 @@ test("admin inventories are paginated, filterable, and exportable", async ({ pag
   await expect(page.getByRole("button", { name: "Export CSV" })).toBeVisible();
 
   await page.goto("/admin/audit");
-  await expect(page.getByPlaceholder("Action, for example user.suspended")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Action" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Export CSV" })).toBeVisible();
 });
 
