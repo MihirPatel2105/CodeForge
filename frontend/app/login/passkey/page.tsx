@@ -7,8 +7,8 @@ import {
   browserSupportsWebAuthn,
   startAuthentication,
 } from "@simplewebauthn/browser";
-import { ShieldCheck } from "lucide-react";
-import { AuthAside } from "@/components/auth/auth-aside";
+import { ArrowLeft, Fingerprint, LoaderCircle } from "lucide-react";
+import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, setToken } from "@/lib/api";
 import { clearPendingPasswordMfa } from "@/lib/password-mfa";
@@ -54,46 +54,43 @@ export default function PasskeyLoginPage() {
   }
 
   return (
-    <div className="cf-auth relative flex min-h-screen bg-bg">
-      <AuthAside />
-      <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
-            <ShieldCheck className="h-3 w-3" aria-hidden />
-            secure access
+    <AuthEntryShell label="Passkey sign in">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+            <Fingerprint className="h-5 w-5" aria-hidden />
           </span>
-          <h1 className="font-display mt-5 text-[32px] font-[650] tracking-[-0.05em] text-fg">
+          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Your workspace</div>
+          <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
             Sign in with a passkey
           </h1>
-          <p className="mt-3 text-[14px] leading-6 text-fg-muted">
-            Use your device unlock or password manager. No email, password, or extra authenticator code needed.
+          <p className="mt-3 text-[15px] leading-6 text-fg-muted">
+            Use a passkey saved on your device or password manager. Your device may ask for a PIN or biometric check.
           </p>
           <Button
             type="button"
             onClick={signIn}
             disabled={busy}
-            className="mt-7 h-[50px] w-full rounded-lg"
+            className="mt-8 h-12 w-full gap-2 rounded-xl text-[14px] font-[650]"
           >
+            {busy && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />}
             {busy ? "Waiting for passkey…" : "Continue with passkey"}
           </Button>
           {error && (
             <p
               role="alert"
-              className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger"
+              className="mt-5 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
             >
               {error}
             </p>
           )}
-          <p className="mt-6 border-t border-rule pt-5 text-center text-[13px] text-fg-muted">
+          <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">
             <Link
               href="/login"
-              className="font-[600] text-fg underline underline-offset-4"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg font-[650] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent"
             >
+              <ArrowLeft className="h-4 w-4" aria-hidden />
               Sign in with password
             </Link>
           </p>
-        </div>
-      </main>
-    </div>
+    </AuthEntryShell>
   );
 }

@@ -3,21 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, KeyRound, ShieldCheck } from "lucide-react";
+import { Check, Eye, EyeOff, KeyRound, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
-import { ResetPasswordAside } from "@/components/auth/reset-password-aside";
+import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
-import { LogoMark } from "@/components/brand/logo-mark";
 
 const FIELD =
-  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
-  "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
+  "h-12 rounded-xl border-border-strong bg-white px-4 text-[16px] text-fg " +
+  "focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15 focus-visible:ring-offset-0";
 
-const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
+const LABEL = "text-[13px] font-[650] text-fg";
 
 /**
  * The far end of the reset link: pick a new password, get signed in with it.
@@ -66,44 +65,20 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="cf-auth relative flex min-h-screen bg-bg">
-      <ResetPasswordAside />
-
-      <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
-          <Link href="/" className="mb-8 flex items-center gap-[6px] lg:hidden">
-            <LogoMark className="h-8 w-8" />
-            <span className="cf-wordmark text-fg">
-              codeforge
-            </span>
-          </Link>
-
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-            secure reset
-          </span>
-
-          <h1 className="font-display mt-5 text-[32px] font-[650] leading-[1.12] tracking-[-0.05em] text-fg">
+    <AuthEntryShell label="Set a new password" proof="recovery">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><KeyRound className="h-5 w-5" aria-hidden /></span>
+          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Account recovery</div>
+          <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
             Set a new password
           </h1>
-          <p className="mt-4 text-[14px] leading-[1.65] text-fg-muted">
+          <p className="mt-3 text-[15px] leading-6 text-fg-muted">
             Choose a strong password you have not used here before. You&apos;ll be
             signed in when the reset succeeds. Existing passkeys will be removed; you can add them again in Settings.
           </p>
-          <p className="mt-3 text-[13px] leading-[1.5] text-fg-muted">
-            Remembered it?{" "}
-            <Link
-              href="/login"
-              className="font-[600] text-fg underline underline-offset-[4px] decoration-1 decoration-border-strong hover:decoration-fg"
-            >
-              Sign in
-            </Link>
-          </p>
-
-          <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-[6px]">
+          <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-2">
               <Label htmlFor="new_password" className={LABEL}>
-                NEW PASSWORD
+                New password
               </Label>
               <div className="relative">
                 <Input
@@ -112,40 +87,43 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   autoComplete="new-password"
                   autoFocus
                   required
+                  aria-describedby="reset-password-rules"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={cn(FIELD, "w-full pr-[68px]")}
+                  className={cn(FIELD, "w-full pr-[88px]")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-[12px] top-1/2 -translate-y-1/2 font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint transition-colors hover:text-fg"
+                  aria-label={showPassword ? "Hide new password" : "Show new password"}
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 inline-flex h-10 min-w-[76px] -translate-y-1/2 items-center justify-center gap-1.5 rounded-lg text-[12px] font-[650] text-fg-muted hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
                 >
-                  {showPassword ? "HIDE" : "SHOW"}
+                  {showPassword ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
 
-            <ul
-              className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-lg border border-rule bg-bg/70 p-4 sm:grid-cols-2"
-              aria-live="polite"
-            >
+            <div id="reset-password-rules" className="rounded-2xl border border-border bg-surface-2/60 px-4 py-3.5">
+            <p className="mb-2.5 text-[12px] font-[650] text-fg-muted">Use a password with</p>
+            <ul className="grid gap-x-4 gap-y-2 sm:grid-cols-2" aria-live="polite">
               {PASSWORD_RULES.map((rule) => {
                 const met = rule.test(password);
                 return (
-                  <li key={rule.id} className="flex items-center gap-[9px]">
+                  <li key={rule.id} className="flex items-start gap-2">
                     <span
                       className={cn(
-                        "flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-lg border transition-colors",
-                        met ? "border-ok bg-ok text-surface" : "border-border-strong bg-transparent",
+                        "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border transition-colors",
+                        met ? "border-ok bg-ok text-white" : "border-border-strong bg-white",
                       )}
                     >
-                      {met && <Check className="h-[10px] w-[10px]" strokeWidth={3} />}
+                      {met && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
                     </span>
                     <span
                       className={cn(
-                        "text-[12px] leading-[1.35] transition-colors",
-                        met ? "text-fg" : touched ? "text-fg-muted" : "text-fg-faint",
+                        "text-[12px] leading-[18px] transition-colors",
+                        met ? "text-ok" : touched ? "text-fg-muted" : "text-fg-faint",
                       )}
                     >
                       {rule.label}
@@ -154,10 +132,11 @@ export function ResetPasswordForm({ token }: { token: string }) {
                 );
               })}
             </ul>
+            </div>
 
-            <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="confirm_password" className={LABEL}>
-                CONFIRM NEW PASSWORD
+                Confirm new password
               </Label>
               <div className="relative">
                 <Input
@@ -169,16 +148,19 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   onChange={(e) => setConfirm(e.target.value)}
                   className={cn(
                     FIELD,
-                    "w-full pr-[68px]",
+                    "w-full pr-[88px]",
                     confirm.length > 0 && !matches && "border-danger-bd",
                   )}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm((s) => !s)}
-                  className="absolute right-[12px] top-1/2 -translate-y-1/2 font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint transition-colors hover:text-fg"
+                  aria-label={showConfirm ? "Hide confirmation" : "Show confirmation"}
+                  aria-pressed={showConfirm}
+                  className="absolute right-1 top-1/2 inline-flex h-10 min-w-[76px] -translate-y-1/2 items-center justify-center gap-1.5 rounded-lg text-[12px] font-[650] text-fg-muted hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
                 >
-                  {showConfirm ? "HIDE" : "SHOW"}
+                  {showConfirm ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
+                  {showConfirm ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
@@ -186,7 +168,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             {error && (
               <p
                 role="alert"
-                className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
+                className="rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
               >
                 {error}
               </p>
@@ -195,23 +177,15 @@ export function ResetPasswordForm({ token }: { token: string }) {
             <Button
               type="submit"
               disabled={submitting}
-              className="mt-1 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
+              className="mt-1 h-12 w-full rounded-xl text-[14px] font-[650]"
             >
+              {submitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
               {submitting ? "Saving…" : "Save new password"}
             </Button>
           </form>
 
-          <div className="mt-6 flex items-start gap-3 border-t border-rule pt-5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-bg text-fg-faint">
-              <KeyRound className="h-3.5 w-3.5" aria-hidden />
-            </span>
-            <p className="pt-0.5 text-[12.5px] leading-[1.55] text-fg-faint">
-              This link can be used once and expires ten minutes after it was sent.
-            </p>
-          </div>
-        </div>
-      </main>
-    </div>
+          <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">Remembered it? <Link href="/login" className="font-[700] text-accent hover:underline hover:underline-offset-4">Sign in</Link></p>
+    </AuthEntryShell>
   );
 }
 

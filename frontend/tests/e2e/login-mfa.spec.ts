@@ -40,7 +40,7 @@ test("password sign-in offers both saved methods and completes with an authentic
   await methodGroup.getByRole("button", { name: "Passkey" }).click();
   await expect(page.getByRole("button", { name: "Verify with passkey" })).toBeVisible();
   await methodGroup.getByRole("button", { name: "Authenticator code" }).click();
-  await page.getByLabel("AUTHENTICATOR CODE").fill("123456");
+  await page.getByLabel("Authenticator code").fill("123456");
   const request = page.waitForRequest((item) => item.url().endsWith("/auth/login/complete") && item.method() === "POST");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
   expect(JSON.parse((await request).postData() ?? "null")).toEqual({ ticket: "test-ticket", totp_code: "123456" });
@@ -61,7 +61,7 @@ test("passkey-only verification does not show a code field", async ({ page }) =>
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/login\/verify$/);
   await expect(page.getByRole("button", { name: "Verify with passkey" })).toBeVisible();
-  await expect(page.getByLabel("AUTHENTICATOR CODE")).toHaveCount(0);
+  await expect(page.getByLabel("Authenticator code")).toHaveCount(0);
 });
 
 test("administrator can choose passkey or code and code verification opens admin", async ({ page }) => {
@@ -84,7 +84,7 @@ test("administrator can choose passkey or code and code verification opens admin
   await methodGroup.getByRole("button", { name: "Passkey" }).click();
   await expect(page.getByRole("button", { name: "Verify with passkey" })).toBeVisible();
   await methodGroup.getByRole("button", { name: "Authenticator code" }).click();
-  await page.getByLabel("AUTHENTICATOR CODE").fill("654321");
+  await page.getByLabel("Authenticator code").fill("654321");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
 
   await expect(page).toHaveURL(/\/admin$/);

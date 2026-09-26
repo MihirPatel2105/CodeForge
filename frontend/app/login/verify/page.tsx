@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
-import { Fingerprint, KeyRound, ShieldCheck } from "lucide-react";
-import { AuthAside } from "@/components/auth/auth-aside";
+import { ArrowLeft, Fingerprint, KeyRound, LoaderCircle } from "lucide-react";
+import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,20 +86,16 @@ export default function VerifyLoginPage() {
   if (!pending) return null;
 
   return (
-    <div className="cf-auth relative flex min-h-screen bg-bg">
-      <AuthAside />
-      <main className="cf-auth-main flex flex-1 items-center justify-center p-5 py-10 sm:p-8 lg:p-10">
-        <div className="w-full max-w-[450px] rounded-xl border border-border bg-surface p-7 shadow-[0_24px_70px_rgba(22,24,28,0.08)] sm:p-9">
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
-            <ShieldCheck className="h-3 w-3" aria-hidden /> second step
-          </span>
-          <h1 className="font-display mt-5 text-[32px] font-[650] tracking-[-0.05em] text-fg">Verify yourself</h1>
-          <p className="mt-3 text-[14px] leading-6 text-fg-muted">
-            Your password was correct. Complete sign-in for <span className="font-[600] text-fg">{pending.email}</span> using one of your saved methods.
+    <AuthEntryShell label="Verify sign in">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><KeyRound className="h-5 w-5" aria-hidden /></span>
+          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> One more step</div>
+          <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Verify yourself</h1>
+          <p className="mt-3 text-[15px] leading-6 text-fg-muted">
+            Complete sign-in for <span className="font-[650] text-fg">{pending.email}</span> using a method you saved.
           </p>
 
           {pending.methods.length > 1 ? (
-            <div role="group" aria-label="Verification method" className="mt-7 grid grid-cols-2 gap-2">
+            <div role="group" aria-label="Verification method" className="mt-7 grid grid-cols-2 gap-3">
               {pending.methods.map((option) => (
                 <Button
                   key={option}
@@ -108,7 +104,7 @@ export default function VerifyLoginPage() {
                   aria-pressed={method === option}
                   disabled={busy}
                   onClick={() => { setMethod(option); setError(null); }}
-                  className={cn("h-12 gap-2 rounded-lg text-[10px]", method === option && "border-accent-bd bg-accent-soft text-accent")}
+                  className={cn("h-auto min-h-[68px] flex-col gap-1.5 rounded-xl border-border-strong px-2 py-3 text-[12px] font-[650] sm:min-h-[76px] sm:flex-row sm:text-[13px]", method === option && "border-accent bg-accent-soft text-accent ring-2 ring-accent/10")}
                 >
                   {option === "totp" ? <KeyRound className="h-4 w-4" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
                   {option === "totp" ? "Authenticator code" : "Passkey"}
@@ -118,9 +114,9 @@ export default function VerifyLoginPage() {
           ) : null}
 
           {method === "totp" ? (
-            <form onSubmit={verifyCode} className="mt-7 space-y-4">
+            <form onSubmit={verifyCode} className="mt-7 space-y-5">
               <div>
-                <Label htmlFor="login-verification-code">AUTHENTICATOR CODE</Label>
+                <Label htmlFor="login-verification-code" className="text-[13px] font-[650] text-fg">Authenticator code</Label>
                 <Input
                   id="login-verification-code"
                   inputMode="numeric"
@@ -130,28 +126,27 @@ export default function VerifyLoginPage() {
                   value={code}
                   onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="000000"
-                  className="mt-2 h-12 rounded-lg border-border-strong bg-bg font-mono tracking-[0.2em]"
+                  className="mt-2 h-12 rounded-xl border-border-strong bg-white px-4 font-mono text-[16px] tracking-[0.2em] focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15"
                 />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>
-              <Button type="submit" disabled={busy || code.length !== 6} className="h-[50px] w-full rounded-lg">
+              <Button type="submit" disabled={busy || code.length !== 6} className="h-12 w-full rounded-xl text-[14px] font-[650]">
+                {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                 {busy ? "Verifying…" : "Verify and sign in"}
               </Button>
             </form>
           ) : (
             <div className="mt-7">
-              <p className="text-[12px] leading-5 text-fg-muted">Use a passkey saved to your device or password manager. Your device may ask for a PIN or biometric check.</p>
-              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-4 h-[50px] w-full gap-2 rounded-lg">
-                <Fingerprint className="h-4 w-4" aria-hidden />
+              <p className="text-[13px] leading-5 text-fg-muted">Your device or password manager may ask for a PIN or biometric check.</p>
+              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-5 h-12 w-full gap-2 rounded-xl text-[14px] font-[650]">
+                {busy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
                 {busy ? "Waiting for passkey…" : "Verify with passkey"}
               </Button>
             </div>
           )}
 
-          {error ? <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger">{error}</p> : null}
-          <Button type="button" variant="ghost" onClick={startAgain} disabled={busy} className="mt-5 h-10 w-full rounded-lg text-fg-muted">Start sign-in again</Button>
-        </div>
-      </main>
-    </div>
+          {error ? <p role="alert" className="mt-5 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger">{error}</p> : null}
+          <button type="button" onClick={startAgain} disabled={busy} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"><ArrowLeft className="h-4 w-4" aria-hidden /> Start sign-in again</button>
+    </AuthEntryShell>
   );
 }
