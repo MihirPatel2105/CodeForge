@@ -69,10 +69,10 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   return (
     <div
       className={cn(
-        "relative flex flex-1 snap-center flex-col gap-[7px] overflow-hidden rounded-[3px] border-[1.5px] bg-surface px-[13px] pt-[15px] pb-[11px]",
+        "relative flex flex-1 snap-center flex-col gap-[8px] overflow-hidden rounded-xl border bg-surface px-[14px] pt-[16px] pb-[13px]",
         "transition-[transform,box-shadow,border-color,opacity] duration-300 ease-out",
         state === "idle" && "border-border opacity-[0.86]",
-        working && "-translate-y-[3px] border-accent-bd bg-accent-soft/20 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]",
+        working && "-translate-y-[3px] border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
         state === "done" && "border-ok-bd",
         failed && "border-danger-bd",
         // Reads as "ran, then was interrupted": not faded as far as idle, which means
@@ -84,7 +84,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
         // fires, and the trigger must lift regardless of its own state.
         dimmed && "opacity-[0.32]",
         loopHighlight &&
-          "-translate-y-[3px] border-loop-bd shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]",
+          "-translate-y-[3px] border-loop-bd shadow-[0_12px_28px_rgba(109,40,217,0.14)]",
       )}
       data-stage={data.id}
       data-state={state}
@@ -120,7 +120,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       </div>
 
       {/* Row 2: job line — fixed height so all six cards align regardless of wrap */}
-      <p className="min-h-[36px] text-[13px] leading-[1.35] text-fg-muted">{job}</p>
+      <p className="min-h-[36px] text-[13.5px] leading-[1.4] text-fg-muted">{job}</p>
 
       {/* Row 3: state pill */}
       <span

@@ -109,7 +109,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-6 rounded-[6px] border-[1.5px] p-5 shadow-[0_16px_45px_rgba(22,24,28,0.06)]",
+        "flex flex-wrap items-center gap-6 rounded-2xl border p-5 shadow-[0_12px_36px_rgba(27,41,70,0.06)] sm:p-6",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         t.border,
         t.soft,
@@ -118,7 +118,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
       <div className="flex min-w-[260px] flex-1 flex-col gap-[6px]">
         <span
           className={cn(
-            "w-fit rounded-[2px] px-[9px] py-[3px] text-[11.5px] font-[800] tracking-[0.05em] uppercase text-surface",
+            "w-fit rounded-full px-3 py-1 text-[12px] font-[700] text-surface",
             meta.tone === "ok" && "bg-ok",
             meta.tone === "warn" && "bg-warn",
             meta.tone === "danger" && "bg-danger",
@@ -127,8 +127,8 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
         >
           {meta.label}
         </span>
-        <p className="text-[16px] font-[650] text-fg">{headline}</p>
-        <p className="max-w-[52ch] text-[13.5px] leading-[1.4] text-fg-muted">{detail}</p>
+        <p className="font-display text-[20px] font-[700] leading-[1.3] tracking-[-0.035em] text-fg">{headline}</p>
+        <p className="max-w-[52ch] text-[14px] leading-[1.5] text-fg-muted">{detail}</p>
       </div>
 
       <div className="flex w-full flex-wrap items-center gap-5 lg:w-auto lg:shrink-0 lg:gap-6">
@@ -142,7 +142,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           {tryApiHref && outcomeKey === "succeeded" && (
-            <Link href={tryApiHref} className="rounded-[3px] border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
+            <Link href={tryApiHref} className="rounded-lg border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
               Try API
             </Link>
           )}
@@ -150,7 +150,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
             <button
               type="button"
               onClick={onRetry}
-              className="rounded-[3px] border border-border-strong bg-surface px-[16px] py-[10px] text-[13.5px] font-[700] text-fg hover:border-accent-bd hover:text-accent"
+              className="rounded-lg border border-border-strong bg-surface px-[16px] py-[10px] text-[13.5px] font-[700] text-fg hover:border-accent-bd hover:text-accent"
             >
               Run again
             </button>
@@ -160,7 +160,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
               type="button"
               onClick={onDownload}
               disabled={snapshot.files.length === 0}
-              className="shrink-0 rounded-[3px] bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(22,24,28,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
+              className="shrink-0 rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
             >
               {snapshot.files.length === 0 ? "No code generated" : "Download code"}
             </button>
@@ -184,7 +184,7 @@ function Metric({
     <div className="flex flex-col items-center gap-[2px]">
       <span
         className={cn(
-          "font-mono text-[18px] font-[700]",
+          "font-display text-[20px] font-[700] tracking-[-0.03em]",
           metricTone === "loop" ? "text-loop" : "text-fg",
         )}
       >

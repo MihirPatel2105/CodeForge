@@ -51,18 +51,28 @@ export function HeroOutput({
   // -1 keeps the card empty for one beat before the first line lands, so the sequence
   // reads as starting rather than as already half-done on arrival.
   const [shown, setShown] = useState(0);
-  const done = shown >= demo.lines.length;
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const done = reduceMotion || shown >= demo.lines.length;
 
   useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduceMotion(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
     const timer = setTimeout(
       () => setShown((n) => (n >= demo.lines.length ? 0 : n + 1)),
       done ? HOLD_MS : LINE_MS,
     );
     return () => clearTimeout(timer);
-  }, [shown, done, demo.lines.length]);
+  }, [shown, done, demo.lines.length, reduceMotion]);
 
   return (
-    <div className="cf-invert cf-lift cf-home-output relative w-full overflow-hidden rounded-[6px] border border-border bg-bg p-4 shadow-[0_28px_80px_rgba(22,24,28,0.18)] sm:p-5">
+    <div className="cf-invert cf-lift cf-home-output relative w-full overflow-hidden rounded-2xl border border-border bg-bg p-4 shadow-[0_28px_80px_rgba(22,24,28,0.16)] sm:p-5">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-70" aria-hidden />
       <div className="mb-4 flex items-baseline justify-between">
         <span className={label}>what it writes</span>
@@ -76,11 +86,11 @@ export function HeroOutput({
         </span>
       </div>
 
-      <div className="cf-frame overflow-hidden border border-border bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div className="flex items-center justify-between border-b border-rule px-4 py-[9px]">
           <span className="font-mono text-[12px] font-[600] text-fg">{demo.file}</span>
           <span className="font-mono text-[11px] text-fg-faint">
-            {String(Math.min(shown, demo.lines.length)).padStart(2, "0")}/{demo.lines.length}
+            {String(reduceMotion ? demo.lines.length : Math.min(shown, demo.lines.length)).padStart(2, "0")}/{demo.lines.length}
           </span>
         </div>
 
@@ -89,7 +99,7 @@ export function HeroOutput({
         <div className="h-[236px] bg-code-bg px-4 py-3">
           <ol className="font-mono text-[12.5px] leading-[1.85]">
             {demo.lines.map((line, i) => {
-              const visible = i < shown;
+              const visible = reduceMotion || i < shown;
               const newest = i === shown - 1;
               return (
                 <li

@@ -29,7 +29,7 @@ interface ProjectRow extends ProjectResponse {
   stats: RunStats;
 }
 
-const LABEL = "font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-fg-faint";
+const LABEL = "text-[12px] font-[650] text-fg-muted";
 
 /** Projects (design_handoff/README.md "Other screens"). Renders whichever state the
  * real `/projects` list implies — empty or populated — matching UI_BRIEF.md §7 state 1
@@ -92,18 +92,18 @@ export default function ProjectsPage() {
   return (
     <div className="cf-projects min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-6 pb-20 pt-12 md:px-10 md:pt-16 lg:px-14">
-        <section className="cf-projects-intro relative overflow-hidden rounded-[6px] border border-border bg-surface px-6 py-8 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-9 md:py-10">
+      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-10 md:px-10 md:pt-14 lg:px-14">
+        <section className="cf-projects-intro relative overflow-hidden rounded-2xl border border-border bg-surface px-6 py-8 shadow-[0_12px_36px_rgba(27,41,70,0.045)] md:px-9 md:py-10">
           <div className="relative z-10 flex flex-col items-start justify-between gap-7 md:flex-row md:items-end">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9.5px] font-[700] uppercase tracking-[0.14em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
                 workspace overview
               </span>
-              <h1 className="font-display mt-6 text-[30px] font-[650] tracking-[-0.055em] text-fg md:text-[38px]">
+              <h1 className="font-display mt-5 text-[38px] font-[700] tracking-[-0.055em] text-fg md:text-[46px]">
                 Projects
               </h1>
-              <p className="mt-3 max-w-[58ch] text-[14.5px] leading-[1.65] text-fg-muted md:text-[15.5px]">
+              <p className="mt-3 max-w-[58ch] text-[15px] leading-[1.65] text-fg-muted md:text-[16px]">
                 One project per API. Every run keeps its agent decisions, generated code,
                 review findings, and real test output together.
               </p>
@@ -112,7 +112,7 @@ export default function ProjectsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger
                 render={
-                  <Button className="h-11 gap-2 rounded-[3px] px-5 shadow-[0_10px_26px_rgba(22,24,28,0.14)]" />
+                  <Button className="h-11 gap-2 rounded-xl px-5 text-[13px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]" />
                 }
               >
                 <Plus className="h-4 w-4" aria-hidden />
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
         {projects && projects.length > 0 && totals && (
-          <dl className="cf-invert cf-lift mt-6 grid overflow-hidden rounded-[6px] border border-border bg-bg shadow-[0_24px_65px_rgba(22,24,28,0.12)] sm:grid-cols-3">
+          <dl className="mt-5 grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.035)] sm:grid-cols-3">
             <Figure index="01" label="projects" value={String(projects.length)} />
             <Figure index="02" label="total runs" value={String(totals.runs)} bordered />
             <Figure
@@ -164,12 +164,12 @@ export default function ProjectsPage() {
                 <span className={LABEL}>your workspaces</span>
                 <h2
                   id="project-list-heading"
-                  className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg"
+                  className="font-display mt-2 text-[24px] font-[700] tracking-[-0.04em] text-fg"
                 >
                   Continue building
                 </h2>
               </div>
-              <span className="font-mono text-[10px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
+              <span className="text-[12px] font-[550] text-fg-muted">
                 {projects.length} {projects.length === 1 ? "project" : "projects"}
               </span>
             </div>
@@ -213,10 +213,10 @@ function Figure({
     >
       <div className="flex items-center justify-between gap-4">
         <dt className={LABEL}>{label}</dt>
-        <span className="font-mono text-[9px] text-fg-faint">{index}</span>
+        <span className="font-mono text-[11px] text-fg-faint">{index}</span>
       </div>
       <dd className="mt-3 flex items-baseline gap-3">
-        <span className="font-display text-[31px] font-[650] tracking-[-0.055em] text-fg">
+        <span className="font-display text-[34px] font-[700] tracking-[-0.055em] text-fg">
           {value}
         </span>
         {hint && <span className="font-mono text-[10.5px] text-ok">{hint}</span>}
@@ -240,18 +240,18 @@ function ProjectCard({ project }: { project: ProjectRow }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="cf-project-card group relative flex min-h-[258px] h-full flex-col overflow-hidden rounded-[6px] border border-border bg-surface p-6 shadow-[0_18px_50px_rgba(22,24,28,0.055)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-accent-bd hover:shadow-[0_25px_60px_rgba(22,24,28,0.09)]"
+      className="cf-project-card group relative flex min-h-[258px] h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-[0_10px_30px_rgba(27,41,70,0.035)] transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
 
       <div className="relative z-10 flex items-start justify-between gap-5">
         <div className="min-w-0">
           <span className={LABEL}>project workspace</span>
-          <h3 className="font-display mt-3 truncate text-[21px] font-[650] tracking-[-0.045em] text-fg">
+          <h3 className="font-display mt-3 truncate text-[24px] font-[700] tracking-[-0.045em] text-fg">
             {project.name}
           </h3>
           {project.description && (
-            <p className="mt-2 line-clamp-2 max-w-[56ch] text-[13.5px] leading-[1.55] text-fg-muted">
+            <p className="mt-2 line-clamp-2 max-w-[56ch] text-[14px] leading-[1.6] text-fg-muted">
               {project.description}
             </p>
           )}
@@ -272,12 +272,12 @@ function ProjectCard({ project }: { project: ProjectRow }) {
           as a progress meter sitting at 100% — a completely different claim from "one
           run, and it passed". */}
       {strip.length > 0 && (
-        <div className="relative z-10 mt-6 rounded-[3px] border border-rule bg-bg/70 px-3.5 py-3" aria-hidden>
+        <div className="relative z-10 mt-6 rounded-xl border border-rule bg-surface-2 px-3.5 py-3" aria-hidden>
           <div className="mb-2.5 flex items-center justify-between gap-3">
-            <span className="font-mono text-[9px] font-[600] uppercase tracking-[0.13em] text-fg-faint">
+            <span className="text-[11px] font-[600] text-fg-muted">
               run history
             </span>
-            <span className="font-mono text-[9.5px] text-fg-faint">
+            <span className="font-mono text-[10.5px] text-fg-faint">
               {strip.length === 1 ? "1 run" : `last ${strip.length}`}
             </span>
           </div>
@@ -333,20 +333,20 @@ function NewProjectCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="cf-project-new group relative flex min-h-[258px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-[6px] border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color,transform] duration-300 hover:-translate-y-0.5 hover:border-accent-bd"
+      className="cf-project-new group relative flex min-h-[258px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="flex h-11 w-11 items-center justify-center rounded-[4px] border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
         <FolderPlus className="h-[19px] w-[19px]" aria-hidden />
       </span>
 
       <span className="relative z-10 block">
-        <span className="font-display block text-[20px] font-[650] tracking-[-0.04em] text-fg">
+        <span className="font-display block text-[22px] font-[700] tracking-[-0.04em] text-fg">
           Start another API
         </span>
         <span className="mt-2 block max-w-[36ch] text-[13px] leading-[1.55] text-fg-muted">
           Create a clean workspace for its prompts, agent runs, code, and tests.
         </span>
-        <span className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-accent">
+        <span className="mt-5 inline-flex items-center gap-2 text-[13px] font-[650] text-accent">
           new project
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
         </span>
@@ -361,14 +361,14 @@ function Stat({ label, value }: { label: string; value: string }) {
       <span className="font-display block text-[17px] font-[600] tracking-[-0.03em] text-fg">
         {value}
       </span>
-      <span className={cn(LABEL, "mt-[2px] block text-[9.5px]")}>{label}</span>
+      <span className={cn(LABEL, "mt-[2px] block text-[11px]")}>{label}</span>
     </div>
   );
 }
 
 function EmptyState({ onNewProject }: { onNewProject: () => void }) {
   return (
-    <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-[6px] border border-border px-6 py-20 text-center shadow-[0_18px_50px_rgba(22,24,28,0.04)]">
+    <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-border px-6 py-20 text-center shadow-[0_10px_30px_rgba(27,41,70,0.035)]">
       <div className="relative flex h-14 w-14 items-center justify-center rounded-[5px] border border-accent-bd bg-accent-soft">
         <FolderPlus className="h-6 w-6 text-accent" aria-hidden />
       </div>
@@ -376,7 +376,7 @@ function EmptyState({ onNewProject }: { onNewProject: () => void }) {
       <h2 className="font-display mt-3 text-[24px] font-[650] tracking-[-0.045em] text-fg">
         Start your first API project
       </h2>
-      <p className="mt-3 max-w-[44ch] text-[13.5px] leading-[1.6] text-fg-muted">
+      <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-fg-muted">
         A project holds the runs for one API. Name it after the thing you are building.
       </p>
       <Button onClick={onNewProject} className="mt-7 h-11 gap-2 px-5">

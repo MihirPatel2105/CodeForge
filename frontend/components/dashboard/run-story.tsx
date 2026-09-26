@@ -41,25 +41,25 @@ export function RunStory({ snapshot }: { snapshot: RunSnapshot }) {
 
   return (
     <div className="grid border-b border-rule bg-surface sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-      <div className="relative min-w-0 px-5 py-3 sm:px-6" aria-live="polite">
-        <span className={cn("absolute inset-y-0 left-0 w-[3px]", statusRule)} aria-hidden />
+      <div className="relative min-w-0 px-5 py-4 sm:px-6" aria-live="polite">
+        <span className={cn("absolute inset-y-0 left-0 w-1", statusRule)} aria-hidden />
         <div key={title} className="motion-safe:animate-[cfReadoutEnter_280ms_cubic-bezier(.16,1,.3,1)]">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.13em] text-fg-faint">Current state</p>
-          <p className="mt-0.5 text-[18px] font-semibold leading-snug text-fg">{title}</p>
-          <p className="mt-0.5 text-[14px] leading-snug text-fg-muted">{description}</p>
+          <p className="text-[12px] font-[650] text-fg-muted">Current state</p>
+          <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg">{title}</p>
+          <p className="mt-1 text-[14px] leading-snug text-fg-muted">{description}</p>
         </div>
       </div>
-      <div className={cn("relative min-w-0 border-t border-rule px-5 py-3 sm:border-l sm:border-t-0 sm:px-6", loop ? "bg-loop-soft/55" : "bg-surface-2/45")}>
+      <div className={cn("relative min-w-0 border-t border-rule px-5 py-4 sm:border-l sm:border-t-0 sm:px-6", loop ? "bg-loop-soft/55" : "bg-surface-2/60")}>
         {loop && <span className="absolute inset-y-0 left-0 hidden w-[3px] bg-loop sm:block" aria-hidden />}
         <div key={loop?.at ?? "no-loop"} className={loop ? "motion-safe:animate-[cfReadoutEnter_420ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
           <div className="flex items-center gap-2">
             <RotateCcw className={cn("h-3.5 w-3.5 shrink-0", loop ? "text-loop" : "text-fg-faint")} aria-hidden />
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.13em] text-fg-faint">Feedback cycle</p>
+            <p className="text-[12px] font-[650] text-fg-muted">Feedback cycle</p>
           </div>
-          <p className="mt-0.5 text-[17px] font-semibold leading-snug text-fg">
+          <p className="mt-1 text-[19px] font-[700] leading-snug tracking-[-0.03em] text-fg">
             {loop ? `Pass ${loop.iteration + 1}: returned to the Coder` : "No revisions yet"}
           </p>
-          <p className="mt-0.5 text-[14px] leading-snug text-fg-muted">
+          <p className="mt-1 text-[14px] leading-snug text-fg-muted">
             {loop ? `${loop.trigger === "reviewer" ? "Reviewer found" : "Sandbox found"} ${loopCause}. The Coder received the work again.` : "Review or failed tests can send work back to the Coder."}
           </p>
         </div>

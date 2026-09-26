@@ -1,14 +1,8 @@
-/**
- * The dashboard's type scale, from the design handoff. One source of truth so no
- * component invents its own size/weight/tracking combination.
- *
- * Nothing in the timeline goes below 14.5px; nothing anywhere goes below 11px —
- * the floor is set by projector legibility, not aesthetics.
- */
+/** Shared dashboard type roles. Code and machine identifiers keep the mono face. */
 
 export const typeScale = {
-  /** 34px/700/-.03em, mono — headline metrics (result summary). */
-  display: "font-mono text-[34px] font-bold tracking-[-0.03em]",
+  /** Headline metrics (result summary). */
+  display: "font-display text-[34px] font-bold tracking-[-0.045em]",
   /** 21px/600/-.02em — the user's prompt in the run header. */
   runPrompt: "text-[21px] font-semibold tracking-[-0.02em]",
   /** 17px/650/-.015em — screen titles. */
@@ -21,8 +15,8 @@ export const typeScale = {
   code: "font-mono text-[13.5px] font-[450] leading-[1.62]",
   /** 13px/1.6, mono — terminal body (distinct line-height from the code panel). */
   terminal: "font-mono text-[13px] font-[450] leading-[1.6]",
-  /** 11.5px/700/.05em uppercase — state pills, section eyebrows. */
-  label: "text-[11.5px] font-bold tracking-[0.05em] uppercase",
+  /** State pills and compact section labels. */
+  label: "text-[12px] font-[650] tracking-[0.01em]",
   /** 12px/450, mono — timestamps, model ids. */
   metaMono: "font-mono text-[12px] font-[450]",
 } as const;

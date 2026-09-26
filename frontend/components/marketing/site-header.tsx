@@ -13,9 +13,9 @@ export function SiteHeader() {
   const user = useCurrentUser();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-rule bg-bg/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-rule bg-bg/90 backdrop-blur-xl">
       <div className="flex h-[58px] items-center justify-between mx-auto w-full px-6 md:px-10 lg:px-14">
-        <Link href="/" className="flex items-center gap-[6px]">
+        <Link href="/" className="flex items-center gap-2">
           <LogoMark className="h-8 w-8" />
           <span className="cf-wordmark text-fg">codeforge</span>
         </Link>
@@ -25,7 +25,7 @@ export function SiteHeader() {
             <>
               <Link
                 href="/projects"
-                className="rounded-[2px] bg-fg px-[15px] py-[10px] font-mono text-[11px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
+                className="rounded-lg bg-fg px-4 py-2.5 text-[13px] font-[650] text-surface transition-opacity hover:opacity-85"
               >
                 Go to projects
               </Link>
@@ -35,13 +35,13 @@ export function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="px-[6px] font-mono text-[11px] font-[600] uppercase tracking-[0.12em] text-fg underline underline-offset-[5px] decoration-1 decoration-border-strong hover:decoration-fg"
+                className="rounded-lg px-3 py-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="rounded-[2px] bg-fg px-[15px] py-[10px] font-mono text-[11px] font-[600] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
+                className="rounded-lg bg-fg px-4 py-2.5 text-[13px] font-[650] text-surface transition-opacity hover:opacity-85"
               >
                 Get started
               </Link>

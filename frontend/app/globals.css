@@ -99,27 +99,24 @@
 }
 
 :root {
-  /* No webfonts (UI_BRIEF §8) — system stacks only.
-     Display is monospace, not a serif. Everything this product handles is code, logs,
-     file names, timings and ids; setting the headings in the same voice as the output
-     makes the interface read as an instrument rather than as a brochure — and it is
-     the one typographic choice that could not be lifted onto a different product. */
-  --font-ui: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Keep the product fast and legible with system fonts. Use mono for data and code;
+     use a clear sans hierarchy for navigation, decisions, and reading. */
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-display-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 
-  --bg: #faf9f7;
+  --bg: #f7f8fb;
   --surface: #ffffff;
-  --surface-2: #f3f2ee;
-  --fg: #16181c;
-  --fg-muted: #5c6169;
-  --fg-faint: #6b7078;
-  --border: #e3e1db;
-  --border-strong: #cdcac2;
+  --surface-2: #f3f5f9;
+  --fg: #172033;
+  --fg-muted: #526073;
+  --fg-faint: #657285;
+  --border: #e2e7ef;
+  --border-strong: #cbd4e1;
 
-  --accent: #4338ca;
-  --accent-soft: #edefff;
-  --accent-bd: #c7cbf7;
+  --accent: #3f47c9;
+  --accent-soft: #eef0ff;
+  --accent-bd: #cbd0ff;
 
   --ok: #0f7a55;
   --ok-soft: #e7f5ee;
@@ -138,7 +135,7 @@
   --loop-soft: #f3edff;
   --loop-bd: #d6c4fa;
 
-  --code-bg: #fcfbf9;
+  --code-bg: #fbfcff;
   --code-fg: #24272c;
   --code-kw: #7c3aed;
   --code-str: #0f7a55;
@@ -154,21 +151,13 @@
   --term-dim: #6b727c;
   --term-bg: #14161a;
 
-  /* Chrome is monochrome on purpose. This app already spends five colours on meaning —
-     accent = working, ok = passed, warn = designed stop, danger = failed, loop = the
-     feedback cycle — so any sixth colour used for decoration would compete with a
-     status the viewer is supposed to read across a room. Links are weight and rule,
-     not hue; colour in this interface always means something. */
-  --ink-accent: #16181c;
-  --rule: #dcd8cf;
+  --ink-accent: #172033;
+  --rule: #e2e7ef;
 
-  /* Near-square. The 9px default is the single biggest reason the old screens read as
-     a generic template; at 3px the same components read as drawn rather than defaulted. */
-  --radius: 3px;
+  --radius: 12px;
 }
 
-/* The product UI stays monospaced; the brand lockup uses the rounded, heavy
-   construction of the approved logo artwork. */
+/* The brand lockup keeps the construction of the approved logo artwork. */
 .cf-wordmark {
   display: inline-block;
   font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", sans-serif;
@@ -234,6 +223,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-ui);
+  }
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
   a,
   button,
@@ -248,19 +244,6 @@
   section[id] {
     scroll-margin-top: 4.5rem;
   }
-}
-
-/* Sections below the fold enter as they become readable. The route template adds
-   these attributes after hydration, so content stays visible when JS is unavailable. */
-main > section[data-cf-reveal-pending],
-.cf-home > section[data-cf-reveal-pending] {
-  opacity: 0;
-  translate: 0 18px;
-}
-
-main > section[data-cf-reveal-visible],
-.cf-home > section[data-cf-reveal-visible] {
-  animation: cfSectionReveal 540ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /*
@@ -295,8 +278,8 @@ main > section[data-cf-reveal-visible],
   background-image:
     linear-gradient(to right, var(--rule) 1px, transparent 1px),
     linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
-  background-size: 64px 64px;
-  opacity: 0.55;
+  background-size: 80px 80px;
+  opacity: 0.18;
   /* Fades out downward so the grid never competes with body copy. */
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 82%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 82%);
@@ -308,51 +291,35 @@ main > section[data-cf-reveal-visible],
   position: relative;
   overflow: clip;
   background:
-    radial-gradient(circle at 82% 4%, rgba(67, 56, 202, 0.08), transparent 26rem),
+    radial-gradient(circle at 88% 4%, rgba(63, 71, 201, 0.055), transparent 34rem),
     var(--bg);
 }
 
 .cf-home > header {
-  border-color: rgba(205, 202, 194, 0.72);
-  background: rgba(250, 249, 247, 0.82);
-  box-shadow: 0 1px 0 rgba(22, 24, 28, 0.025);
+  border-color: var(--border);
+  background: rgba(247, 248, 251, 0.88);
 }
 
 .cf-home-hero {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(circle at 78% 42%, rgba(67, 56, 202, 0.105), transparent 24rem),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(246, 244, 239, 0.48));
+    radial-gradient(circle at 82% 48%, rgba(63, 71, 201, 0.085), transparent 32rem),
+    linear-gradient(180deg, #ffffff, #f7f8fb);
 }
 
 .cf-home-hero::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  top: -17rem;
-  right: -12rem;
-  width: 38rem;
-  aspect-ratio: 1;
-  border: 1px solid rgba(67, 56, 202, 0.11);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 5rem rgba(67, 56, 202, 0.025),
-    0 0 0 10rem rgba(67, 56, 202, 0.018);
-  pointer-events: none;
+  content: none;
 }
 
 .cf-home-title-accent {
-  color: transparent;
-  background: linear-gradient(92deg, var(--fg) 0%, var(--fg) 20%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: var(--accent);
 }
 
 .cf-home-prompt {
   box-shadow:
-    0 22px 55px rgba(22, 24, 28, 0.07),
-    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    0 18px 48px rgba(35, 50, 81, 0.08),
+    0 2px 8px rgba(35, 50, 81, 0.035);
 }
 
 .cf-home-output {
@@ -384,10 +351,7 @@ main > section[data-cf-reveal-visible],
 }
 
 .cf-home-walkthrough {
-  background:
-    linear-gradient(180deg, rgba(227, 225, 219, 0.34), transparent 9rem),
-    radial-gradient(circle at 92% 38%, rgba(67, 56, 202, 0.045), transparent 28rem),
-    var(--bg);
+  background: var(--surface);
 }
 
 .cf-home-stack {
@@ -414,9 +378,7 @@ main > section[data-cf-reveal-visible],
 }
 
 .cf-home-closing {
-  background:
-    radial-gradient(circle at 72% 42%, rgba(67, 56, 202, 0.1), transparent 22rem),
-    linear-gradient(180deg, #f7f5f0, var(--bg));
+  background: var(--bg);
 }
 
 .cf-home-closing .cf-frame {
@@ -687,70 +649,32 @@ main > section[data-cf-reveal-visible],
    while keeping the denser, operational character expected after sign-in. */
 .cf-projects {
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 84% 14%, rgba(67, 56, 202, 0.075), transparent 25rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 28rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 .cf-projects > header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(250, 249, 247, 0.84);
+  background: rgba(247, 248, 251, 0.9);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
 .cf-projects-intro {
   isolation: isolate;
-  background:
-    linear-gradient(115deg, rgba(255, 255, 255, 0.98) 0 52%, rgba(237, 239, 255, 0.78)),
-    var(--surface);
+  background: var(--surface);
 }
 
 .cf-projects-intro::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 28rem;
-  height: 28rem;
-  right: -7rem;
-  top: -15rem;
-  border: 1px solid rgba(67, 56, 202, 0.13);
-  border-radius: 999px;
-  box-shadow:
-    0 0 0 3.75rem rgba(67, 56, 202, 0.035),
-    0 0 0 7.5rem rgba(67, 56, 202, 0.02);
-  pointer-events: none;
+  content: none;
 }
 
 .cf-projects-intro::after {
-  content: "workspace / api systems / agent runs";
-  position: absolute;
-  right: 2rem;
-  bottom: 1.25rem;
-  color: var(--accent);
-  font-family: var(--font-mono-stack);
-  font-size: 8px;
-  font-weight: 650;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  opacity: 0.42;
-  pointer-events: none;
+  content: none;
 }
 
 .cf-project-card::after {
-  content: "";
-  position: absolute;
-  width: 15rem;
-  height: 15rem;
-  right: -8rem;
-  top: -9rem;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(67, 56, 202, 0.09), transparent 68%);
-  opacity: 0;
-  transition: opacity 300ms ease;
-  pointer-events: none;
+  content: none;
 }
 
 .cf-project-card:hover::after {
@@ -758,15 +682,7 @@ main > section[data-cf-reveal-visible],
 }
 
 .cf-project-new {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0,
-      transparent 12px,
-      rgba(67, 56, 202, 0.025) 12px,
-      rgba(67, 56, 202, 0.025) 13px
-    );
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .cf-project-new::after {
@@ -813,42 +729,25 @@ main > section[data-cf-reveal-visible],
    writing a prompt and reading run output. */
 .cf-project-detail {
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 9% 31%, rgba(67, 56, 202, 0.055), transparent 22rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.76), transparent 34rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 .cf-project-detail > header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(250, 249, 247, 0.84);
+  background: rgba(247, 248, 251, 0.9);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
 .cf-project-detail-hero {
   position: relative;
   isolation: isolate;
-  background:
-    linear-gradient(118deg, rgba(255, 255, 255, 0.99), rgba(247, 247, 255, 0.92)),
-    var(--surface);
+  background: var(--surface);
 }
 
 .cf-project-detail-hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 25rem;
-  height: 25rem;
-  left: -13rem;
-  bottom: -20rem;
-  border: 1px solid rgba(67, 56, 202, 0.11);
-  border-radius: 999px;
-  box-shadow:
-    0 0 0 3.5rem rgba(67, 56, 202, 0.026),
-    0 0 0 7rem rgba(67, 56, 202, 0.015);
-  pointer-events: none;
+  content: none;
 }
 
 .cf-project-detail-stats {
@@ -856,9 +755,7 @@ main > section[data-cf-reveal-visible],
 }
 
 .cf-project-composer-head {
-  background:
-    radial-gradient(circle at 100% 0, rgba(67, 56, 202, 0.08), transparent 10rem),
-    linear-gradient(135deg, rgba(243, 242, 238, 0.62), rgba(255, 255, 255, 0.9));
+  background: var(--surface);
 }
 
 .cf-project-history-empty {
@@ -892,57 +789,30 @@ main > section[data-cf-reveal-visible],
    neutral light, paper depth, and a restrained indigo execution signal. */
 .cf-run-page {
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 88% 9%, rgba(67, 56, 202, 0.07), transparent 27rem),
-    radial-gradient(circle at 8% 48%, rgba(67, 56, 202, 0.035), transparent 24rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), transparent 38rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 .cf-run-page > header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(250, 249, 247, 0.86);
+  background: rgba(247, 248, 251, 0.9);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
 .cf-run-hero {
   position: relative;
   isolation: isolate;
-  background:
-    linear-gradient(118deg, rgba(255, 255, 255, 0.99), rgba(247, 247, 255, 0.94)),
-    var(--surface);
-  box-shadow:
-    0 2px 3px -1px rgba(0, 0, 0, 0.1),
-    0 1px 0 rgba(25, 28, 33, 0.02),
-    0 0 0 1px rgba(25, 28, 33, 0.08);
+  background: var(--surface);
+  box-shadow: 0 14px 40px rgba(27, 41, 70, 0.045);
 }
 
 .cf-run-pipeline {
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.06),
-    0 1px 1px -0.5px rgba(0, 0, 0, 0.06),
-    0 3px 3px -1.5px rgba(0, 0, 0, 0.06),
-    0 6px 6px -3px rgba(0, 0, 0, 0.06),
-    0 12px 12px -6px rgba(0, 0, 0, 0.06),
-    0 24px 24px -12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 40px rgba(27, 41, 70, 0.045);
 }
 
 .cf-run-hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 27rem;
-  height: 27rem;
-  left: -14rem;
-  bottom: -21rem;
-  border: 1px solid rgba(67, 56, 202, 0.11);
-  border-radius: 999px;
-  box-shadow:
-    0 0 0 3.75rem rgba(67, 56, 202, 0.026),
-    0 0 0 7.5rem rgba(67, 56, 202, 0.015);
-  pointer-events: none;
+  content: none;
 }
 
 .cf-run-scroll {
@@ -1030,15 +900,6 @@ main > section[data-cf-reveal-visible],
   }
 
   .cf-route-transition {
-    animation: none;
-  }
-
-  main > section[data-cf-reveal-pending],
-  main > section[data-cf-reveal-visible],
-  .cf-home > section[data-cf-reveal-pending],
-  .cf-home > section[data-cf-reveal-visible] {
-    opacity: 1;
-    translate: none;
     animation: none;
   }
 
@@ -1188,17 +1049,6 @@ main > section[data-cf-reveal-visible],
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes cfSectionReveal {
-  from {
-    opacity: 0;
-    translate: 0 18px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
   }
 }
 

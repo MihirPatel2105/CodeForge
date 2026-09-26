@@ -26,15 +26,15 @@ export function AppHeader() {
     pathname.startsWith("/runs/");
 
   return (
-    <header className="sticky top-0 z-20 flex h-[58px] shrink-0 items-center justify-between border-b border-rule bg-bg px-4">
-      <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-20 flex h-[58px] shrink-0 items-center justify-between border-b border-rule bg-bg/90 px-4 backdrop-blur-xl sm:px-6">
+      <div className="flex items-center gap-7">
         {/* The wordmark goes to the landing page, not to Projects — that is what a
             wordmark does everywhere else on the web, and the Projects link sitting
             right beside it already covers the other destination. */}
         <Link
           href="/"
           aria-label="CodeForge home"
-          className="flex items-center gap-[6px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <LogoMark className="h-8 w-8" />
           <span className="cf-wordmark text-fg">
@@ -45,8 +45,8 @@ export function AppHeader() {
         <Link
           href="/projects"
           className={cn(
-            "hidden font-mono text-[11px] font-[600] uppercase tracking-[0.12em] transition-colors sm:block",
-            onProjects ? "text-fg" : "text-fg-faint hover:text-fg",
+            "hidden rounded-lg px-3 py-2 text-[13px] font-[600] transition-colors sm:block",
+            onProjects ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
           )}
         >
           Projects
@@ -55,8 +55,8 @@ export function AppHeader() {
           <Link
             href="/admin"
             className={cn(
-              "hidden font-mono text-[11px] font-[600] uppercase tracking-[0.12em] transition-colors sm:block",
-              pathname.startsWith("/admin") ? "text-fg" : "text-fg-faint hover:text-fg",
+              "hidden rounded-lg px-3 py-2 text-[13px] font-[600] transition-colors sm:block",
+              pathname.startsWith("/admin") ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
             )}
           >
             Admin

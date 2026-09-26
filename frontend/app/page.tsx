@@ -18,26 +18,14 @@ const STACK = [
   { label: "cost", value: "$0 — free-tier providers only" },
 ] as const;
 
-const TAG = "font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint";
+const TAG = "text-[12px] font-[650] text-fg-muted";
 
 export default function LandingPage() {
   return (
     <div className="cf-home min-h-screen bg-bg">
       <SiteHeader />
 
-      {/* The page opens where a run opens: at the prompt. The sentence in the frame is
-          the same one the walkthrough below then executes, so the hero is the first
-          step of the story rather than a banner sitting on top of it. */}
-      {/* Exactly one screen, so the prompt is all you see on arrival and the walkthrough
-          starts on a deliberate scroll rather than peeking in at the fold. `svh` rather
-          than `vh`: on mobile the retracting browser chrome makes `vh` overflow.
-          `min-h` rather than `h` so a short window grows instead of clipping. */}
-      {/* The page opens where a run opens: at the prompt on the left, and what the run
-          hands back on the right. */}
-      {/* Exactly one screen, so the prompt is all you see on arrival and the walkthrough
-          starts on a deliberate scroll rather than peeking in at the fold. `svh` rather
-          than `vh`: on mobile the retracting browser chrome makes `vh` overflow.
-          `min-h` rather than `h` so a short window grows instead of clipping. */}
+      {/* Start with the prompt and the tested output it produces. */}
       <section className="cf-home-hero cf-grid border-b border-rule">
         <div className="relative mx-auto grid min-h-[calc(100svh-58px)] w-full max-w-[1536px] items-center gap-x-16 gap-y-12 px-6 py-16 md:px-10 lg:grid-cols-[1fr_29rem] lg:px-14">
           <HeroDemo />
@@ -57,7 +45,7 @@ export default function LandingPage() {
           <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
             <span className={TAG}>constraints</span>
             <div>
-              <h2 className="font-display max-w-[24ch] text-[24px] font-[600] leading-[1.26] tracking-[-0.035em] text-fg md:text-[28px]">
+              <h2 className="font-display max-w-[24ch] text-[27px] font-[700] leading-[1.26] tracking-[-0.04em] text-fg md:text-[32px]">
                 What it runs on
               </h2>
               <dl className="mt-9 border-t border-rule">

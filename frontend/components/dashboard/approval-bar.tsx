@@ -63,7 +63,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <section className="mt-5 overflow-hidden rounded-[6px] border-2 border-warn bg-surface shadow-[0_12px_32px_rgba(20,22,26,.09)]" aria-labelledby="approval-heading">
+    <section className="mt-5 overflow-hidden rounded-2xl border-2 border-warn bg-surface shadow-[0_16px_38px_rgba(156,86,5,.11)]" aria-labelledby="approval-heading">
       <div
         aria-hidden
         className="h-1 motion-safe:animate-[cfShift_0.8s_linear_infinite]"
@@ -82,7 +82,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
           </span>
           <div className="flex flex-col gap-[2px]">
             <span className={cn(typeScale.label, "text-warn")}>AWAITING APPROVAL</span>
-            <h2 id="approval-heading" className="text-[17px] font-[650] text-fg">{title}</h2>
+            <h2 id="approval-heading" className="text-[19px] font-[700] tracking-[-0.03em] text-fg">{title}</h2>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add context for the next step…"
-            className="h-11 rounded-[3px] border-border-strong bg-bg text-[14px]"
+            className="h-11 rounded-lg border-border-strong bg-bg text-[15px]"
           />
         </div>
 
@@ -117,14 +117,14 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             type="button"
             variant="outline"
             onClick={() => onReject(note)}
-            className="h-11 flex-1 rounded-[3px] border-border-strong px-4 text-[13px] text-danger hover:bg-danger-soft sm:flex-none"
+            className="h-11 flex-1 rounded-lg border-border-strong px-4 text-[13px] text-danger hover:bg-danger-soft sm:flex-none"
           >
             Reject
           </Button>
           <Button
             type="button"
             onClick={() => onApprove(note)}
-            className="h-11 flex-1 rounded-[3px] px-5 text-[13px] sm:flex-none"
+            className="h-11 flex-1 rounded-lg px-5 text-[13px] sm:flex-none"
           >
             Approve
           </Button>

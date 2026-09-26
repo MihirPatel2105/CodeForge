@@ -30,7 +30,7 @@ import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse, RunSummary } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 
-const LABEL = "font-mono text-[10.5px] font-[600] uppercase tracking-[0.14em] text-fg-faint";
+const LABEL = "text-[12px] font-[650] text-fg-muted";
 
 /** Project detail (design_handoff/README.md "Other screens"): prompt entry on the
  * left, run history on the right. "Start run" calls the real `POST /runs` and
@@ -85,34 +85,34 @@ export function ProjectDetail({
   return (
     <div className="cf-project-detail min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-6 pb-20 pt-9 md:px-10 md:pt-12 lg:px-14">
+      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-9 md:px-10 md:pt-12 lg:px-14">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-fg-faint transition-colors hover:text-accent"
+          className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Projects
         </Link>
 
-        <section className="cf-project-detail-hero mt-5 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.075)]">
+        <section className="cf-project-detail-hero mt-5 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.045)]">
           <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
             <div className="relative px-6 py-8 md:px-9 md:py-10">
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
                 project workspace
               </span>
-              <h1 className="font-display mt-6 text-[30px] font-[650] tracking-[-0.055em] text-fg md:text-[38px]">
+              <h1 className="font-display mt-5 text-[38px] font-[700] tracking-[-0.055em] text-fg md:text-[46px]">
                 {project.name}
               </h1>
               {project.description && (
-                <p className="mt-3 max-w-[66ch] text-[14px] leading-[1.65] text-fg-muted md:text-[15px]">
+                <p className="mt-3 max-w-[66ch] text-[15px] leading-[1.65] text-fg-muted md:text-[16px]">
                   {project.description}
                 </p>
               )}
             </div>
 
             {/* Every figure is derived from the history already loaded for this page. */}
-            <dl className="cf-project-detail-stats cf-invert cf-lift grid grid-cols-2 bg-bg">
+            <dl className="cf-project-detail-stats grid grid-cols-2 bg-surface-2">
               <Figure index="01" label="runs" value={String(stats.total)} />
               <Figure index="02" label="succeeded" value={String(stats.succeeded)} bordered />
               <Figure index="03" label="failed" value={String(stats.failed)} topBorder />
@@ -129,7 +129,7 @@ export function ProjectDetail({
 
         <div className="mt-10 grid gap-7 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
           {/* Prompt entry. Sticky so it stays reachable while a long history scrolls. */}
-          <section className="overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.055)] xl:sticky xl:top-[78px]">
+          <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)] xl:sticky xl:top-[78px]">
             <div className="cf-project-composer-head border-b border-rule px-5 py-5">
               <span className={LABEL}>new agent run</span>
               <div className="mt-3 flex items-center gap-3">
@@ -137,10 +137,10 @@ export function ProjectDetail({
                   <Play className="h-4 w-4 fill-current" aria-hidden />
                 </span>
                 <div>
-                  <h2 className="font-display text-[18px] font-[650] tracking-[-0.035em] text-fg">
+                  <h2 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
                     Build from a prompt
                   </h2>
-                  <p className="mt-0.5 text-[12px] text-fg-faint">
+                  <p className="mt-0.5 text-[13px] text-fg-muted">
                     Describe the API in plain language.
                   </p>
                 </div>
@@ -160,7 +160,7 @@ export function ProjectDetail({
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="I want an API to manage…"
-                  className="min-h-[168px] resize-y rounded-[3px] border-border-strong bg-bg/60 px-4 py-3.5 text-[14px] leading-[1.6] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/10"
+                  className="min-h-[168px] resize-y rounded-xl border-border-strong bg-bg/60 px-4 py-3.5 text-[16px] leading-[1.6] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/10 md:text-[15px]"
                 />
               </div>
 
@@ -196,7 +196,7 @@ export function ProjectDetail({
               <Button
                 onClick={startRun}
                 disabled={!prompt.trim() || starting}
-                className="h-12 w-full gap-2 rounded-[3px] shadow-[0_10px_26px_rgba(22,24,28,0.14)]"
+                className="h-12 w-full gap-2 rounded-xl text-[14px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]"
               >
                 {starting ? (
                   "Starting…"
@@ -216,11 +216,11 @@ export function ProjectDetail({
           </section>
 
           {/* Run history */}
-          <section className="min-w-0 overflow-hidden rounded-[6px] border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.05)]" aria-labelledby="run-history-heading">
+          <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)]" aria-labelledby="run-history-heading">
             <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-5 md:px-6">
               <div>
                 <span className={LABEL}>project activity</span>
-                <h2 id="run-history-heading" className="font-display mt-2 text-[19px] font-[650] tracking-[-0.04em] text-fg">
+                <h2 id="run-history-heading" className="font-display mt-2 text-[22px] font-[700] tracking-[-0.04em] text-fg">
                   Run history
                 </h2>
               </div>
@@ -483,10 +483,10 @@ function Figure({
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <dt className={cn(LABEL, "text-[9px]")}>{label}</dt>
-        <span className="font-mono text-[8.5px] text-fg-faint">{index}</span>
+        <dt className={cn(LABEL, "text-[11px]")}>{label}</dt>
+        <span className="font-mono text-[10px] text-fg-faint">{index}</span>
       </div>
-      <dd className="font-display mt-2.5 text-[25px] font-[650] tracking-[-0.05em] text-fg">
+      <dd className="font-display mt-2.5 text-[28px] font-[700] tracking-[-0.05em] text-fg">
         {value}
       </dd>
       <span className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />

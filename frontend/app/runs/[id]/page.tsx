@@ -195,16 +195,16 @@ export default function LiveRunPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-fg-faint transition-colors hover:text-accent"
+          className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Projects
         </Link>
 
-        <header className="cf-run-hero mt-3 overflow-hidden rounded-[6px] border border-border bg-surface">
+        <header className="cf-run-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -225,15 +225,15 @@ export default function LiveRunPage() {
                     loop {snapshot.iterations}
                   </span>
                 )}
-                <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
+                <span className="font-mono text-[11px] text-fg-faint">
                   run {id.slice(0, 8)}
                 </span>
               </div>
 
-              <p className="mt-3 font-mono text-[11px] font-[650] uppercase tracking-[0.14em] text-accent">
+              <p className="mt-4 text-[12px] font-[650] text-accent">
                 API build request
               </p>
-              <h1 className="font-display mt-2 max-w-[60ch] text-[19px] font-[650] leading-[1.3] tracking-[-0.035em] text-fg sm:text-[21px]">
+              <h1 className="font-display mt-2 max-w-[60ch] text-[23px] font-[700] leading-[1.3] tracking-[-0.04em] text-fg sm:text-[28px]">
                 {snapshot.prompt ?? "Preparing the agent workflow…"}
               </h1>
 
@@ -250,7 +250,7 @@ export default function LiveRunPage() {
               )}
             </div>
 
-            <dl className="cf-invert cf-lift grid grid-cols-2 bg-bg">
+            <dl className="grid grid-cols-2 bg-surface-2">
               <RunMetric icon={<ShieldCheck />} label="stages complete" value={`${completedStages}/6`} />
               <RunMetric icon={<ListTree />} label="timeline events" value={String(snapshot.timeline.length)} bordered />
               <RunMetric icon={<FileCode2 />} label="generated files" value={String(snapshot.files.length)} topBorder />
@@ -279,13 +279,13 @@ export default function LiveRunPage() {
           />
         )}
 
-        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-[6px] border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
+        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
-              <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">live orchestration</span>
-              <h2 id="agent-pipeline-heading" className="font-display mt-1 text-[22px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
+              <span className="text-[12px] font-[650] text-accent">Live orchestration</span>
+              <h2 id="agent-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
-            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
+            <span className="text-[11px] text-fg-muted">
               <span className="sm:hidden">swipe to inspect →</span>
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
@@ -321,7 +321,7 @@ export default function LiveRunPage() {
               <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">execution evidence</span>
               <h2 id="run-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Inspect the run</h2>
             </div>
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint sm:block">events · code · sandbox · tests</span>
+            <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
 
           <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="evidence" label="Run evidence" />
@@ -398,11 +398,11 @@ function RunMetric({
         topBorder && "border-t border-rule",
       )}
     >
-      <div className="flex items-center gap-2 text-fg-faint">
+      <div className="flex items-center gap-2 text-fg-muted">
         <span className="[&>svg]:h-3.5 [&>svg]:w-3.5" aria-hidden>{icon}</span>
-        <dt className="font-mono text-[8.5px] font-[650] uppercase tracking-[0.13em]">{label}</dt>
+        <dt className="text-[11px] font-[600]">{label}</dt>
       </div>
-      <dd className="font-display mt-1 text-[20px] font-[650] tracking-[-0.05em] text-fg">{value}</dd>
+      <dd className="font-display mt-1 text-[24px] font-[700] tracking-[-0.05em] text-fg">{value}</dd>
       <span className="absolute inset-x-3.5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />
     </div>
   );

@@ -17,7 +17,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { cn } from "@/lib/utils";
 
 export const ADMIN_LABEL =
-  "font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint";
+  "text-[11px] font-[650] text-fg-muted";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -46,9 +46,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-[3px] px-3 py-2.5 font-mono text-[11px] font-[650] uppercase tracking-[0.08em] transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-[600] transition-colors",
                     active
-                      ? "bg-fg text-bg"
+                      ? "bg-accent-soft text-accent"
                       : "text-fg-muted hover:bg-surface-2 hover:text-fg",
                   )}
                 >
@@ -84,8 +84,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "shrink-0 rounded-[3px] px-3 py-2 font-mono text-[9.5px] font-[700] uppercase tracking-[0.08em]",
-                    active ? "bg-fg text-bg" : "text-fg-muted",
+                    "shrink-0 rounded-lg px-3 py-2 text-[12px] font-[600]",
+                    active ? "bg-accent-soft text-accent" : "text-fg-muted",
                   )}
                 >
                   {label}

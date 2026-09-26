@@ -92,39 +92,39 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-5 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[650] uppercase tracking-[0.13em] text-fg-faint transition-colors hover:text-accent"
+          className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Home
         </Link>
 
-        <header className="cf-run-hero mt-3 overflow-hidden rounded-[6px] border border-border bg-surface">
+        <header className="cf-run-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 font-mono text-[10px] font-[750] uppercase tracking-[0.1em] text-accent">
+                <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
                   public demo replay
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
+                <span className="font-mono text-[11px] text-fg-faint">
                   no model calls · no login required
                 </span>
               </div>
-              <p className="mt-3 font-mono text-[11px] font-[650] uppercase tracking-[0.14em] text-accent">
+              <p className="mt-4 text-[12px] font-[650] text-accent">
                 {demo.label} API workflow
               </p>
-              <h1 className="font-display mt-2 max-w-[60ch] text-[22px] font-[650] leading-[1.25] tracking-[-0.04em] text-fg sm:text-[27px]">
+              <h1 className="font-display mt-2 max-w-[60ch] text-[25px] font-[700] leading-[1.25] tracking-[-0.045em] text-fg sm:text-[30px]">
                 {demo.title}
               </h1>
               <p className="mt-2 max-w-[78ch] text-[15px] leading-[1.5] text-fg-muted">{demo.prompt}</p>
             </div>
 
-            <div className="flex flex-col justify-between border-t border-rule bg-surface-2/45 px-5 py-4 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
+            <div className="flex flex-col justify-between border-t border-rule bg-surface-2 px-5 py-4 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
               <div>
-                <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">
+                <span className="text-[12px] font-[650] text-fg-muted">
                   replay controls
                 </span>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -132,7 +132,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                     type="button"
                     onClick={() => setPlaying((current) => !current)}
                     disabled={isComplete}
-                    className="inline-flex items-center gap-2 rounded-[3px] bg-fg px-3 py-2 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] text-surface disabled:cursor-not-allowed disabled:opacity-45"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-fg px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     {playing ? <Pause className="h-3.5 w-3.5" aria-hidden /> : <Play className="h-3.5 w-3.5" aria-hidden />}
                     {playing ? "Pause" : "Continue"}
@@ -140,7 +140,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   <button
                     type="button"
                     onClick={replay}
-                    className="inline-flex items-center gap-2 rounded-[3px] border border-border-strong bg-surface px-3 py-2 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] text-fg hover:border-accent-bd hover:text-accent"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-[650] text-fg hover:border-accent-bd hover:text-accent"
                   >
                     <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                     Replay
@@ -149,7 +149,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                     type="button"
                     onClick={skipToResult}
                     disabled={isComplete}
-                    className="inline-flex items-center gap-2 rounded-[3px] border border-border bg-surface px-3 py-2 font-mono text-[10px] font-[700] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] font-[650] text-fg-muted hover:border-border-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     <SkipForward className="h-3.5 w-3.5" aria-hidden />
                     Skip
@@ -157,7 +157,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                 </div>
               </div>
               <div className="mt-3">
-                <div className="flex items-center justify-between font-mono text-[9px] font-[650] uppercase tracking-[0.1em] text-fg-faint">
+                <div className="flex items-center justify-between text-[11px] font-[600] text-fg-muted">
                   <span>{isComplete ? "replay complete" : "agents are working"}</span>
                   <span>{Math.round(((eventIndex + 1) / demo.events.length) * 100)}%</span>
                 </div>
@@ -176,7 +176,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           <div className="mt-5 flex items-start gap-3 rounded-[6px] border-2 border-warn bg-warn-soft px-4 py-3 text-warn" role="status">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
             <div>
-              <p className="font-mono text-[11px] font-[750] uppercase tracking-[0.1em]">Human checkpoint</p>
+              <p className="text-[13px] font-[700]">Human checkpoint</p>
               <p className="mt-1 text-[13.5px] leading-5 text-fg-muted">
                 This recorded run pauses for approval before continuing. The replay resumes automatically.
               </p>
@@ -184,13 +184,13 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           </div>
         )}
 
-        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-[6px] border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
+        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
-              <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">recorded orchestration</span>
-              <h2 id="demo-pipeline-heading" className="font-display mt-1 text-[22px] font-[650] tracking-[-0.04em] text-fg">Agent pipeline</h2>
+              <span className="text-[12px] font-[650] text-accent">Recorded orchestration</span>
+              <h2 id="demo-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
-            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint">
+            <span className="text-[11px] text-fg-muted">
               <span className="sm:hidden">swipe to inspect →</span>
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
@@ -215,7 +215,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
               <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">execution evidence</span>
               <h2 id="demo-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Inspect the run</h2>
             </div>
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-fg-faint sm:block">events · code · sandbox · tests</span>
+            <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
 
           <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="demo-evidence" label="Demo evidence" />
