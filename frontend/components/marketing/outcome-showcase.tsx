@@ -8,28 +8,24 @@ import { tokenizePythonLine } from "@/lib/python-highlight";
 const DELIVERABLES = [
   {
     icon: Code2,
-    index: "01",
     title: "Generated source",
     body: "Open every file, inspect the syntax-highlighted code, and follow what changed between passes.",
     detail: "5 files",
   },
   {
     icon: ShieldCheck,
-    index: "02",
     title: "Review evidence",
     body: "See each finding, its severity, the affected file, and the focused repair sent back to the Coder.",
     detail: "fixed checklist",
   },
   {
     icon: FlaskConical,
-    index: "03",
     title: "Runtime proof",
     body: "Read the actual sandbox output and the test result produced by the running application.",
     detail: "8 / 8 passed",
   },
   {
     icon: Archive,
-    index: "04",
     title: "Portable project",
     body: "Keep the complete source tree and test suite as a downloadable project you can continue building.",
     detail: "download .zip",
@@ -236,13 +232,13 @@ export function OutcomeShowcase() {
             </div>
           </div>
 
-          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             {DELIVERABLES.map((item) => {
               const Icon = item.icon;
               return (
                 <li
                   key={item.title}
-                  className="cf-home-deliverable group grid grid-cols-[auto_1fr_auto] gap-x-4 rounded-xl border border-border bg-surface/82 px-5 py-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(22,24,28,0.06)]"
+                  className="cf-home-deliverable group grid grid-cols-[auto_1fr] gap-x-4 rounded-xl border border-border bg-surface/82 px-5 py-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(22,24,28,0.06)]"
                 >
                   <span className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-bg text-accent">
                     <Icon className="h-4 w-4" aria-hidden />
@@ -252,7 +248,7 @@ export function OutcomeShowcase() {
                       <h3 className="font-display text-[15px] font-[700] tracking-[-0.025em] text-fg">
                         {item.title}
                       </h3>
-                      <span className="font-mono text-[8px] font-[700] uppercase tracking-[0.1em] text-fg-faint">
+                      <span className="text-[11px] font-[600] text-fg-muted">
                         {item.detail}
                       </span>
                     </div>
@@ -260,13 +256,10 @@ export function OutcomeShowcase() {
                       {item.body}
                     </p>
                   </div>
-                  <span className="font-mono text-[9px] font-[700] text-fg-faint transition-colors group-hover:text-accent">
-                    {item.index}
-                  </span>
                 </li>
               );
             })}
-          </ol>
+          </ul>
         </div>
       </div>
     </section>

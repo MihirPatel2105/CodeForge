@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 };
 
 const STACK = [
-  { label: "generated_apps", value: "FastAPI · MongoDB · Beanie · pytest" },
-  { label: "orchestration", value: "LangGraph, durable checkpointer" },
-  { label: "execution", value: "Docker, networking disabled" },
-  { label: "cost", value: "$0 — free-tier providers only" },
+  { label: "Generated API", value: "FastAPI, MongoDB, Beanie, and pytest" },
+  { label: "Agent workflow", value: "LangGraph with a durable checkpointer" },
+  { label: "Code execution", value: "An isolated Docker sandbox with networking disabled" },
+  { label: "AI providers", value: "Free-tier providers" },
 ] as const;
 
 const TAG = "text-[12px] font-[650] text-fg-muted";
@@ -27,7 +27,7 @@ export default function LandingPage() {
 
       {/* Start with the prompt and the tested output it produces. */}
       <section className="cf-home-hero cf-grid border-b border-rule">
-        <div className="relative mx-auto grid min-h-[calc(100svh-64px)] w-full max-w-[1536px] items-center gap-x-16 gap-y-12 px-6 py-16 md:px-10 lg:grid-cols-[1fr_29rem] lg:px-14">
+        <div className="relative mx-auto grid w-full max-w-[1536px] items-center gap-x-16 gap-y-12 px-6 py-14 md:px-10 md:py-20 lg:min-h-[min(820px,calc(100svh-64px))] lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)] lg:px-14">
           <HeroDemo />
         </div>
       </section>
@@ -43,18 +43,18 @@ export default function LandingPage() {
       <section id="stack" className="cf-home-stack cf-invert cf-lift border-b border-rule bg-bg">
         <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
           <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
-            <span className={TAG}>constraints</span>
+            <span className={TAG}>Built to be inspected</span>
             <div>
               <h2 className="font-display max-w-[24ch] text-[27px] font-[700] leading-[1.26] tracking-[-0.04em] text-fg md:text-[32px]">
-                What it runs on
+                The tools behind each run
               </h2>
               <dl className="mt-9 border-t border-rule">
                 {STACK.map((row) => (
                   <div
                     key={row.label}
-                    className="group grid grid-cols-1 gap-x-10 gap-y-1 border-b border-rule px-4 py-5 transition-colors hover:bg-surface sm:grid-cols-[13rem_1fr]"
+                    className="grid grid-cols-1 gap-x-10 gap-y-1 border-b border-rule px-4 py-5 sm:grid-cols-[13rem_1fr]"
                   >
-                    <dt className="font-mono text-[12px] text-fg-faint transition-colors group-hover:text-accent">{row.label}</dt>
+                    <dt className="text-[13px] font-[600] text-fg-muted">{row.label}</dt>
                     <dd className="text-[15.5px] leading-[1.5] text-fg">{row.value}</dd>
                   </div>
                 ))}

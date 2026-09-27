@@ -309,7 +309,7 @@
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(circle at 82% 48%, rgba(63, 71, 201, 0.085), transparent 32rem),
+    radial-gradient(circle at 86% 42%, rgba(63, 71, 201, 0.09), transparent 34rem),
     linear-gradient(180deg, #ffffff, #f7f8fb);
 }
 
@@ -347,21 +347,6 @@
   background-image:
     radial-gradient(circle at 83% 22%, rgba(139, 147, 248, 0.11), transparent 26rem),
     linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.018));
-}
-
-.cf-home-stack::after {
-  content: "system / execution manifest";
-  position: absolute;
-  right: 3.5rem;
-  bottom: 2rem;
-  color: var(--fg-faint);
-  font-family: var(--font-mono-stack);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .cf-home-closing {

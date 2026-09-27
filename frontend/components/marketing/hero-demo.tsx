@@ -38,22 +38,25 @@ export function HeroDemo() {
   return (
     <>
       <div className="relative z-10">
-        <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
+        <span className="inline-flex items-center gap-2 rounded-xl border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
           <span
             className="h-1.5 w-1.5 rounded-full bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]"
             aria-hidden
           />
-          An AI team for your next API
+          From prompt to tested API
         </span>
 
-        <h1 className="font-display mt-7 max-w-[18ch] text-[38px] font-[700] leading-[1.07] tracking-[-0.065em] text-fg sm:text-[58px] xl:text-[68px]">
-          <span className="block">Describe an API.</span>
-          <span className="cf-home-title-accent block">Watch a team build it.</span>
+        <h1 className="font-display mt-6 max-w-[17ch] text-[40px] font-[700] leading-[1.06] tracking-[-0.065em] text-fg sm:text-[58px] xl:text-[66px]">
+          Build an API you can inspect.
         </h1>
 
-        <div className="cf-home-prompt mt-8 max-w-[46rem] overflow-hidden rounded-2xl border border-border bg-surface">
+        <p className="mt-5 max-w-[54ch] text-[16px] leading-[1.65] text-fg-muted md:text-[17px]">
+          Describe what you need. Follow five agents as they plan, write, review, and test it—then inspect the code and real test output.
+        </p>
+
+        <div className="cf-home-prompt mt-7 max-w-[46rem] overflow-hidden rounded-2xl border border-border bg-surface">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-3">
-            <span className={TAG}>try an example</span>
+            <span className={TAG}>Explore an example</span>
             <div
               className="flex items-center gap-1"
               role="tablist"
@@ -93,11 +96,6 @@ export function HeroDemo() {
             </p>
           </div>
         </div>
-
-        <p className="mt-6 max-w-[57ch] text-[16px] leading-[1.65] text-fg-muted">
-          Five specialist agents plan, write, review and test the project. A locked-down
-          sandbox then runs the generated code and returns the evidence.
-        </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
