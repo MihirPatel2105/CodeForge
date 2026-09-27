@@ -71,10 +71,17 @@ _RADIUS = "16px"
 # consistent with every recipient outside the sending account receiving nothing at all.
 #
 _BRAND = "#3f47c9"
+_BRAND_LOCKUP_FALLBACK_URL = (
+    "https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/"
+    "frontend/public/brand/codeforge-lockup-light.png"
+)
 
 
 def _brand_lockup_url() -> str:
-    return f"{settings.app_base_url.rstrip('/')}/brand/codeforge-lockup-light.png"
+    base_url = settings.app_base_url.rstrip("/")
+    if base_url.startswith("https://"):
+        return f"{base_url}/brand/codeforge-lockup-light.png"
+    return _BRAND_LOCKUP_FALLBACK_URL
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:

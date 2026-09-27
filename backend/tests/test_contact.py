@@ -221,7 +221,7 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     """
     from app.core.email import _build, _shell
 
-    monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
+    monkeypatch.setattr(settings, "app_base_url", "http://localhost:3001")
 
     message = _build(
         "to@example.com",
@@ -248,8 +248,15 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     )
     assert "data:image" not in html
     assert "cid:" not in html
-    assert 'src="https://app.codeforge.example/brand/codeforge-lockup-light.png"' in html
+    assert (
+        'src="https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/'
+        'frontend/public/brand/codeforge-lockup-light.png"'
+    ) in html
     assert 'alt="CodeForge"' in html
+
+    monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
+    deployed_html = _shell(eyebrow="test", heading="Test", rows="")
+    assert 'src="https://app.codeforge.example/brand/codeforge-lockup-light.png"' in deployed_html
 
 
 def test_every_message_carries_a_date(monkeypatch):
