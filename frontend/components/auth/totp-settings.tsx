@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Check,
   CheckCircle2,
+  ChevronDown,
   Copy,
   Fingerprint,
   KeyRound,
@@ -334,7 +335,16 @@ export function TotpSettings({
           <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">Confirm with your password and an authenticator code. If you lost the authenticator, use one saved recovery code instead.</p></div>
           <div className="grid gap-4 px-6 py-6 md:grid-cols-2 md:px-8">
             <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-lg bg-bg" /></div>
-            <div><label htmlFor="totp-disable-method" className={cn(LABEL, "text-fg-faint")}>verification method</label><select id="totp-disable-method" value={disableMethod} onChange={(event) => { setDisableMethod(event.target.value as "totp" | "recovery"); setCode(""); }} className="mt-2 h-11 w-full rounded-lg border border-border bg-bg px-3 text-[13px]"><option value="totp">Authenticator code</option><option value="recovery">Recovery code</option></select></div>
+            <div>
+              <label htmlFor="totp-disable-method" className={cn(LABEL, "text-fg-faint")}>verification method</label>
+              <div className="relative mt-2">
+                <select id="totp-disable-method" value={disableMethod} onChange={(event) => { setDisableMethod(event.target.value as "totp" | "recovery"); setCode(""); }} className="h-11 w-full appearance-none rounded-lg border border-border bg-bg pl-3 pr-10 text-[13px]">
+                  <option value="totp">Authenticator code</option>
+                  <option value="recovery">Recovery code</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-muted" aria-hidden />
+              </div>
+            </div>
             <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>{disableMethod === "recovery" ? "recovery code" : "authenticator code"}</label><Input id="totp-disable-code" inputMode={disableMethod === "recovery" ? "text" : "numeric"} autoComplete={disableMethod === "recovery" ? "off" : "one-time-code"} value={code} onChange={(event) => setCode(disableMethod === "recovery" ? event.target.value.replace(/[^a-fA-F0-9-]/g, "").slice(0, 35) : event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder={disableMethod === "recovery" ? "XXXX-XXXX-XXXX-XXXX" : "000000"} className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" /></div>
             <Button variant="outline" onClick={disable} disabled={busy || !password || (disableMethod === "recovery" ? code.replace(/-/g, "").length !== 32 : code.length !== 6)} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
           </div>
