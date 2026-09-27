@@ -27,6 +27,11 @@ def _https_origin(value: str) -> str | None:
 def deployment_errors(config: Settings, api_url: str) -> list[str]:
     errors: list[str] = []
 
+    if config.codeforge_env != "production":
+        errors.append("CODEFORGE_ENV must be production")
+    else:
+        errors.extend(config.production_security_errors())
+
     frontend_origin = _https_origin(config.app_base_url)
     if not frontend_origin:
         errors.append("APP_BASE_URL must be an HTTPS frontend origin without a path")
@@ -40,6 +45,8 @@ def deployment_errors(config: Settings, api_url: str) -> list[str]:
 
     if not _https_origin(api_url):
         errors.append("The public API URL must be an HTTPS origin without a path")
+    elif config.api_public_base_url.rstrip("/") != api_url.rstrip("/"):
+        errors.append("API_PUBLIC_BASE_URL must match the checked public API URL")
 
     mongo = urlsplit(config.mongo_uri)
     if mongo.scheme not in {"mongodb", "mongodb+srv"} or not mongo.hostname:

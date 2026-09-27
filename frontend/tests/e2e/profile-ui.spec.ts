@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 test("profile recovers activity and exposes two-factor settings", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
-  await page.route("http://localhost:8000/auth/me", (route) => route.fulfill({
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({
@@ -18,7 +18,7 @@ test("profile recovers activity and exposes two-factor settings", async ({ page 
   }));
 
   let requests = 0;
-  await page.route("http://localhost:8000/projects", (route) => {
+  await page.route("**/api/backend/projects", (route) => {
     requests += 1;
     return route.fulfill({
       status: requests === 1 ? 500 : 200,

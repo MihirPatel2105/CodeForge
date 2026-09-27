@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import ipaddress
 import logging
+import time
 from typing import TYPE_CHECKING
 
 from fastapi import Request
@@ -43,6 +44,23 @@ return {count, redis.call('TTL', KEYS[1])}
 
 def _client_ip(request: Request) -> str:
     peer = request.client.host if request.client else "unknown"
+    if settings.proxy_ip_secret:
+        claimed_ip = request.headers.get("x-codeforge-client-ip", "")
+        timestamp = request.headers.get("x-codeforge-client-time", "")
+        signature = request.headers.get("x-codeforge-client-signature", "")
+        try:
+            ipaddress.ip_address(claimed_ip)
+            timestamp_value = int(timestamp)
+            if abs(time.time() - timestamp_value) <= 60:
+                expected = hmac.new(
+                    settings.proxy_ip_secret.encode(),
+                    f"{claimed_ip}.{timestamp}".encode(),
+                    hashlib.sha256,
+                ).hexdigest()
+                if hmac.compare_digest(signature, expected):
+                    return claimed_ip
+        except ValueError:
+            pass
     try:
         address = ipaddress.ip_address(peer)
     except ValueError:

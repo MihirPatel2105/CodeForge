@@ -1,8 +1,8 @@
 # Deployment preparation
 
 CodeForge's agreed layout is a Next.js frontend on Vercel and a Docker-capable host for the
-FastAPI backend and sandbox. The browser needs a public HTTPS API origin; `localhost:8000`
-inside a visitor's browser points at the visitor's computer. MongoDB Atlas holds application
+FastAPI backend and sandbox. The browser calls the frontend's same-origin `/api/backend` route;
+the Next.js server calls the HTTPS API origin. MongoDB Atlas holds application
 data. Langfuse and its database stay on the backend host.
 
 This guide prepares a deployment. It does not publish the site or change DNS.
@@ -26,21 +26,30 @@ production CORS settings and should not be used for passkey acceptance testing.
 The host needs Docker Engine with Compose, enough space for the backend and sandbox images,
 outbound access to Atlas and the configured AI providers, and a clone of this repository.
 The backend container mounts the host Docker socket because it launches isolated sibling
-sandboxes; access to that socket is privileged. Limit host access accordingly.
+sandboxes. Docker socket access can control the host even if the container has other
+restrictions. Run this stack on a dedicated Docker host with no unrelated workloads or
+secrets, restrict SSH and host access, and never expose the socket or Docker API publicly.
+This risk remains until the sandbox architecture changes.
 Compose also starts a private Redis container for shared limits on public authentication
 routes. It has no published port and stores only expiring counters. The backend waits for
 Redis at startup; protected routes return `503` if Redis becomes unavailable later.
-If a reverse proxy forwards requests from one address, configure `TRUSTED_PROXY_CIDRS` in
-`backend/.env` with **only** that proxy's source IP/CIDR (JSON list), and have the proxy
-append the actual client IP to `X-Forwarded-For`. Otherwise all visitors share one limit.
-Do not trust forwarded headers from arbitrary clients.
+The Next.js route signs the visitor IP for backend rate limits with `CODEFORGE_PROXY_IP_SECRET`.
+Set the same value as `PROXY_IP_SECRET` on the backend. Vercel supplies a sanitized client IP;
+only Vercel's ingress IP is signed. On a self-hosted Next.js server, requests fall back to
+the proxy's peer IP until a trusted ingress integration is implemented. Direct API clients
+still use their peer IP.
+If a separate reverse proxy forwards direct API requests, configure `TRUSTED_PROXY_CIDRS` with
+**only** its source IP/CIDR. Do not trust arbitrary forwarded headers.
 
 Create `backend/.env` from `backend/.env.example`. Keep it private. Set at least:
 
 ```dotenv
 MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.<id>.mongodb.net/?appName=<cluster>
 MONGO_DB=codeforge_deploy
+CODEFORGE_ENV=production
 JWT_SECRET=<unique-random-value-at-least-32-characters>
+PROXY_IP_SECRET=<another-unique-random-value-at-least-32-characters>
+API_PUBLIC_BASE_URL=https://api.example.com
 CORS_ORIGINS=["https://app.example.com"]
 APP_BASE_URL=https://app.example.com
 SMTP_USER=<mail-account>
@@ -48,8 +57,9 @@ SMTP_PASSWORD=<app-password>
 GROQ_API_KEY=<provider-key>
 ```
 
-Use real values, never commit this file. The frontend origin controls CORS, email links,
-and passkey verification. Set the other available provider keys for fallback. The static
+Use real values, never commit this file. Production startup rejects a weak JWT secret,
+missing SMTP or Redis, missing proxy secret, and non-HTTPS origins. The frontend origin
+controls CORS, email links, and passkey verification. Set the other available provider keys for fallback. The static
 configuration check requires one active provider key; the live provider check below tests
 whether an agent can actually reach a model. Configure Atlas network access for the backend
 host and a database user with access to `MONGO_DB`. Use a separate database name and a new
@@ -94,19 +104,30 @@ during a full run. In Langfuse, create a project and put its public and secret k
 ## 4. Configure Vercel
 
 Import the repository as a Vercel project and set **Root Directory** to `frontend`.
-Use the existing Next.js build script and `npm` lockfile. Set the project environment variable
-`NEXT_PUBLIC_API_URL=https://api.example.com` for Production. This value is baked into the
-browser bundle at build time, so redeploy the frontend after changing it. Point the frontend
-domain at the stable origin used by `APP_BASE_URL` and `CORS_ORIGINS`.
+Use the existing Next.js build script and `npm` lockfile. Set these server-side Production
+environment variables in Vercel:
 
-Do not add backend keys or MongoDB credentials to Vercel. Its frontend needs only the public
-API URL. A deployed HTTPS page calling an HTTP API will be blocked by browsers.
+```dotenv
+CODEFORGE_API_INTERNAL_URL=https://api.example.com
+CODEFORGE_FRONTEND_ORIGIN=https://app.example.com
+CODEFORGE_PROXY_IP_SECRET=<same-value-as-backend-PROXY_IP_SECRET>
+```
+
+Point the frontend domain at the stable origin used by `APP_BASE_URL` and `CORS_ORIGINS`.
+The browser never receives the JWT: the Next.js proxy sets a host-only, HttpOnly session
+cookie and forwards authenticated calls. It rejects cross-origin state-changing requests.
+Existing browser sessions from the old `localStorage` implementation must sign in again.
+
+Do not add backend JWT, AI, or MongoDB credentials to Vercel. Its proxy needs only its own
+IP-signing secret and the API origin. Use HTTPS between Vercel and the backend.
 
 ## 5. Acceptance before inviting users
 
 Verify a browser session on the real frontend and API origins: sign up with an email code,
 sign in, create a project, start a run, approve both checkpoints, observe streaming updates,
-and download the generated artifact. Test password reset and a passkey on the stable frontend
+and download the generated artifact. Confirm the browser has no JWT in `localStorage` or API
+response bodies and that the session cookie is HttpOnly, Secure and SameSite=Lax. Test CSRF
+origin rejection, sign-out, password reset and a passkey on the stable frontend
 domain. Run two full prompts from a cold start, including one that exercises the repair loop.
 Use the admin health page and backend logs for failures; check Langfuse traces if configured.
 

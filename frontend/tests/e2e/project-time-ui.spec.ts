@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test.use({ timezoneId: "Asia/Kolkata" });
 
 test("project cards and run history use the viewer's local time", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
-  await page.route("http://localhost:8000/auth/me", (route) => route.fulfill({
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({
@@ -28,10 +28,10 @@ test("project cards and run history use the viewer's local time", async ({ page 
     { id: "run-2", project_id: "project-2", prompt: "Build another API", status: "succeeded", iterations: 1, created_at: "2026-09-24T21:09:14", updated_at: "2026-09-24T21:10:00" },
   ];
 
-  await page.route("http://localhost:8000/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(projects) }));
+  await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(projects) }));
   for (const project of projects) {
-    await page.route(`http://localhost:8000/projects/${project.id}`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(project) }));
-    await page.route(`http://localhost:8000/projects/${project.id}/runs`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(runs.filter((run) => run.project_id === project.id)) }));
+    await page.route(`**/api/backend/projects/${project.id}`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(project) }));
+    await page.route(`**/api/backend/projects/${project.id}/runs`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(runs.filter((run) => run.project_id === project.id)) }));
   }
 
   await page.goto("/projects");

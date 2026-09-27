@@ -261,9 +261,9 @@ ever re-pausing for approval.*
 
 Tasks
 - [x] SSE endpoint streaming agent lifecycle events (see `docs/STATE_AND_API.md`).
-      *(`app/api/stream.py`; consumed by `frontend/lib/use-run-stream.ts` via `fetch`, not the
-      native `EventSource` — bearer-token auth means the browser API can't attach the
-      `Authorization` header, so SSE frames are parsed by hand)*
+      *(`app/api/stream.py`; consumed by `frontend/lib/use-run-stream.ts` via `fetch`.
+      The browser session now crosses a same-origin Next.js proxy; manual parsing preserves
+      the existing `Last-Event-ID` replay behavior.)*
 - [x] Frontend: prompt input page → live run dashboard.
       *(`/projects/[id]` → `POST /runs` → `/runs/[id]`)*
 - [x] Agent cards with idle / thinking / done / failed states.

@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 
 from fastapi import Request
 
+from app.core.abuse_limits import _client_ip
 from app.core.security import create_access_token, decode_access_token
 from app.models import Device, LoginSession, RevokedToken, User
 
@@ -61,7 +62,7 @@ async def issue_session(user: User, request: Request) -> tuple[str, Device, bool
     device = await Device.find_one(Device.user_id == uid, Device.device_hash == fingerprint)
     is_new = device is None
     label = _device_label(request)
-    ip = request.client.host if request.client else None
+    ip = _client_ip(request)
     try:
         if ip and not ipaddress.ip_address(ip).is_global:
             ip = None

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_BASE_URL, getToken } from "./api";
+import { API_BASE_URL } from "./api";
 import { applyEvent, initialSnapshot, type RunSnapshot } from "./run-reducer";
 import type { CodeForgeEvent } from "./types";
 
@@ -16,9 +16,8 @@ const MAX_RETRY_MS = 15000;
 /**
  * Live events for one run (docs/STATE_AND_API.md §4, `GET /runs/{id}/stream`).
  *
- * Not built on the native `EventSource` API: the backend authenticates with a bearer
- * token, and `EventSource` cannot send custom headers. This reads the same
- * `text/event-stream` body by hand over `fetch`, which also means reconnects are our
+ * This reads the `text/event-stream` body through the same-origin proxy over `fetch`.
+ * Reconnects are our
  * own responsibility rather than the browser's — done here with `Last-Event-ID` plus
  * exponential backoff, mirroring what a native EventSource would do (CLAUDE.md gotcha
  * "SSE connections drop... reconnect + replay from last event id").
@@ -63,10 +62,8 @@ export function useRunStream(runId: string) {
       abortController = new AbortController();
 
       try {
-        const token = getToken();
         const res = await fetch(`${API_BASE_URL}/runs/${runId}/stream`, {
           headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             "Last-Event-ID": String(lastEventId),
           },
           signal: abortController.signal,

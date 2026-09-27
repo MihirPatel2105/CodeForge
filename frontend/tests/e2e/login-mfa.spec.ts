@@ -45,7 +45,7 @@ test("password sign-in offers both saved methods and completes with an authentic
   await page.getByRole("button", { name: "Verify and sign in" }).click();
   expect(JSON.parse((await request).postData() ?? "null")).toEqual({ ticket: "test-ticket", totp_code: "123456" });
   await expect(page).toHaveURL(/\/projects$/);
-  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBe("verified-token");
+  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
   expect(await page.evaluate(() => sessionStorage.getItem("codeforge_password_mfa"))).toBeNull();
 });
 
@@ -88,7 +88,7 @@ test("administrator can choose passkey or code and code verification opens admin
   await page.getByRole("button", { name: "Verify and sign in" }).click();
 
   await expect(page).toHaveURL(/\/admin$/);
-  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBe("admin-token");
+  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
 });
 
 test("verification page cannot be opened without a pending password sign-in", async ({ page }) => {

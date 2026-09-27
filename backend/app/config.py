@@ -1,13 +1,19 @@
+from typing import Literal
+from urllib.parse import urlsplit
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    codeforge_env: Literal["development", "production"] = "development"
+
     mongo_uri: str = "mongodb://localhost:27017"
     mongo_db: str = "codeforge"
     redis_url: str = ""
     trusted_proxy_cidrs: list[str] = []
+    proxy_ip_secret: str = ""
 
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
@@ -70,6 +76,53 @@ class Settings(BaseSettings):
         startup when it is off, so "disabled" can never be silent.
         """
         return bool(self.smtp_user and self.smtp_password)
+
+    def production_security_errors(self) -> list[str]:
+        if self.codeforge_env != "production":
+            return []
+
+        errors: list[str] = []
+        if len(self.jwt_secret) < 32 or self.jwt_secret.startswith("dev-"):
+            errors.append("JWT_SECRET must be a unique secret of at least 32 characters")
+        if not self.email_verification_enabled:
+            errors.append("SMTP_USER and SMTP_PASSWORD are required for verified sign-up")
+        if not self.redis_url:
+            errors.append("REDIS_URL is required for public auth rate limits")
+        if len(self.proxy_ip_secret) < 32:
+            errors.append("PROXY_IP_SECRET must be a unique secret of at least 32 characters")
+        for name, value in (
+            ("APP_BASE_URL", self.app_base_url),
+            ("API_PUBLIC_BASE_URL", self.api_public_base_url),
+        ):
+            if not self._is_https_origin(value):
+                errors.append(f"{name} must be an HTTPS origin")
+        if not self.cors_origins or any(
+            not self._is_https_origin(origin) for origin in self.cors_origins
+        ):
+            errors.append("CORS_ORIGINS must contain only HTTPS origins")
+        elif self.app_base_url.rstrip("/") not in {
+            origin.rstrip("/") for origin in self.cors_origins
+        }:
+            errors.append("APP_BASE_URL must be present in CORS_ORIGINS")
+        return errors
+
+    @staticmethod
+    def _is_https_origin(value: str) -> bool:
+        try:
+            parsed = urlsplit(value)
+            if parsed.port == 0:
+                return False
+        except ValueError:
+            return False
+        return (
+            parsed.scheme == "https"
+            and bool(parsed.hostname)
+            and not parsed.username
+            and not parsed.password
+            and parsed.path in ("", "/")
+            and not parsed.query
+            and not parsed.fragment
+        )
 
 
 settings = Settings()

@@ -17,8 +17,8 @@ const EMPTY_PAGE = {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "admin-token"));
-  await page.route("http://localhost:8000/auth/me", (route) => route.fulfill({
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify(ADMIN),
@@ -30,15 +30,15 @@ test("all admin text searches update results while typing", async ({ page }) => 
   const runQueries: string[] = [];
   const auditQueries: string[] = [];
 
-  await page.route("http://localhost:8000/admin/users**", (route) => {
+  await page.route("**/api/backend/admin/users**", (route) => {
     userQueries.push(new URL(route.request().url()).searchParams.get("q") ?? "");
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(EMPTY_PAGE) });
   });
-  await page.route("http://localhost:8000/admin/runs**", (route) => {
+  await page.route("**/api/backend/admin/runs**", (route) => {
     runQueries.push(new URL(route.request().url()).searchParams.get("q") ?? "");
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(EMPTY_PAGE) });
   });
-  await page.route("http://localhost:8000/admin/audit-log**", (route) => {
+  await page.route("**/api/backend/admin/audit-log**", (route) => {
     auditQueries.push(new URL(route.request().url()).searchParams.get("action") ?? "");
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(EMPTY_PAGE) });
   });
@@ -61,7 +61,7 @@ test("all admin text searches update results while typing", async ({ page }) => 
 
 test("audit records stay readable and filters can be cleared", async ({ page }) => {
   const actions: string[] = [];
-  await page.route("http://localhost:8000/admin/audit-log**", (route) => {
+  await page.route("**/api/backend/admin/audit-log**", (route) => {
     const action = new URL(route.request().url()).searchParams.get("action") ?? "";
     actions.push(action);
     return route.fulfill({

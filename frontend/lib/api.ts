@@ -2,10 +2,8 @@
  * REST client for the real backend (docs/STATE_AND_API.md). Every shape here mirrors
  * `lib/types.ts`, which mirrors the backend's Pydantic schemas — no ad-hoc `any`.
  *
- * Auth is a bearer JWT (CLAUDE.md §3: custom JWT, python-jose + passlib), stored in
- * localStorage and attached by `request()` to every call. There is no cookie/session
- * path, which matters later for the SSE hook: the native `EventSource` API cannot send
- * custom headers, so the stream can't use it — see `lib/use-run-stream.ts`.
+ * Browser requests go through the same-origin backend proxy. It keeps the bearer JWT
+ * in an HttpOnly cookie and attaches it to backend calls on the server.
  */
 
 import type {
@@ -61,9 +59,10 @@ import type {
 } from "./types";
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON, RegistrationResponseJSON, AuthenticationResponseJSON } from "@simplewebauthn/browser";
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const API_BASE_URL = "/api/backend";
 
 const TOKEN_KEY = "codeforge_token";
+const PRESENT_COOKIE = "codeforge_session_present";
 const DEVICE_KEY = "codeforge_device";
 
 function getDeviceId(): string | null {
@@ -78,15 +77,21 @@ function getDeviceId(): string | null {
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  return document.cookie.split("; ").some((cookie) => cookie === `${PRESENT_COOKIE}=1`)
+    ? "browser-session"
+    : null;
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+  if (!token) return;
+  localStorage.removeItem(TOKEN_KEY);
+  document.cookie = `${PRESENT_COOKIE}=1; Path=/; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
 }
 
 export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
+  document.cookie = `${PRESENT_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
 export class ApiError extends Error {
@@ -100,10 +105,8 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getToken();
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
   const deviceId = getDeviceId();
   if (deviceId) headers.set("X-CodeForge-Device", deviceId);
 
@@ -301,17 +304,13 @@ export const api = {
   listRunArtifacts: (id: string) => request<ArtifactListResponse>(`/runs/${id}/artifacts`),
 };
 
-/** Downloads one artifact as a browser file save — a plain `<a href>` can't carry the
- * bearer token, so this fetches the bytes with auth and saves them via an object URL. */
+/** Downloads one artifact as a browser file save through the session proxy. */
 export async function downloadArtifact(
   runId: string,
   fileId: string,
   filename: string,
 ): Promise<void> {
-  const token = getToken();
-  const res = await fetch(`${API_BASE_URL}/runs/${runId}/artifacts/${fileId}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const res = await fetch(`${API_BASE_URL}/runs/${runId}/artifacts/${fileId}`);
   if (!res.ok) throw new ApiError(res.status, "download_failed", "Couldn't download the artifact.");
 
   const blob = await res.blob();
@@ -336,10 +335,7 @@ export async function downloadAdminCsv(kind: "runs" | "users" | "audit-log"): Pr
 }
 
 async function downloadAuthenticated(path: string, filename: string): Promise<void> {
-  const token = getToken();
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const res = await fetch(`${API_BASE_URL}${path}`);
   if (!res.ok) throw new ApiError(res.status, "download_failed", "Couldn't download this file.");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);

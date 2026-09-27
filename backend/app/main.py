@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    security_errors = settings.production_security_errors()
+    if security_errors:
+        raise RuntimeError("Unsafe production configuration: " + "; ".join(security_errors))
     app.state.redis = None
     if settings.redis_url:
         app.state.redis = Redis.from_url(
@@ -100,8 +103,8 @@ def create_app() -> FastAPI:
         limited = await check_abuse_limit(request)
         return limited if limited is not None else await call_next(request)
 
-    # The frontend authenticates with a bearer token, not cookies, so credentials don't
-    # need to cross the boundary — only the Authorization header does.
+    # The Next.js browser proxy forwards bearer tokens server-side. Direct API clients
+    # may still use Authorization; browser cookies never cross into FastAPI.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

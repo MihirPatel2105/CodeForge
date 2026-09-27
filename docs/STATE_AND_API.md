@@ -177,9 +177,13 @@ Conventions
   TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the
   dedicated account-security screen renders the URI as a QR code while keeping manual entry available.
 - Browser sessions carry a separate device identifier; new browsers receive a sign-in email when SMTP is configured.
+  The browser calls a same-origin Next.js proxy. It stores the JWT in a host-only HttpOnly
+  cookie and forwards it to FastAPI server-side. A readable marker is only a UI hint, not
+  authorization. The proxy signs the client IP for the backend's Redis rate limits.
   The alert link is single-use and expires after 24 hours. Its review page requires a POST confirmation;
   opening the email link cannot revoke sessions. Browser and platform labels come from User-Agent and
-  IP is the direct peer address, so neither represents a verified physical device or location.
+  IP comes from a signed Vercel proxy header when configured, or the direct peer otherwise;
+  neither value represents a verified physical device or location.
 - Suspended accounts are rejected centrally by the authentication dependency. Project and
   monthly-run limits are enforced at creation time, not only displayed in the admin UI.
 

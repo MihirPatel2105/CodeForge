@@ -35,5 +35,5 @@ test("reset link submits the token and matching new password", async ({ page }) 
 
   await expect(page).toHaveURL(/\/projects$/);
   expect(resetBody).toEqual({ token: "test-link-token", new_password: "Strongpass1" });
-  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBe("new-session");
+  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
 });

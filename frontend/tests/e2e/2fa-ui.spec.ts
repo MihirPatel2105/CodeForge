@@ -21,7 +21,7 @@ const USER = {
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
   await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN) }));
 });
 

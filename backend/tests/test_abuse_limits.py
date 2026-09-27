@@ -1,3 +1,7 @@
+import hashlib
+import hmac
+import time
+
 from redis.exceptions import ConnectionError
 from starlette.requests import Request
 
@@ -86,3 +90,28 @@ def test_forwarded_ip_only_comes_from_a_trusted_proxy(monkeypatch):
 
     trusted = Request({"type": "http", "client": ("10.0.0.5", 1234), "headers": headers})
     assert _client_ip(trusted) == "203.0.113.8"
+
+
+def test_signed_proxy_ip_is_accepted_but_unsigned_or_tampered_ip_is_not(monkeypatch):
+    secret = "a-long-random-proxy-secret-for-testing"
+    monkeypatch.setattr(settings, "proxy_ip_secret", secret)
+    timestamp = str(int(time.time()))
+    signature = hmac.new(
+        secret.encode(), f"203.0.113.8.{timestamp}".encode(), hashlib.sha256
+    ).hexdigest()
+    headers = [
+        (b"x-codeforge-client-ip", b"203.0.113.8"),
+        (b"x-codeforge-client-time", timestamp.encode()),
+        (b"x-codeforge-client-signature", signature.encode()),
+    ]
+    valid = Request({"type": "http", "client": ("192.0.2.4", 1234), "headers": headers})
+    assert _client_ip(valid) == "203.0.113.8"
+
+    tampered = Request(
+        {
+            "type": "http",
+            "client": ("192.0.2.4", 1234),
+            "headers": [(b"x-codeforge-client-ip", b"203.0.113.9"), *headers[1:]],
+        }
+    )
+    assert _client_ip(tampered) == "192.0.2.4"

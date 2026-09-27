@@ -3,13 +3,13 @@ import { expect, test } from "@playwright/test";
 const runId = "507f1f77bcf86cd799439012";
 
 test("a user can send a generated API request and reset preview data", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
-  await page.route("http://localhost:8000/auth/me", (route) => route.fulfill({
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ id: "user-1", email: "user@example.com", first_name: "Regular", last_name: "User", created_at: "2026-09-23T00:00:00Z", is_admin: false, email_verified: true, totp_enabled: false }),
   }));
-  await page.route(`http://localhost:8000/runs/${runId}/preview`, (route) => route.fulfill({
+  await page.route(`**/api/backend/runs/${runId}/preview`, (route) => route.fulfill({
     status: route.request().method() === "DELETE" ? 204 : 200,
     contentType: "application/json",
     body: route.request().method() === "DELETE" ? "" : JSON.stringify({
@@ -21,9 +21,9 @@ test("a user can send a generated API request and reset preview data", async ({ 
       ],
     }),
   }));
-  await page.route(`http://localhost:8000/runs/${runId}/deployment`, (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "No published API" } }) }));
+  await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "No published API" } }) }));
   let sent: unknown;
-  await page.route(`http://localhost:8000/runs/${runId}/preview/request`, (route) => {
+  await page.route(`**/api/backend/runs/${runId}/preview/request`, (route) => {
     sent = route.request().postDataJSON();
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: 201, content_type: "application/json", body: '{"name":"sample"}', truncated: false, duration_ms: 42, session_started: false }) });
   });
@@ -42,19 +42,19 @@ test("a user can send a generated API request and reset preview data", async ({ 
 });
 
 test("a user can publish an API and see its one-time key", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
-  await page.route("http://localhost:8000/auth/me", (route) => route.fulfill({
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ id: "user-1", email: "user@example.com", first_name: "Regular", last_name: "User", created_at: "2026-09-23T00:00:00Z", is_admin: false, email_verified: true, totp_enabled: false }),
   }));
-  await page.route(`http://localhost:8000/runs/${runId}/preview`, (route) => route.fulfill({
+  await page.route(`**/api/backend/runs/${runId}/preview`, (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ expires_after_seconds: 900, session_started: false, operations: [{ method: "GET", path: "/items", summary: "List items", has_body: false, example_body: null }] }),
   }));
   let published = false;
-  await page.route(`http://localhost:8000/runs/${runId}/deployment`, (route) => {
+  await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => {
     const method = route.request().method();
     if (method === "POST") published = true;
     if (method === "DELETE") published = false;

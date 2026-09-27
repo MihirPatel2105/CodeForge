@@ -32,8 +32,8 @@ function initialsFor(user: UserResponse): string {
  * chances for one of them to keep offering "Create an account" to somebody who
  * already has one.
  *
- * Always starts null and resolves after mount: the token lives in localStorage, which
- * does not exist during the server render, so returning a signed-in value on the first
+ * Always starts null and resolves after mount: the browser session marker is only
+ * read on the client, so returning a signed-in value on the first
  * client pass would guarantee a hydration mismatch against the server's markup.
  */
 export interface Session {
@@ -46,8 +46,8 @@ export interface Session {
  * The session, including whether it is still being resolved.
  *
  * `user === null` is ambiguous on its own: it means both "signed out" and "we have not
- * looked yet", and the second is always true for one render because the token lives in
- * localStorage. Anything that *gates* on being signed in needs to tell those apart, or
+ * looked yet", and the second is always true for one render because browser cookies
+ * are checked after mount. Anything that *gates* on being signed in needs to tell those apart, or
  * it shows a signed-in visitor a "please sign in" screen for a moment before correcting
  * itself. Surfaces that merely swap a label can keep using `useCurrentUser`.
  */
@@ -67,7 +67,7 @@ export function useSession(): Session {
         setUser({ ...u, displayName: name || u.email, initials: initialsFor(u) });
       })
       .catch(() => {
-        // Expired or revoked: drop it rather than leave the UI in a signed-in state
+        // Expired or revoked: drop the marker rather than leave the UI in a signed-in state
         // that no longer works.
         clearToken();
       })

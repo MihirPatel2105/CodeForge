@@ -33,11 +33,11 @@ const USER = {
 test("admin deletion requires password, typed confirmation, and an audit reason", async ({ page }) => {
   let submitted: Record<string, string> | null = null;
 
-  await page.addInitScript(() => localStorage.setItem("codeforge_token", "ui-test-token"));
-  await page.route("http://localhost:8000/auth/me", (route) =>
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN) }),
   );
-  await page.route(`http://localhost:8000/admin/users/${USER.id}/delete`, async (route) => {
+  await page.route(`**/api/backend/admin/users/${USER.id}/delete`, async (route) => {
     submitted = route.request().postDataJSON() as Record<string, string>;
     await route.fulfill({
       status: 200,
@@ -45,7 +45,7 @@ test("admin deletion requires password, typed confirmation, and an audit reason"
       body: JSON.stringify({ projects_deleted: 2, runs_deleted: 4, artifacts_deleted: 8 }),
     });
   });
-  await page.route(`http://localhost:8000/admin/users/${USER.id}`, (route) =>
+  await page.route(`**/api/backend/admin/users/${USER.id}`, (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",

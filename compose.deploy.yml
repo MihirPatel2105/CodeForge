@@ -19,6 +19,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
+      CODEFORGE_ENV: production
       LANGFUSE_HOST: http://langfuse:3000
       REDIS_URL: redis://redis:6379/0
     ports:
