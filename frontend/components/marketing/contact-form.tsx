@@ -15,7 +15,7 @@ const FIELD =
   "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] transition-colors " +
   "focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
-const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
+const LABEL = "text-[13px] font-[600] text-fg";
 
 /** A value the account owns and the form only displays. */
 const READONLY =
@@ -86,7 +86,7 @@ export function ContactForm() {
   if (!user) {
     return (
       <div className={PANEL}>
-        <span className="inline-flex rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-accent">sign in to continue</span>
+        <span className="inline-flex rounded-xl border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">Sign in to continue</span>
         <h2 className="font-display mt-5 text-[23px] font-[650] leading-[1.2] tracking-[-0.04em] text-fg">
           Messages come from an account.
         </h2>
@@ -98,13 +98,13 @@ export function ContactForm() {
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-lg bg-fg px-6 py-[13px] font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-surface transition-opacity hover:opacity-88"
+            className="inline-flex items-center justify-center rounded-xl bg-fg px-6 py-[13px] text-[14px] font-[650] text-surface transition-opacity hover:opacity-88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center rounded-lg border border-border-strong bg-surface px-6 py-[13px] font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:bg-surface-2"
+            className="inline-flex items-center justify-center rounded-xl border border-border-strong bg-surface px-6 py-[13px] text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Create an account
           </Link>
@@ -113,7 +113,7 @@ export function ContactForm() {
           Rather not sign up just to ask something? Email{" "}
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="font-mono text-[13px] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
+            className="text-[13.5px] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
           >
             {CONTACT_EMAIL}
           </a>{" "}
@@ -126,13 +126,13 @@ export function ContactForm() {
   if (sent) {
     return (
       <div className={PANEL}>
-        <span className="inline-flex rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-ok">message sent</span>
+        <span className="inline-flex rounded-xl border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok">Message sent</span>
         <h2 className="font-display mt-5 text-[23px] font-[650] leading-[1.2] tracking-[-0.04em] text-fg">
           Thanks &mdash; we&rsquo;ve got it.
         </h2>
         <p className="mt-[18px] text-[14.5px] leading-[1.6] text-fg-muted">
           We&rsquo;ll reply within one or two working days, at{" "}
-          <span className="font-mono text-[13.5px] text-fg">{user.email}</span>.
+          <span className="text-[13.5px] text-fg">{user.email}</span>.
         </p>
         <button
           type="button"
@@ -140,9 +140,9 @@ export function ContactForm() {
             setSent(false);
             setMessage("");
           }}
-          className="mt-6 font-mono text-[12.5px] font-[600] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
+          className="mt-6 text-[13.5px] font-[600] text-fg underline decoration-1 decoration-border-strong underline-offset-[4px] hover:decoration-fg"
         >
-          send another
+          Send another
         </button>
       </div>
     );
@@ -153,13 +153,13 @@ export function ContactForm() {
       {/* Shown, not entered. The server reads both from the account whatever the browser
           sends, so an editable field here would misrepresent what the message will say. */}
       <div className="flex flex-col gap-[6px]">
-        <Label className={LABEL}>your name</Label>
+        <Label className={LABEL}>Your name</Label>
         <div className={READONLY}>{user.displayName}</div>
       </div>
 
       <div className="flex flex-col gap-[6px]">
-        <Label className={LABEL}>email</Label>
-        <div className={`${READONLY} font-mono text-[13.5px]`}>{user.email}</div>
+        <Label className={LABEL}>Email</Label>
+        <div className={READONLY}>{user.email}</div>
         <p className="text-[12.5px] leading-[1.5] text-fg-faint">
           From your verified account &mdash; this is where the reply goes.
         </p>
@@ -167,7 +167,7 @@ export function ContactForm() {
 
       <div className="flex flex-col gap-[6px]">
         <Label htmlFor="contact-phone" className={LABEL}>
-          phone
+          Phone
         </Label>
         <div className="flex">
           <Input
@@ -200,7 +200,7 @@ export function ContactForm() {
       <div className="flex min-h-0 flex-1 flex-col gap-[6px]">
         <div className="flex items-baseline justify-between">
           <Label htmlFor="contact-message" className={LABEL}>
-            message
+            Message
           </Label>
           <span
             className={`font-mono text-[11px] tabular-nums ${
@@ -235,9 +235,9 @@ export function ContactForm() {
       <Button
         type="submit"
         disabled={!canSend || submitting}
-        className="mt-1 h-[50px] w-full rounded-lg font-mono text-[11px] font-[700] uppercase tracking-[0.12em]"
+        className="mt-1 h-[50px] w-full rounded-xl text-[14px] font-[650]"
       >
-        {submitting ? "sending…" : "send message"}
+        {submitting ? "Sending…" : "Send message"}
       </Button>
     </form>
   );

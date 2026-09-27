@@ -41,7 +41,7 @@ export function FaqColumn({ items, start }: { items: readonly FaqItem[]; start: 
                 {String(start + index).padStart(2, "0")}
               </span>
               <span>
-                <span className="block font-mono text-[8px] font-[700] uppercase tracking-[0.13em] text-accent">
+                <span className="block text-[12px] font-[650] text-accent">
                   {item.category}
                 </span>
                 <span className="mt-2 block text-[15px] font-[650] leading-[1.45] text-fg transition-colors group-hover:text-fg-muted">

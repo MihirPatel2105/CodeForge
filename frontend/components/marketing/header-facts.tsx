@@ -17,13 +17,13 @@ export function HeaderFacts({
 }) {
   return (
     <div className="w-full max-w-[300px]">
-      <span className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.16em] text-fg-faint">
-        [ {label} ]
+      <span className="text-[13px] font-[650] text-accent">
+        {label}
       </span>
       <dl className="mt-4 border-t border-rule">
         {rows.map((row) => (
           <div key={row.k} className="border-b border-rule py-[11px]">
-            <dt className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
+            <dt className="text-[12px] font-[600] text-fg-muted">
               {row.k}
             </dt>
             <dd className="mt-[5px] text-[13.5px] leading-[1.45] text-fg">{row.v}</dd>

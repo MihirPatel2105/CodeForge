@@ -25,8 +25,8 @@ export function MarketingPage({
       <header className="cf-grid border-b border-rule">
         <div className="mx-auto grid w-full gap-x-16 px-6 pt-14 pb-12 md:px-10 md:pt-16 lg:grid-cols-[1fr_auto] lg:px-14">
           <div>
-            <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint">
-              [ {eyebrow} ]
+            <span className="text-[13px] font-[650] text-accent">
+              {eyebrow}
             </span>
             <h1 className="font-display mt-8 max-w-[22ch] text-[29px] font-[600] leading-[1.2] tracking-[-0.045em] text-fg sm:text-[34px] md:text-[38px]">
               {title}
@@ -66,8 +66,8 @@ export function Section({
   return (
     <section className="grid gap-x-14 gap-y-5 border-t border-rule py-10 first:border-t-0 first:pt-0 lg:grid-cols-[11rem_1fr]">
       <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2">
-        <span className="font-mono text-[12px] font-[600] text-fg">[{index}]</span>
-        <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.14em] text-fg-faint">
+        <span className="text-[13px] font-[650] text-accent">{index}</span>
+        <span className="text-[13px] font-[600] text-fg-muted">
           {heading}
         </span>
       </div>
