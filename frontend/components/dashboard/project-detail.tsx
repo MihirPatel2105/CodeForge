@@ -85,7 +85,7 @@ export function ProjectDetail({
   return (
     <div className="cf-project-detail min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-9 md:px-10 md:pt-12 lg:px-14">
+      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-6 md:px-10 md:pt-8 lg:px-14">
         <Link
           href="/projects"
           className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
@@ -94,51 +94,42 @@ export function ProjectDetail({
           Projects
         </Link>
 
-        <section className="cf-project-detail-hero mt-5 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.045)]">
-          <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(390px,0.65fr)]">
-            <div className="relative px-6 py-8 md:px-9 md:py-10">
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-                project workspace
-              </span>
-              <h1 className="font-display mt-5 text-[38px] font-[700] tracking-[-0.055em] text-fg md:text-[46px]">
+        <section className="cf-project-detail-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.045)]">
+            <div className="relative px-6 py-6 md:px-9 md:py-7">
+              <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
                 {project.name}
               </h1>
               {project.description && (
-                <p className="mt-3 max-w-[66ch] text-[15px] leading-[1.65] text-fg-muted md:text-[16px]">
+                <p className="mt-2 max-w-[80ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
                   {project.description}
                 </p>
               )}
             </div>
 
             {/* Every figure is derived from the history already loaded for this page. */}
-            <dl className="cf-project-detail-stats grid grid-cols-2 bg-surface-2">
-              <Figure index="01" label="runs" value={String(stats.total)} />
-              <Figure index="02" label="succeeded" value={String(stats.succeeded)} bordered />
-              <Figure index="03" label="failed" value={String(stats.failed)} topBorder />
+            <dl className="cf-project-detail-stats grid grid-cols-2 bg-surface-2/65 sm:grid-cols-4">
+              <Figure label="Runs" value={String(stats.total)} />
+              <Figure label="Succeeded" value={String(stats.succeeded)} bordered />
+              <Figure label="Failed" value={String(stats.failed)} bordered />
               <Figure
-                index="04"
-                label="avg loops"
+                label="Average loops"
                 value={stats.avgLoops == null ? "—" : stats.avgLoops.toFixed(1)}
                 bordered
-                topBorder
               />
             </dl>
-          </div>
         </section>
 
-        <div className="mt-10 grid gap-7 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
+        <div className="mt-6 grid gap-6 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
           {/* Prompt entry. Sticky so it stays reachable while a long history scrolls. */}
           <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)] xl:sticky xl:top-[78px]">
-            <div className="cf-project-composer-head border-b border-rule px-5 py-5">
-              <span className={LABEL}>new agent run</span>
-              <div className="mt-3 flex items-center gap-3">
+            <div className="cf-project-composer-head border-b border-rule px-5 py-4">
+              <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
                   <Play className="h-4 w-4 fill-current" aria-hidden />
                 </span>
                 <div>
                   <h2 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
-                    Build from a prompt
+                    New run
                   </h2>
                   <p className="mt-0.5 text-[13px] text-fg-muted">
                     Describe the API in plain language.
@@ -149,18 +140,13 @@ export function ProjectDetail({
 
             <div className="flex flex-col gap-4 p-5">
               <div className="flex flex-col gap-[7px]">
-                <div className="flex items-center justify-between gap-3">
-                  <label htmlFor="prompt" className={LABEL}>
-                    Describe the API
-                  </label>
-                  <span className="font-mono text-[9px] text-fg-faint">required</span>
-                </div>
+                <label htmlFor="prompt" className={LABEL}>Describe the API</label>
                 <Textarea
                   id="prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="I want an API to manage…"
-                  className="min-h-[168px] resize-y rounded-xl border-border-strong bg-bg/60 px-4 py-3.5 text-[16px] leading-[1.6] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/10 md:text-[15px]"
+                  className="min-h-[136px] resize-y rounded-xl border-border-strong bg-bg/60 px-4 py-3.5 text-[16px] leading-[1.6] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/10 md:text-[15px]"
                 />
               </div>
 
@@ -219,12 +205,11 @@ export function ProjectDetail({
           <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)]" aria-labelledby="run-history-heading">
             <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-5 md:px-6">
               <div>
-                <span className={LABEL}>project activity</span>
-                <h2 id="run-history-heading" className="font-display mt-2 text-[22px] font-[700] tracking-[-0.04em] text-fg">
+                <h2 id="run-history-heading" className="font-display text-[22px] font-[700] tracking-[-0.04em] text-fg">
                   Run history
                 </h2>
               </div>
-              <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-[9.5px] font-[600] uppercase tracking-[0.1em] text-fg-faint">
+              <span className="rounded-xl border border-border bg-surface px-2.5 py-1 text-[12px] font-[600] text-fg-muted">
                 {history.length} {history.length === 1 ? "run" : "runs"}
               </span>
             </div>
@@ -266,7 +251,7 @@ export function ProjectDetail({
                     className="cf-run-history-grid group grid gap-x-4 gap-y-4 border-b border-border px-5 py-5 transition-colors last:border-b-0 hover:bg-accent-soft/35 md:items-center md:gap-y-0 md:px-6 md:py-4"
                   >
                     <div className="cf-run-history-prompt min-w-0 md:pr-4">
-                      <span className="mb-1.5 block font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint md:hidden">
+                      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
                         Prompt
                       </span>
                       <span className="line-clamp-2 text-[13.5px] leading-[1.5] text-fg md:truncate">
@@ -274,7 +259,7 @@ export function ProjectDetail({
                       </span>
                     </div>
                     <div>
-                      <span className="mb-1.5 block font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint md:hidden">
+                      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
                         Outcome
                       </span>
                       <span
@@ -330,7 +315,7 @@ export function ProjectDetail({
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
-            className="shrink-0 rounded-lg border border-danger-bd bg-surface px-5 py-[11px] font-mono text-[10.5px] font-[650] uppercase tracking-[0.12em] text-danger transition-colors hover:bg-danger-soft"
+            className="shrink-0 rounded-xl border border-danger-bd bg-surface px-5 py-[11px] text-[13px] font-[650] text-danger transition-colors hover:bg-danger-soft"
           >
             Delete project
           </button>
@@ -453,7 +438,7 @@ function RunDatum({
 }) {
   return (
     <div>
-      <span className="mb-1.5 block font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint md:hidden">
+      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
         {label}
       </span>
       <span className={cn("font-mono text-[12px]", className)}>{children}</span>
@@ -462,34 +447,27 @@ function RunDatum({
 }
 
 function Figure({
-  index,
   label,
   value,
   bordered,
-  topBorder,
 }: {
-  index: string;
   label: string;
   value: string;
   bordered?: boolean;
-  topBorder?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "relative flex min-h-[112px] flex-col justify-center px-5 py-5",
-        bordered && "border-l border-rule",
-        topBorder && "border-t border-rule",
+        "relative flex min-h-[86px] flex-col justify-center px-5 py-3 sm:px-6",
+        bordered && (label === "Failed" ? "border-rule sm:border-l" : "border-l border-rule"),
+        label === "Failed" && "border-t border-rule sm:border-t-0",
+        label === "Average loops" && "border-t border-rule sm:border-t-0",
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <dt className={cn(LABEL, "text-[11px]")}>{label}</dt>
-        <span className="font-mono text-[10px] text-fg-faint">{index}</span>
-      </div>
-      <dd className="font-display mt-2.5 text-[28px] font-[700] tracking-[-0.05em] text-fg">
+      <dt className={cn(LABEL, "text-[12px]")}>{label}</dt>
+      <dd className="font-display mt-1 text-[26px] font-[700] tracking-[-0.05em] text-fg">
         {value}
       </dd>
-      <span className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />
     </div>
   );
 }
