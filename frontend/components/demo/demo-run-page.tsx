@@ -217,7 +217,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
         <section className="mt-8" aria-labelledby="demo-workbench-heading">
           <div className="mb-4 flex items-end justify-between border-b border-rule pb-4">
             <div>
-              <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">execution evidence</span>
+              <span className="text-[12px] font-[650] text-fg-muted">Execution evidence</span>
               <h2 id="demo-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Inspect the run</h2>
             </div>
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
@@ -251,7 +251,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           <p className="max-w-[58ch] text-[13.5px] leading-[1.55] text-fg-muted">
             This is a deterministic replay of the CodeForge interface. The real product uses the same workflow with live models and a locked-down sandbox.
           </p>
-          <Link href={user ? "/projects" : "/signup"} className="inline-flex items-center gap-2 rounded-lg bg-fg px-5 py-3 font-mono text-[10.5px] font-[700] uppercase tracking-[0.1em] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90">
+          <Link href={user ? "/projects" : "/signup"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-fg px-5 py-3 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
             Build your own API
           </Link>
         </div>
