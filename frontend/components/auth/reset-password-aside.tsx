@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock3, KeyRound, ShieldOff } from "lucide-react";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 
 /**
  * The left half of the reset-password screen specifically — not the shared
@@ -43,8 +43,7 @@ export function ResetPasswordAside() {
             aria-label="CodeForge home"
             className="inline-flex w-fit items-center gap-[6px] transition-opacity hover:opacity-80"
           >
-            <LogoMark className="h-8 w-8" />
-            <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
+            <LogoLockup variant="dark" className="h-9 w-auto" />
           </Link>
           <span className="rounded-full border border-border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-fg-faint">
             single-use link

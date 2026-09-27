@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 
 /** Public site header. The brand and account actions stay clear of the page content. */
 export function SiteHeader() {
@@ -17,8 +17,7 @@ export function SiteHeader() {
           aria-label="CodeForge home"
           className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
-          <LogoMark className="h-8 w-8 shrink-0" />
-          <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
+          <LogoLockup className="h-9 w-auto shrink-0" />
         </Link>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">

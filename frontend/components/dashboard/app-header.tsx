@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { cn } from "@/lib/utils";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 
 /**
  * The persistent app header (design_handoff/README.md "Header (58px, sticky...)"),
@@ -36,8 +36,7 @@ export function AppHeader() {
           aria-label="CodeForge home"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <LogoMark className="h-8 w-8" />
-          <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
+          <LogoLockup className="h-9 w-auto" />
         </Link>
 
         <Link

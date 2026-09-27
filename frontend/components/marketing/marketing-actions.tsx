@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useCurrentUser } from "@/lib/use-current-user";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 import { CONTACT_ADDRESS, CONTACT_EMAIL } from "@/lib/contact-details";
 
 /**
@@ -42,8 +42,7 @@ export function SiteFooter() {
               aria-label="CodeForge home"
               className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
             >
-              <LogoMark className="h-9 w-9" />
-              <span className="cf-wordmark text-fg">Code<span className="cf-wordmark__forge">Forge</span></span>
+              <LogoLockup variant="dark" className="h-10 w-auto" />
             </Link>
             <p className="mt-5 max-w-[40ch] text-[15px] leading-[1.65] text-fg-muted">
               Five agents build your API. Follow their decisions, review feedback,
