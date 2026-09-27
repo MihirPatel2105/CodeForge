@@ -50,9 +50,10 @@ _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 _RADIUS = "16px"
 
-# The email wordmark is text rather than an image. Both image
-# techniques were tried against real Gmail
-# delivery and both failed, so do not reach for either again:
+# Email clients can fetch a public HTTPS image, but Gmail rejects the two embedded-image
+# techniques below. The lockup therefore lives on the frontend and is referenced through
+# `APP_BASE_URL`; deployed environments must set that value to the public frontend origin.
+# This keeps every email aligned with the product brand without adding an image attachment.
 #
 #   data: URI  — Gmail, Outlook and Yahoo refuse to render one in an <img src>. The mark
 #                arrived as a broken-image icon in every client that matters.
@@ -69,15 +70,15 @@ _RADIUS = "16px"
 # the copy sent to a different account disappears. So "the logo works, I can see it" is
 # consistent with every recipient outside the sending account receiving nothing at all.
 #
-# A remote https:// image would work — Gmail proxies and caches those — but it needs
-# public hosting the backend does not have. Worth revisiting once the frontend is on
-# Vercel: an <img> pointing at a deployed asset would restore the real mark for everyone.
-# Until then, the text wordmark survives everywhere and needs nothing.
 _BRAND = "#3f47c9"
 
 
+def _brand_lockup_url() -> str:
+    return f"{settings.app_base_url.rstrip('/')}/brand/codeforge-lockup-light.png"
+
+
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
-    """Shared email frame: current palette, wordmark, title, and content.
+    """Shared email frame: current palette, logo, title, and content.
 
     Extracted the moment there was a second email — two copies of this table markup
     would drift within a week, and the whole point is that a message from CodeForge
@@ -98,9 +99,11 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
            style="max-width:520px;background:{_SURFACE};border:1px solid {_RULE};
                   border-radius:20px;">
-      <tr><td style="padding:30px 32px 0 32px;font-family:{_SANS};font-size:22px;
-                     font-weight:750;letter-spacing:-0.06em;line-height:1.2;">
-        <span style="color:{_FG};">Code</span><span style="color:{_BRAND};">Forge</span>
+      <tr><td style="padding:28px 32px 0 32px;">
+        <a href="{html_escape(settings.app_base_url, quote=True)}" style="display:inline-block;text-decoration:none;">
+          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="174" height="58"
+               style="display:block;width:174px;height:auto;border:0;outline:none;text-decoration:none;">
+        </a>
       </td></tr>
 
       <tr><td style="padding:31px 32px 0 32px;font-family:{_SANS};font-size:13px;

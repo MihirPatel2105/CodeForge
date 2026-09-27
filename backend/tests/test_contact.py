@@ -212,15 +212,16 @@ def test_form_is_off_when_the_server_has_no_mail_configured(client, registered_u
 # --------------------------------------------------------------------------- #
 # Rendering
 # --------------------------------------------------------------------------- #
-def test_no_email_carries_an_image_by_any_technique():
-    """Both ways of putting the mark in an email failed against real Gmail delivery.
+def test_email_uses_the_hosted_brand_lockup(monkeypatch):
+    """The real logo is fetched from the public frontend, never embedded in the message.
 
     A `data:` URI renders as a broken-image icon; a `cid:` attachment renders fine but
-    makes Gmail silently drop the whole message when it crosses accounts. The mark is
-    drawn with a styled table cell instead, so this guards against either technique
-    being reintroduced.
+    makes Gmail silently drop the whole message when it crosses accounts. A hosted HTTPS
+    image works across recipients and keeps the email identity aligned with the app.
     """
     from app.core.email import _build, _shell
+
+    monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
 
     message = _build(
         "to@example.com",
@@ -247,7 +248,8 @@ def test_no_email_carries_an_image_by_any_technique():
     )
     assert "data:image" not in html
     assert "cid:" not in html
-    assert "Code" in html and "Forge" in html
+    assert 'src="https://app.codeforge.example/brand/codeforge-lockup-light.png"' in html
+    assert 'alt="CodeForge"' in html
 
 
 def test_every_message_carries_a_date(monkeypatch):
