@@ -368,7 +368,7 @@
   background: var(--bg);
 }
 
-.cf-home-closing .cf-frame {
+.cf-closing-banner {
   border-color: var(--accent-bd);
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 24px 70px rgba(67, 56, 202, 0.08);
