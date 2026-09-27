@@ -3,6 +3,7 @@ uvicorn[standard]
 pydantic-settings
 pydantic[email]  # EmailStr validation on registration
 beanie>=2        # ODM: uses pymongo AsyncMongoClient (Beanie 2 dropped motor)
+redis>=5,<7      # shared, atomic abuse limits for public auth routes
 
 python-jose[cryptography]
 passlib[bcrypt]

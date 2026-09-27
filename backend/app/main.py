@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from redis.asyncio import Redis
 
 from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
@@ -17,6 +18,7 @@ from app.api.projects import router as projects_router
 from app.api.runs import router as runs_router
 from app.api.stream import router as stream_router
 from app.config import settings
+from app.core.abuse_limits import check_abuse_limit
 from app.core.exceptions import CodeForgeError
 from app.db import connect, disconnect
 
@@ -25,21 +27,34 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    await connect()
-    # A run in flight when the process stopped has no task to resume it — the in-memory
-    # registry did not survive the restart. Without this it shows `running` for ever.
-    from app.graph.executor import reconcile_interrupted_runs
-
-    await reconcile_interrupted_runs()
-    if not settings.email_verification_enabled:
-        # Verification failing open is a deliberate choice (see `config.py`), but a
-        # security control that is off must never be off quietly.
-        logger.warning(
-            "SMTP is not configured — sign-up will NOT verify email addresses. "
-            "Set SMTP_USER and SMTP_PASSWORD in .env to switch verification on."
+    app.state.redis = None
+    if settings.redis_url:
+        app.state.redis = Redis.from_url(
+            settings.redis_url, socket_connect_timeout=2, socket_timeout=2
         )
-    yield
-    await disconnect()
+    else:
+        logger.warning("REDIS_URL is unset — shared public-auth rate limits are disabled")
+    try:
+        if app.state.redis is not None:
+            await app.state.redis.ping()
+        await connect()
+        try:
+            # A run in flight when the process stopped has no task to resume it — the in-memory
+            # registry did not survive the restart. Without this it shows `running` for ever.
+            from app.graph.executor import reconcile_interrupted_runs
+
+            await reconcile_interrupted_runs()
+            if not settings.email_verification_enabled:
+                logger.warning(
+                    "SMTP is not configured — sign-up will NOT verify email addresses. "
+                    "Set SMTP_USER and SMTP_PASSWORD in .env to switch verification on."
+                )
+            yield
+        finally:
+            await disconnect()
+    finally:
+        if app.state.redis is not None:
+            await app.state.redis.aclose()
 
 
 async def codeforge_error_handler(request: Request, exc: CodeForgeError) -> JSONResponse:
@@ -79,6 +94,12 @@ def create_app() -> FastAPI:
     _configure_logging()
     app = FastAPI(title="CodeForge", lifespan=lifespan)
     app.add_exception_handler(CodeForgeError, codeforge_error_handler)
+
+    @app.middleware("http")
+    async def abuse_limit_middleware(request: Request, call_next):
+        limited = await check_abuse_limit(request)
+        return limited if limited is not None else await call_next(request)
+
     # The frontend authenticates with a bearer token, not cookies, so credentials don't
     # need to cross the boundary — only the Authorization header does.
     app.add_middleware(

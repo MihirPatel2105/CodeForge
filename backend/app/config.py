@@ -6,6 +6,8 @@ class Settings(BaseSettings):
 
     mongo_uri: str = "mongodb://localhost:27017"
     mongo_db: str = "codeforge"
+    redis_url: str = ""
+    trusted_proxy_cidrs: list[str] = []
 
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"

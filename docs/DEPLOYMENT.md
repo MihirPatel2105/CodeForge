@@ -27,6 +27,13 @@ The host needs Docker Engine with Compose, enough space for the backend and sand
 outbound access to Atlas and the configured AI providers, and a clone of this repository.
 The backend container mounts the host Docker socket because it launches isolated sibling
 sandboxes; access to that socket is privileged. Limit host access accordingly.
+Compose also starts a private Redis container for shared limits on public authentication
+routes. It has no published port and stores only expiring counters. The backend waits for
+Redis at startup; protected routes return `503` if Redis becomes unavailable later.
+If a reverse proxy forwards requests from one address, configure `TRUSTED_PROXY_CIDRS` in
+`backend/.env` with **only** that proxy's source IP/CIDR (JSON list), and have the proxy
+append the actual client IP to `X-Forwarded-For`. Otherwise all visitors share one limit.
+Do not trust forwarded headers from arbitrary clients.
 
 Create `backend/.env` from `backend/.env.example`. Keep it private. Set at least:
 

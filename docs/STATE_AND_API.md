@@ -160,6 +160,10 @@ Conventions
 - `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.
+  Public sign-in, signup, recovery, and passkey verification POSTs have shared per-client
+  Redis limits when `REDIS_URL` is configured. Exceeding a limit returns `429` with
+  `Retry-After`; if configured Redis is unavailable, these routes return `503`.
+  Redis stores only short-lived counters, not users, sessions, or MFA challenges.
   Optional passkeys require user verification. Enrollment/removal requires the current password
   and TOTP if enabled. After a correct password, accounts with TOTP and/or passkeys receive a
   five-minute ticket and may verify with either enrolled method; authenticator-code attempts are
