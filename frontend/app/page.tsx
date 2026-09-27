@@ -11,15 +11,6 @@ export const metadata: Metadata = {
     "Describe an API in plain English. PM, Architect, Coder, Reviewer and Tester agents build it, review it, and run its tests for real in an isolated container.",
 };
 
-const STACK = [
-  { label: "Generated API", value: "FastAPI, MongoDB, Beanie, and pytest" },
-  { label: "Agent workflow", value: "LangGraph with a durable checkpointer" },
-  { label: "Code execution", value: "An isolated Docker sandbox with networking disabled" },
-  { label: "AI providers", value: "Free-tier providers" },
-] as const;
-
-const TAG = "text-[12px] font-[650] text-fg-muted";
-
 export default function LandingPage() {
   return (
     <div className="cf-home min-h-screen bg-bg">
@@ -38,31 +29,6 @@ export default function LandingPage() {
       </section>
 
       <OutcomeShowcase />
-
-      {/* Constraints, set as a spec sheet */}
-      <section id="stack" className="cf-home-stack cf-invert cf-lift border-b border-rule bg-bg">
-        <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-          <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
-            <span className={TAG}>Built to be inspected</span>
-            <div>
-              <h2 className="font-display max-w-[24ch] text-[27px] font-[700] leading-[1.26] tracking-[-0.04em] text-fg md:text-[32px]">
-                The tools behind each run
-              </h2>
-              <dl className="mt-9 border-t border-rule">
-                {STACK.map((row) => (
-                  <div
-                    key={row.label}
-                    className="grid grid-cols-1 gap-x-10 gap-y-1 border-b border-rule px-4 py-5 sm:grid-cols-[13rem_1fr]"
-                  >
-                    <dt className="text-[13px] font-[600] text-fg-muted">{row.label}</dt>
-                    <dd className="text-[15.5px] leading-[1.5] text-fg">{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Close */}
       <section className="cf-home-closing">

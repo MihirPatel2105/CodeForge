@@ -341,14 +341,6 @@
   background: var(--surface);
 }
 
-.cf-home-stack {
-  position: relative;
-  overflow: hidden;
-  background-image:
-    radial-gradient(circle at 83% 22%, rgba(139, 147, 248, 0.11), transparent 26rem),
-    linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.018));
-}
-
 .cf-home-closing {
   background: var(--bg);
 }
@@ -508,9 +500,6 @@
     right: -20rem;
   }
 
-  .cf-home-stack::after {
-    display: none;
-  }
 }
 
 /* The auth backdrop echoes the builder's precise grid while keeping forms prominent. */

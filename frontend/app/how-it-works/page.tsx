@@ -86,6 +86,13 @@ const STOPS = [
   },
 ] as const;
 
+const TECHNOLOGY = [
+  { label: "Generated API", value: "FastAPI, MongoDB, Beanie, and pytest" },
+  { label: "Agent workflow", value: "LangGraph with a durable checkpointer" },
+  { label: "Code execution", value: "An isolated Docker sandbox with networking disabled" },
+  { label: "AI providers", value: "Free-tier providers" },
+] as const;
+
 export default function HowItWorksPage() {
   return (
     <div className="cf-subpage min-h-screen bg-bg">
@@ -181,6 +188,26 @@ export default function HowItWorksPage() {
                   <p className="mt-5 max-w-[48ch] text-[15px] leading-[1.72] text-fg-muted">The generated application and pytest suite run together inside Docker with networking disabled. Whether the run succeeded, partially passed or reached a loop limit stays visible with every file and event.</p>
                 </div>
                 <TerminalProof />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="technology" className="cf-invert cf-how-control border-b border-rule bg-bg scroll-mt-20">
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
+            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+              <SectionLabel index="04" label="Technology" />
+              <div>
+                <h2 className="font-display max-w-[24ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The tools behind each run</h2>
+                <p className="mt-4 max-w-[64ch] text-[14px] leading-[1.68] text-fg-muted">The agents coordinate the work; the generated API and tests run in an isolated environment.</p>
+                <dl className="mt-9 border-t border-rule">
+                  {TECHNOLOGY.map((row) => (
+                    <div key={row.label} className="grid gap-x-10 gap-y-1 border-b border-rule px-4 py-5 sm:grid-cols-[13rem_1fr]">
+                      <dt className="text-[13px] font-[600] text-fg-muted">{row.label}</dt>
+                      <dd className="text-[15px] leading-[1.5] text-fg">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
             </div>
           </div>

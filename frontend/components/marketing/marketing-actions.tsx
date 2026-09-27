@@ -68,7 +68,7 @@ export function SiteFooter() {
             links={[
               { href: "/how-it-works", label: "How it works" },
               { href: "/#how", label: "Watch a run" },
-              { href: "/#stack", label: "Technology" },
+              { href: "/how-it-works#technology", label: "Technology" },
               { href: "/about", label: "About" },
             ]}
           />
