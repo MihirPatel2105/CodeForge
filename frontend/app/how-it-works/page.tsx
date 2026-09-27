@@ -94,9 +94,9 @@ export default function HowItWorksPage() {
         <section className="cf-subpage-hero border-b border-rule">
           <div className="relative z-10 mx-auto grid min-h-[calc(88svh-64px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.8fr)] lg:px-14">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <GitBranch className="h-3.5 w-3.5" aria-hidden />
-                how it works
+                How it works
               </span>
               <h1 className="font-display mt-8 max-w-[14ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[60px]">
                 One request. Six focused jobs. A result that ran.
@@ -107,11 +107,11 @@ export default function HowItWorksPage() {
                 work back to the Coder.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="#stages" className="inline-flex items-center gap-2 rounded-lg bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90">
+                <Link href="#stages" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-fg px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Follow the run
                   <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                 </Link>
-                <Link href="/#how" className="inline-flex items-center gap-2 rounded-lg border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface">
+                <Link href="/#how" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Watch it move
                 </Link>
               </div>
@@ -123,7 +123,7 @@ export default function HowItWorksPage() {
         <section id="stages" className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="01" label="the six stages" />
+              <SectionLabel index="01" label="The six stages" />
               <div>
                 <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                   <h2 className="font-display max-w-[18ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Each agent owns one decision.</h2>
@@ -139,8 +139,8 @@ export default function HowItWorksPage() {
                       <h3 className="font-display mt-7 text-[19px] font-[650] tracking-[-0.04em] text-fg">{name}</h3>
                       <p className="mt-2 min-h-[48px] text-[14px] leading-[1.6] text-fg-muted">{job}</p>
                       <dl className="mt-7 border-t border-rule pt-4">
-                        <div className="grid grid-cols-[4rem_1fr] gap-3"><dt className="font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">input</dt><dd className="font-mono text-[10px] text-fg">{input}</dd></div>
-                        <div className="mt-3 grid grid-cols-[4rem_1fr] gap-3"><dt className="font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">output</dt><dd className="font-mono text-[10px] text-fg">{output}</dd></div>
+                        <div className="grid grid-cols-[4rem_1fr] gap-3"><dt className="text-[11px] font-[650] text-fg-muted">Input</dt><dd className="text-[12px] text-fg">{input}</dd></div>
+                        <div className="mt-3 grid grid-cols-[4rem_1fr] gap-3"><dt className="text-[11px] font-[650] text-fg-muted">Output</dt><dd className="text-[12px] text-fg">{output}</dd></div>
                       </dl>
                     </li>
                   ))}
@@ -153,13 +153,13 @@ export default function HowItWorksPage() {
         <section className="cf-invert cf-how-control border-b border-rule bg-bg">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="02" label="control points" />
+              <SectionLabel index="02" label="Control points" />
               <div>
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The run pauses for judgment and loops on evidence.</h2>
                 <div className="mt-12 grid overflow-hidden rounded-xl border border-border bg-surface/25 md:grid-cols-3">
                   {STOPS.map(({ icon: Icon, label, title, body }) => (
                     <article key={label} className="border-b border-r border-border p-6 last:border-b-0 md:border-b-0 md:p-8">
-                      <div className="flex items-center gap-3"><Icon className="h-4 w-4 text-accent" aria-hidden /><span className="font-mono text-[8px] font-[700] uppercase tracking-[0.14em] text-accent">{label}</span></div>
+                      <div className="flex items-center gap-3"><Icon className="h-4 w-4 text-accent" aria-hidden /><span className="text-[12px] font-[650] text-accent">{label}</span></div>
                       <h3 className="font-display mt-7 text-[18px] font-[650] tracking-[-0.035em] text-fg">{title}</h3>
                       <p className="mt-4 text-[13px] leading-[1.65] text-fg-muted">{body}</p>
                     </article>
@@ -173,10 +173,10 @@ export default function HowItWorksPage() {
         <section className="border-b border-rule">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="03" label="the finish line" />
+              <SectionLabel index="03" label="The finish line" />
               <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
-                  <span className="inline-flex items-center gap-2 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />sandbox verdict</span>
+                  <span className="inline-flex items-center gap-2 text-[12px] font-[650] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />Sandbox verdict</span>
                   <h2 className="font-display mt-5 max-w-[15ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[38px]">The final answer comes from execution.</h2>
                   <p className="mt-5 max-w-[48ch] text-[15px] leading-[1.72] text-fg-muted">The generated application and pytest suite run together inside Docker with networking disabled. Whether the run succeeded, partially passed or reached a loop limit stays visible with every file and event.</p>
                 </div>
@@ -196,15 +196,15 @@ export default function HowItWorksPage() {
 }
 
 function SectionLabel({ index, label }: { index: string; label: string }) {
-  return <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2"><span className="font-mono text-[11px] font-[700] text-fg">[{index}]</span><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-fg-faint">{label}</span></div>;
+  return <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2"><span className="text-[12px] font-[700] text-accent">{index}</span><span className="text-[13px] font-[650] text-fg-muted">{label}</span></div>;
 }
 
 function TerminalProof() {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-term-bg shadow-[0_24px_70px_rgba(22,24,28,0.12)]">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-term-dim">sandbox output</span><span className="h-2 w-2 rounded-full bg-term-pass" /></div>
-      <div className="space-y-3 px-5 py-6 font-mono text-[12px] leading-[1.55]"><p className="text-term-dim">$ pytest -q</p><p className="text-term-fg">........</p><p className="text-term-pass">8 passed in 1.42s</p><p className="border-t border-white/10 pt-4 text-[10px] uppercase tracking-[0.11em] text-term-dim">process exited with code 0</p></div>
-      <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 font-mono text-[8px] font-[700] uppercase tracking-[0.11em]"><span className="text-term-dim">network disabled</span><span className="flex items-center gap-2 text-term-pass"><span className="h-1.5 w-1.5 rounded-full bg-term-pass" />verified</span></div>
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="text-[12px] font-[650] text-term-dim">Sandbox output</span><span className="h-2 w-2 rounded-full bg-term-pass" /></div>
+      <div className="space-y-3 px-5 py-6 font-mono text-[12px] leading-[1.55]"><p className="text-term-dim">$ pytest -q</p><p className="text-term-fg">........</p><p className="text-term-pass">8 passed in 1.42s</p><p className="border-t border-white/10 pt-4 text-[11px] text-term-dim">Process exited with code 0</p></div>
+      <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 text-[11px] font-[650]"><span className="text-term-dim">Network disabled</span><span className="flex items-center gap-2 text-term-pass"><span className="h-1.5 w-1.5 rounded-full bg-term-pass" />Verified</span></div>
     </div>
   );
 }

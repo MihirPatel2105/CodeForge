@@ -360,7 +360,7 @@ export function RunWalkthrough() {
     <div className="mx-auto w-full max-w-[1536px] px-6 md:px-10 lg:px-14">
       <div className="mb-12 grid gap-x-14 gap-y-4 border-b border-rule pb-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(34rem,1.22fr)]">
         <div>
-          <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint">[ how a run moves ]</span>
+          <span className="text-[13px] font-[650] text-accent">How a run moves</span>
           <h2 className="font-display mt-5 max-w-[22ch] text-[26px] font-[600] leading-[1.24] tracking-[-0.04em] text-fg md:text-[32px]">Scroll through one complete agent run.</h2>
         </div>
         <p className="max-w-[58ch] self-end text-[15px] leading-[1.65] text-fg-muted lg:justify-self-end">
@@ -393,7 +393,7 @@ export function RunWalkthrough() {
               />
               <div className="xl:pl-6">
               <span className={cn(
-                "font-mono text-[10px] font-[700] uppercase tracking-[0.16em] transition-colors",
+                "text-[13px] font-[650] transition-colors",
                 step.loop ? "text-loop" : activeStep === index ? "text-accent" : "text-fg-faint",
               )}>
                 {step.eyebrow}
@@ -415,7 +415,7 @@ export function RunWalkthrough() {
                   </li>
                 ))}
               </ul>
-              <span className="mt-9 font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint">
+              <span className="mt-9 text-[12px] font-[600] text-fg-muted">
                 {String(index + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
               </span>
               </div>
@@ -427,7 +427,7 @@ export function RunWalkthrough() {
           <div className="xl:sticky xl:top-[92px] xl:flex xl:min-h-[calc(100svh-116px)] xl:items-center">
             <div className="w-full">
               <AgentWorkspace activeStep={activeStep} />
-              <p className="mt-3 hidden text-right font-mono text-[9px] font-[600] uppercase tracking-[0.12em] text-fg-faint xl:block">scroll to advance ↓</p>
+              <p className="mt-3 hidden text-right text-[12px] font-[600] text-fg-muted xl:block">Scroll to advance ↓</p>
             </div>
           </div>
         </aside>

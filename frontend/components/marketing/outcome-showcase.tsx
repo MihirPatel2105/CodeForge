@@ -140,8 +140,8 @@ export function OutcomeShowcase() {
     <section id="outcome" className="cf-home-outcome border-b border-rule">
       <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
         <div className="grid gap-x-14 gap-y-5 lg:grid-cols-[11rem_1fr]">
-          <span className="font-mono text-[11px] font-[600] uppercase tracking-[0.16em] text-fg-faint">
-            [ what you keep ]
+          <span className="text-[13px] font-[650] tracking-[-0.01em] text-accent">
+            What you keep
           </span>
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <h2 className="font-display max-w-[19ch] text-[27px] font-[650] leading-[1.2] tracking-[-0.045em] text-fg md:text-[34px]">

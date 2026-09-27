@@ -109,10 +109,10 @@ export function HowRunRoute() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className={cn("h-2 w-2 shrink-0 rounded-full", complete ? "bg-ok" : approval ? "bg-warn" : looping ? "bg-loop" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]")} aria-hidden />
-            <span className="truncate font-mono text-[8px] font-[700] uppercase tracking-[0.14em] sm:text-[9px]">recorded run route</span>
+            <span className="truncate text-[11px] font-[650] text-fg sm:text-[12px]">Recorded run route</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className={cn("font-mono text-[7.5px] font-[700] uppercase tracking-[0.1em] sm:text-[8px]", complete ? "text-ok" : approval ? "text-warn" : looping ? "text-loop" : "text-fg-faint")}>{complete ? "verified" : approval ? "approval needed" : looping ? "repair loop" : prefersReducedMotion ? "complete" : isPaused ? "paused" : "replaying"}</span>
+            <span className={cn("text-[10px] font-[650] sm:text-[11px]", complete ? "text-ok" : approval ? "text-warn" : looping ? "text-loop" : "text-fg-faint")}>{complete ? "Verified" : approval ? "Approval needed" : looping ? "Repair loop" : prefersReducedMotion ? "Complete" : isPaused ? "Paused" : "Replaying"}</span>
             {!prefersReducedMotion && (
               <button
                 type="button"

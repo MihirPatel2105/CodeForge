@@ -73,9 +73,9 @@ const EVIDENCE = [
 ] as const;
 
 const PRIMARY_ACTION =
-  "inline-flex items-center justify-center gap-2 rounded-lg bg-fg px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-surface transition-all hover:-translate-y-0.5 hover:opacity-90";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-fg px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 const SECONDARY_ACTION =
-  "inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface/70 px-6 py-[14px] font-mono text-[11px] font-[700] uppercase tracking-[0.12em] text-fg transition-all hover:-translate-y-0.5 hover:bg-surface";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 
 export default function AboutPage() {
   return (
@@ -85,9 +85,9 @@ export default function AboutPage() {
         <section className="cf-about-hero relative border-b border-rule">
           <div className="relative z-10 mx-auto grid min-h-[calc(100svh-64px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(480px,1.1fr)] lg:px-14">
             <div className="max-w-[690px]">
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <Eye className="h-3.5 w-3.5" aria-hidden />
-                about codeforge
+                About CodeForge
               </span>
               <h1 className="font-display mt-8 max-w-[14ch] text-[42px] font-[650] leading-[1.04] tracking-[-0.065em] text-fg sm:text-[54px] lg:text-[62px]">
                 Code generation should be a process you can inspect.
@@ -114,7 +114,7 @@ export default function AboutPage() {
                 ].map(([value, label]) => (
                   <div key={label} className="border-r border-rule px-4 py-5 first:pl-0 last:border-r-0">
                     <dt className="font-display text-[20px] font-[650] tracking-[-0.04em] text-fg sm:text-[24px]">{value}</dt>
-                    <dd className="mt-1 font-mono text-[8px] font-[700] uppercase tracking-[0.14em] text-fg-faint sm:text-[9px]">{label}</dd>
+                    <dd className="mt-1 text-[12px] font-[600] text-fg-muted">{label}</dd>
                   </div>
                 ))}
               </dl>
@@ -126,7 +126,7 @@ export default function AboutPage() {
         <section className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="01" label="the thesis" />
+              <SectionLabel index="01" label="The thesis" />
               <div>
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.17] tracking-[-0.05em] text-fg md:text-[40px]">
                   The model should never be the only thing checking the model.
@@ -153,7 +153,7 @@ export default function AboutPage() {
         <section className="border-b border-rule">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="02" label="designed limits" />
+              <SectionLabel index="02" label="Designed limits" />
               <div className="grid gap-12 xl:grid-cols-[0.7fr_1.3fr]">
                 <div>
                   <h2 className="font-display max-w-[16ch] text-[28px] font-[650] leading-[1.2] tracking-[-0.045em] text-fg md:text-[34px]">Constraints make the experiment useful.</h2>
@@ -167,7 +167,7 @@ export default function AboutPage() {
                   {CONSTRAINTS.map((item, index) => (
                     <div key={item.label} className="grid gap-3 border-b border-rule px-5 py-5 last:border-b-0 sm:grid-cols-[3rem_7rem_1fr] sm:items-start sm:gap-5 md:px-6">
                       <span className="font-mono text-[9px] font-[700] tracking-[0.13em] text-fg-faint">{String(index + 1).padStart(2, "0")}</span>
-                      <dt className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-accent">{item.label}</dt>
+                      <dt className="text-[12px] font-[650] text-accent">{item.label}</dt>
                       <dd>
                         <p className="font-display text-[14px] font-[600] tracking-[-0.02em] text-fg">{item.value}</p>
                         <p className="mt-1.5 text-[12.5px] leading-[1.55] text-fg-muted">{item.why}</p>
@@ -183,13 +183,13 @@ export default function AboutPage() {
         <section className="cf-invert cf-about-evidence border-b border-rule bg-bg">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="03" label="what remains" />
+              <SectionLabel index="03" label="What remains" />
               <div>
                 <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
                   <div>
-                    <span className="inline-flex items-center gap-2 font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-ok">
+                    <span className="inline-flex items-center gap-2 text-[12px] font-[650] text-ok">
                       <span className="h-1.5 w-1.5 rounded-full bg-ok" />
-                      run complete
+                      Run complete
                     </span>
                     <h2 className="font-display mt-5 max-w-[19ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Nothing disappears when the agents finish.</h2>
                   </div>
@@ -208,8 +208,8 @@ export default function AboutPage() {
                   ))}
                 </div>
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-5 border-t border-border pt-7">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-fg-faint">generated files · findings · tests · terminal output</p>
-                  <Link href="/#outcome" className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg transition-colors hover:text-accent">
+                  <p className="text-[13px] text-fg-muted">Generated files · findings · tests · terminal output</p>
+                  <Link href="/#outcome" className="inline-flex items-center gap-2 rounded-lg text-[13px] font-[650] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     Inspect an example
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </Link>
@@ -222,14 +222,14 @@ export default function AboutPage() {
         <section className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
-              <SectionLabel index="04" label="the standard" />
+              <SectionLabel index="04" label="The standard" />
               <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
                 <blockquote className="font-display max-w-[22ch] text-[30px] font-[650] leading-[1.22] tracking-[-0.05em] text-fg md:text-[42px]">“A result should be a fact you can inspect, not a claim you have to trust.”</blockquote>
                 <div className="border-l border-rule pl-6 md:pl-8">
                   <p className="text-[15px] leading-[1.72] text-fg-muted">That rule shapes the whole product: explicit roles, validated handoffs, visible approvals, capped loops and a real runtime verdict.</p>
-                  <div className="mt-6 flex items-center gap-3 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok">
+                  <div className="mt-6 flex items-center gap-3 text-[12px] font-[650] text-ok">
                     <span className="grid h-6 w-6 place-items-center rounded-full border border-ok-bd bg-ok-soft"><Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden /></span>
-                    evidence over confidence
+                    Evidence over confidence
                   </div>
                 </div>
               </div>
@@ -253,9 +253,9 @@ export default function AboutPage() {
 
 function SectionLabel({ index, label }: { index: string; label: string }) {
   return (
-    <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2">
-      <span className="font-mono text-[11px] font-[700] text-fg">[{index}]</span>
-      <span className="font-mono text-[9px] font-[700] uppercase tracking-[0.14em] text-fg-faint">{label}</span>
+    <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2">
+      <span className="text-[12px] font-[700] text-accent">{index}</span>
+      <span className="text-[13px] font-[650] text-fg-muted">{label}</span>
     </div>
   );
 }
