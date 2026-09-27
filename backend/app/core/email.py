@@ -33,27 +33,24 @@ class EmailDeliveryError(CodeForgeError):
 # --------------------------------------------------------------------------- #
 # Theme
 # --------------------------------------------------------------------------- #
-# Copied from the light palette in `frontend/app/globals.css`, not imported: an email is
-# rendered by someone else's mail client months after it was sent, so it cannot resolve
-# CSS variables, load a stylesheet, or follow a design token that moved. The trade is
-# that these five values are a duplicate — if the palette changes, this changes with it.
-_BG = "#faf9f7"  # --bg
+# Email clients cannot use the app's CSS variables. Keep this snapshot aligned with
+# the light palette in `frontend/app/globals.css`.
+_BG = "#f7f8fb"  # --bg
 _SURFACE = "#ffffff"  # --surface
-_FG = "#16181c"  # --fg
-_FG_MUTED = "#5c6169"  # --fg-muted
-_FG_FAINT = "#8a9099"  # --fg-faint
-_RULE = "#dcd8cf"  # --rule
-_BORDER_STRONG = "#cdcac2"  # --border-strong
+_SURFACE_2 = "#f3f5f9"  # --surface-2
+_FG = "#172033"  # --fg
+_FG_MUTED = "#526073"  # --fg-muted
+_FG_FAINT = "#657285"  # --fg-faint
+_RULE = "#e2e7ef"  # --rule
+_BORDER_STRONG = "#cbd4e1"  # --border-strong
+_ACCENT_SOFT = "#eef0ff"  # --accent-soft
+_ACCENT_BORDER = "#cbd0ff"  # --accent-bd
 
-# The product's display face is monospace, which is the whole visual signature; a mail
-# client that has none of these still lands on its own `monospace`, so the character of
-# the design survives even the worst case.
 _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace"
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-_RADIUS = "3px"  # --radius: near-square, as on every surface in the app
+_RADIUS = "16px"
 
-# The email mark is drawn with a table cell and inline CSS — an indigo tile with
-# a white return arrow for the review loop — rather than being an image. Both image
+# The email wordmark is text rather than an image. Both image
 # techniques were tried against real Gmail
 # delivery and both failed, so do not reach for either again:
 #
@@ -75,13 +72,12 @@ _RADIUS = "3px"  # --radius: near-square, as on every surface in the app
 # A remote https:// image would work — Gmail proxies and caches those — but it needs
 # public hosting the backend does not have. Worth revisiting once the frontend is on
 # Vercel: an <img> pointing at a deployed asset would restore the real mark for everyone.
-# Until then, type and a coloured tile survive everywhere and need nothing.
+# Until then, the text wordmark survives everywhere and needs nothing.
 _BRAND = "#3f47c9"
-_MARK_GLYPH = "↶"
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
-    """The frame both emails share: ground, card, wordmark, eyebrow, heading, footer.
+    """Shared email frame: current palette, wordmark, title, and content.
 
     Extracted the moment there was a second email — two copies of this table markup
     would drift within a week, and the whole point is that a message from CodeForge
@@ -92,64 +88,58 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
     layout technique the rest of the codebase would never use.
     """
     return f"""\
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:{_BG};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:{_BG};padding:32px 16px;">
+       style="background:{_BG};padding:36px 16px;">
   <tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-           style="max-width:480px;background:{_SURFACE};border:1px solid {_RULE};
-                  border-radius:{_RADIUS};">
-
-      <!-- Wordmark. The tile is a styled table cell, not an image — see the note above
-           `_MARK_GLYPH` for why every image technique was abandoned. Outlook ignores
-           border-radius and renders a square tile, which is a fine degradation. -->
-      <tr><td style="padding:26px 30px 0 30px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td width="30" height="30" align="center" valign="middle"
-              style="width:30px;height:30px;background:{_BRAND};border-radius:8px;
-                     font-family:{_SANS};font-size:22px;font-weight:700;line-height:30px;
-                     color:{_SURFACE};text-align:center;">{_MARK_GLYPH}</td>
-          <td style="padding-left:9px;">
-            <span style="font-family:{_SANS};font-size:18px;font-weight:750;
-                         color:{_FG};letter-spacing:-0.06em;">Code</span><span
-                  style="font-family:{_SANS};font-size:18px;font-weight:800;
-                         color:{_BRAND};letter-spacing:-0.06em;">Forge</span>
-          </td>
-        </tr></table>
+           style="max-width:520px;background:{_SURFACE};border:1px solid {_RULE};
+                  border-radius:20px;">
+      <tr><td style="padding:30px 32px 0 32px;font-family:{_SANS};font-size:22px;
+                     font-weight:750;letter-spacing:-0.06em;line-height:1.2;">
+        <span style="color:{_FG};">Code</span><span style="color:{_BRAND};">Forge</span>
       </td></tr>
 
-      <tr><td style="padding:26px 30px 0 30px;font-family:{_MONO};font-size:10px;
-                     font-weight:700;text-transform:uppercase;letter-spacing:0.16em;
-                     color:{_FG_FAINT};">[ {eyebrow} ]</td></tr>
+      <tr><td style="padding:31px 32px 0 32px;font-family:{_SANS};font-size:13px;
+                     font-weight:650;color:{_BRAND};">{html_escape(eyebrow.capitalize())}</td></tr>
 
-      <tr><td style="padding:14px 30px 0 30px;font-family:{_MONO};font-size:19px;
-                     font-weight:700;line-height:1.3;letter-spacing:-0.03em;color:{_FG};">
-        {heading}
+      <tr><td style="padding:11px 32px 0 32px;font-family:{_SANS};font-size:27px;
+                     font-weight:700;line-height:1.2;letter-spacing:-0.04em;color:{_FG};">
+        {html_escape(heading)}
       </td></tr>
 
 {rows}
 
+      <tr><td style="padding:28px 32px 30px 32px;font-family:{_SANS};font-size:11px;
+                     line-height:1.5;color:{_FG_FAINT};">
+        CodeForge &nbsp;&middot;&nbsp; Your API workspace
+      </td></tr>
+
     </table>
   </td></tr>
 </table>
-</body>"""
+</body>
+</html>"""
 
 
 def _prose(text: str, *, top: int = 12) -> str:
-    return f"""      <tr><td style="padding:{top}px 30px 0 30px;font-family:{_SANS};font-size:14px;
-                     line-height:1.6;color:{_FG_MUTED};">
+    return f"""      <tr><td style="padding:{top}px 32px 0 32px;font-family:{_SANS};font-size:15px;
+                     line-height:1.65;color:{_FG_MUTED};">
         {text}
       </td></tr>"""
 
 
 def _footnote(text: str) -> str:
     """A rule, then small print — the same closing device the marketing pages use."""
-    return f"""      <tr><td style="padding:24px 30px 0 30px;">
+    return f"""      <tr><td style="padding:27px 32px 0 32px;">
         <div style="border-top:1px solid {_RULE};"></div>
       </td></tr>
 
-      <tr><td style="padding:16px 30px 28px 30px;font-family:{_SANS};font-size:12.5px;
-                     line-height:1.6;color:{_FG_FAINT};">
+      <tr><td style="padding:15px 32px 0 32px;font-family:{_SANS};font-size:12.5px;
+                     line-height:1.6;color:{_FG_MUTED};">
         {text}
       </td></tr>"""
 
@@ -159,19 +149,18 @@ def _verification_rows(*, code: str, minutes: int) -> str:
     # and retype, and a button-shaped thing invites a click that does nothing.
     return f"""{_prose("Enter this code to finish creating your account.")}
 
-      <tr><td style="padding:22px 30px 0 30px;">
+      <tr><td style="padding:22px 32px 0 32px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
-                      background:{_BG};">
+               style="border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
+                      background:{_ACCENT_SOFT};">
           <tr><td align="center" style="padding:20px 12px;font-family:{_MONO};
-                     font-size:31px;font-weight:700;letter-spacing:0.28em;
-                     color:{_FG};">{code}</td></tr>
+                     font-size:30px;font-weight:700;letter-spacing:0.22em;
+                     color:{_FG};">{html_escape(code)}</td></tr>
         </table>
       </td></tr>
 
-      <tr><td style="padding:16px 30px 0 30px;font-family:{_MONO};font-size:10.5px;
-                     font-weight:700;text-transform:uppercase;letter-spacing:0.12em;
-                     color:{_FG_FAINT};">expires in {minutes} minutes</td></tr>
+      <tr><td style="padding:13px 32px 0 32px;font-family:{_SANS};font-size:13px;
+                     color:{_FG_MUTED};">Expires in {minutes} minutes</td></tr>
 
 {
         _footnote(
@@ -182,16 +171,16 @@ def _verification_rows(*, code: str, minutes: int) -> str:
 
 
 def _step_row(index: str, label: str, detail: str) -> str:
-    """One numbered step, set the way the marketing pages set their `[01]` list."""
-    return f"""      <tr><td style="padding:0 30px;">
+    """One numbered step in the welcome message."""
+    return f"""      <tr><td style="padding:0 32px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                style="border-top:1px solid {_RULE};">
           <tr>
-            <td valign="top" width="34" style="padding:13px 0;font-family:{_MONO};
-                       font-size:11px;font-weight:700;color:{_FG_FAINT};">{index}</td>
+            <td valign="top" width="38" style="padding:15px 0;font-family:{_MONO};
+                       font-size:12px;font-weight:700;color:{_BRAND};">{index}</td>
             <td valign="top" style="padding:13px 0;">
-              <div style="font-family:{_MONO};font-size:13.5px;font-weight:700;
-                          color:{_FG};letter-spacing:-0.02em;">{label}</div>
+              <div style="font-family:{_SANS};font-size:14px;font-weight:700;
+                          color:{_FG};">{label}</div>
               <div style="margin-top:4px;font-family:{_SANS};font-size:13px;
                           line-height:1.5;color:{_FG_MUTED};">{detail}</div>
             </td>
@@ -201,16 +190,13 @@ def _step_row(index: str, label: str, detail: str) -> str:
 
 
 def _button_row(*, href: str, label: str, top: int = 22) -> str:
-    """A single dark, mono, all-caps button — reused wherever an email links back into
-    the product rather than just showing a value to read, as the verification code
-    does."""
-    return f"""      <tr><td style="padding:{top}px 30px 0 30px;">
+    """A clear primary action for links back into the product."""
+    return f"""      <tr><td style="padding:{top}px 32px 0 32px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-          <tr><td style="background:{_FG};border-radius:{_RADIUS};">
-            <a href="{href}"
-               style="display:inline-block;padding:14px 26px;font-family:{_MONO};
-                      font-size:12px;font-weight:700;text-transform:uppercase;
-                      letter-spacing:0.12em;color:{_SURFACE};text-decoration:none;">
+          <tr><td style="background:{_FG};border-radius:12px;">
+            <a href="{html_escape(href, quote=True)}"
+               style="display:inline-block;padding:14px 23px;font-family:{_SANS};
+                      font-size:14px;font-weight:650;color:{_SURFACE};text-decoration:none;">
               {label}
             </a>
           </td></tr>
@@ -219,6 +205,7 @@ def _button_row(*, href: str, label: str, top: int = 22) -> str:
 
 
 def _reset_password_rows(*, reset_url: str, minutes: int) -> str:
+    safe_url = html_escape(reset_url, quote=True)
     return f"""{
         _prose(
             "We received a request to reset the password for your CodeForge "
@@ -228,14 +215,13 @@ def _reset_password_rows(*, reset_url: str, minutes: int) -> str:
 
 {_button_row(href=reset_url, label="Reset password")}
 
-      <tr><td style="padding:16px 30px 0 30px;font-family:{_MONO};font-size:10.5px;
-                     font-weight:700;text-transform:uppercase;letter-spacing:0.12em;
-                     color:{_FG_FAINT};">expires in {minutes} minutes &middot; single use</td></tr>
+      <tr><td style="padding:14px 32px 0 32px;font-family:{_SANS};font-size:13px;
+                     color:{_FG_MUTED};">Expires in {minutes} minutes &middot; Single use</td></tr>
 
-      <tr><td style="padding:18px 30px 0 30px;font-family:{_SANS};font-size:12.5px;
+      <tr><td style="padding:18px 32px 0 32px;font-family:{_SANS};font-size:12.5px;
                      line-height:1.6;color:{_FG_FAINT};">
         If the button does not work, paste this into your browser:<br>
-        <a href="{reset_url}" style="color:{_FG_MUTED};word-break:break-all;">{reset_url}</a>
+        <a href="{safe_url}" style="color:{_BRAND};word-break:break-all;">{safe_url}</a>
       </td></tr>
 
 {
@@ -249,11 +235,11 @@ def _reset_password_rows(*, reset_url: str, minutes: int) -> str:
 def _welcome_rows(*, app_url: str) -> str:
     steps = "\n\n".join(
         (
-            _step_row("01", "describe it", "One plain-English sentence about the API you want."),
-            _step_row("02", "approve twice", "Once on the requirements, once on the design."),
+            _step_row("01", "Describe it", "One plain-English sentence about the API you want."),
+            _step_row("02", "Approve twice", "Once on the requirements, once on the design."),
             _step_row(
                 "03",
-                "watch it run",
+                "Watch it run",
                 "Five agents build and review it, then a container runs the tests for real.",
             ),
         )
@@ -286,17 +272,16 @@ def _security_rows(*, when: str, body: str, warning: str) -> str:
     says what happened is a receipt; the point of sending it is that the person who did
     *not* do it finds out.
     """
-    return f"""{_prose(body)}
+    return f"""{_prose(html_escape(body))}
 
-      <tr><td style="padding:20px 30px 0 30px;">
+      <tr><td style="padding:20px 32px 0 32px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
-                      background:{_BG};">
-          <tr><td style="padding:14px 16px;font-family:{_MONO};font-size:11px;
-                     font-weight:700;text-transform:uppercase;letter-spacing:0.12em;
-                     color:{_FG_FAINT};">when</td></tr>
-          <tr><td style="padding:0 16px 14px 16px;font-family:{_MONO};font-size:13px;
-                     color:{_FG};">{when}</td></tr>
+               style="border:1px solid {_RULE};border-radius:{_RADIUS};
+                      background:{_SURFACE_2};">
+          <tr><td style="padding:15px 17px 4px 17px;font-family:{_SANS};font-size:12px;
+                     font-weight:650;color:{_FG_MUTED};">When</td></tr>
+          <tr><td style="padding:0 17px 16px 17px;font-family:{_SANS};font-size:14px;
+                     color:{_FG};">{html_escape(when)}</td></tr>
         </table>
       </td></tr>
 
@@ -508,7 +493,7 @@ async def send_new_device_email(
             rows=(
                 _security_rows(
                     when=when,
-                    body=f"Device: {html_escape(label)}. IP address: {html_escape(ip_address or 'Unavailable')}.",
+                    body=f"Device: {label}. IP address: {ip_address or 'Unavailable'}.",
                     warning="If this was not you, sign out every device and reset your password.",
                 )
                 + _button_row(href=review_url, label="Review sign-in")
@@ -559,17 +544,17 @@ def _quote_block(text: str, *, top: int = 16) -> str:
     escaping lives here rather than at each call site.
     """
     body = html_escape(text).replace("\n", "<br>")
-    return f"""      <tr><td style="padding:{top}px 30px 0 30px;">
+    return f"""      <tr><td style="padding:{top}px 32px 0 32px;">
         <div style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
-                    padding:16px 18px;font-family:{_SANS};font-size:14px;
+                    background:{_SURFACE_2};padding:16px 18px;font-family:{_SANS};font-size:14px;
                     line-height:1.65;color:{_FG};">{body}</div>
       </td></tr>"""
 
 
 def _notice(text: str) -> str:
     """A quiet tinted panel for something reassuring rather than actionable."""
-    return f"""      <tr><td style="padding:16px 30px 0 30px;">
-        <div style="background:{_BG};border:1px solid {_RULE};border-radius:{_RADIUS};
+    return f"""      <tr><td style="padding:16px 32px 0 32px;">
+        <div style="background:{_ACCENT_SOFT};border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
                     padding:14px 16px;font-family:{_SANS};font-size:13.5px;
                     line-height:1.6;color:{_FG_MUTED};">{text}</div>
       </td></tr>"""
@@ -577,23 +562,23 @@ def _notice(text: str) -> str:
 
 def _contact_rows(*, name: str, email: str, phone: str, message: str, when: str) -> str:
     """Sender details as a labelled table, then the message itself in a framed block."""
-    details = [("from", name), ("email", email)]
+    details = [("From", name), ("Email", email)]
     if phone:
-        details.append(("phone", phone))
-    details.append(("sent", when))
+        details.append(("Phone", phone))
+    details.append(("Sent", when))
 
     rows = "".join(
         f"""        <tr>
-          <td style="padding:0 12px 7px 0;font-family:{_MONO};font-size:10px;
-                     font-weight:700;text-transform:uppercase;letter-spacing:0.14em;
+          <td style="padding:0 12px 9px 0;font-family:{_SANS};font-size:12px;
+                     font-weight:650;
                      color:{_FG_FAINT};white-space:nowrap;vertical-align:top;">{label}</td>
-          <td style="padding:0 0 7px 0;font-family:{_SANS};font-size:13.5px;
+          <td style="padding:0 0 9px 0;font-family:{_SANS};font-size:13.5px;
                      color:{_FG};">{html_escape(value)}</td>
         </tr>"""
         for label, value in details
     )
 
-    return f"""      <tr><td style="padding:18px 30px 0 30px;">
+    return f"""      <tr><td style="padding:20px 32px 0 32px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 {rows}
         </table>
