@@ -36,7 +36,7 @@ export function AppHeader() {
           aria-label="CodeForge home"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <LogoLockup className="h-9 w-auto" />
+          <LogoLockup className="h-12 w-auto" />
         </Link>
 
         <Link

@@ -43,7 +43,7 @@ export function ResetPasswordAside() {
             aria-label="CodeForge home"
             className="inline-flex w-fit items-center gap-[6px] transition-opacity hover:opacity-80"
           >
-            <LogoLockup variant="dark" className="h-9 w-auto" />
+            <LogoLockup variant="dark" className="h-12 w-auto" />
           </Link>
           <span className="rounded-full border border-border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-fg-faint">
             single-use link

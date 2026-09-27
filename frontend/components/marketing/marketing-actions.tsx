@@ -42,7 +42,7 @@ export function SiteFooter() {
               aria-label="CodeForge home"
               className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
             >
-              <LogoLockup variant="dark" className="h-10 w-auto" />
+              <LogoLockup variant="dark" className="h-14 w-auto" />
             </Link>
             <p className="mt-5 max-w-[40ch] text-[15px] leading-[1.65] text-fg-muted">
               Five agents build your API. Follow their decisions, review feedback,

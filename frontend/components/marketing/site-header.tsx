@@ -17,7 +17,7 @@ export function SiteHeader() {
           aria-label="CodeForge home"
           className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
-          <LogoLockup className="h-9 w-auto shrink-0" />
+          <LogoLockup className="h-12 w-auto shrink-0" />
         </Link>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
