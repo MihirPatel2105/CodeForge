@@ -69,7 +69,13 @@ function getDeviceId(): string | null {
   if (typeof window === "undefined") return null;
   let deviceId = localStorage.getItem(DEVICE_KEY);
   if (!deviceId) {
-    deviceId = crypto.randomUUID();
+    // randomUUID is unavailable on an HTTP LAN origin, but getRandomValues
+    // remains available and provides the random bytes for a UUID v4.
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    deviceId = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     localStorage.setItem(DEVICE_KEY, deviceId);
   }
   return deviceId;

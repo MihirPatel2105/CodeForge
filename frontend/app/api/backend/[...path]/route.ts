@@ -62,7 +62,11 @@ function clientIp(request: NextRequest): string | null {
 
 function isAllowedMutation(request: NextRequest): boolean {
   if (["GET", "HEAD", "OPTIONS"].includes(request.method)) return true;
-  const expected = process.env.CODEFORGE_FRONTEND_ORIGIN ?? request.nextUrl.origin;
+  // In dev, Next may report localhost as nextUrl.origin even when a phone
+  // reached the server through its LAN address. The Host header reflects the
+  // address the browser actually requested. Production uses the fixed origin.
+  const expected = process.env.CODEFORGE_FRONTEND_ORIGIN ??
+    `${request.nextUrl.protocol}//${request.headers.get("host") ?? request.nextUrl.host}`;
   const origin = request.headers.get("origin");
   if (origin) return origin === expected;
   const referer = request.headers.get("referer");

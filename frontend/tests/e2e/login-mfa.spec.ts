@@ -20,6 +20,44 @@ const ADMIN = {
   is_admin: true,
 };
 
+test("development proxy accepts the requested LAN origin and rejects a foreign origin", async ({ request }) => {
+  const host = "192.168.31.7:3001";
+  const sameOrigin = await request.post("/api/backend/health", {
+    headers: { Host: host, Origin: `http://${host}` },
+    data: {},
+  });
+  expect(sameOrigin.status()).toBe(405);
+
+  const foreignOrigin = await request.post("/api/backend/health", {
+    headers: { Host: host, Origin: "http://evil.example" },
+    data: {},
+  });
+  expect(foreignOrigin.status()).toBe(403);
+});
+
+test("password sign-in sends a device ID when randomUUID is unavailable", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Crypto.prototype, "randomUUID", { value: undefined, configurable: true });
+  });
+  let deviceId: string | null = null;
+  await page.route("**/auth/login", (route) => {
+    deviceId = route.request().headers()["x-codeforge-device"] ?? null;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ access_token: null, token_type: "bearer", mfa_required: true, mfa_ticket: "test-ticket", mfa_methods: ["totp"] }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(USER.email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-password");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+
+  await expect(page).toHaveURL(/\/login\/verify$/);
+  expect(deviceId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+});
+
 test("password sign-in offers both saved methods and completes with an authenticator code", async ({ page }) => {
   await page.route("**/auth/login", (route) => route.fulfill({
     status: 200,
