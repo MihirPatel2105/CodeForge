@@ -160,6 +160,9 @@ Conventions
 - `/admin/*` fails closed unless the authenticated account's email matches `ADMIN_EMAIL`.
   Every sensitive mutation requires a reason and writes an `admin_audit_logs` record.
 - Every account supports encrypted TOTP secrets; sign-in also has persistent password-attempt lockouts.
+  New account passwords use Argon2id (19 MiB, 2 passes, 1 lane). Existing bcrypt
+  account hashes remain valid and are upgraded after a correct password login.
+  Email verification codes retain their separate bcrypt hashing path.
   Public sign-in, signup, recovery, and passkey verification POSTs have shared per-client
   Redis limits when `REDIS_URL` is configured. Exceeding a limit returns `429` with
   `Retry-After`; if configured Redis is unavailable, these routes return `503`.

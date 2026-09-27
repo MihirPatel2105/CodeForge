@@ -21,15 +21,27 @@ from passlib.context import CryptContext
 from app.config import settings
 from app.core.exceptions import AuthError
 
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_passwords = CryptContext(
+    schemes=["argon2", "bcrypt"],
+    deprecated=["bcrypt"],
+    argon2__type="ID",
+    argon2__memory_cost=19_456,
+    argon2__rounds=2,
+    argon2__parallelism=1,
+)
+_otp_codes = CryptContext(schemes=["bcrypt"])
 
 
 def hash_password(plain: str) -> str:
-    return _pwd.hash(plain)
+    return _passwords.hash(plain)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd.verify(plain, hashed)
+    return _passwords.verify(plain, hashed)
+
+
+def password_hash_needs_upgrade(hashed: str) -> bool:
+    return _passwords.needs_update(hashed)
 
 
 def generate_reset_token() -> str:
@@ -73,11 +85,11 @@ def hash_otp(code: str) -> str:
     protects the code — the attempt cap and the ten-minute expiry are. What it does buy
     is that a leaked database does not hand over live codes in readable form.
     """
-    return _pwd.hash(code)
+    return _otp_codes.hash(code)
 
 
 def verify_otp(code: str, hashed: str) -> bool:
-    return _pwd.verify(code, hashed)
+    return _otp_codes.verify(code, hashed)
 
 
 def generate_totp_secret() -> str:

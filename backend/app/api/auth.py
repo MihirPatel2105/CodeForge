@@ -43,6 +43,7 @@ from app.core.security import (
     hash_otp,
     hash_password,
     hash_reset_token,
+    password_hash_needs_upgrade,
     totp_uri,
     verify_otp,
     verify_password,
@@ -299,6 +300,26 @@ async def login(
 
     if user.password_reset_required:
         raise AuthError("Reset your password before signing in again.")
+
+    if password_hash_needs_upgrade(user.hashed_password):
+        old_hash = user.hashed_password
+        new_hash = hash_password(payload.password)
+        result = await User.get_pymongo_collection().update_one(
+            {"_id": user.id, "hashed_password": old_hash},
+            {"$set": {"hashed_password": new_hash}},
+        )
+        if result.modified_count:
+            user.hashed_password = new_hash
+        else:
+            # A concurrent password change or reset wins over this migration.
+            # Reload before issuing a session or MFA ticket for an old password.
+            user = await User.get(user.id)
+            if user is None or not verify_password(payload.password, user.hashed_password):
+                raise AuthError("Incorrect email or password")
+            if user.is_suspended:
+                raise AccountSuspendedError("This account is suspended. Contact the administrator.")
+            if user.password_reset_required:
+                raise AuthError("Reset your password before signing in again.")
 
     passkey = await PasskeyCredential.find_one(PasskeyCredential.user_id == str(user.id))
     methods: list[str] = []

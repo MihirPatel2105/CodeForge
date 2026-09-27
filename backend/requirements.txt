@@ -6,7 +6,7 @@ beanie>=2        # ODM: uses pymongo AsyncMongoClient (Beanie 2 dropped motor)
 redis>=5,<7      # shared, atomic abuse limits for public auth routes
 
 python-jose[cryptography]
-passlib[bcrypt]
+passlib[bcrypt,argon2]
 bcrypt<4.1       # passlib 1.7.4 breaks on bcrypt >=4.1 (removed __about__, 72-byte probe)
 
 docker            # sandbox runner; the only module that imports it
