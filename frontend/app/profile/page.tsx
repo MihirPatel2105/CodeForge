@@ -25,7 +25,7 @@ import type { AdminOverviewTotals } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const LABEL =
-  "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-fg-faint";
+  "text-[12px] font-[650] text-fg-muted";
 
 interface Totals {
   projects: number;
@@ -96,38 +96,38 @@ export default function ProfilePage() {
     <div className="cf-account min-h-screen bg-bg">
       <AppHeader />
 
-      <main className="mx-auto w-full max-w-[1320px] px-6 py-10 md:px-10 md:py-14 lg:px-14">
+      <main className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
         <div className="mb-5 flex items-center justify-between gap-4">
-          <span className={LABEL}>[ account / profile ]</span>
+          <span className="text-[13px] font-[650] text-accent">Your account</span>
           <Link
             href="/profile/settings"
-            className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint transition-colors hover:text-fg"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3.5 text-[13px] font-[650] text-fg transition-colors hover:border-border-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Account settings
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
 
-        <section className="cf-account-hero relative overflow-hidden rounded-xl border border-border bg-surface shadow-[0_24px_70px_rgba(22,24,28,0.07)]">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_31rem]">
-            <div className="relative z-10 flex min-h-[290px] flex-col justify-between p-7 md:p-10">
+        <section className="cf-account-hero relative overflow-hidden rounded-[24px] border border-border bg-surface shadow-[0_22px_65px_rgba(23,32,51,0.06)]">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_25rem]">
+            <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-ok">
+                <span className="inline-flex items-center gap-2 rounded-lg border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok">
                   <ShieldCheck className="h-3 w-3" aria-hidden />
-                  {isAdmin ? "platform administrator" : "authenticated account"}
+                  {isAdmin ? "Platform administrator" : "Account protected"}
                 </span>
 
-                <div className="mt-8 flex items-center gap-5">
-                  <span className="grid h-20 w-20 shrink-0 place-items-center rounded-xl border border-border-strong bg-fg font-mono text-[25px] font-[700] tracking-[0.04em] text-surface shadow-[0_12px_30px_rgba(22,24,28,0.16)]">
+                <div className="mt-8 flex items-center gap-4 sm:gap-5">
+                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-[18px] border border-accent-bd bg-accent-soft text-[21px] font-[700] text-accent sm:h-20 sm:w-20 sm:text-[25px]">
                     {user?.initials ?? "—"}
                   </span>
                   <div className="min-w-0">
-                    <p className={LABEL}>{isAdmin ? "operator profile" : "profile"}</p>
-                    <h1 className="font-display mt-2 break-words text-[30px] font-[650] leading-tight tracking-[-0.05em] text-fg md:text-[38px]">
+                    <p className={LABEL}>{isAdmin ? "Operator profile" : "Profile"}</p>
+                    <h1 className="font-display mt-1 break-words text-[29px] font-[700] leading-tight tracking-[-0.05em] text-fg sm:text-[34px] md:text-[38px]">
                       {user?.displayName ?? "Loading…"}
                     </h1>
                     {user && user.displayName !== user.email && (
-                      <p className="mt-3 break-all font-mono text-[12px] text-fg-muted">
+                      <p className="mt-2 break-all text-[13px] text-fg-muted">
                         {user.email}
                       </p>
                     )}
@@ -135,14 +135,14 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <p className="mt-8 max-w-[52ch] text-[13.5px] leading-[1.6] text-fg-muted">
+              <p className="mt-7 max-w-[52ch] text-[14px] leading-[1.6] text-fg-muted">
                 {isAdmin
                   ? "Your operator identity, platform activity, and protected account controls in one place."
                   : "Your identity, workspace activity, and account controls in one place."}
               </p>
             </div>
 
-            <dl aria-label="Activity summary" aria-busy={activityLoading} className="cf-invert grid bg-bg sm:grid-cols-3 lg:grid-cols-1">
+            <dl aria-label="Activity summary" aria-busy={activityLoading} className="grid border-t border-border bg-surface-2/70 sm:grid-cols-3 lg:grid-cols-1 lg:border-l lg:border-t-0">
               <ProfileMetric
                 icon={isAdmin ? Users : FolderKanban}
                 label={isAdmin ? "platform users" : "projects"}
@@ -174,21 +174,21 @@ export default function ProfilePage() {
         )}
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="border-b border-rule px-6 py-5">
-              <span className={LABEL}>{isAdmin ? "operator record" : "account record"}</span>
+              <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                 {isAdmin ? "Administrator identity" : "Personal details"}
               </h2>
             </div>
             <dl className="px-6">
-              <DetailRow label="first name" value={user?.first_name || "—"} />
-              <DetailRow label="last name" value={user?.last_name || "—"} />
-              <DetailRow label="email address" value={user?.email ?? "—"} mono />
-              {isAdmin ? <DetailRow label="role" value="Platform administrator" /> : null}
-              <DetailRow label="two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} />
+              <DetailRow label="First name" value={user?.first_name || "—"} />
+              <DetailRow label="Last name" value={user?.last_name || "—"} />
+              <DetailRow label="Email address" value={user?.email ?? "—"} mono />
+              {isAdmin ? <DetailRow label="Role" value="Platform administrator" /> : null}
+              <DetailRow label="Two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} />
               <DetailRow
-                label="member since"
+                label="Member since"
                 value={user ? formatWhen(user.created_at) : "—"}
                 mono
                 last
@@ -196,9 +196,9 @@ export default function ProfilePage() {
             </dl>
           </section>
 
-          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="border-b border-rule px-6 py-5">
-              <span className={LABEL}>quick access</span>
+              <span className={LABEL}>Quick access</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                 {isAdmin ? "Operate CodeForge" : "Manage your workspace"}
               </h2>
@@ -252,7 +252,7 @@ function DetailRow({
       )}
     >
       <dt className={LABEL}>{label}</dt>
-      <dd className={cn("min-w-0 text-[14px] text-fg", mono && "break-all font-mono text-[12.5px]")}>
+      <dd className={cn("min-w-0 text-[14px] text-fg", mono && "break-all text-[13px]")}>
         {value}
       </dd>
     </div>
@@ -273,7 +273,7 @@ function ProfileMetric({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-5 px-6 py-5 lg:px-7",
+        "flex items-center justify-between gap-5 px-6 py-5 lg:px-7 lg:py-6",
         bordered && "border-t border-rule sm:border-l sm:border-t-0 lg:border-l-0 lg:border-t",
       )}
     >
@@ -281,11 +281,11 @@ function ProfileMetric({
         <span className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface">
           <Icon className="h-3.5 w-3.5 text-accent" aria-hidden />
         </span>
-        <dt className="font-mono text-[9px] font-[700] uppercase tracking-[0.13em] text-fg-faint">
+        <dt className="text-[12px] font-[650] text-fg-muted">
           {label}
         </dt>
       </div>
-      <dd className="font-display text-[27px] font-[650] tracking-[-0.05em] text-fg">
+      <dd className="font-display text-[28px] font-[700] tracking-[-0.05em] text-fg">
         {value}
       </dd>
     </div>
@@ -306,7 +306,7 @@ function AccountLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-lg border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-surface-2"
+      className="group flex items-center gap-4 rounded-xl border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
         <Icon className="h-4 w-4 text-accent" aria-hidden />

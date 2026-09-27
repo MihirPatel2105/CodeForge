@@ -742,21 +742,21 @@
   position: relative;
   overflow-x: clip;
   background:
-    radial-gradient(circle at 84% 8%, rgba(67, 56, 202, 0.07), transparent 27rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.78), transparent 30rem),
+    radial-gradient(circle at 88% 6%, rgba(63, 71, 201, 0.065), transparent 30rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 32rem),
     var(--bg);
 }
 
 .cf-account > header {
   z-index: 40;
-  background: rgba(250, 249, 247, 0.86);
+  background: rgba(247, 248, 251, 0.88);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
 .cf-account-hero {
   isolation: isolate;
   background:
-    linear-gradient(112deg, rgba(255, 255, 255, 0.98) 0 58%, rgba(237, 239, 255, 0.74)),
+    linear-gradient(112deg, rgba(255, 255, 255, 0.98) 0 58%, rgba(238, 240, 255, 0.74)),
     var(--surface);
 }
 

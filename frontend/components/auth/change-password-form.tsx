@@ -10,10 +10,10 @@ import { api, setToken, ApiError } from "@/lib/api";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 
 const FIELD =
-  "h-12 rounded-lg border-border-strong bg-bg px-[14px] text-[14px] " +
+  "h-12 rounded-xl border-border-strong bg-surface px-[14px] text-[14px] " +
   "transition-colors focus-visible:border-accent focus-visible:ring-0 focus-visible:ring-offset-0";
 
-const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
+const FIELD_LABEL = "text-[13px] font-[650] text-fg";
 
 /**
  * Changing the account password.
@@ -66,8 +66,8 @@ export function ChangePasswordForm() {
     <form className="mt-6" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-[6px]">
-          <Label htmlFor="current_password" className={LABEL}>
-            CURRENT PASSWORD
+          <Label htmlFor="current_password" className={FIELD_LABEL}>
+            Current password
           </Label>
           <Input
             id="current_password"
@@ -81,8 +81,8 @@ export function ChangePasswordForm() {
         </div>
 
         <div className="flex flex-col gap-[6px]">
-          <Label htmlFor="new_password" className={LABEL}>
-            NEW PASSWORD
+          <Label htmlFor="new_password" className={FIELD_LABEL}>
+            New password
           </Label>
           <div className="relative">
             <Input
@@ -97,9 +97,9 @@ export function ChangePasswordForm() {
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute right-[12px] top-1/2 -translate-y-1/2 font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint transition-colors hover:text-fg"
+              className="absolute right-[12px] top-1/2 -translate-y-1/2 rounded-md px-1 py-1 text-[12px] font-[650] text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
             >
-              {show ? "HIDE" : "SHOW"}
+              {show ? "Hide" : "Show"}
             </button>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function ChangePasswordForm() {
         <Button
           type="submit"
           disabled={!ready || saving}
-          className="h-11 w-full rounded-lg font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] sm:w-auto sm:self-start sm:px-7"
+          className="h-11 w-full rounded-xl text-[13px] font-[650] sm:w-auto sm:self-start sm:px-7"
         >
           {saving ? "Saving…" : "Change password"}
         </Button>

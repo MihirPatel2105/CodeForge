@@ -26,7 +26,7 @@ import { useSession } from "@/lib/use-current-user";
 import { api, getToken, clearToken, ApiError } from "@/lib/api";
 
 const LABEL =
-  "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-fg-faint";
+  "text-[12px] font-[650] text-fg-muted";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -82,21 +82,21 @@ export default function SettingsPage() {
     <div className="cf-account min-h-screen bg-bg">
       <AppHeader />
 
-      <main className="mx-auto w-full max-w-[1320px] px-6 py-10 md:px-10 md:py-14 lg:px-14">
+      <main className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
         <Link
           href="/profile"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint transition-colors hover:text-fg"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Back to profile
         </Link>
 
-        <section className="cf-account-hero relative mt-5 overflow-hidden rounded-xl border border-border bg-surface px-7 py-7 shadow-[0_24px_70px_rgba(22,24,28,0.07)] md:px-10 md:py-9">
+        <section className="cf-account-hero relative mt-4 overflow-hidden rounded-[24px] border border-border bg-surface px-6 py-8 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:px-8 md:px-10 md:py-9">
           <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <ShieldCheck className="h-3 w-3" aria-hidden />
-                {user?.is_admin ? "administrator security" : "account security"}
+                {user?.is_admin ? "Administrator security" : "Account security"}
               </span>
               <h1 className="font-display mt-4 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
                 {user?.is_admin ? "Admin settings" : "Settings"}
@@ -108,17 +108,29 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-border bg-bg/75 px-4 py-3 backdrop-blur-sm">
-              <span className={LABEL}>signed in as</span>
-              <p className="mt-1.5 max-w-[28rem] truncate font-mono text-[11.5px] text-fg">
+            <div className="min-w-0 rounded-xl border border-border bg-surface/80 px-4 py-3 backdrop-blur-sm">
+              <span className={LABEL}>Signed in as</span>
+              <p className="mt-1.5 max-w-[28rem] break-all text-[13px] font-[600] text-fg">
                 {user?.email ?? "Loading account…"}
               </p>
             </div>
           </div>
         </section>
 
+        <nav aria-label="Settings sections" className="mt-5 flex flex-wrap gap-2">
+          {[
+            { href: "#sessions", label: "Sessions and devices" },
+            { href: "#sign-in-methods", label: "Sign-in methods" },
+            { href: "#account", label: "Account" },
+          ].map(({ href, label }) => (
+            <a key={href} href={href} className="inline-flex min-h-10 items-center rounded-xl border border-border bg-surface px-4 text-[13px] font-[600] text-fg-muted transition-colors hover:border-accent-bd hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              {label}
+            </a>
+          ))}
+        </nav>
+
         {user?.is_admin ? (
-          <section className="mt-6 overflow-hidden rounded-xl border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
+          <section className="mt-6 overflow-hidden rounded-[20px] border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="flex items-start gap-4 px-6 py-6 md:px-7">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
@@ -160,19 +172,20 @@ export default function SettingsPage() {
         ) : null}
 
         <SectionHeading
-          eyebrow="01 / Active access"
+          id="sessions"
+          eyebrow="Active access"
           title="Sessions and devices"
           description="See where your account is signed in and end sessions you no longer need."
         />
 
         <div className="mt-4 grid items-start gap-5 lg:grid-cols-2">
-          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <Laptop className="h-4 w-4 text-accent" aria-hidden />
               </span>
               <div>
-                <span className={LABEL}>session control</span>
+                <span className={LABEL}>Session control</span>
                 <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Active sessions
                 </h3>
@@ -214,7 +227,7 @@ export default function SettingsPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]">
+          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <MonitorSmartphone
@@ -223,7 +236,7 @@ export default function SettingsPage() {
                 />
               </span>
               <div>
-                <span className={LABEL}>device activity</span>
+                <span className={LABEL}>Device activity</span>
                 <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Signed-in browsers
                 </h3>
@@ -238,7 +251,8 @@ export default function SettingsPage() {
         </div>
 
         <SectionHeading
-          eyebrow="02 / Authentication"
+          id="sign-in-methods"
+          eyebrow="Authentication"
           title="Sign-in methods"
           description="Choose how you access CodeForge and add another layer of protection."
         />
@@ -246,7 +260,7 @@ export default function SettingsPage() {
         {user ? (
           <section
             aria-label="Sign-in methods"
-            className="mt-4 overflow-hidden rounded-xl border border-border bg-surface shadow-[0_16px_45px_rgba(22,24,28,0.045)]"
+            className="mt-4 overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]"
           >
             <ul className="divide-y divide-rule">
               <SecurityMethodRow
@@ -288,7 +302,8 @@ export default function SettingsPage() {
         ) : null}
 
         <SectionHeading
-          eyebrow="03 / Account"
+          id="account"
+          eyebrow="Account controls"
           title="Account"
           description={
             user?.is_admin
@@ -300,8 +315,8 @@ export default function SettingsPage() {
         <section
           className={
             user?.is_admin
-              ? "mt-4 overflow-hidden rounded-xl border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
-              : "mt-4 overflow-hidden rounded-xl border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
+              ? "mt-4 overflow-hidden rounded-[20px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
+              : "mt-4 overflow-hidden rounded-[20px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
           }
         >
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
@@ -323,11 +338,11 @@ export default function SettingsPage() {
                 <span
                   className={
                     user?.is_admin
-                      ? "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent"
-                      : "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-danger"
+                    ? "text-[12px] font-[650] text-accent"
+                    : "text-[12px] font-[650] text-danger"
                   }
                 >
-                  {user?.is_admin ? "protected account" : "danger zone"}
+                  {user?.is_admin ? "Protected account" : "Danger zone"}
                 </span>
                 <h3 className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">
                   {user?.is_admin
@@ -346,7 +361,7 @@ export default function SettingsPage() {
               <Button
                 disabled
                 variant="outline"
-                className="h-11 shrink-0 rounded-lg border-accent-bd px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em]"
+                className="h-11 shrink-0 rounded-xl border-accent-bd px-6 text-[13px] font-[650]"
               >
                 Protected
               </Button>
@@ -354,7 +369,7 @@ export default function SettingsPage() {
               <Button
                 onClick={() => setConfirming(true)}
                 disabled={!user}
-                className="h-11 shrink-0 rounded-lg bg-danger px-6 font-mono text-[10.5px] font-[700] uppercase tracking-[0.12em] text-surface hover:bg-danger/90"
+                className="h-11 shrink-0 rounded-xl bg-danger px-6 text-[13px] font-[650] text-surface hover:bg-danger/90"
               >
                 Delete account
               </Button>
@@ -374,25 +389,27 @@ export default function SettingsPage() {
 }
 
 function SectionHeading({
+  id,
   eyebrow,
   title,
   description,
 }: {
+  id: string;
   eyebrow: string;
   title: string;
   description: string;
 }) {
   return (
-    <div className="mt-9 flex flex-col gap-2 border-b border-rule pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+    <div id={id} className="mt-9 flex scroll-mt-24 flex-col gap-2 border-b border-rule pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
       <div>
-        <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent">
+        <span className="text-[12px] font-[650] text-accent">
           {eyebrow}
         </span>
         <h2 className="font-display mt-1.5 text-[23px] font-[650] tracking-[-0.045em] text-fg">
           {title}
         </h2>
       </div>
-      <p className="max-w-[45ch] text-[12.5px] leading-[1.5] text-fg-muted">
+      <p className="max-w-[45ch] text-[13px] leading-[1.5] text-fg-muted">
         {description}
       </p>
     </div>
@@ -430,7 +447,7 @@ function SecurityMethodRow({
           <span
             className={
               highlighted
-                ? "font-mono text-[10px] font-[700] uppercase tracking-[0.15em] text-accent"
+                ? "text-[12px] font-[650] text-accent"
                 : LABEL
             }
           >
@@ -438,7 +455,7 @@ function SecurityMethodRow({
           </span>
           {status && (
             <span
-              className={`ml-2 rounded-lg border px-1.5 py-0.5 font-mono text-[9px] font-[700] uppercase tracking-[0.08em] ${status === "On" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint"}`}
+              className={`ml-2 rounded-lg border px-2 py-0.5 text-[11px] font-[650] ${status === "On" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-muted"}`}
             >
               {status}
             </span>
@@ -446,14 +463,14 @@ function SecurityMethodRow({
           <h3 className="font-display mt-1 text-[19px] font-[650] tracking-[-0.04em] text-fg">
             {title}
           </h3>
-          <p className="mt-1 max-w-[65ch] text-[12.5px] leading-[1.5] text-fg-muted">
+          <p className="mt-1 max-w-[65ch] text-[13px] leading-[1.5] text-fg-muted">
             {description}
           </p>
         </div>
       </div>
       <Link
         href={href}
-        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-border-strong px-4 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg transition-colors hover:border-fg hover:bg-bg sm:self-auto"
+        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-xl border border-border-strong px-4 text-[13px] font-[650] text-fg transition-colors hover:border-accent-bd hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:self-auto"
       >
         {action}
         <ArrowRight
@@ -477,7 +494,7 @@ function AdminSettingLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[12.5px] font-[650] text-fg transition-colors hover:bg-surface"
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-[650] text-fg transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <Icon className="h-4 w-4 text-accent" aria-hidden />
       <span className="flex-1">{label}</span>
@@ -519,7 +536,7 @@ function SessionAction({
         onClick={onClick}
         variant="outline"
         disabled={disabled}
-        className="h-10 shrink-0 justify-center rounded-lg border-border-strong px-4 font-mono text-[9.5px] font-[700] uppercase tracking-[0.1em]"
+        className="h-10 shrink-0 justify-center rounded-xl border-border-strong px-4 text-[12px] font-[650]"
       >
         {buttonLabel}
       </Button>

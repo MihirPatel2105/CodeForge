@@ -27,21 +27,21 @@ export function SecuritySettingsLayout({
   return (
     <div className="cf-account min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1200px] px-6 py-9 md:px-10 md:py-12 lg:px-14">
+      <main className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
         <Link
           href="/profile/settings"
-          className="inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint transition-colors hover:text-fg"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           Back to settings
         </Link>
 
-        <header className="mt-6 flex flex-col gap-5 border-b border-rule pb-8 sm:flex-row sm:items-start">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
+        <header className="cf-account-hero relative mt-4 flex flex-col gap-5 overflow-hidden rounded-[24px] border border-border bg-surface p-6 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:flex-row sm:items-start sm:p-8 md:p-10">
+          <span className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
             <Icon className="h-5 w-5" aria-hidden />
           </span>
-          <div>
-            <p className="font-mono text-[10px] font-[700] uppercase tracking-[0.16em] text-accent">
+          <div className="relative z-10">
+            <p className="text-[12px] font-[650] text-accent">
               Account security / {active.label}
             </p>
             <h1 className="font-display mt-2 text-[32px] font-[650] leading-[1.08] tracking-[-0.055em] text-fg md:text-[42px]">
@@ -60,7 +60,7 @@ export function SecuritySettingsLayout({
               href={href}
               aria-current={href === current ? "page" : undefined}
               className={cn(
-                "inline-flex h-10 items-center gap-2 rounded-lg border px-3.5 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] transition-colors",
+                "inline-flex min-h-10 items-center gap-2 rounded-xl border px-4 text-[13px] font-[650] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                 href === current
                   ? "border-accent-bd bg-accent-soft text-accent"
                   : "border-border bg-surface text-fg-muted hover:border-border-strong hover:text-fg",

@@ -120,9 +120,9 @@ export default function PasskeysPage() {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
             onSubmit={addPasskey}
-            className="rounded-xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:px-7"
+            className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7"
           >
-            <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">
+            <span className="text-[12px] font-[650] text-accent">
               New passkey
             </span>
             <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Add a passkey</h2>
@@ -134,7 +134,7 @@ export default function PasskeysPage() {
             </p>
             <div className="mt-6 space-y-5">
               <div>
-                <Label htmlFor="passkey-label">PASSKEY NAME</Label>
+                <Label htmlFor="passkey-label">Passkey name</Label>
                 <Input
                   id="passkey-label"
                   required
@@ -142,12 +142,12 @@ export default function PasskeysPage() {
                   value={label}
                   onChange={(event) => setLabel(event.target.value)}
                   placeholder="e.g. My laptop"
-                  className="mt-2 h-11 rounded-lg bg-bg"
+                  className="mt-2 h-11 rounded-xl bg-surface"
                 />
                 <p className="mt-1.5 text-[11px] text-fg-faint">Only you can see this name.</p>
               </div>
               <div>
-                <Label htmlFor="passkey-password">CURRENT PASSWORD</Label>
+                <Label htmlFor="passkey-password">Current password</Label>
                 <Input
                   id="passkey-password"
                   type="password"
@@ -155,12 +155,12 @@ export default function PasskeysPage() {
                   required
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="mt-2 h-11 rounded-lg bg-bg"
+                  className="mt-2 h-11 rounded-xl bg-surface"
                 />
               </div>
               {user.totp_enabled && (
                 <div>
-                  <Label htmlFor="passkey-totp">AUTHENTICATOR CODE</Label>
+                  <Label htmlFor="passkey-totp">Authenticator code</Label>
                   <Input
                     id="passkey-totp"
                     inputMode="numeric"
@@ -173,7 +173,7 @@ export default function PasskeysPage() {
                         event.target.value.replace(/\D/g, "").slice(0, 6),
                       )
                     }
-                    className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]"
+                    className="mt-2 h-11 rounded-xl bg-surface font-mono tracking-[0.2em]"
                   />
                 </div>
               )}
@@ -184,20 +184,20 @@ export default function PasskeysPage() {
               <Button
                 type="submit"
                 disabled={busy || loadingPasskeys || loadFailed || passkeys.length >= 10}
-                className="h-11 w-full gap-2 rounded-lg sm:w-auto"
+                className="h-11 w-full gap-2 rounded-xl sm:w-auto"
               >
                 {!busy && <Plus className="h-4 w-4" aria-hidden />}
                 {busy ? "Adding passkey…" : "Add passkey"}
               </Button>
             </div>
           </form>
-          <section className="rounded-xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(22,24,28,0.045)] md:px-7">
+          <section className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-fg-faint">Saved methods</span>
+                <span className="text-[12px] font-[650] text-fg-muted">Saved methods</span>
                 <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Your passkeys</h2>
               </div>
-              <span className="rounded-lg border border-border bg-bg px-2.5 py-1 font-mono text-[11px] font-[700] text-fg-muted">
+              <span className="rounded-lg border border-border bg-bg px-2.5 py-1 text-[12px] font-[650] text-fg-muted">
                 {passkeys.length} / 10
               </span>
             </div>

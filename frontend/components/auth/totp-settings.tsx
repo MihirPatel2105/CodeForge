@@ -28,8 +28,8 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const LABEL = "font-mono text-[10px] font-[700] uppercase tracking-[0.14em]";
-const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-lg border-0 bg-transparent px-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
+const LABEL = "text-[12px] font-[650]";
+const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-lg border-0 bg-transparent px-2 text-[12px] font-[650] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
 
 export function TotpSettings({
   initiallyEnabled,
@@ -131,7 +131,7 @@ export function TotpSettings({
     <div className="space-y-6">
       <section
         className={cn(
-          "overflow-hidden rounded-xl border shadow-[0_18px_50px_rgba(22,24,28,0.05)]",
+          "overflow-hidden rounded-[20px] border shadow-[0_18px_50px_rgba(23,32,51,0.04)]",
           enabled ? "border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
         )}
       >
@@ -141,28 +141,28 @@ export function TotpSettings({
               {enabled ? <ShieldCheck className="h-5 w-5" aria-hidden /> : <ShieldOff className="h-5 w-5" aria-hidden />}
             </span>
             <div>
-              <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-faint")}>security status</span>
+              <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-muted")}>Security status</span>
               <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Authenticator codes are on" : "Authenticator codes are off"}</h2>
               <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "After your password, choose an authenticator code or a saved passkey. Direct passkey sign-in needs no extra code." : "Add a rotating authenticator code as another way to verify after your password."}</p>
             </div>
           </div>
-          <span className={cn("inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-[700] uppercase tracking-[0.12em]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
+          <span className={cn("inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-[650]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
             <span className={cn("h-1.5 w-1.5 rounded-full", enabled ? "bg-ok" : "bg-warn")} aria-hidden />
-            {enabled ? "enabled" : "action recommended"}
+            {enabled ? "Enabled" : "Action recommended"}
           </span>
         </div>
       </section>
 
       {!enabled ? (
         <>
-          <ol className="grid overflow-hidden rounded-xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
+          <ol className="grid overflow-hidden rounded-[20px] border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
             <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
             <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
-            <section className="grid overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)] lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="grid overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_18px_50px_rgba(23,32,51,0.04)] lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="px-6 py-7 md:px-8 md:py-8">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
@@ -187,7 +187,7 @@ export function TotpSettings({
             </section>
           ) : (
             <>
-              <section className="rounded-xl border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(22,24,28,0.045)] md:px-8">
+              <section className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(23,32,51,0.04)] md:px-8">
                 <span className={cn(LABEL, "text-accent")}>step 02</span>
                 <div className="mt-2 flex items-start gap-3">
                   <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />
