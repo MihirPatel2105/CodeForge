@@ -71,7 +71,7 @@ def test_bcrypt_account_with_totp_keeps_upgraded_hash_after_mfa(client, register
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
         ).status_code
-        == 204
+        == 200
     )
     _set_legacy_hash(registered_user["email"], registered_user["password"])
 

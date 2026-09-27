@@ -22,11 +22,13 @@ services:
       CODEFORGE_ENV: production
       LANGFUSE_HOST: http://langfuse:3000
       REDIS_URL: redis://redis:6379/0
+      DOCKER_HOST: ${SANDBOX_DOCKER_HOST:?Set SANDBOX_DOCKER_HOST to the remote TLS daemon}
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /run/codeforge/docker-client
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      # Required to launch network-isolated sibling sandbox containers.
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${SANDBOX_DOCKER_CERTS_DIR:?Set SANDBOX_DOCKER_CERTS_DIR to the client certificate directory}:/run/codeforge/docker-client:ro
     depends_on:
       redis:
         condition: service_healthy

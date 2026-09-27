@@ -186,6 +186,10 @@ export const api = {
     request<TokenResponse>("/auth/login/complete", {
       method: "POST", body: JSON.stringify({ ticket, totp_code: totpCode }),
     }),
+  completeRecoveryLogin: (ticket: string, recoveryCode: string) =>
+    request<TokenResponse>("/auth/login/complete", {
+      method: "POST", body: JSON.stringify({ ticket, recovery_code: recoveryCode }),
+    }),
   passkeys: () => request<PasskeyInfo[]>("/auth/passkeys"),
   passkeyRegistrationOptions: (currentPassword: string, totpCode?: string) =>
     request<PasskeyOptions<PublicKeyCredentialCreationOptionsJSON>>("/auth/passkeys/register/options", {
@@ -217,9 +221,16 @@ export const api = {
   setupTotp: (currentPassword: string) =>
     request<TotpSetupResponse>("/auth/totp/setup", { method: "POST", body: JSON.stringify({ current_password: currentPassword }) }),
   verifyTotp: (code: string) =>
-    request<void>("/auth/totp/verify", { method: "POST", body: JSON.stringify({ code }) }),
-  disableTotp: (currentPassword: string, code: string) =>
-    request<TokenResponse>("/auth/totp/disable", { method: "POST", body: JSON.stringify({ current_password: currentPassword, code }) }),
+    request<{ codes: string[] }>("/auth/totp/verify", { method: "POST", body: JSON.stringify({ code }) }),
+  regenerateRecoveryCodes: (currentPassword: string, totpCode: string) =>
+    request<{ codes: string[] }>("/auth/recovery-codes/regenerate", {
+      method: "POST", body: JSON.stringify({ current_password: currentPassword, totp_code: totpCode }),
+    }),
+  disableTotp: (currentPassword: string, code: string, recovery = false) =>
+    request<TokenResponse>("/auth/totp/disable", {
+      method: "POST",
+      body: JSON.stringify(recovery ? { current_password: currentPassword, recovery_code: code } : { current_password: currentPassword, code }),
+    }),
 
   sendContactMessage: (payload: ContactRequest) =>
     request<ContactResponse>("/contact", { method: "POST", body: JSON.stringify(payload) }),

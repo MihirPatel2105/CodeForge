@@ -23,13 +23,30 @@ production CORS settings and should not be used for passkey acceptance testing.
 
 ## 2. Configure the backend host
 
-The host needs Docker Engine with Compose, enough space for the backend and sandbox images,
-outbound access to Atlas and the configured AI providers, and a clone of this repository.
-The backend container mounts the host Docker socket because it launches isolated sibling
-sandboxes. Docker socket access can control the host even if the container has other
-restrictions. Run this stack on a dedicated Docker host with no unrelated workloads or
-secrets, restrict SSH and host access, and never expose the socket or Docker API publicly.
-This risk remains until the sandbox architecture changes.
+Use two separate hosts: one for the API stack and one dedicated to untrusted-code
+sandboxes. The production backend has no host Docker socket mount. It connects to the
+sandbox host's Docker daemon with mutual TLS. Follow
+[Docker's TLS daemon guide](https://docs.docker.com/engine/security/protect-access/)
+to provision a CA, a server certificate, and a client certificate. Restrict port 2376
+at the sandbox host firewall to the API host's private address. Never expose the daemon
+to the public internet or share the sandbox host with other workloads or secrets.
+The backend can still control this *separate* sandbox host; a compromised backend
+therefore remains a risk to that host. This split protects the API host from direct
+Docker socket access. Local `docker-compose.yml` keeps its socket for development.
+
+Place `ca.pem`, `cert.pem`, and `key.pem` in a private client-certificate directory on
+the API host. Set `SANDBOX_DOCKER_HOST` and `SANDBOX_DOCKER_CERTS_DIR` in `deployment.env`.
+Build the sandbox image on the remote daemon before starting the API stack:
+
+```bash
+DOCKER_HOST=tcp://sandbox-host.example.com:2376 \
+DOCKER_TLS_VERIFY=1 \
+DOCKER_CERT_PATH=/absolute/path/to/sandbox-client-certs \
+docker build -t codeforge-sandbox:latest ./sandbox
+```
+
+Keep the sandbox daemon's data and named volumes persistent; published API containers
+and volumes live there. Existing local Docker volumes are not migrated automatically.
 Compose also starts a private Redis container for shared limits on public authentication
 routes. It has no published port and stores only expiring counters. The backend waits for
 Redis at startup; protected routes return `503` if Redis becomes unavailable later.
@@ -71,26 +88,23 @@ The Langfuse database password must be URL-safe alphanumeric text because Compos
 inside `DATABASE_URL`. Do not rotate these values without planning the Langfuse database
 credentials and session impact. `deployment.env` is ignored by Git.
 
-Run the static checks from the repository root:
+Check the Compose configuration from the repository root:
 
 ```bash
 docker compose --env-file deployment.env -f compose.deploy.yml config --quiet
-cd backend
-.venv/bin/python scripts/check_deployment.py --api-url https://api.example.com
-cd ..
 ```
 
-If the virtual environment is not installed, use the container command after starting the
-stack. The check prints configuration problems without printing secrets. It does not contact
-Atlas, the API endpoint, or AI providers.
+The backend container validates the client certificate files and remote Docker TLS
+settings at startup. Its deployment check prints configuration problems without
+printing secrets; the live Docker ping below checks the actual connection.
 
 ## 3. Start and verify the backend stack
 
 ```bash
-docker build -t codeforge-sandbox:latest ./sandbox
 docker compose --env-file deployment.env -f compose.deploy.yml up -d --build
 docker compose --env-file deployment.env -f compose.deploy.yml ps
 docker compose --env-file deployment.env -f compose.deploy.yml exec -T backend python scripts/check_deployment.py --api-url https://api.example.com
+docker compose --env-file deployment.env -f compose.deploy.yml exec -T backend python -c 'import docker; client = docker.from_env(); print(client.ping())'
 docker compose --env-file deployment.env -f compose.deploy.yml exec -T backend python scripts/preflight.py
 curl -fsS http://127.0.0.1:8000/health
 curl -fsS https://api.example.com/health

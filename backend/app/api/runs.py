@@ -145,7 +145,11 @@ async def get_run_file_history(run_id: str, user: CurrentUser) -> FileHistoryRes
 @router.get("/projects/{project_id}/runs", response_model=list[RunSummary])
 async def list_project_runs(project_id: str, user: CurrentUser) -> list[RunSummary]:
     await get_owned(Project, project_id, str(user.id), "Project")
-    runs = await Run.find(Run.project_id == project_id).sort(-Run.created_at).to_list()
+    runs = (
+        await Run.find(Run.project_id == project_id, Run.user_id == str(user.id))
+        .sort(-Run.created_at)
+        .to_list()
+    )
     return [_to_summary(r) for r in runs]
 
 

@@ -45,11 +45,14 @@ export default function VerifyLoginPage() {
 
   async function verifyCode(event: React.FormEvent) {
     event.preventDefault();
-    if (!pending || code.length !== 6 || busy) return;
+    const recovery = method === "recovery_code";
+    if (!pending || busy || (recovery ? code.replace(/-/g, "").length !== 32 : code.length !== 6)) return;
     setBusy(true);
     setError(null);
     try {
-      const result = await api.completePasswordLogin(pending.ticket, code);
+      const result = recovery
+        ? await api.completeRecoveryLogin(pending.ticket, code)
+        : await api.completePasswordLogin(pending.ticket, code);
       await finish(result.access_token);
     } catch (err) {
       setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not verify that code.");
@@ -95,7 +98,7 @@ export default function VerifyLoginPage() {
           </p>
 
           {pending.methods.length > 1 ? (
-            <div role="group" aria-label="Verification method" className="mt-7 grid grid-cols-2 gap-3">
+            <div role="group" aria-label="Verification method" className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {pending.methods.map((option) => (
                 <Button
                   key={option}
@@ -103,34 +106,34 @@ export default function VerifyLoginPage() {
                   variant="outline"
                   aria-pressed={method === option}
                   disabled={busy}
-                  onClick={() => { setMethod(option); setError(null); }}
+                  onClick={() => { setMethod(option); setCode(""); setError(null); }}
                   className={cn("h-auto min-h-[68px] flex-col gap-1.5 rounded-xl border-border-strong px-2 py-3 text-[12px] font-[650] sm:min-h-[76px] sm:flex-row sm:text-[13px]", method === option && "border-accent bg-accent-soft text-accent ring-2 ring-accent/10")}
                 >
-                  {option === "totp" ? <KeyRound className="h-4 w-4" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
-                  {option === "totp" ? "Authenticator code" : "Passkey"}
+                  {option === "passkey" ? <Fingerprint className="h-4 w-4" aria-hidden /> : <KeyRound className="h-4 w-4" aria-hidden />}
+                  {option === "totp" ? "Authenticator code" : option === "passkey" ? "Passkey" : "Recovery code"}
                 </Button>
               ))}
             </div>
           ) : null}
 
-          {method === "totp" ? (
+          {method !== "passkey" ? (
             <form onSubmit={verifyCode} className="mt-7 space-y-5">
               <div>
-                <Label htmlFor="login-verification-code" className="text-[13px] font-[650] text-fg">Authenticator code</Label>
+                <Label htmlFor="login-verification-code" className="text-[13px] font-[650] text-fg">{method === "recovery_code" ? "Recovery code" : "Authenticator code"}</Label>
                 <Input
                   id="login-verification-code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
+                  inputMode={method === "recovery_code" ? "text" : "numeric"}
+                  autoComplete={method === "recovery_code" ? "off" : "one-time-code"}
                   autoFocus
                   required
                   value={code}
-                  onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
+                  onChange={(event) => setCode(method === "recovery_code" ? event.target.value.replace(/[^a-fA-F0-9-]/g, "").slice(0, 35) : event.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder={method === "recovery_code" ? "XXXX-XXXX-XXXX-XXXX" : "000000"}
                   className="mt-2 h-12 rounded-xl border-border-strong bg-white px-4 font-mono text-[16px] tracking-[0.2em] focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15"
                 />
-                <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
+                <p className="mt-2 text-[12px] leading-5 text-fg-muted">{method === "recovery_code" ? "Use one saved recovery code. Each code works only once." : "Enter the current six-digit code from your authenticator app."}</p>
               </div>
-              <Button type="submit" disabled={busy || code.length !== 6} className="h-12 w-full rounded-xl text-[14px] font-[650]">
+              <Button type="submit" disabled={busy || (method === "recovery_code" ? code.replace(/-/g, "").length !== 32 : code.length !== 6)} className="h-12 w-full rounded-xl text-[14px] font-[650]">
                 {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                 {busy ? "Verifying…" : "Verify and sign in"}
               </Button>

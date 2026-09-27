@@ -50,6 +50,10 @@ export function TotpSettings({
   const [setupStage, setSetupStage] = useState<"method" | "verify">("method");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [recoveryTotp, setRecoveryTotp] = useState("");
+  const [disableMethod, setDisableMethod] = useState<"totp" | "recovery">("totp");
 
   const enrolling = Boolean(secret && uri);
   const verificationStage = enrolling && setupStage === "verify";
@@ -80,8 +84,9 @@ export function TotpSettings({
     setError(null);
     setMessage(null);
     try {
-      await api.verifyTotp(code);
+      const result = await api.verifyTotp(code);
       setEnabled(true);
+      setRecoveryCodes(result.codes);
       setSecret(null);
       setUri(null);
       setPassword("");
@@ -102,14 +107,32 @@ export function TotpSettings({
     setError(null);
     setMessage(null);
     try {
-      const result = await api.disableTotp(password, code);
+      const result = await api.disableTotp(password, code, disableMethod === "recovery");
       setToken(result.access_token);
       setEnabled(false);
+      setRecoveryCodes([]);
       setPassword("");
       setCode("");
       setMessage("Two-factor authentication is disabled. You can enroll again at any time.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not disable two-factor authentication.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function regenerateRecoveryCodes() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await api.regenerateRecoveryCodes(recoveryPassword, recoveryTotp);
+      setRecoveryCodes(result.codes);
+      setRecoveryPassword("");
+      setRecoveryTotp("");
+      setMessage("New recovery codes are ready. Previous codes no longer work.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not generate recovery codes.");
     } finally {
       setBusy(false);
     }
@@ -152,6 +175,17 @@ export function TotpSettings({
           </span>
         </div>
       </section>
+
+      {recoveryCodes.length > 0 ? (
+        <section className="rounded-xl border border-warn-bd bg-warn-soft px-6 py-6 md:px-8" aria-label="Recovery codes">
+          <h2 className="font-display text-[21px] font-[650] text-fg">Save your recovery codes now</h2>
+          <p className="mt-2 text-[13px] leading-5 text-fg-muted">These codes appear only once. Store them somewhere private. Each code can replace an authenticator code for one sign-in.</p>
+          <ol className="mt-5 grid gap-2 sm:grid-cols-2">
+            {recoveryCodes.map((value, index) => <li key={value} className="rounded-lg border border-border bg-surface px-3 py-2 font-mono text-[12px] text-fg">{index + 1}. {value}</li>)}
+          </ol>
+          <Button type="button" variant="outline" onClick={() => setRecoveryCodes([])} className="mt-5">I saved these codes</Button>
+        </section>
+      ) : null}
 
       {!enabled ? (
         <>
@@ -286,14 +320,26 @@ export function TotpSettings({
           )}
         </>
       ) : (
+        <div className="space-y-6">
+        <section className="rounded-xl border border-border bg-surface px-6 py-6 md:px-8">
+          <h2 className="font-display text-[21px] font-[650] text-fg">Recovery codes</h2>
+          <p className="mt-2 text-[12.5px] leading-5 text-fg-muted">If you did not save your codes, generate a new set. This immediately invalidates every previous code.</p>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div><label htmlFor="recovery-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="recovery-password" type="password" autoComplete="current-password" value={recoveryPassword} onChange={(event) => setRecoveryPassword(event.target.value)} className="mt-2 h-11 rounded-lg bg-bg" /></div>
+            <div><label htmlFor="recovery-totp" className={cn(LABEL, "text-fg-faint")}>current authenticator code</label><Input id="recovery-totp" inputMode="numeric" autoComplete="one-time-code" value={recoveryTotp} onChange={(event) => setRecoveryTotp(event.target.value.replace(/\D/g, "").slice(0, 6))} className="mt-2 h-11 rounded-lg bg-bg" /></div>
+          </div>
+          <Button type="button" variant="outline" onClick={regenerateRecoveryCodes} disabled={busy || !recoveryPassword || recoveryTotp.length !== 6} className="mt-4">Generate new recovery codes</Button>
+        </section>
         <section className="rounded-xl border border-danger-bd bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
-          <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">This removes the second sign-in check. Confirm with both your password and a current authenticator code.</p></div>
+          <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">Confirm with your password and an authenticator code. If you lost the authenticator, use one saved recovery code instead.</p></div>
           <div className="grid gap-4 px-6 py-6 md:grid-cols-2 md:px-8">
             <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-lg bg-bg" /></div>
-            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>authenticator code</label><Input id="totp-disable-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" /></div>
-            <Button variant="outline" onClick={disable} disabled={busy || !password || code.length !== 6} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
+            <div><label htmlFor="totp-disable-method" className={cn(LABEL, "text-fg-faint")}>verification method</label><select id="totp-disable-method" value={disableMethod} onChange={(event) => { setDisableMethod(event.target.value as "totp" | "recovery"); setCode(""); }} className="mt-2 h-11 w-full rounded-lg border border-border bg-bg px-3 text-[13px]"><option value="totp">Authenticator code</option><option value="recovery">Recovery code</option></select></div>
+            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>{disableMethod === "recovery" ? "recovery code" : "authenticator code"}</label><Input id="totp-disable-code" inputMode={disableMethod === "recovery" ? "text" : "numeric"} autoComplete={disableMethod === "recovery" ? "off" : "one-time-code"} value={code} onChange={(event) => setCode(disableMethod === "recovery" ? event.target.value.replace(/[^a-fA-F0-9-]/g, "").slice(0, 35) : event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder={disableMethod === "recovery" ? "XXXX-XXXX-XXXX-XXXX" : "000000"} className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" /></div>
+            <Button variant="outline" onClick={disable} disabled={busy || !password || (disableMethod === "recovery" ? code.replace(/-/g, "").length !== 32 : code.length !== 6)} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
           </div>
         </section>
+        </div>
       )}
 
       <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">

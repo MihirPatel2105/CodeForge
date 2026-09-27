@@ -1,4 +1,4 @@
-export type PasswordMfaMethod = "totp" | "passkey";
+export type PasswordMfaMethod = "totp" | "passkey" | "recovery_code";
 
 export interface PendingPasswordMfa {
   ticket: string;
@@ -26,7 +26,7 @@ export function loadPendingPasswordMfa(): PendingPasswordMfa | null {
       !("startedAt" in value) || typeof value.startedAt !== "number" ||
       !("methods" in value) || !Array.isArray(value.methods) ||
       value.methods.length === 0 ||
-      !value.methods.every((method) => method === "totp" || method === "passkey") ||
+      !value.methods.every((method) => method === "totp" || method === "passkey" || method === "recovery_code") ||
       Date.now() - value.startedAt >= TICKET_LIFETIME_MS ||
       value.startedAt > Date.now()
     ) {

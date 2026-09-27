@@ -76,7 +76,9 @@ def _files(run: Run) -> list[GeneratedFile]:
 
 async def _for_run(run_id: str, user: CurrentUser) -> Deployment:
     await get_owned(Run, run_id, str(user.id), "Run")
-    deployment = await Deployment.find_one(Deployment.run_id == run_id)
+    deployment = await Deployment.find_one(
+        Deployment.run_id == run_id, Deployment.user_id == str(user.id)
+    )
     if deployment is None:
         raise NotFoundError("This run has no published API.")
     return deployment
@@ -229,7 +231,7 @@ async def call_deployment(
     await _check_rate(deployment_id)
     body = await _read_json(request)
     run = await Run.get(deployment.run_id)
-    if run is None:
+    if run is None or run.user_id != deployment.user_id or run.project_id != deployment.project_id:
         raise PreviewUnavailableError("The published API source is unavailable.")
     api_path = "/" + path
     if request.url.query:

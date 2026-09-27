@@ -64,7 +64,7 @@ async def delete_project(project_id: str, user: CurrentUser) -> ProjectDeleteRes
     """
     project = await get_owned(Project, project_id, str(user.id), "Project")
 
-    runs = await Run.find(Run.project_id == project_id).to_list()
+    runs = await Run.find(Run.project_id == project_id, Run.user_id == str(user.id)).to_list()
     run_ids = [str(run.id) for run in runs]
 
     # Stop anything still executing before its documents disappear, or the graph would
@@ -72,13 +72,17 @@ async def delete_project(project_id: str, user: CurrentUser) -> ProjectDeleteRes
     for run_id in run_ids:
         executor.cancel(run_id)
 
-    deployments = await Deployment.find(Deployment.project_id == project_id).to_list()
+    deployments = await Deployment.find(
+        Deployment.project_id == project_id, Deployment.user_id == str(user.id)
+    ).to_list()
     for deployment in deployments:
         await destroy_deployment(str(deployment.id))
         await deployment.delete()
 
     artifacts_deleted = await delete_run_artifacts(run_ids)
-    runs_deleted = (await Run.find(Run.project_id == project_id).delete()).deleted_count
+    runs_deleted = (
+        await Run.find(Run.project_id == project_id, Run.user_id == str(user.id)).delete()
+    ).deleted_count
     await project.delete()
 
     logger.info(
