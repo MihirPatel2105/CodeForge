@@ -92,20 +92,15 @@ export default function ProjectsPage() {
   return (
     <div className="cf-projects min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-10 md:px-10 md:pt-14 lg:px-14">
-        <section className="cf-projects-intro relative overflow-hidden rounded-2xl border border-border bg-surface px-6 py-8 shadow-[0_12px_36px_rgba(27,41,70,0.045)] md:px-9 md:py-10">
-          <div className="relative z-10 flex flex-col items-start justify-between gap-7 md:flex-row md:items-end">
+      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-8 md:px-10 md:pt-10 lg:px-14">
+        <section className="cf-projects-intro relative overflow-hidden rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_12px_36px_rgba(27,41,70,0.045)] md:px-9 md:py-8">
+          <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-                workspace overview
-              </span>
-              <h1 className="font-display mt-5 text-[38px] font-[700] tracking-[-0.055em] text-fg md:text-[46px]">
+              <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
                 Projects
               </h1>
-              <p className="mt-3 max-w-[58ch] text-[15px] leading-[1.65] text-fg-muted md:text-[16px]">
-                One project per API. Every run keeps its agent decisions, generated code,
-                review findings, and real test output together.
+              <p className="mt-2 max-w-[58ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
+                Pick up an API or start a new one. Each project keeps its runs, code, and test results together.
               </p>
             </div>
 
@@ -130,16 +125,15 @@ export default function ProjectsPage() {
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
         {projects && projects.length > 0 && totals && (
-          <dl className="mt-5 grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.035)] sm:grid-cols-3">
-            <Figure index="01" label="projects" value={String(projects.length)} />
-            <Figure index="02" label="total runs" value={String(totals.runs)} bordered />
+          <dl className="mt-4 grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.035)] sm:grid-cols-3">
+            <Figure label="Projects" value={String(projects.length)} />
+            <Figure label="Total runs" value={String(totals.runs)} bordered />
             <Figure
-              index="03"
-              label="successful runs"
+              label="Successful runs"
               value={String(totals.succeeded)}
               hint={
                 totals.runs > 0
-                  ? `${Math.round((totals.succeeded / totals.runs) * 100)}% success`
+                  ? `${Math.round((totals.succeeded / totals.runs) * 100)}% of runs`
                   : undefined
               }
               bordered
@@ -158,15 +152,15 @@ export default function ProjectsPage() {
         ) : projects.length === 0 ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
-          <section className="mt-12" aria-labelledby="project-list-heading">
+          <section className="mt-9" aria-labelledby="project-list-heading">
             <div className="flex items-end justify-between gap-5 border-b border-rule pb-4">
               <div>
-                <span className={LABEL}>your workspaces</span>
+                <span className={LABEL}>Your workspaces</span>
                 <h2
                   id="project-list-heading"
                   className="font-display mt-2 text-[24px] font-[700] tracking-[-0.04em] text-fg"
                 >
-                  Continue building
+                  Your projects
                 </h2>
               </div>
               <span className="text-[12px] font-[550] text-fg-muted">
@@ -192,13 +186,11 @@ export default function ProjectsPage() {
 }
 
 function Figure({
-  index,
   label,
   value,
   hint,
   bordered,
 }: {
-  index: string;
   label: string;
   value: string;
   hint?: string;
@@ -207,21 +199,17 @@ function Figure({
   return (
     <div
       className={cn(
-        "relative px-6 py-6 sm:py-7",
+        "relative px-6 py-4 sm:py-5",
         bordered && "border-t border-rule sm:border-l sm:border-t-0",
       )}
     >
-      <div className="flex items-center justify-between gap-4">
-        <dt className={LABEL}>{label}</dt>
-        <span className="font-mono text-[11px] text-fg-faint">{index}</span>
-      </div>
-      <dd className="mt-3 flex items-baseline gap-3">
-        <span className="font-display text-[34px] font-[700] tracking-[-0.055em] text-fg">
+      <dt className={LABEL}>{label}</dt>
+      <dd className="mt-1 flex items-baseline gap-3">
+        <span className="font-display text-[30px] font-[700] tracking-[-0.055em] text-fg">
           {value}
         </span>
-        {hint && <span className="font-mono text-[10.5px] text-ok">{hint}</span>}
+        {hint && <span className="text-[12px] font-[600] text-ok">{hint}</span>}
       </dd>
-      <span className="absolute inset-x-6 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-60" aria-hidden />
     </div>
   );
 }
@@ -240,14 +228,13 @@ function ProjectCard({ project }: { project: ProjectRow }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="cf-project-card group relative flex min-h-[258px] h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-[0_10px_30px_rgba(27,41,70,0.035)] transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-card group relative flex min-h-[228px] h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-[0_10px_30px_rgba(27,41,70,0.035)] transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
 
       <div className="relative z-10 flex items-start justify-between gap-5">
         <div className="min-w-0">
-          <span className={LABEL}>project workspace</span>
-          <h3 className="font-display mt-3 truncate text-[24px] font-[700] tracking-[-0.045em] text-fg">
+          <h3 className="font-display truncate text-[22px] font-[700] tracking-[-0.045em] text-fg">
             {project.name}
           </h3>
           {project.description && (
@@ -256,7 +243,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
             </p>
           )}
         </div>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-fg-faint transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-fg-faint transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent">
           <ArrowRight
             className="h-4 w-4 transition-transform group-hover:translate-x-[2px]"
             aria-hidden
@@ -272,12 +259,12 @@ function ProjectCard({ project }: { project: ProjectRow }) {
           as a progress meter sitting at 100% — a completely different claim from "one
           run, and it passed". */}
       {strip.length > 0 && (
-        <div className="relative z-10 mt-6 rounded-xl border border-rule bg-surface-2 px-3.5 py-3" aria-hidden>
-          <div className="mb-2.5 flex items-center justify-between gap-3">
-            <span className="text-[11px] font-[600] text-fg-muted">
-              run history
+        <div className="relative z-10 mt-5" aria-hidden>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-[12px] font-[600] text-fg-muted">
+              Recent runs
             </span>
-            <span className="font-mono text-[10.5px] text-fg-faint">
+            <span className="text-[11px] text-fg-muted">
               {strip.length === 1 ? "1 run" : `last ${strip.length}`}
             </span>
           </div>
@@ -287,7 +274,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
                 key={run.id}
                 title={run.status}
                 className={cn(
-                  "h-[6px] w-5 rounded-[1px]",
+                  "h-[6px] w-5 rounded-full",
                   OUTCOME_FILL[run.status] ?? "bg-border-strong",
                 )}
               />
@@ -297,7 +284,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
         </div>
       )}
 
-      <div className="relative z-10 mt-auto flex flex-col gap-5 border-t border-rule pt-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="relative z-10 mt-auto flex flex-col gap-4 border-t border-rule pt-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-baseline gap-6">
           <Stat label="runs" value={String(stats.total)} />
           <Stat label="succeeded" value={String(stats.succeeded)} />
@@ -314,7 +301,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
             >
               {lastMeta.label}
             </span>
-            <span className="font-mono text-[11px] text-fg-faint">
+            <span className="text-[11px] text-fg-muted">
               {formatWhen(stats.last.created_at)}
             </span>
           </div>
@@ -333,7 +320,7 @@ function NewProjectCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="cf-project-new group relative flex min-h-[258px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-new group relative flex min-h-[228px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
         <FolderPlus className="h-[19px] w-[19px]" aria-hidden />
@@ -347,7 +334,7 @@ function NewProjectCard({ onClick }: { onClick: () => void }) {
           Create a clean workspace for its prompts, agent runs, code, and tests.
         </span>
         <span className="mt-5 inline-flex items-center gap-2 text-[13px] font-[650] text-accent">
-          new project
+          New project
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
         </span>
       </span>
