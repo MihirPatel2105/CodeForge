@@ -101,12 +101,13 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     mfa_required: bool = False
     mfa_ticket: str | None = None
-    mfa_methods: list[Literal["totp", "passkey"]] = Field(default_factory=list)
+    mfa_methods: list[Literal["totp", "passkey", "recovery_code"]] = Field(default_factory=list)
 
 
 class LoginCompleteRequest(BaseModel):
     ticket: str
-    totp_code: str = Field(min_length=6, max_length=8)
+    totp_code: str | None = Field(default=None, min_length=6, max_length=8)
+    recovery_code: str | None = None
 
 
 class TokenResponse(BaseModel):
@@ -268,9 +269,19 @@ class TotpVerifyRequest(BaseModel):
     code: str = Field(min_length=6, max_length=8)
 
 
+class RecoveryCodesResponse(BaseModel):
+    codes: list[str]
+
+
+class RecoveryCodesRegenerateRequest(BaseModel):
+    current_password: str
+    totp_code: str = Field(min_length=6, max_length=8)
+
+
 class TotpDisableRequest(BaseModel):
     current_password: str
-    code: str = Field(min_length=6, max_length=8)
+    code: str | None = Field(default=None, min_length=6, max_length=8)
+    recovery_code: str | None = None
 
 
 # --------------------------------------------------------------------------- #

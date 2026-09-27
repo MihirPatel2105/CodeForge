@@ -63,7 +63,7 @@ export interface LoginResponse {
   token_type: string;
   mfa_required: boolean;
   mfa_ticket: string | null;
-  mfa_methods: Array<"totp" | "passkey">;
+  mfa_methods: Array<"totp" | "passkey" | "recovery_code">;
 }
 
 export interface PasskeyInfo {

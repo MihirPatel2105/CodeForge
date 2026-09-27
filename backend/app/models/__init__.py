@@ -6,6 +6,7 @@ from app.models.passkey import PasskeyChallenge, PasskeyCredential
 from app.models.password_reset import PasswordResetToken
 from app.models.pending_signup import PendingSignup
 from app.models.project import Project
+from app.models.recovery_code import RecoveryCode
 from app.models.revoked_token import RevokedToken
 from app.models.run import Run
 from app.models.sign_in_alert import SignInAlert
@@ -22,6 +23,7 @@ DOCUMENT_MODELS = [
     LoginSession,
     PasskeyCredential,
     PasskeyChallenge,
+    RecoveryCode,
     SignInAlert,
     Project,
     Run,
@@ -39,6 +41,7 @@ __all__ = [
     "PasswordResetToken",
     "PendingSignup",
     "Project",
+    "RecoveryCode",
     "RevokedToken",
     "Run",
     "SignInAlert",

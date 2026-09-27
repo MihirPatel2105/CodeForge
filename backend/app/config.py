@@ -1,3 +1,5 @@
+import ipaddress
+from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -14,6 +16,9 @@ class Settings(BaseSettings):
     redis_url: str = ""
     trusted_proxy_cidrs: list[str] = []
     proxy_ip_secret: str = ""
+    docker_host: str = ""
+    docker_tls_verify: str = ""
+    docker_cert_path: str = ""
 
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
@@ -90,6 +95,29 @@ class Settings(BaseSettings):
             errors.append("REDIS_URL is required for public auth rate limits")
         if len(self.proxy_ip_secret) < 32:
             errors.append("PROXY_IP_SECRET must be a unique secret of at least 32 characters")
+        try:
+            docker_url = urlsplit(self.docker_host)
+            host = docker_url.hostname or ""
+            remote = docker_url.scheme == "tcp" and bool(host) and bool(docker_url.port)
+            remote = remote and not docker_url.username and not docker_url.password
+            remote = remote and docker_url.path in ("", "/")
+            remote = remote and not docker_url.query and not docker_url.fragment
+            remote = remote and host.lower() not in {"localhost", "host.docker.internal"}
+            try:
+                remote = remote and not ipaddress.ip_address(host).is_loopback
+            except ValueError:
+                pass
+        except ValueError:
+            remote = False
+        if not remote:
+            errors.append("DOCKER_HOST must point to a separate TCP sandbox daemon")
+        if self.docker_tls_verify != "1":
+            errors.append("DOCKER_TLS_VERIFY must be 1 for the sandbox daemon")
+        if not self.docker_cert_path or not all(
+            (Path(self.docker_cert_path) / name).is_file()
+            for name in ("ca.pem", "cert.pem", "key.pem")
+        ):
+            errors.append("DOCKER_CERT_PATH must contain ca.pem, cert.pem, and key.pem")
         for name, value in (
             ("APP_BASE_URL", self.app_base_url),
             ("API_PUBLIC_BASE_URL", self.api_public_base_url),

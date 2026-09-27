@@ -31,6 +31,7 @@ COLLECTIONS = (
     "login_sessions",
     "passkey_credentials",
     "passkey_challenges",
+    "recovery_codes",
     "sign_in_alerts",
     "projects",
     "runs",

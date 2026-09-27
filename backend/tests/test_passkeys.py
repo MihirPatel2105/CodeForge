@@ -184,7 +184,7 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
     )
     secret = setup.json()["secret"]
     code = _totp(secret, int(time.time()) // 30)
-    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 204
+    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 200
 
     denied = client.post(
         "/auth/passkeys/register/options",
@@ -229,7 +229,7 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert password_login["mfa_methods"] == ["totp", "passkey"]
+    assert password_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
     ticket = password_login["mfa_ticket"]
     mfa_options = client.post("/auth/passkeys/mfa/options", json={"ticket": ticket}).json()
     completed = client.post(
@@ -255,7 +255,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(client, registered
     )
     secret = setup.json()["secret"]
     code = _totp(secret, int(time.time()) // 30)
-    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 204
+    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 200
 
     options = client.post(
         "/auth/passkeys/register/options",
@@ -285,7 +285,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(client, registered
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert code_login["mfa_methods"] == ["totp", "passkey"]
+    assert code_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
     code_session = client.post(
         "/auth/login/complete",
         json={
@@ -308,7 +308,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(client, registered
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert passkey_login["mfa_methods"] == ["totp", "passkey"]
+    assert passkey_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
     passkey_options = client.post(
         "/auth/passkeys/mfa/options",
         json={"ticket": passkey_login["mfa_ticket"]},

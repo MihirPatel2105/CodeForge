@@ -102,7 +102,8 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
         json={"code": code},
         headers=registered_user["headers"],
     )
-    assert verify.status_code == 204
+    assert verify.status_code == 200
+    assert len(verify.json()["codes"]) == 8
 
     password_only = client.post(
         "/auth/login",
@@ -111,7 +112,7 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
     assert password_only.status_code == 200
     assert password_only.json()["mfa_required"] is True
     assert password_only.json()["access_token"] is None
-    assert password_only.json()["mfa_methods"] == ["totp"]
+    assert password_only.json()["mfa_methods"] == ["totp", "recovery_code"]
     ticket = password_only.json()["mfa_ticket"]
     assert ticket
 
@@ -151,7 +152,7 @@ def test_password_mfa_ticket_allows_five_code_attempts(client, registered_user):
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
         ).status_code
-        == 204
+        == 200
     )
     ticket = client.post(
         "/auth/login",

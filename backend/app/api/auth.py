@@ -11,7 +11,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Request, status
+from fastapi import APIRouter, BackgroundTasks, Request, Response, status
 from pymongo import ReturnDocument
 
 from app.config import settings
@@ -38,10 +38,12 @@ from app.core.security import (
     decrypt_totp_secret,
     encrypt_totp_secret,
     generate_otp,
+    generate_recovery_codes,
     generate_reset_token,
     generate_totp_secret,
     hash_otp,
     hash_password,
+    hash_recovery_code,
     hash_reset_token,
     password_hash_needs_upgrade,
     totp_uri,
@@ -56,6 +58,7 @@ from app.models import (
     PasskeyCredential,
     PasswordResetToken,
     PendingSignup,
+    RecoveryCode,
     RevokedToken,
     SignInAlert,
     User,
@@ -70,6 +73,8 @@ from app.schemas.api import (
     LoginCompleteRequest,
     LoginRequest,
     LoginResponse,
+    RecoveryCodesRegenerateRequest,
+    RecoveryCodesResponse,
     RegisterRequest,
     RegisterResponse,
     ResendCodeRequest,
@@ -90,6 +95,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 PASSWORD_MFA_LIFETIME = timedelta(minutes=5)
 PASSWORD_MFA_MAX_ATTEMPTS = 5
+
+
+async def _replace_recovery_codes(user_id: str) -> list[str]:
+    codes = generate_recovery_codes()
+    await RecoveryCode.find(RecoveryCode.user_id == user_id).delete()
+    for code in codes:
+        await RecoveryCode(
+            user_id=user_id,
+            code_hash=hash_recovery_code(code),
+        ).insert()
+    return codes
 
 
 def _now() -> datetime:
@@ -325,6 +341,8 @@ async def login(
     methods: list[str] = []
     if user.totp_enabled:
         methods.append("totp")
+        if await RecoveryCode.find_one(RecoveryCode.user_id == str(user.id)) is not None:
+            methods.append("recovery_code")
     if passkey is not None:
         methods.append("passkey")
 
@@ -399,6 +417,9 @@ async def complete_password_login(
     payload: LoginCompleteRequest, background: BackgroundTasks, request: Request
 ) -> TokenResponse:
     user = await password_mfa_user(payload.ticket)
+    using_recovery = payload.recovery_code is not None
+    if (payload.totp_code is None) == (payload.recovery_code is None):
+        raise AuthError("Choose one verification method.")
     if not user.totp_enabled or not user.totp_secret_encrypted:
         raise AuthError("Authenticator codes are not enabled for this account.")
     attempted = await PasskeyChallenge.get_pymongo_collection().find_one_and_update(
@@ -414,7 +435,19 @@ async def complete_password_login(
     )
     if attempted is None:
         raise RateLimitError("Too many verification attempts. Sign in again.")
-    if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
+    if using_recovery:
+        code_hash = hash_recovery_code(payload.recovery_code or "")
+        consumed = (
+            await RecoveryCode.get_pymongo_collection().find_one_and_delete(
+                {"user_id": str(user.id), "code_hash": code_hash}
+            )
+            if code_hash
+            else None
+        )
+        if consumed is None:
+            await _record_failed_login(user, background)
+            raise AuthError("The recovery code is not correct")
+    elif not verify_totp(payload.totp_code or "", decrypt_totp_secret(user.totp_secret_encrypted)):
         await _record_failed_login(user, background)
         raise AuthError("The two-factor code is not correct")
     await consume_password_mfa_ticket(payload.ticket, user)
@@ -454,21 +487,44 @@ async def finish_login(user: User, background: BackgroundTasks, request: Request
 async def setup_totp(payload: TotpSetupRequest, user: CurrentUser) -> TotpSetupResponse:
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
+    if user.totp_enabled:
+        raise ConflictError("Disable two-factor authentication before setting it up again")
     secret = generate_totp_secret()
     user.totp_secret_encrypted = encrypt_totp_secret(secret)
     user.totp_enabled = False
+    await RecoveryCode.find(RecoveryCode.user_id == str(user.id)).delete()
     await user.save()
     return TotpSetupResponse(secret=secret, provisioning_uri=totp_uri(secret, user.email))
 
 
-@router.post("/totp/verify", status_code=status.HTTP_204_NO_CONTENT)
-async def enable_totp(payload: TotpVerifyRequest, user: CurrentUser) -> None:
+@router.post("/totp/verify", response_model=RecoveryCodesResponse)
+async def enable_totp(
+    payload: TotpVerifyRequest, user: CurrentUser, response: Response
+) -> RecoveryCodesResponse:
     if not user.totp_secret_encrypted:
         raise ConflictError("Start two-factor setup before verifying a code")
     if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
         raise AuthError("The two-factor code is not correct")
     user.totp_enabled = True
+    codes = await _replace_recovery_codes(str(user.id))
     await user.save()
+    response.headers["Cache-Control"] = "no-store"
+    return RecoveryCodesResponse(codes=codes)
+
+
+@router.post("/recovery-codes/regenerate", response_model=RecoveryCodesResponse)
+async def regenerate_recovery_codes(
+    payload: RecoveryCodesRegenerateRequest, user: CurrentUser, response: Response
+) -> RecoveryCodesResponse:
+    if not user.totp_enabled or not user.totp_secret_encrypted:
+        raise ConflictError("Authenticator codes are not enabled")
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise AuthError("Your current password is not correct")
+    if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
+        raise AuthError("The two-factor code is not correct")
+    codes = await _replace_recovery_codes(str(user.id))
+    response.headers["Cache-Control"] = "no-store"
+    return RecoveryCodesResponse(codes=codes)
 
 
 @router.post("/totp/disable", response_model=TokenResponse)
@@ -479,10 +535,24 @@ async def disable_totp(
         raise AuthError("Your current password is not correct")
     if not user.totp_enabled or not user.totp_secret_encrypted:
         raise ConflictError("Two-factor authentication is not enabled")
-    if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
+    if (payload.code is None) == (payload.recovery_code is None):
+        raise AuthError("Choose one verification method.")
+    if payload.recovery_code is not None:
+        code_hash = hash_recovery_code(payload.recovery_code)
+        consumed = (
+            await RecoveryCode.get_pymongo_collection().find_one_and_delete(
+                {"user_id": str(user.id), "code_hash": code_hash}
+            )
+            if code_hash
+            else None
+        )
+        if consumed is None:
+            raise AuthError("The recovery code is not correct")
+    elif not verify_totp(payload.code or "", decrypt_totp_secret(user.totp_secret_encrypted)):
         raise AuthError("The two-factor code is not correct")
     user.totp_enabled = False
     user.totp_secret_encrypted = None
+    await RecoveryCode.find(RecoveryCode.user_id == str(user.id)).delete()
     user.token_version += 1
     await user.save()
     token, _, _ = await issue_session(user, request)

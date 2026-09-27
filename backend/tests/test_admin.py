@@ -372,7 +372,7 @@ def test_admin_totp_setup_changes_login_to_two_step(client, admin_user):
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=admin_user["headers"]
         ).status_code
-        == 204
+        == 200
     )
 
     first = client.post(

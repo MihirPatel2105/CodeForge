@@ -59,6 +59,7 @@ test("password sign-in sends a device ID when randomUUID is unavailable", async 
 });
 
 test("password sign-in offers both saved methods and completes with an authenticator code", async ({ page }) => {
+  await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
   await page.route("**/auth/login", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -85,6 +86,35 @@ test("password sign-in offers both saved methods and completes with an authentic
   await expect(page).toHaveURL(/\/projects$/);
   expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
   expect(await page.evaluate(() => sessionStorage.getItem("codeforge_password_mfa"))).toBeNull();
+});
+
+test("saved recovery code completes password MFA without exposing a bearer token", async ({ page }) => {
+  await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  const recoveryCode = "12345678-12345678-12345678-12345678";
+  await page.route("**/auth/login", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ access_token: null, token_type: "bearer", mfa_required: true, mfa_ticket: "recovery-ticket", mfa_methods: ["totp", "recovery_code"] }),
+  }));
+  await page.route("**/auth/login/complete", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ access_token: "browser-session", token_type: "bearer" }),
+  }));
+  await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(USER) }));
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(USER.email);
+  await page.getByLabel("Password", { exact: true }).fill("correct-password");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\/verify$/);
+  await page.getByRole("group", { name: "Verification method" }).getByRole("button", { name: "Recovery code" }).click();
+  await page.getByLabel("Recovery code").fill(recoveryCode);
+  const request = page.waitForRequest((item) => item.url().endsWith("/auth/login/complete") && item.method() === "POST");
+  await page.getByRole("button", { name: "Verify and sign in" }).click();
+  expect(JSON.parse((await request).postData() ?? "null")).toEqual({ ticket: "recovery-ticket", recovery_code: recoveryCode });
+  await expect(page).toHaveURL(/\/projects$/);
+  expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
 });
 
 test("passkey-only verification does not show a code field", async ({ page }) => {

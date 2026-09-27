@@ -7,6 +7,7 @@ cross-service secret to share (CLAUDE.md §8).
 import base64
 import hashlib
 import hmac
+import re
 import secrets
 import struct
 import time
@@ -64,6 +65,22 @@ def hash_reset_token(token: str) -> str:
     query instead of forcing a table scan to bcrypt-compare every live token.
     """
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def generate_recovery_codes(count: int = 8) -> list[str]:
+    """One-time 128-bit codes, grouped for readable offline storage."""
+    codes = []
+    for _ in range(count):
+        raw = secrets.token_hex(16).upper()
+        codes.append("-".join(raw[i : i + 8] for i in range(0, 32, 8)))
+    return codes
+
+
+def hash_recovery_code(code: str) -> str:
+    normalized = code.strip().replace("-", "").upper()
+    if not re.fullmatch(r"[0-9A-F]{32}", normalized):
+        return ""
+    return hashlib.sha256(normalized.encode()).hexdigest()
 
 
 def generate_otp(length: int | None = None) -> str:
