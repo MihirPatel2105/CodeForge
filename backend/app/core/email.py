@@ -43,8 +43,8 @@ _FG_MUTED = "#526073"  # --fg-muted
 _FG_FAINT = "#657285"  # --fg-faint
 _RULE = "#e2e7ef"  # --rule
 _BORDER_STRONG = "#cbd4e1"  # --border-strong
-_ACCENT_SOFT = "#eef0ff"  # --accent-soft
-_ACCENT_BORDER = "#cbd0ff"  # --accent-bd
+_ACCENT_SOFT = "#edf3ff"  # --accent-soft
+_ACCENT_BORDER = "#b8ccff"  # --accent-bd
 
 _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace"
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -70,7 +70,7 @@ _RADIUS = "16px"
 # the copy sent to a different account disappears. So "the logo works, I can see it" is
 # consistent with every recipient outside the sending account receiving nothing at all.
 #
-_BRAND = "#3f47c9"
+_BRAND = "#2457d6"
 _BRAND_LOCKUP_FALLBACK_URL = (
     "https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/"
     "frontend/public/brand/codeforge-lockup-light.png"
