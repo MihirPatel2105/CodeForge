@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, FileCode2, WrapText } from "lucide-react";
+import { FileCode2, WrapText } from "lucide-react";
+import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
@@ -211,10 +212,10 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                 <button
                   type="button"
                   onClick={copyCurrentFile}
+                  aria-label={copied ? "Code copied" : "Copy code"}
                   className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-ok" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
-                  {copied ? "Copied" : "Copy"}
+                  <CopyFeedback copied={copied} label="Copy" />
                 </button>
               </div>
             </div>

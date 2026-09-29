@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Check,
   CheckCircle2,
   ChevronDown,
-  Copy,
   Fingerprint,
   KeyRound,
   LockKeyhole,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
+import { CopyFeedback } from "@/components/ui/copy-feedback";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,7 @@ export function TotpSettings({
   const [uri, setUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
   const [setupMethod, setSetupMethod] = useState<"qr" | "key">("qr");
   const [setupStage, setSetupStage] = useState<"method" | "verify">("method");
@@ -58,6 +59,10 @@ export function TotpSettings({
 
   const enrolling = Boolean(secret && uri);
   const verificationStage = enrolling && setupStage === "verify";
+
+  useEffect(() => () => {
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+  }, []);
 
   async function startSetup() {
     setBusy(true);
@@ -144,6 +149,8 @@ export function TotpSettings({
     try {
       await navigator.clipboard.writeText(secret);
       setCopied(true);
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2000);
       setError(null);
     } catch {
       setCopied(false);
@@ -278,9 +285,8 @@ export function TotpSettings({
                           <span className={cn(LABEL, "text-fg-faint")}>setup key</span>
                           <code className="mt-2 block break-all font-mono text-[15px] font-[700] leading-7 tracking-[0.12em] text-fg">{secret}</code>
                         </div>
-                        <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-lg">
-                          {copied ? <Check className="h-4 w-4 text-ok" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-                          {copied ? "Setup key copied" : "Copy setup key"}
+                        <Button type="button" variant="outline" onClick={copySecret} className="mt-3 h-10 gap-2 rounded-lg" aria-label={copied ? "Setup key copied" : "Copy setup key"}>
+                          <CopyFeedback copied={copied} label="Copy setup key" iconClassName="h-4 w-4" />
                         </Button>
                       </div> : null}
 
