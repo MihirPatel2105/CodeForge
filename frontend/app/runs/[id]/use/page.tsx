@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Download } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { useSession } from "@/lib/use-current-user";
@@ -12,22 +12,29 @@ export default function UseApiPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user, loading: sessionLoading } = useSession();
-  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [downloadState, setDownloadState] = useState<"idle" | "pending" | "started">("idle");
+  const downloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionLoading && !user) router.replace("/login");
   }, [router, sessionLoading, user]);
 
+  useEffect(() => () => {
+    if (downloadTimer.current) clearTimeout(downloadTimer.current);
+  }, []);
+
   async function download() {
-    setDownloadBusy(true);
+    if (downloadTimer.current) clearTimeout(downloadTimer.current);
+    setDownloadState("pending");
     setDownloadError(null);
     try {
       await downloadLatestFileTree(id);
+      setDownloadState("started");
+      downloadTimer.current = setTimeout(() => setDownloadState("idle"), 2400);
     } catch (err) {
+      setDownloadState("idle");
       setDownloadError(err instanceof ApiError ? err.message : "Couldn't download the project.");
-    } finally {
-      setDownloadBusy(false);
     }
   }
 
@@ -67,9 +74,10 @@ export default function UseApiPage() {
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
             <p className="mt-3 text-[11px] leading-5 text-fg-muted">After unzipping, follow the README to run Docker Compose and open the API docs.</p>
-            <button type="button" onClick={() => void download()} disabled={downloadBusy} className="mt-4 inline-flex items-center gap-1 rounded-lg text-[12px] font-[700] text-accent transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50">
-              {downloadBusy ? "Downloading…" : "Download project"} <Download className="size-3.5" aria-hidden />
+            <button type="button" onClick={() => void download()} disabled={downloadState === "pending"} className="mt-4 inline-flex min-w-[136px] items-center gap-1 rounded-lg text-[12px] font-[700] text-accent transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50">
+              {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : "Download project"} {downloadState === "started" ? <Check className="size-3.5 text-ok" aria-hidden /> : <Download className="size-3.5" aria-hidden />}
             </button>
+            <span role="status" className="sr-only">{downloadState === "started" ? "Project download started." : ""}</span>
           </div>
         </section>
 

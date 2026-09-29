@@ -88,13 +88,12 @@ test("password sign-in offers both saved methods and completes with an authentic
   expect(await page.evaluate(() => sessionStorage.getItem("codeforge_password_mfa"))).toBeNull();
 });
 
-test("saved recovery code completes password MFA without exposing a bearer token", async ({ page }) => {
+test("recovery code is not offered as a sign-in verification method", async ({ page }) => {
   await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
-  const recoveryCode = "12345678-12345678-12345678-12345678";
   await page.route("**/auth/login", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ access_token: null, token_type: "bearer", mfa_required: true, mfa_ticket: "recovery-ticket", mfa_methods: ["totp", "recovery_code"] }),
+    body: JSON.stringify({ access_token: null, token_type: "bearer", mfa_required: true, mfa_ticket: "recovery-ticket", mfa_methods: ["totp", "recovery_code", "passkey"] }),
   }));
   await page.route("**/auth/login/complete", (route) => route.fulfill({
     status: 200,
@@ -108,11 +107,15 @@ test("saved recovery code completes password MFA without exposing a bearer token
   await page.getByLabel("Password", { exact: true }).fill("correct-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/login\/verify$/);
-  await page.getByRole("group", { name: "Verification method" }).getByRole("button", { name: "Recovery code" }).click();
-  await page.getByLabel("Recovery code").fill(recoveryCode);
+  const methodGroup = page.getByRole("group", { name: "Verification method" });
+  await expect(methodGroup.getByRole("button")).toHaveCount(2);
+  await expect(methodGroup.getByRole("button", { name: "Authenticator code" })).toBeVisible();
+  await expect(methodGroup.getByRole("button", { name: "Passkey" })).toBeVisible();
+  await expect(page.getByText("Recovery code")).toHaveCount(0);
+  await page.getByLabel("Authenticator code").fill("123456");
   const request = page.waitForRequest((item) => item.url().endsWith("/auth/login/complete") && item.method() === "POST");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
-  expect(JSON.parse((await request).postData() ?? "null")).toEqual({ ticket: "recovery-ticket", recovery_code: recoveryCode });
+  expect(JSON.parse((await request).postData() ?? "null")).toEqual({ ticket: "recovery-ticket", totp_code: "123456" });
   await expect(page).toHaveURL(/\/projects$/);
   expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
 });

@@ -9,6 +9,7 @@ import {
 import { Fingerprint, KeyRound, LockKeyhole, Plus, ShieldCheck } from "lucide-react";
 import { SecuritySettingsLayout } from "@/components/auth/security-settings-layout";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
@@ -28,6 +29,7 @@ export default function PasskeysPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [pendingRemoval, setPendingRemoval] = useState<PasskeyInfo | null>(null);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -83,22 +85,20 @@ export default function PasskeysPage() {
     }
   }
 
-  async function removePasskey(id: string, name: string) {
-    const lastMethodWarning = passkeys.length === 1 && !user?.totp_enabled
-      ? " This is your only second-step method, so password sign-in will no longer require verification."
-      : "";
-    if (!window.confirm(`Remove “${name}” from this account?${lastMethodWarning}`)) return;
+  async function removePasskey() {
+    if (!pendingRemoval) return;
     setError(null);
     setMessage(null);
     setBusy(true);
     try {
       await api.deletePasskey(
-        id,
+        pendingRemoval.id,
         password,
         user?.totp_enabled ? totpCode : undefined,
       );
-      setPasskeys((current) => current.filter((item) => item.id !== id));
+      setPasskeys((current) => current.filter((item) => item.id !== pendingRemoval.id));
       setMessage("Passkey removed.");
+      setPendingRemoval(null);
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Could not remove passkey.",
@@ -239,7 +239,7 @@ export default function PasskeysPage() {
                       type="button"
                       variant="outline"
                       disabled={busy || !password || (user.totp_enabled && totpCode.length !== 6)}
-                      onClick={() => removePasskey(item.id, item.label)}
+                      onClick={() => { setError(null); setPendingRemoval(item); }}
                     >
                       Remove
                     </Button>
@@ -254,7 +254,7 @@ export default function PasskeysPage() {
             </p>
           </section>
       </div>
-        {error && (
+        {error && !pendingRemoval && (
           <p
             role="alert"
             className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger"
@@ -270,6 +270,24 @@ export default function PasskeysPage() {
             {message}
           </p>
         )}
+        <Dialog open={pendingRemoval !== null} onOpenChange={(open) => { if (!open && !busy) { setPendingRemoval(null); setError(null); } }}>
+          <DialogContent showCloseButton={!busy} className="rounded-xl border border-danger-bd bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)] sm:max-w-md">
+            <div className="border-b border-danger-bd bg-danger-soft px-6 py-5">
+              <DialogHeader>
+                <DialogTitle className="font-display text-[22px] tracking-[-0.04em] text-fg">Remove this passkey?</DialogTitle>
+              </DialogHeader>
+            </div>
+            <DialogDescription className="px-6 text-[14px] leading-6 text-fg-muted">
+              {pendingRemoval && <>“{pendingRemoval.label}” will no longer work for sign-in or verification.</>}
+            </DialogDescription>
+            {passkeys.length === 1 && !user.totp_enabled && <p className="mx-6 rounded-lg border border-warn-bd bg-warn-soft px-3 py-2 text-[12px] leading-5 text-fg">This is your only second-step method. After removal, password sign-in will no longer require verification.</p>}
+            {error && <p role="alert" className="mx-6 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[12px] text-danger">{error}</p>}
+            <DialogFooter className="border-t border-border bg-surface px-6 py-5">
+              <Button type="button" variant="outline" onClick={() => { setPendingRemoval(null); setError(null); }} disabled={busy}>Cancel</Button>
+              <Button type="button" variant="destructive" onClick={() => void removePasskey()} disabled={busy}>{busy ? "Removing…" : "Remove passkey"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </SecuritySettingsLayout>
   );
 }

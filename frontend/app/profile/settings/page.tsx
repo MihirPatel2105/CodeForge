@@ -54,8 +54,19 @@ export default function SettingsPage() {
         router.replace("/login");
         return;
       }
+      // The server may have revoked this session even if its response was lost.
+      // Confirm before telling the user that they are still signed in.
+      try {
+        await api.me();
+      } catch (checkError) {
+        if (checkError instanceof ApiError && checkError.status === 401) {
+          clearToken();
+          router.replace("/login");
+          return;
+        }
+      }
       setSessionError(
-        "Couldn't reach the server, so you are still signed in. Try again.",
+        "Couldn't confirm sign-out. Check your connection, then try again.",
       );
       setEndingSessions(false);
     }

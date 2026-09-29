@@ -25,6 +25,32 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN) }));
 });
 
+test("passkey removal uses an in-app confirmation with the last-method warning", async ({ page }) => {
+  await page.unroute("**/auth/me");
+  await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(USER) }));
+  await page.route("**/auth/passkeys", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ id: "passkey-1", label: "My laptop", created_at: "2026-09-23T00:00:00Z", last_used_at: null }]) }));
+  let removed = false;
+  await page.route("**/auth/passkeys/passkey-1/delete", (route) => {
+    removed = true;
+    return route.fulfill({ status: 204, body: "" });
+  });
+
+  await page.goto("/profile/settings/passkeys");
+  await page.getByLabel("Current password").fill("test-password");
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Remove this passkey?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText(/only second-step method/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  expect(removed).toBe(false);
+
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  await dialog.getByRole("button", { name: "Remove passkey" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText("Passkey removed.")).toBeVisible();
+  expect(removed).toBe(true);
+});
+
 test("settings owns the 2FA entry instead of the admin navigation", async ({ page }) => {
   await page.goto("/profile/settings");
 

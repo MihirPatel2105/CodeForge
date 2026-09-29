@@ -23,8 +23,13 @@ test("a user can send a generated API request and reset preview data", async ({ 
   }));
   await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "No published API" } }) }));
   let sent: unknown;
-  await page.route(`**/api/backend/runs/${runId}/preview/request`, (route) => {
+  let requestCount = 0;
+  let finishSecondRequest: (() => void) | undefined;
+  const secondRequestGate = new Promise<void>((resolve) => { finishSecondRequest = resolve; });
+  await page.route(`**/api/backend/runs/${runId}/preview/request`, async (route) => {
     sent = route.request().postDataJSON();
+    requestCount += 1;
+    if (requestCount === 2) await secondRequestGate;
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: 201, content_type: "application/json", body: '{"name":"sample"}', truncated: false, duration_ms: 42, session_started: false }) });
   });
 
@@ -41,6 +46,12 @@ test("a user can send a generated API request and reset preview data", async ({ 
   await expect(page.getByText("HTTP 201 · 42 ms")).toBeVisible();
   await expect(page.getByText(/"name": "sample"/)).toBeVisible();
   expect(sent).toEqual({ method: "POST", path: "/items", body: { name: "sample" } });
+
+  await page.getByRole("button", { name: "Send request" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Sending request…" })).toBeVisible();
+  await expect(page.getByText("HTTP 201 · 42 ms")).toBeVisible();
+  finishSecondRequest?.();
+  await expect(page.getByRole("status").filter({ hasText: "Sending request…" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Reset data" }).click();
   await expect(page.getByText("Send a request to see what your API returns.")).toBeVisible();
@@ -61,11 +72,7 @@ test("run flow pages navigate between API options, tester, publish, and run", as
   await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "No published API" } }) }));
 
   await page.goto(`/runs/${runId}/use`);
-  const exitStarted = await page.getByRole("link", { name: /Open tester/ }).evaluate((link) => {
-    (link as HTMLAnchorElement).click();
-    return document.querySelector("[data-run-flow-page]")?.classList.contains("cf-run-flow-exit");
-  });
-  expect(exitStarted).toBe(true);
+  await page.getByRole("link", { name: /Open tester/ }).click();
   await expect(page.getByRole("heading", { name: "Try your API" })).toBeVisible();
   await page.getByRole("link", { name: "Ways to use your API" }).click();
   await page.getByRole("link", { name: /Open publish guide/ }).click();

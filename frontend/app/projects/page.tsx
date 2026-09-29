@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, FolderPlus, Plus, Search } from "lucide-react";
+import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [newProjectId, setNewProjectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
@@ -124,9 +125,11 @@ export default function ProjectsPage() {
                 New project
               </DialogTrigger>
               <NewProjectDialogContent
-                onCreated={() => {
+                onCreated={(project) => {
+                  setProjects((current) => [{ ...project, runs: [], stats: runStats([]) }, ...(current ?? [])]);
+                  setSearch("");
+                  setNewProjectId(project.id);
                   setOpen(false);
-                  load();
                 }}
               />
             </Dialog>
@@ -201,7 +204,7 @@ export default function ProjectsPage() {
             {visibleProjects?.length ? (
               <ul className="mt-5 grid gap-5 lg:grid-cols-2">
                 {visibleProjects.map((project) => (
-                  <li key={project.id}>
+                  <li key={project.id} className={project.id === newProjectId ? "motion-safe:animate-[cfReadoutEnter_300ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
                     <ProjectCard project={project} />
                   </li>
                 ))}
@@ -446,7 +449,7 @@ function LoadingState() {
   );
 }
 
-function NewProjectDialogContent({ onCreated }: { onCreated: () => void }) {
+function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectResponse) => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -457,10 +460,10 @@ function NewProjectDialogContent({ onCreated }: { onCreated: () => void }) {
     setError(null);
     setSubmitting(true);
     try {
-      await api.createProject({ name, description: description || undefined });
+      const project = await api.createProject({ name, description: description || undefined });
       setName("");
       setDescription("");
-      onCreated();
+      onCreated(project);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't create the project.");
     } finally {
@@ -505,7 +508,8 @@ function NewProjectDialogContent({ onCreated }: { onCreated: () => void }) {
         {error && <p className="text-[13px] text-danger">{error}</p>}
         <DialogFooter className="mt-2 border-t border-rule pt-5">
           <Button type="submit" disabled={submitting} className="min-w-[136px]">
-            {submitting ? "…" : "Create project"}
+            {submitting && <LoaderCircle className="h-4 w-4 motion-safe:animate-spin" aria-hidden />}
+            {submitting ? "Creating project…" : "Create project"}
           </Button>
         </DialogFooter>
       </form>

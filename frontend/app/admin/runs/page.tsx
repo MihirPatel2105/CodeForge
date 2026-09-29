@@ -80,8 +80,8 @@ export default function AdminRunsPage() {
         <Input aria-label="Runs to date" type="date" value={filters.date_to} onChange={(event) => set("date_to", event.target.value)} className="h-10 rounded-lg" />
         <div className="flex gap-2"><Button type="submit" className="h-10 flex-1 gap-2 rounded-lg" disabled={loading}><Filter className="h-4 w-4" aria-hidden />Apply</Button><Button type="button" variant="ghost" className="h-10 rounded-lg" onClick={clear}>Clear</Button></div>
       </form>
-      <div className="mt-4 flex items-center justify-between"><p className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-faint">{loading ? "Loading…" : `${pagination?.total ?? runs.length} runs`}</p><p className="text-[11px] text-fg-faint">Newest first · 25 per page</p></div>
-      <div className="mt-3"><AdminRunTable runs={runs} /></div>
+      <div className="mt-4 flex items-center justify-between"><p role="status" className="font-mono text-[10px] uppercase tracking-[0.1em] text-fg-faint">{loading ? "Updating runs…" : `${pagination?.total ?? runs.length} runs`}</p><p className="text-[11px] text-fg-faint">Newest first · 25 per page</p></div>
+      <div className={cn("mt-3 transition-opacity duration-200 motion-reduce:transition-none", loading && runs.length > 0 && "opacity-45")} aria-busy={loading}><AdminRunTable runs={runs} /></div>
       {pagination ? <div className="mt-4 flex items-center justify-between"><p className={ADMIN_LABEL}>Page {pagination.page} of {pagination.pages}</p><div className="flex gap-2"><Button variant="outline" disabled={pagination.page <= 1 || loading} onClick={() => load(debouncedFilters, pagination.page - 1)}>Previous</Button><Button variant="outline" disabled={pagination.page >= pagination.pages || loading} onClick={() => load(debouncedFilters, pagination.page + 1)}>Next</Button></div></div> : null}
     </AdminShell>
   );

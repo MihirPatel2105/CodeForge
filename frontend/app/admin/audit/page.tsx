@@ -86,7 +86,7 @@ export default function AdminAuditPage() {
           </div>
           <p className={ADMIN_LABEL}>{loading ? "Updating…" : `${pagination?.total ?? entries.length} records`}</p>
         </div>
-        <div className="overflow-x-auto">
+        <div className={cn("overflow-x-auto transition-opacity duration-200 motion-reduce:transition-none", loading && entries.length > 0 && "opacity-45")}>
           <table className="w-full min-w-[880px] border-collapse text-left">
             <thead className="bg-surface-2/75">
               <tr>{COLUMNS.map((label) => <th key={label} scope="col" className={cn(ADMIN_LABEL, "border-b border-rule px-4 py-3.5 first:pl-5 last:pr-5")}>{label}</th>)}</tr>

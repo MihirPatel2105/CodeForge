@@ -30,8 +30,9 @@ export default function TryApiPage() {
   const [body, setBody] = useState("");
   const [response, setResponse] = useState<PreviewResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"send" | "reset" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const sending = pendingAction !== null;
 
   const choose = useCallback((operation: PreviewOperation, index: number) => {
     setSelected(index);
@@ -68,7 +69,6 @@ export default function TryApiPage() {
     const operation = preview?.operations[selected];
     if (!operation) return;
     setError(null);
-    setResponse(null);
     let parsedBody: unknown = null;
     if (operation.has_body) {
       try {
@@ -78,7 +78,7 @@ export default function TryApiPage() {
         return;
       }
     }
-    setSending(true);
+    setPendingAction("send");
     try {
       setResponse(await api.sendPreviewRequest(id, {
         method: operation.method,
@@ -86,14 +86,15 @@ export default function TryApiPage() {
         body: parsedBody,
       }));
     } catch (err) {
+      setResponse(null);
       setError(err instanceof ApiError ? err.message : "Couldn't send the request.");
     } finally {
-      setSending(false);
+      setPendingAction(null);
     }
   }
 
   async function reset() {
-    setSending(true);
+    setPendingAction("reset");
     setError(null);
     try {
       await api.resetPreview(id);
@@ -102,7 +103,7 @@ export default function TryApiPage() {
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reset the preview.");
     } finally {
-      setSending(false);
+      setPendingAction(null);
     }
   }
 
@@ -175,8 +176,9 @@ export default function TryApiPage() {
 
             <section className="rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="response-heading">
               <h2 id="response-heading" className="font-display text-[21px] font-[650] text-fg">Response</h2>
+              {pendingAction && <p role="status" className="mt-4 flex items-center gap-2 text-[12px] font-[650] text-accent"><span className="size-1.5 rounded-full bg-accent motion-safe:animate-[cfDot_1.1s_ease-in-out_infinite]" aria-hidden />{pendingAction === "send" ? "Sending request…" : "Resetting preview…"}</p>}
               {response ? (
-                <div className="mt-6 motion-safe:animate-[cfFade_240ms_ease-out]">
+                <div aria-busy={sending} className={`mt-6 motion-safe:animate-[cfFade_240ms_ease-out] transition-opacity duration-200 motion-reduce:transition-none ${sending ? "opacity-45" : "opacity-100"}`}>
                   <p className={`font-mono text-[12px] font-[700] ${response.status < 400 ? "text-ok" : "text-danger"}`}>
                     HTTP {response.status} · {response.duration_ms} ms
                   </p>
@@ -184,7 +186,7 @@ export default function TryApiPage() {
                   <pre className="mt-4 max-h-[32rem] overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[12px] leading-5 whitespace-pre-wrap break-all text-term-fg">{displayBody(response.body) || "No response body"}</pre>
                   {response.truncated && <p className="mt-2 text-[12px] text-warn">Response shortened to 100 KB.</p>}
                 </div>
-              ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">Send a request to see what your API returns.</div>}
+              ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}
             </section>
             </div>
           </section>

@@ -989,16 +989,6 @@
   animation: cfRouteEnter 380ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
-[data-run-flow-page] {
-  transition: opacity 150ms cubic-bezier(0.55, 0, 1, 0.45), transform 150ms cubic-bezier(0.55, 0, 1, 0.45);
-}
-
-[data-run-flow-page].cf-run-flow-exit {
-  opacity: 0;
-  transform: translateY(-8px);
-  pointer-events: none;
-}
-
 /* Let browsers with same-document View Transition support animate the old page out
    and the new page in during client-side App Router navigation. Older browsers ignore
    these selectors and use the template animation above as the fallback. */
@@ -1043,6 +1033,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
+
   html,
   .cf-run-scroll {
     scroll-behavior: auto;
@@ -1050,10 +1045,6 @@
 
   .cf-route-transition {
     animation: none;
-  }
-
-  [data-run-flow-page] {
-    transition: none;
   }
 
   ::view-transition-old(root),
