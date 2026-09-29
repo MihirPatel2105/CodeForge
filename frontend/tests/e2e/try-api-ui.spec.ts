@@ -65,8 +65,7 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
     return route.fulfill({ status: method === "POST" ? 201 : 200, contentType: "application/json", body: JSON.stringify({ id: "deployment-1", run_id: runId, url: "http://localhost:8000/api/v1/deployments/deployment-1", key_prefix: "cf_live_abc", status: "active", created_at: "2026-09-24T00:00:00Z", ...(method === "POST" ? { api_key: "cf_live_abc123" } : {}) }) });
   });
 
-  await page.goto(`/runs/${runId}/try`);
-  await page.getByRole("link", { name: /Publish API/ }).click();
+  await page.goto(`/runs/${runId}/publish`);
   await expect(page).toHaveURL(new RegExp(`/runs/${runId}/publish$`));
   await page.getByRole("button", { name: "Publish API" }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
@@ -75,11 +74,16 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await page.getByRole("button", { name: "Hide key" }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
   await expect(page.getByText("http://localhost:8000/api/v1/deployments/deployment-1", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Call your published API" })).toBeVisible();
-  await expect(page.getByText(/Open Terminal on the same Mac/)).toBeVisible();
-  await expect(page.getByText(/works only on this Mac/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Connection details" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Make a request" })).toBeVisible();
+  await expect(page.getByText(/reachable only from the device running CodeForge/)).toBeVisible();
   await expect(page.getByRole("group", { name: "Published endpoints" }).getByRole("button", { name: /GET.*\/items/ })).toBeVisible();
-  await expect(page.getByText("Example response shape")).toBeVisible();
+  const responsePanel = page.getByRole("button", { name: "Example response shape" });
+  await expect(responsePanel).toHaveAttribute("aria-expanded", "false");
+  await responsePanel.click();
+  await expect(responsePanel).toHaveAttribute("aria-expanded", "true");
+  await responsePanel.click();
+  await expect(responsePanel).toHaveAttribute("aria-expanded", "false");
   await page.getByRole("button", { name: "Node.js" }).click();
   await expect(page.getByText(/process\.env\.CODEFORGE_API_KEY/)).toBeVisible();
   await page.reload();

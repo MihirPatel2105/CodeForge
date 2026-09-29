@@ -126,8 +126,8 @@ export default function PublishApiPage() {
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
       <main className="mx-auto w-full max-w-[1280px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
-        <Link href={`/runs/${id}/use`} className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-fg">
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to API options
+        <Link href={`/runs/${id}/use`} className="group inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-fg">
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden /> Back to API options
         </Link>
 
         <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
@@ -135,42 +135,48 @@ export default function PublishApiPage() {
             <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Publish your API</h1>
             <p className="mt-1 max-w-[68ch] text-[14px] leading-6 text-fg-muted">Connect another app with a hosted URL and a private key.</p>
           </div>
-          {deployment && !loading && <Link href={`/runs/${id}/try`} className="inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5" aria-hidden /></Link>}
+          {deployment && !loading && <Link href={`/runs/${id}/try`} className="group inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden /></Link>}
         </header>
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
 
         {loading ? <section className="mt-6 rounded-xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : deployment ? (
-          <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="mt-6 space-y-4 motion-safe:animate-[cfFade_300ms_ease-out]">
             <section className="min-w-0 rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-status-heading">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 id="publish-status-heading" className="font-display text-[21px] font-[650] text-fg">Connection details</h2>
-                <span className="rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[700] text-ok">Published</span>
-              </div>
-              <p className="mt-2 text-[13px] leading-5 text-fg-muted">Use this URL from your app’s backend. Keep the key out of browser code.</p>
-              <div className="mt-5">
-                <p className="text-[12px] font-[700] text-fg">Base URL</p>
-                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-                  <code className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-bg px-3 py-2 text-[12px] text-fg">{deployment.url}</code>
-                  <Button variant="outline" size="sm" aria-label={copied === "URL" ? "Base URL copied" : "Copy base URL"} onClick={() => void copy(deployment.url, "URL")}><CopyFeedback copied={copied === "URL"} label="Copy URL" /></Button>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h2 id="publish-status-heading" className="font-display text-[21px] font-[650] text-fg">Connection details</h2>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[700] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />Published</span>
+                  </div>
+                  <p className="mt-1 text-[13px] leading-5 text-fg-muted">Use the URL from your backend and keep the key private.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy}>Rotate key</Button>
+                  <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy}>Unpublish</Button>
                 </div>
               </div>
-              {apiKey ? (
-                <div className="mt-5 rounded-lg border border-warn-bd bg-warn-soft p-4">
-                  <p className="text-[12px] font-[700] text-fg">Save your API key now. It is shown only once.</p>
-                  <p className="mt-1 text-[12px] text-fg-muted">Store it on your server. Anyone with this key can use the published API.</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <code className="min-w-0 flex-1 overflow-x-auto text-[12px] text-fg">{showKey ? apiKey : "••••••••••••••••••••"}</code>
-                    <Button variant="outline" size="sm" onClick={() => setShowKey((value) => !value)}>{showKey ? "Hide key" : "Show key"}</Button>
-                    <Button variant="outline" size="sm" aria-label={copied === "key" ? "API key copied" : "Copy API key"} onClick={() => void copy(apiKey, "key")}><CopyFeedback copied={copied === "key"} label="Copy key" /></Button>
+              <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
+                <div className="min-w-0 rounded-lg border border-border bg-bg p-4">
+                  <p className="text-[12px] font-[700] text-fg">Base URL</p>
+                  <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+                    <code className="block min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-surface px-3 py-2 text-[12px] text-fg">{deployment.url}</code>
+                    <Button variant="outline" size="sm" aria-label={copied === "URL" ? "Base URL copied" : "Copy base URL"} onClick={() => void copy(deployment.url, "URL")}><CopyFeedback copied={copied === "URL"} label="Copy URL" /></Button>
                   </div>
                 </div>
-              ) : <p className="mt-5 text-[12px] leading-5 text-fg-muted">Key: {deployment.key_prefix}… · The full key was shown when published. Rotate it if you lost it.</p>}
-              <span role="status" className="sr-only">{copied ? `${copied === "key" ? "API key" : copied === "URL" ? "Base URL" : copied === "setup" ? "Terminal setup" : "Request example"} copied.` : ""}</span>
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
-                <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy}>Rotate key</Button>
-                <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy}>Unpublish and delete data</Button>
+                {apiKey ? (
+                  <div className="min-w-0 rounded-lg border border-warn-bd bg-warn-soft p-4">
+                    <p className="text-[12px] font-[700] text-fg">Save your API key now. It is shown only once.</p>
+                    <p className="mt-1 text-[12px] text-fg-muted">Store it on your server. Anyone with this key can use the published API.</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <code className="min-w-0 flex-1 overflow-x-auto text-[12px] text-fg">{showKey ? apiKey : "••••••••••••••••••••"}</code>
+                      <Button variant="outline" size="sm" onClick={() => setShowKey((value) => !value)}>{showKey ? "Hide key" : "Show key"}</Button>
+                      <Button variant="outline" size="sm" aria-label={copied === "key" ? "API key copied" : "Copy API key"} onClick={() => void copy(apiKey, "key")}><CopyFeedback copied={copied === "key"} label="Copy key" /></Button>
+                    </div>
+                  </div>
+                ) : <div className="rounded-lg border border-border bg-bg p-4"><p className="text-[12px] font-[700] text-fg">API key</p><p className="mt-2 text-[12px] leading-5 text-fg-muted"><code>{deployment.key_prefix}…</code> · The full key was shown when published. Rotate it if you lost it.</p></div>}
               </div>
+              <span role="status" className="sr-only">{copied ? `${copied === "key" ? "API key" : copied === "URL" ? "Base URL" : copied === "setup" ? "Terminal setup" : "Request example"} copied.` : ""}</span>
             </section>
             <div className="min-w-0 space-y-3">
               {operationsError && <div className="flex flex-wrap items-center gap-3 rounded-lg border border-warn-bd bg-warn-soft p-3 text-[12px] text-fg"><span>Endpoint examples could not load.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry examples</Button></div>}
