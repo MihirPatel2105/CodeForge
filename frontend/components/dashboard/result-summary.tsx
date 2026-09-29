@@ -8,6 +8,7 @@ import type { RunSnapshot } from "@/lib/run-reducer";
 export interface ResultSummaryProps {
   snapshot: RunSnapshot;
   onDownload?: () => void;
+  downloadState?: "idle" | "pending" | "started";
   onRetry?: () => void;
   tryApiHref?: string;
 }
@@ -90,7 +91,7 @@ function copyFor(
 
 /** Inline at the bottom of the Live run screen when a run ends (docs/UI_BRIEF.md
  * §3.5), and the same card set standalone on the Screens tab. */
-export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: ResultSummaryProps) {
+export function ResultSummary({ snapshot, onDownload, downloadState = "idle", onRetry, tryApiHref }: ResultSummaryProps) {
   const isPartial = snapshot.status === "succeeded" && snapshot.tests?.ok === false;
   const outcomeKey = isPartial ? "partial" : snapshot.status;
   const meta = RUN_STATUS_META[outcomeKey] ?? { label: outcomeKey, tone: "neutral" as const };
@@ -155,10 +156,16 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
             <button
               type="button"
               onClick={onDownload}
-              disabled={snapshot.files.length === 0}
-              className="shrink-0 rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={snapshot.files.length === 0 || downloadState === "pending"}
+              className="shrink-0 rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-150 hover:-translate-y-0.5 hover:bg-fg/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 disabled:hover:bg-fg disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-reduce:transform-none"
             >
-              {snapshot.files.length === 0 ? "No code generated" : "Download runnable project"}
+              {snapshot.files.length === 0
+                ? "No code generated"
+                : downloadState === "pending"
+                  ? "Preparing download…"
+                  : downloadState === "started"
+                    ? "Download started"
+                    : "Download runnable project"}
             </button>
           )}
         </div>

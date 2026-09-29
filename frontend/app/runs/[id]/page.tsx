@@ -39,6 +39,7 @@ export default function LiveRunPage() {
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
   const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloadState, setDownloadState] = useState<"idle" | "pending" | "started">("idle");
   const [actionError, setActionError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [runProjectId, setRunProjectId] = useState<string | null>(null);
@@ -165,13 +166,23 @@ export default function LiveRunPage() {
   }
 
   async function handleDownload() {
+    if (downloadState === "pending") return;
     setDownloadError(null);
+    setDownloadState("pending");
     try {
       await downloadLatestFileTree(id);
+      setDownloadState("started");
     } catch (err) {
       setDownloadError(err instanceof ApiError ? err.message : "Couldn't download the code.");
+      setDownloadState("idle");
     }
   }
+
+  useEffect(() => {
+    if (downloadState !== "started") return;
+    const timeout = window.setTimeout(() => setDownloadState("idle"), 2400);
+    return () => window.clearTimeout(timeout);
+  }, [downloadState]);
 
   function handleRetry() {
     if (!runProjectId || !snapshot.prompt) return;
@@ -307,6 +318,7 @@ export default function LiveRunPage() {
             <ResultSummary
               snapshot={snapshot}
               onDownload={handleDownload}
+              downloadState={downloadState}
               onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
               tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/try` : undefined}
             />
