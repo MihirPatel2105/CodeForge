@@ -8,7 +8,8 @@ container with `network_mode=none`. No container port is published.
 
 1. Open a run that passed all sandbox tests and click **Try API**.
 2. Click **Publish API**. Save the key shown once and copy the base URL.
-3. Append an endpoint path to the base URL. Send `Authorization: Bearer <key>`.
+3. Follow the on-page guide: select an endpoint, copy its cURL, Node.js, or Python example,
+   and send `Authorization: Bearer <key>` from a server or terminal.
 4. Rotate the key if it is lost or exposed. The old key stops working immediately.
 5. Click **Unpublish and delete data** to remove the container and named data volume.
 
@@ -36,3 +37,7 @@ the backend host.
 
 The gateway is intended for server-to-server use. It does not enable wildcard CORS;
 browser apps should call their own backend, which keeps the API key secret.
+
+Users who want to run or change the generated source can download its runnable zip.
+It includes a README, a pinned Python dependency list, Dockerfile, Compose setup, and
+the generated tests. This is separate from the hosted publication and needs no API key.

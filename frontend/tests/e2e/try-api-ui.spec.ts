@@ -51,7 +51,7 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await page.route(`**/api/backend/runs/${runId}/preview`, (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ expires_after_seconds: 900, session_started: false, operations: [{ method: "GET", path: "/items", summary: "List items", has_body: false, example_body: null }] }),
+    body: JSON.stringify({ expires_after_seconds: 900, session_started: false, operations: [{ method: "GET", path: "/items", summary: "List items", has_body: false, example_body: null, example_response: [{ id: "example", name: "example" }] }] }),
   }));
   let published = false;
   await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => {
@@ -66,6 +66,11 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await page.getByRole("button", { name: "Publish API" }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toBeVisible();
   await expect(page.getByText("https://api.example.test/api/v1/deployments/deployment-1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How to use your published API" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Published endpoints" }).getByRole("button", { name: /GET.*\/items/ })).toBeVisible();
+  await expect(page.getByText("Example response shape")).toBeVisible();
+  await page.getByRole("button", { name: "Node.js" }).click();
+  await expect(page.getByText(/process\.env\.CODEFORGE_API_KEY/)).toBeVisible();
   await page.reload();
   await expect(page.getByText(/The full key was shown when published/)).toBeVisible();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);

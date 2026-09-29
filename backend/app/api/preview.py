@@ -91,6 +91,16 @@ def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:
                 .get("application/json", {})
                 .get("schema")
             )
+            responses = operation.get("responses", {})
+            success = next(
+                (
+                    value
+                    for code, value in responses.items()
+                    if code.startswith("2") and isinstance(value, dict)
+                ),
+                {},
+            )
+            response_schema = success.get("content", {}).get("application/json", {}).get("schema")
             operations.append(
                 PreviewOperation(
                     method=method.upper(),
@@ -98,6 +108,9 @@ def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:
                     summary=operation.get("summary") or "",
                     has_body=body_schema is not None,
                     example_body=_example(body_schema, components) if body_schema else None,
+                    example_response=(
+                        _example(response_schema, components) if response_schema else None
+                    ),
                 )
             )
     return operations

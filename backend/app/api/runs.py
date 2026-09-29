@@ -183,6 +183,10 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
         raise NotFoundError("Artifact not found")
 
     payload = await read_artifact(file_id)
+    if match.kind == "file_tree":
+        from app.db.download_package import add_run_guide
+
+        payload = add_run_guide(payload)
     return Response(
         content=payload,
         media_type="application/octet-stream",

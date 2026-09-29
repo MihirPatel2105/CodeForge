@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Play, RotateCcw } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { PublishGuide } from "@/components/dashboard/publish-guide";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -218,11 +219,7 @@ export default function TryApiPage() {
                   </div>
                 </div>
               ) : <p className="text-[12px] text-fg-muted">Key: {deployment.key_prefix}… · The full key was shown when published. Rotate it if you lost it.</p>}
-              <div>
-                <p className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Example request</p>
-                <pre className="mt-2 overflow-x-auto rounded-lg bg-term-bg p-4 font-mono text-[11px] leading-5 text-term-fg">{`curl -H 'Authorization: Bearer ${apiKey ?? "YOUR_API_KEY"}' '${deployment.url}${preview?.operations.find((item) => item.method === "GET")?.path ?? "/items"}'`}</pre>
-                <p className="mt-2 text-[12px] text-fg-muted">Keep the key on your server, never in browser code. Requests and responses use JSON; hosted data is deleted when you unpublish.</p>
-              </div>
+              <PublishGuide url={deployment.url} status={deployment.status} operations={preview?.operations ?? []} onCopy={(value) => void copy(value)} />
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={rotateKey} disabled={deploymentBusy}>Rotate key</Button>
                 <Button variant="destructive" size="sm" onClick={unpublish} disabled={deploymentBusy}>Unpublish and delete data</Button>

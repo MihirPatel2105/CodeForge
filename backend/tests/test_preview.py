@@ -77,6 +77,15 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
             "/items": {
                 "post": {
                     "summary": "Create item",
+                    "responses": {
+                        "201": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/ItemRead"}
+                                }
+                            }
+                        }
+                    },
                     "requestBody": {
                         "content": {
                             "application/json": {
@@ -92,7 +101,11 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
                 "ItemCreate": {
                     "type": "object",
                     "properties": {"name": {"type": "string"}, "count": {"type": "integer"}},
-                }
+                },
+                "ItemRead": {
+                    "type": "object",
+                    "properties": {"id": {"type": "string"}, "name": {"type": "string"}},
+                },
             }
         },
     }
@@ -109,6 +122,7 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
                 "summary": "Create item",
                 "has_body": True,
                 "example_body": {"name": "example", "count": 0},
+                "example_response": {"id": "example", "name": "example"},
             }
         ]
         execute.return_value = {

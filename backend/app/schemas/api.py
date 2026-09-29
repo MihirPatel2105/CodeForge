@@ -600,6 +600,7 @@ class PreviewOperation(BaseModel):
     summary: str = ""
     has_body: bool = False
     example_body: Any | None = None
+    example_response: Any | None = None
 
 
 class PreviewInfo(BaseModel):

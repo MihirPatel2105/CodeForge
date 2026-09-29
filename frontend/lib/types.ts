@@ -410,6 +410,7 @@ export interface PreviewOperation {
   summary: string;
   has_body: boolean;
   example_body: unknown | null;
+  example_response?: unknown | null;
 }
 
 export interface PreviewInfo {

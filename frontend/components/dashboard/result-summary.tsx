@@ -158,7 +158,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
               disabled={snapshot.files.length === 0}
               className="shrink-0 rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {snapshot.files.length === 0 ? "No code generated" : "Download code"}
+              {snapshot.files.length === 0 ? "No code generated" : "Download runnable project"}
             </button>
           )}
         </div>
