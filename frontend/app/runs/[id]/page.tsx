@@ -320,7 +320,7 @@ export default function LiveRunPage() {
               onDownload={handleDownload}
               downloadState={downloadState}
               onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
-              tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/try` : undefined}
+              tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : undefined}
             />
           </section>
         )}
