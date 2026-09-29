@@ -118,7 +118,7 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
           </div>
         </div>
       ) : <p className="mt-5 text-[12px] text-fg-muted">Endpoint examples are unavailable. Open Try API to inspect the generated routes.</p>}
-      <div className="mt-5 grid gap-3 border-t border-border pt-5 md:grid-cols-2">
+      <div className="mt-5 grid items-start gap-3 border-t border-border pt-5 md:grid-cols-2">
         <AnimatedDisclosure title="Setup instructions">
           <ol className="list-decimal space-y-2 pl-5">
             <li>{apiKey ? "Copy the setup command above; it includes the new key." : "Replace PASTE_KEY_HERE with your saved key. If you lost it, rotate the key in Connection details."} Run it, then use the same Terminal window for the request.</li>

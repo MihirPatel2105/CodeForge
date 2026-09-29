@@ -84,6 +84,15 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await expect(responsePanel).toHaveAttribute("aria-expanded", "true");
   await responsePanel.click();
   await expect(responsePanel).toHaveAttribute("aria-expanded", "false");
+  const setupPanel = page.getByRole("button", { name: "Setup instructions" });
+  const helpPanel = page.getByRole("button", { name: "Getting a 404 response?" });
+  await setupPanel.click();
+  await expect(helpPanel).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(async () => (await helpPanel.locator("..").boundingBox())?.height ?? 999).toBeLessThan(90);
+  await setupPanel.click();
+  await helpPanel.click();
+  await expect(setupPanel).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(async () => (await setupPanel.locator("..").boundingBox())?.height ?? 999).toBeLessThan(90);
   await page.getByRole("button", { name: "Node.js" }).click();
   await expect(page.getByText(/process\.env\.CODEFORGE_API_KEY/)).toBeVisible();
   await page.reload();
