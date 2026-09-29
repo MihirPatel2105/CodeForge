@@ -37,10 +37,11 @@ back to the Coder within a bounded loop; the sandbox executes the generated API 
 network access. MongoDB stores run state and per-iteration artifacts, which power stream replay
 and the code Diff panel. The supported generation domain is single- and two-entity CRUD APIs.
 
-After a run passes its tests, **Try API** lets the owner call its endpoints in a private,
-15-minute sandbox. From that page, **Publish API** gives the owner a stable URL and a
-one-time API key for server-side callers, with endpoint and code examples. The generated
-source download includes a README and Docker Compose setup so it can run independently
+After a run passes its tests, **Use your API** offers three paths: test endpoints in a private,
+15-minute sandbox, publish for another app, or download runnable source. **Publish API**
+gives the owner a stable URL and a one-time API key for server-side callers, with endpoint
+and code examples. The generated source download includes a README and Docker Compose
+setup so it can run independently
 with `docker compose up --build`. Published data lives in a private Docker
 volume until the owner unpublishes. The CodeForge backend and Docker host must remain
 online; set `API_PUBLIC_BASE_URL` to an HTTPS backend origin for external access.

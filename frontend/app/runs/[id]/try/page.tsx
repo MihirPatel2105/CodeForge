@@ -3,15 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Play, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Play, RotateCcw } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { PublishGuide } from "@/components/dashboard/publish-guide";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/lib/use-current-user";
-import { api, ApiError } from "@/lib/api";
-import type { DeploymentInfo, PreviewInfo, PreviewOperation, PreviewResult } from "@/lib/types";
+import { api, ApiError, downloadLatestFileTree } from "@/lib/api";
+import type { PreviewInfo, PreviewOperation, PreviewResult } from "@/lib/types";
 
 function displayBody(body: string): string {
   try {
@@ -33,10 +32,7 @@ export default function TryApiPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deployment, setDeployment] = useState<DeploymentInfo | null>(null);
-  const [deploymentLoading, setDeploymentLoading] = useState(true);
-  const [deploymentBusy, setDeploymentBusy] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [downloadBusy, setDownloadBusy] = useState(false);
 
   const choose = useCallback((operation: PreviewOperation, index: number) => {
     setSelected(index);
@@ -67,65 +63,17 @@ export default function TryApiPage() {
       return;
     }
     void load();
-    void api.getDeployment(id)
-      .then(setDeployment)
-      .catch((err: unknown) => {
-        if (!(err instanceof ApiError && err.status === 404)) {
-          setError(err instanceof ApiError ? err.message : "Couldn't load publishing status.");
-        }
-      })
-      .finally(() => setDeploymentLoading(false));
   }, [id, load, router, sessionLoading, user]);
 
-  async function publish() {
-    setDeploymentBusy(true);
+  async function download() {
+    setDownloadBusy(true);
     setError(null);
     try {
-      const created = await api.publishRun(id);
-      setDeployment(created);
-      setApiKey(created.api_key);
+      await downloadLatestFileTree(id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't publish this API.");
+      setError(err instanceof ApiError ? err.message : "Couldn't download the project.");
     } finally {
-      setDeploymentBusy(false);
-    }
-  }
-
-  async function rotateKey() {
-    if (!window.confirm("Replace the API key? Apps using the old key will stop working.")) return;
-    setDeploymentBusy(true);
-    setError(null);
-    try {
-      const updated = await api.rotateDeploymentKey(id);
-      setDeployment(updated);
-      setApiKey(updated.api_key);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't rotate the API key.");
-    } finally {
-      setDeploymentBusy(false);
-    }
-  }
-
-  async function unpublish() {
-    if (!window.confirm("Unpublish this API and permanently delete its hosted data?")) return;
-    setDeploymentBusy(true);
-    setError(null);
-    try {
-      await api.unpublishRun(id);
-      setDeployment(null);
-      setApiKey(null);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't unpublish this API.");
-    } finally {
-      setDeploymentBusy(false);
-    }
-  }
-
-  async function copy(value: string) {
-    try {
-      await navigator.clipboard.writeText(value);
-    } catch {
-      setError("Copy failed. Select the text and copy it manually.");
+      setDownloadBusy(false);
     }
   }
 
@@ -182,50 +130,40 @@ export default function TryApiPage() {
         </Link>
 
         <section className="cf-run-hero mt-5 rounded-xl border border-border bg-surface p-6 md:p-9">
-          <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">temporary sandbox</span>
-          <h1 className="font-display mt-3 text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[38px]">Try your API</h1>
-          <p className="mt-3 max-w-[70ch] text-[14px] leading-6 text-fg-muted">
-            Choose an endpoint, edit the example request, and press Send. No setup or API key is needed here.
-            This preview stays private, has no public URL, and its data resets after 15 minutes.
-          </p>
+          <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">tests passed · choose your next step</span>
+          <h1 className="font-display mt-3 text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[38px]">Your API is ready</h1>
+          <p className="mt-3 max-w-[70ch] text-[14px] leading-6 text-fg-muted">You can test it here, connect it to another app, or download the source and run it yourself. Pick the option that matches what you want to do.</p>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-surface p-6 md:p-9" aria-labelledby="publish-heading">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.14em] text-accent">use it outside CodeForge</span>
-              <h2 id="publish-heading" className="font-display mt-2 text-[22px] font-[650] text-fg">Publish your API</h2>
-            </div>
-            {!deploymentLoading && !deployment && <Button onClick={publish} disabled={deploymentBusy}>Publish API</Button>}
+        <section className="mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
+          <a href="#test-api" className="group rounded-xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
+            <span className="font-mono text-[11px] font-[700] text-accent">01 · test here</span>
+            <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Try an endpoint</h2>
+            <p className="mt-2 text-[12px] leading-5 text-fg-muted">See requests and responses now. No setup or key needed.</p>
+            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open tester <ArrowRight className="h-3.5 w-3.5" aria-hidden /></span>
+          </a>
+          <Link href={`/runs/${id}/publish`} className="group rounded-xl border border-border bg-surface p-5 hover:border-accent-bd focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
+            <span className="font-mono text-[11px] font-[700] text-fg-faint">02 · connect an app</span>
+            <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Publish API</h2>
+            <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
+            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <ArrowRight className="h-3.5 w-3.5" aria-hidden /></span>
+          </Link>
+          <div className="rounded-xl border border-border bg-surface p-5">
+            <span className="font-mono text-[11px] font-[700] text-fg-faint">03 · run it yourself</span>
+            <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
+            <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable zip with a README, Docker setup, and tests.</p>
+            <p className="mt-3 text-[11px] leading-5 text-fg-muted">After unzipping: run <code className="text-fg">docker compose up --build</code> in that folder, then open <code className="text-fg">localhost:8000/docs</code>.</p>
+            <button type="button" onClick={() => void download()} disabled={downloadBusy} className="mt-4 inline-flex items-center gap-1 rounded-sm text-[12px] font-[700] text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50">{downloadBusy ? "Downloading…" : "Download project"} <Download className="h-3.5 w-3.5" aria-hidden /></button>
           </div>
-          <p className="mt-3 max-w-[75ch] text-[13px] leading-6 text-fg-muted">
-            Get a stable URL and an API key for apps or server-side scripts. The API works while your CodeForge backend and Docker host are online. One published API per account; up to 60 requests per minute.
-          </p>
-          {deploymentLoading ? <p className="mt-4 text-[12px] text-fg-muted">Checking publishing status…</p> : deployment && (
-            <div className="mt-5 space-y-4">
-              <div>
-                <p className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Base URL</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <code className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-bg px-3 py-2 text-[12px] text-fg">{deployment.url}</code>
-                  <Button variant="outline" size="sm" aria-label="Copy base URL" onClick={() => void copy(deployment.url)}><Copy aria-hidden /></Button>
-                </div>
-              </div>
-              {apiKey ? (
-                <div className="rounded-lg border border-warn-bd bg-warn-soft p-4">
-                  <p className="text-[12px] font-[700] text-fg">Save this key now. It is shown only once.</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <code className="min-w-0 flex-1 overflow-x-auto text-[12px] text-fg">{apiKey}</code>
-                    <Button variant="outline" size="sm" aria-label="Copy API key" onClick={() => void copy(apiKey)}><Copy aria-hidden /></Button>
-                  </div>
-                </div>
-              ) : <p className="text-[12px] text-fg-muted">Key: {deployment.key_prefix}… · The full key was shown when published. Rotate it if you lost it.</p>}
-              <PublishGuide url={deployment.url} status={deployment.status} operations={preview?.operations ?? []} onCopy={(value) => void copy(value)} />
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={rotateKey} disabled={deploymentBusy}>Rotate key</Button>
-                <Button variant="destructive" size="sm" onClick={unpublish} disabled={deploymentBusy}>Unpublish and delete data</Button>
-              </div>
-            </div>
-          )}
+        </section>
+
+        <section className="mt-6 rounded-xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">
+          <h2 id="where-to-run-heading" className="font-display text-[17px] font-[650] text-fg">Where does each option run?</h2>
+          <div className="mt-3 grid gap-3 text-[12px] leading-5 text-fg-muted md:grid-cols-3">
+            <p><strong className="text-fg">Try here:</strong> Works in this page. Nothing to install.</p>
+            <p><strong className="text-fg">Publish:</strong> CodeForge runs the API. Your backend sends requests with the key.</p>
+            <p><strong className="text-fg">Download:</strong> You run the API on your computer with Docker. Use port 8001 if CodeForge already uses 8000.</p>
+          </div>
         </section>
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
@@ -233,7 +171,12 @@ export default function TryApiPage() {
         {loading ? (
           <p className="mt-8 font-mono text-[12px] text-fg-muted">Starting your temporary API…</p>
         ) : preview ? (
-          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <section id="test-api" className="mt-9 scroll-mt-8" aria-labelledby="test-api-heading">
+            <div className="mb-4">
+              <h2 id="test-api-heading" className="font-display text-[23px] font-[650] text-fg">Try your API</h2>
+              <p className="mt-1 text-[13px] leading-5 text-fg-muted">Choose an endpoint, edit the example request, then press Send. This private preview resets after 15 minutes.</p>
+            </div>
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <section className="rounded-xl border border-border bg-surface p-6" aria-labelledby="request-heading">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="request-heading" className="font-display text-[21px] font-[650] text-fg">Request</h2>
@@ -283,7 +226,8 @@ export default function TryApiPage() {
                 </div>
               ) : <p className="mt-6 text-[13px] text-fg-muted">Send a request to see what your API returns.</p>}
             </section>
-          </div>
+            </div>
+          </section>
         ) : (
           <Button variant="outline" onClick={() => void load()} className="mt-6">Try again</Button>
         )}

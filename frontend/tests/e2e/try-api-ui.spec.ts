@@ -29,6 +29,9 @@ test("a user can send a generated API request and reset preview data", async ({ 
   });
 
   await page.goto(`/runs/${runId}/try`);
+  await expect(page.getByRole("heading", { name: "Your API is ready" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Ways to use your API" }).getByRole("link", { name: /Publish API/ })).toBeVisible();
+  await expect(page.getByText(/docker compose up --build/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Try your API" })).toBeVisible();
   await expect(page.getByLabel("JSON body")).toContainText("example");
   await page.getByLabel("JSON body").fill('{"name":"sample"}');
@@ -59,14 +62,22 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
     if (method === "POST") published = true;
     if (method === "DELETE") published = false;
     if (!published) return route.fulfill({ status: method === "DELETE" ? 204 : 404, contentType: "application/json", body: method === "DELETE" ? "" : JSON.stringify({ error: { code: "not_found", message: "No published API" } }) });
-    return route.fulfill({ status: method === "POST" ? 201 : 200, contentType: "application/json", body: JSON.stringify({ id: "deployment-1", run_id: runId, url: "https://api.example.test/api/v1/deployments/deployment-1", key_prefix: "cf_live_abc", status: "active", created_at: "2026-09-24T00:00:00Z", ...(method === "POST" ? { api_key: "cf_live_abc123" } : {}) }) });
+    return route.fulfill({ status: method === "POST" ? 201 : 200, contentType: "application/json", body: JSON.stringify({ id: "deployment-1", run_id: runId, url: "http://localhost:8000/api/v1/deployments/deployment-1", key_prefix: "cf_live_abc", status: "active", created_at: "2026-09-24T00:00:00Z", ...(method === "POST" ? { api_key: "cf_live_abc123" } : {}) }) });
   });
 
   await page.goto(`/runs/${runId}/try`);
+  await page.getByRole("link", { name: /Publish API/ }).click();
+  await expect(page).toHaveURL(new RegExp(`/runs/${runId}/publish$`));
   await page.getByRole("button", { name: "Publish API" }).click();
+  await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Show key" }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toBeVisible();
-  await expect(page.getByText("https://api.example.test/api/v1/deployments/deployment-1", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "How to use your published API" })).toBeVisible();
+  await page.getByRole("button", { name: "Hide key" }).click();
+  await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("http://localhost:8000/api/v1/deployments/deployment-1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Call your published API" })).toBeVisible();
+  await expect(page.getByText(/Open Terminal on the same Mac/)).toBeVisible();
+  await expect(page.getByText(/works only on this Mac/)).toBeVisible();
   await expect(page.getByRole("group", { name: "Published endpoints" }).getByRole("button", { name: /GET.*\/items/ })).toBeVisible();
   await expect(page.getByText("Example response shape")).toBeVisible();
   await page.getByRole("button", { name: "Node.js" }).click();
@@ -74,4 +85,7 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await page.reload();
   await expect(page.getByText(/The full key was shown when published/)).toBeVisible();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole("heading", { name: "Publish your API" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });

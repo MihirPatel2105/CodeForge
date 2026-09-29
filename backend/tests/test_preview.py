@@ -121,8 +121,8 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
                 "path": "/items",
                 "summary": "Create item",
                 "has_body": True,
-                "example_body": {"name": "example", "count": 0},
-                "example_response": {"id": "example", "name": "example"},
+                "example_body": {"name": "Alex", "count": 0},
+                "example_response": {"id": "example", "name": "Alex"},
             }
         ]
         execute.return_value = {

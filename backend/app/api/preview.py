@@ -46,7 +46,9 @@ async def _call(
     return result
 
 
-def _example(schema: dict[str, Any], components: dict[str, Any], depth: int = 0) -> Any:
+def _example(
+    schema: dict[str, Any], components: dict[str, Any], depth: int = 0, field: str = ""
+) -> Any:
     if depth > 3:
         return None
     ref = schema.get("$ref")
@@ -59,20 +61,26 @@ def _example(schema: dict[str, Any], components: dict[str, Any], depth: int = 0)
     variants = schema.get("anyOf") or schema.get("oneOf")
     if isinstance(variants, list):
         schema = next((item for item in variants if item.get("type") != "null"), {})
-        return _example(schema, components, depth + 1)
+        return _example(schema, components, depth + 1, field)
     kind = schema.get("type")
     if kind == "object" or "properties" in schema:
         return {
-            key: _example(value, components, depth + 1)
+            key: _example(value, components, depth + 1, key)
             for key, value in schema.get("properties", {}).items()
         }
     if kind == "array":
-        return [_example(schema.get("items", {}), components, depth + 1)]
+        return [_example(schema.get("items", {}), components, depth + 1, field)]
     if kind == "integer" or kind == "number":
         return 0
     if kind == "boolean":
         return False
-    return "example@example.com" if schema.get("format") == "email" else "example"
+    if schema.get("format") == "email" or field == "email":
+        return "alex@example.com"
+    if field in {"phone", "phone_number", "mobile"}:
+        return "9876543210"
+    if field == "name":
+        return "Alex"
+    return "example"
 
 
 def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:

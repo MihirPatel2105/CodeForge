@@ -139,7 +139,7 @@ export function ResultSummary({ snapshot, onDownload, onRetry, tryApiHref }: Res
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           {tryApiHref && outcomeKey === "succeeded" && (
             <Link href={tryApiHref} className="rounded-lg border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
-              Try API
+              Use your API
             </Link>
           )}
           {onRetry && outcomeKey !== "succeeded" && (

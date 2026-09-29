@@ -6,8 +6,8 @@ container with `network_mode=none`. No container port is published.
 
 ## Owner flow
 
-1. Open a run that passed all sandbox tests and click **Try API**.
-2. Click **Publish API**. Save the key shown once and copy the base URL.
+1. Open a run that passed all sandbox tests and click **Use your API**.
+2. Choose **Publish API**. Copy the one-time key and the base URL; reveal the key only if needed.
 3. Follow the on-page guide: select an endpoint, copy its cURL, Node.js, or Python example,
    and send `Authorization: Bearer <key>` from a server or terminal.
 4. Rotate the key if it is lost or exposed. The old key stops working immediately.
