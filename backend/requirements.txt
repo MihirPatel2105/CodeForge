@@ -17,6 +17,7 @@ instructor  # structured output; every agent handoff goes through it
 
 langgraph
 langgraph-checkpoint-mongodb  # MongoDBSaver: resumable runs
+chromadb==1.5.9  # curated example retrieval for RAG-enabled runs
 
 pytest
 httpx
