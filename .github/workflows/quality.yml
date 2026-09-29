@@ -8,18 +8,15 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    # Limiter tests use isolated fake Redis; a shared service makes unrelated
+    # registration fixtures exhaust the same IP-based counter across the suite.
     services:
       mongo:
         image: mongo:7
         ports: ["27017:27017"]
-      redis:
-        image: redis:7-alpine
-        ports: ["6379:6379"]
     defaults:
       run:
         working-directory: backend
-    env:
-      REDIS_URL: redis://localhost:6379/0
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
