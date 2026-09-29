@@ -166,7 +166,7 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
   return (
     <li
       className={cn(
-        "relative min-h-[150px] overflow-hidden rounded-[18px] border bg-surface p-4 shadow-[0_2px_9px_rgba(35,50,81,0.035)] transition-[border-color,background-color,box-shadow] duration-300",
+        "relative min-h-[150px] overflow-hidden rounded-2xl border bg-surface p-4 shadow-[0_2px_9px_rgba(35,50,81,0.035)] transition-[border-color,background-color,box-shadow] duration-300",
         agent.position,
         state === "working" && "border-accent-bd bg-accent-soft/65 shadow-[0_10px_28px_rgba(63,71,201,0.1)]",
         state === "done" && "border-ok-bd bg-white",
@@ -233,7 +233,7 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
   const complete = step.id === "complete";
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-border bg-[#f7f9fd] p-4 shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
+    <div className="relative overflow-hidden rounded-3xl border border-border bg-[#f7f9fd] p-4 shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-1 pb-4">
         <div>
           <span className="text-[12px] font-[650] text-fg-muted">Live agent run</span>

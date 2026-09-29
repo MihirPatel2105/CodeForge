@@ -155,7 +155,7 @@ export function TotpSettings({
     <div className="space-y-6">
       <section
         className={cn(
-          "overflow-hidden rounded-[20px] border shadow-[0_18px_50px_rgba(23,32,51,0.04)]",
+          "overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(23,32,51,0.04)]",
           enabled ? "border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
         )}
       >
@@ -190,14 +190,14 @@ export function TotpSettings({
 
       {!enabled ? (
         <>
-          <ol className="grid overflow-hidden rounded-[20px] border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
+          <ol className="grid overflow-hidden rounded-2xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
             <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
             <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
-            <section className="grid overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_18px_50px_rgba(23,32,51,0.04)] lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_18px_50px_rgba(23,32,51,0.04)] lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="px-6 py-7 md:px-8 md:py-8">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
@@ -222,7 +222,7 @@ export function TotpSettings({
             </section>
           ) : (
             <>
-              <section className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(23,32,51,0.04)] md:px-8">
+              <section className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(23,32,51,0.04)] md:px-8">
                 <span className={cn(LABEL, "text-accent")}>step 02</span>
                 <div className="mt-2 flex items-start gap-3">
                   <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />

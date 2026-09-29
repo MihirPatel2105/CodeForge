@@ -151,7 +151,7 @@ export function OutcomeShowcase() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
-          <div className="overflow-hidden rounded-[28px] border border-border bg-white shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)]">
+          <div className="overflow-hidden rounded-3xl border border-border bg-white shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[650] text-ok">

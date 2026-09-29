@@ -120,7 +120,7 @@ export default function PasskeysPage() {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
             onSubmit={addPasskey}
-            className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7"
+            className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7"
           >
             <span className="text-[12px] font-[650] text-accent">
               New passkey
@@ -191,7 +191,7 @@ export default function PasskeysPage() {
               </Button>
             </div>
           </form>
-          <section className="rounded-[20px] border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7">
+          <section className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[12px] font-[650] text-fg-muted">Saved methods</span>

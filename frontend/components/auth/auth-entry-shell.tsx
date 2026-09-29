@@ -27,7 +27,7 @@ export function AuthEntryShell({
       </header>
 
       <main className="cf-auth-stage relative z-10 mx-auto flex min-h-[calc(100dvh-76px)] max-w-[1160px] items-center px-4 pb-10 pt-2 sm:px-8 sm:pb-14">
-        <div className="cf-auth-card grid w-full overflow-hidden rounded-[28px] border border-border bg-white shadow-[0_28px_85px_rgba(31,46,77,0.09)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.88fr)]">
+        <div className="cf-auth-card grid w-full overflow-hidden rounded-3xl border border-border bg-white shadow-[0_28px_85px_rgba(31,46,77,0.09)] lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.88fr)]">
           <section className="cf-auth-form-pane min-w-0 px-6 py-9 sm:px-10 sm:py-12 lg:px-14 lg:py-14" aria-label={label}>
             <div className="mx-auto w-full max-w-[430px]">{children}</div>
           </section>

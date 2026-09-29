@@ -91,7 +91,7 @@ export default function SettingsPage() {
           Back to profile
         </Link>
 
-        <section className="cf-account-hero relative mt-4 overflow-hidden rounded-[24px] border border-border bg-surface px-6 py-8 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:px-8 md:px-10 md:py-9">
+        <section className="cf-account-hero relative mt-4 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-8 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:px-8 md:px-10 md:py-9">
           <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         </nav>
 
         {user?.is_admin ? (
-          <section className="mt-6 overflow-hidden rounded-[20px] border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
+          <section className="mt-6 overflow-hidden rounded-2xl border border-accent-bd bg-accent-soft/55 shadow-[0_16px_45px_rgba(73,67,214,0.05)]">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="flex items-start gap-4 px-6 py-6 md:px-7">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
@@ -179,7 +179,7 @@ export default function SettingsPage() {
         />
 
         <div className="mt-4 grid items-start gap-5 lg:grid-cols-2">
-          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <Laptop className="h-4 w-4 text-accent" aria-hidden />
@@ -227,7 +227,7 @@ export default function SettingsPage() {
             )}
           </section>
 
-          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <MonitorSmartphone
@@ -260,7 +260,7 @@ export default function SettingsPage() {
         {user ? (
           <section
             aria-label="Sign-in methods"
-            className="mt-4 overflow-hidden rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]"
+            className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]"
           >
             <ul className="divide-y divide-rule">
               <SecurityMethodRow
@@ -315,8 +315,8 @@ export default function SettingsPage() {
         <section
           className={
             user?.is_admin
-              ? "mt-4 overflow-hidden rounded-[20px] border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
-              : "mt-4 overflow-hidden rounded-[20px] border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
+              ? "mt-4 overflow-hidden rounded-2xl border border-accent-bd bg-accent-soft/35 shadow-[0_16px_45px_rgba(73,67,214,0.04)]"
+              : "mt-4 overflow-hidden rounded-2xl border border-danger-bd bg-danger-soft/35 shadow-[0_16px_45px_rgba(190,35,29,0.04)]"
           }
         >
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">

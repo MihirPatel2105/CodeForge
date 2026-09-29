@@ -18,7 +18,7 @@ export function ClosingBanner() {
   const user = useCurrentUser();
 
   return (
-    <div className="cf-closing-banner flex flex-col items-start gap-7 rounded-[24px] border border-border px-7 py-9 sm:px-9 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-10">
+    <div className="cf-closing-banner flex flex-col items-start gap-7 rounded-3xl border border-border px-7 py-9 sm:px-9 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-10">
       <h2 className="font-display max-w-[22ch] text-[25px] font-[600] leading-[1.2] tracking-[-0.04em] text-fg md:text-[30px]">
         {user ? "Your agents are standing by." : "One sentence in. A tested API out."}
       </h2>

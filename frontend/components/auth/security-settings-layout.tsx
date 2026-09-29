@@ -36,7 +36,7 @@ export function SecuritySettingsLayout({
           Back to settings
         </Link>
 
-        <header className="cf-account-hero relative mt-4 flex flex-col gap-5 overflow-hidden rounded-[24px] border border-border bg-surface p-6 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:flex-row sm:items-start sm:p-8 md:p-10">
+        <header className="cf-account-hero relative mt-4 flex flex-col gap-5 overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-[0_22px_65px_rgba(23,32,51,0.06)] sm:flex-row sm:items-start sm:p-8 md:p-10">
           <span className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
             <Icon className="h-5 w-5" aria-hidden />
           </span>

@@ -54,7 +54,7 @@ export function AuthEntryProof({ variant = "product" }: { variant?: "product" | 
       </div>
 
       {!recovery && !security && <div className="relative z-10 mt-auto pt-10">
-        <div className="rounded-[20px] border border-border bg-white/85 p-4 shadow-[0_12px_32px_rgba(54,69,120,0.06)]">
+        <div className="rounded-2xl border border-border bg-white/85 p-4 shadow-[0_12px_32px_rgba(54,69,120,0.06)]">
           <div className="flex items-center justify-between gap-3">
             <span className="truncate font-mono text-[11px] text-fg-muted">library-api / run 01</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2 py-1 text-[11px] font-[700] text-ok">

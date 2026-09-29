@@ -108,7 +108,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <section className="cf-account-hero relative overflow-hidden rounded-[24px] border border-border bg-surface shadow-[0_22px_65px_rgba(23,32,51,0.06)]">
+        <section className="cf-account-hero relative overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_22px_65px_rgba(23,32,51,0.06)]">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_25rem]">
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
               <div>
@@ -118,7 +118,7 @@ export default function ProfilePage() {
                 </span>
 
                 <div className="mt-8 flex items-center gap-4 sm:gap-5">
-                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-[18px] border border-accent-bd bg-accent-soft text-[21px] font-[700] text-accent sm:h-20 sm:w-20 sm:text-[25px]">
+                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-[21px] font-[700] text-accent sm:h-20 sm:w-20 sm:text-[25px]">
                     {user?.initials ?? "—"}
                   </span>
                   <div className="min-w-0">
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         )}
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
@@ -196,7 +196,7 @@ export default function ProfilePage() {
             </dl>
           </section>
 
-          <section className="rounded-[20px] border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>Quick access</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">

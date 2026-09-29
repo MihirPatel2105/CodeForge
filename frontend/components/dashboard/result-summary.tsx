@@ -49,7 +49,7 @@ function copyFor(
     case "partial":
       return {
         headline: `Code runs, ${failedTests} ${plural(failedTests, "behaviour is", "behaviours are")} wrong.`,
-        detail: `The container built and served the app; ${failedTests} of ${totalTests} tests fail. This is the most common ending, not an error.`,
+        detail: `The container built and served the app; ${failedTests} of ${totalTests} tests fail. Review the test output before using this API.`,
       };
     case "failed_max_loops":
       return {

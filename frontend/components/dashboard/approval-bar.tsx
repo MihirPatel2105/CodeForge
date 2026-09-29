@@ -63,7 +63,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <section className="mt-5 overflow-hidden rounded-[24px] border border-warn-bd bg-white shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
+    <section className="mt-5 overflow-hidden rounded-3xl border border-warn-bd bg-white shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
       <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-[#fffaf3] px-5 py-4 sm:px-6">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-white text-warn">
           <ShieldCheck className="h-5 w-5" aria-hidden />

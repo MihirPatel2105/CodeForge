@@ -38,9 +38,12 @@ export default function ProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const list = await api.listProjects();
       // The list endpoint carries no run data, so each project's history is fetched in
@@ -67,6 +70,8 @@ export default function ProjectsPage() {
         return;
       }
       setError(err instanceof ApiError ? err.message : "Couldn't load projects.");
+    } finally {
+      setLoading(false);
     }
   }, [router]);
 
@@ -142,14 +147,17 @@ export default function ProjectsPage() {
         )}
 
         {error && (
-          <p className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
-            {error}
-          </p>
+          <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+            <p>{error}</p>
+            <Button type="button" variant="outline" onClick={load} disabled={loading}>
+              Try again
+            </Button>
+          </div>
         )}
 
-        {projects == null ? (
+        {loading && projects == null ? (
           <LoadingState />
-        ) : projects.length === 0 ? (
+        ) : projects == null ? null : projects.length === 0 ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
           <section className="mt-9" aria-labelledby="project-list-heading">
