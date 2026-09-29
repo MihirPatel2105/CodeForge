@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Check, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { typeScale } from "@/lib/type-scale";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
@@ -157,15 +158,19 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
               type="button"
               onClick={onDownload}
               disabled={snapshot.files.length === 0 || downloadState === "pending"}
-              className="shrink-0 rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-150 hover:-translate-y-0.5 hover:bg-fg/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 disabled:hover:bg-fg disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-reduce:transform-none"
+              className="inline-flex min-w-[215px] shrink-0 items-center justify-center rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] hover:bg-fg/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] motion-safe:active:translate-y-0 motion-safe:active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-fg disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:disabled:hover:translate-y-0 motion-safe:disabled:hover:scale-100"
             >
-              {snapshot.files.length === 0
-                ? "No code generated"
-                : downloadState === "pending"
-                  ? "Preparing download…"
-                  : downloadState === "started"
-                    ? "Download started"
-                    : "Download runnable project"}
+              <span key={downloadState} className="inline-flex items-center justify-center gap-2 motion-safe:animate-[cfFade_0.22s_ease-out]" aria-live="polite">
+                {downloadState === "pending" && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden="true" />}
+                {downloadState === "started" && <Check className="size-4" aria-hidden="true" />}
+                {snapshot.files.length === 0
+                  ? "No code generated"
+                  : downloadState === "pending"
+                    ? "Preparing download…"
+                    : downloadState === "started"
+                      ? "Download started"
+                      : "Download runnable project"}
+              </span>
             </button>
           )}
         </div>
