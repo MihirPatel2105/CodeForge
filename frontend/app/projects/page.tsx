@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, FolderPlus, Plus } from "lucide-react";
+import { ArrowRight, FolderPlus, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,6 +94,10 @@ export default function ProjectsPage() {
         { runs: 0, succeeded: 0 },
       )
     : null;
+  const query = search.trim().toLocaleLowerCase();
+  const visibleProjects = projects?.filter((project) =>
+    `${project.name} ${project.description ?? ""}`.toLocaleLowerCase().includes(query),
+  );
 
   return (
     <div className="cf-projects min-h-screen bg-bg">
@@ -161,7 +166,7 @@ export default function ProjectsPage() {
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
           <section className="mt-9" aria-labelledby="project-list-heading">
-            <div className="flex items-end justify-between gap-5 border-b border-rule pb-4">
+            <div className="flex flex-wrap items-end justify-between gap-5 border-b border-rule pb-4">
               <div>
                 <span className={LABEL}>Your workspaces</span>
                 <h2
@@ -171,21 +176,52 @@ export default function ProjectsPage() {
                   Your projects
                 </h2>
               </div>
-              <span className="text-[12px] font-[550] text-fg-muted">
-                {projects.length} {projects.length === 1 ? "project" : "projects"}
-              </span>
+              <div className="w-full sm:w-[280px]">
+                <label htmlFor="project-search" className="sr-only">Search projects</label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden />
+                  <Input
+                    id="project-search"
+                    type="search"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search projects"
+                    className="h-11 rounded-xl border-border-strong bg-surface pl-10 pr-4 text-[14px]"
+                  />
+                </div>
+              </div>
             </div>
 
-            <ul className="mt-5 grid gap-5 lg:grid-cols-2">
-              {projects.map((project) => (
-                <li key={project.id}>
-                  <ProjectCard project={project} />
-                </li>
-              ))}
-              <li>
-                <NewProjectCard onClick={() => setOpen(true)} />
-              </li>
-            </ul>
+            <p role="status" className="mt-4 text-[12px] font-[550] text-fg-muted">
+              {query
+                ? `${visibleProjects?.length ?? 0} of ${projects.length} projects`
+                : `${projects.length} ${projects.length === 1 ? "project" : "projects"}`}
+            </p>
+
+            {visibleProjects?.length ? (
+              <ul className="mt-5 grid gap-5 lg:grid-cols-2">
+                {visibleProjects.map((project) => (
+                  <li key={project.id}>
+                    <ProjectCard project={project} />
+                  </li>
+                ))}
+                {!query && (
+                  <li>
+                    <NewProjectCard onClick={() => setOpen(true)} />
+                  </li>
+                )}
+              </ul>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-border bg-surface px-6 py-14 text-center">
+                <h3 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
+                  No matching projects
+                </h3>
+                <p className="mt-2 text-[14px] text-fg-muted">Try a different name or description.</p>
+                <Button type="button" variant="outline" onClick={() => setSearch("")} className="mt-5 rounded-xl">
+                  Clear search
+                </Button>
+              </div>
+            )}
           </section>
         )}
       </main>
