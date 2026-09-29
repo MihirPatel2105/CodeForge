@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { PublishGuide } from "@/components/dashboard/publish-guide";
+import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { Button } from "@/components/ui/button";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -125,17 +125,17 @@ export default function PublishApiPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1280px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
-        <Link href={`/runs/${id}/use`} className="group inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-fg">
+      <main data-run-flow-page className="mx-auto w-full max-w-[1280px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
+        <RunFlowLink href={`/runs/${id}/use`} className="group inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-fg">
           <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden /> Back to API options
-        </Link>
+        </RunFlowLink>
 
         <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Publish your API</h1>
             <p className="mt-1 max-w-[68ch] text-[14px] leading-6 text-fg-muted">Connect another app with a hosted URL and a private key.</p>
           </div>
-          {deployment && !loading && <Link href={`/runs/${id}/try`} className="group inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden /></Link>}
+          {deployment && !loading && <RunFlowLink href={`/runs/${id}/try`} className="group inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden /></RunFlowLink>}
         </header>
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}

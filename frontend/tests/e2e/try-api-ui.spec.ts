@@ -29,10 +29,12 @@ test("a user can send a generated API request and reset preview data", async ({ 
   });
 
   await page.goto(`/runs/${runId}/try`);
-  await expect(page.getByRole("heading", { name: "Your API is ready" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Ways to use your API" }).getByRole("link", { name: /Publish API/ })).toBeVisible();
-  await expect(page.getByText(/docker compose up --build/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Try your API" })).toBeVisible();
+  const selectBox = await page.getByRole("combobox", { name: "Endpoint" }).boundingBox();
+  const chevronBox = await page.getByTestId("endpoint-chevron").boundingBox();
+  expect(selectBox && chevronBox).toBeTruthy();
+  expect(Math.abs((selectBox!.y + selectBox!.height / 2) - (chevronBox!.y + chevronBox!.height / 2))).toBeLessThan(2);
+  expect(selectBox!.x + selectBox!.width - (chevronBox!.x + chevronBox!.width)).toBeGreaterThan(8);
   await expect(page.getByLabel("JSON body")).toContainText("example");
   await page.getByLabel("JSON body").fill('{"name":"sample"}');
   await page.getByRole("button", { name: "Send request" }).click();
@@ -42,6 +44,35 @@ test("a user can send a generated API request and reset preview data", async ({ 
 
   await page.getByRole("button", { name: "Reset data" }).click();
   await expect(page.getByText("Send a request to see what your API returns.")).toBeVisible();
+});
+
+test("run flow pages navigate between API options, tester, publish, and run", async ({ page }) => {
+  await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/me", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ id: "user-1", email: "user@example.com", first_name: "Regular", last_name: "User", created_at: "2026-09-23T00:00:00Z", is_admin: false, email_verified: true, totp_enabled: false }),
+  }));
+  await page.route(`**/api/backend/runs/${runId}/preview`, (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ expires_after_seconds: 900, session_started: false, operations: [{ method: "GET", path: "/items", summary: "List items", has_body: false, example_body: null }] }),
+  }));
+  await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "No published API" } }) }));
+
+  await page.goto(`/runs/${runId}/use`);
+  const exitStarted = await page.getByRole("link", { name: /Open tester/ }).evaluate((link) => {
+    (link as HTMLAnchorElement).click();
+    return document.querySelector("[data-run-flow-page]")?.classList.contains("cf-run-flow-exit");
+  });
+  expect(exitStarted).toBe(true);
+  await expect(page.getByRole("heading", { name: "Try your API" })).toBeVisible();
+  await page.getByRole("link", { name: "Ways to use your API" }).click();
+  await page.getByRole("link", { name: /Open publish guide/ }).click();
+  await expect(page.getByRole("heading", { name: "Publish your API" })).toBeVisible();
+  await page.getByRole("link", { name: "Back to API options" }).click();
+  await page.getByRole("link", { name: "Back to run" }).click();
+  await expect(page).toHaveURL(new RegExp(`/runs/${runId}$`));
 });
 
 test("a user can publish an API and see its one-time key", async ({ page }) => {

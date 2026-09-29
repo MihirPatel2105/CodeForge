@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Check, LoaderCircle } from "lucide-react";
-import Link from "next/link";
+import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { typeScale } from "@/lib/type-scale";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
 import { formatElapsed } from "@/lib/format";
@@ -140,9 +140,9 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
           {tryApiHref && outcomeKey === "succeeded" && (
-            <Link href={tryApiHref} className="rounded-lg border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
+            <RunFlowLink href={tryApiHref} className="rounded-lg border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
               Use your API
-            </Link>
+            </RunFlowLink>
           )}
           {onRetry && outcomeKey !== "succeeded" && (
             <button

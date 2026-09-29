@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Play, RotateCcw } from "lucide-react";
+import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -111,19 +111,21 @@ export default function TryApiPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1100px] px-6 pb-20 pt-9 md:px-10 lg:px-14">
+      <main data-run-flow-page className="mx-auto w-full max-w-[1280px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href={`/runs/${id}/use`} className="inline-flex items-center gap-2 text-[12px] font-[650] text-fg-muted transition-colors hover:text-fg">
+          <RunFlowLink href={`/runs/${id}/use`} className="group inline-flex items-center gap-2 text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg">
             <ArrowLeft className="size-4" aria-hidden /> Ways to use your API
-          </Link>
-          <Link href={`/runs/${id}`} className="text-[12px] font-[650] text-fg-muted transition-colors hover:text-fg">Back to run</Link>
+          </RunFlowLink>
+          <RunFlowLink href={`/runs/${id}`} className="text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg">Back to run</RunFlowLink>
         </div>
 
-        <section className="cf-run-hero mt-5 rounded-xl border border-border bg-surface p-6 md:p-9">
-          <span className="text-[12px] font-[700] text-accent">Private preview</span>
-          <h1 id="try-api-heading" className="mt-3 font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[38px]">Try your API</h1>
-          <p className="mt-3 max-w-[70ch] text-[14px] leading-6 text-fg-muted">Choose an endpoint, edit the example request, and send it to your generated API. The private preview resets after 15 minutes.</p>
-        </section>
+        <header className="mt-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 id="try-api-heading" className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Try your API</h1>
+            <p className="mt-1 max-w-[70ch] text-[14px] leading-6 text-fg-muted">Choose an endpoint, edit the request, and inspect the response.</p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent"><span className="size-1.5 rounded-full bg-accent" />Private preview · resets after 15 minutes</span>
+        </header>
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
 
@@ -131,33 +133,36 @@ export default function TryApiPage() {
           <p className="mt-8 font-mono text-[12px] text-fg-muted">Starting your temporary API…</p>
         ) : preview ? (
           <section className="mt-6" aria-labelledby="try-api-heading">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <section className="rounded-xl border border-border bg-surface p-6" aria-labelledby="request-heading">
+            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <section className="rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="request-heading">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="request-heading" className="font-display text-[21px] font-[650] text-fg">Request</h2>
-                <Button variant="outline" size="sm" onClick={reset} disabled={sending}>
-                  <RotateCcw className="h-3.5 w-3.5" aria-hidden /> Reset data
+                <Button variant="outline" size="sm" onClick={reset} disabled={sending} className="group">
+                  <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-rotate-45 motion-reduce:transition-none" aria-hidden /> Reset data
                 </Button>
               </div>
               {preview.operations.length === 0 ? (
                 <p className="mt-6 text-[13px] text-fg-muted">This API has no endpoints to try.</p>
               ) : (
-                <div className="mt-6 space-y-5">
+                <div className="mt-5 space-y-4">
                   <div>
-                    <label htmlFor="preview-operation" className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Endpoint</label>
-                    <select id="preview-operation" value={selected} onChange={(event) => choose(preview.operations[Number(event.target.value)], Number(event.target.value))} className="mt-2 h-11 w-full rounded-lg border border-border-strong bg-bg px-3 font-mono text-[12px] text-fg">
-                      {preview.operations.map((item, index) => <option key={`${item.method}-${item.path}`} value={index}>{item.method} {item.path}</option>)}
-                    </select>
+                    <label htmlFor="preview-operation" className="text-[12px] font-[700] text-fg">Endpoint</label>
+                    <div className="relative mt-2">
+                      <select id="preview-operation" value={selected} onChange={(event) => choose(preview.operations[Number(event.target.value)], Number(event.target.value))} className="h-11 w-full appearance-none rounded-lg border border-border-strong bg-bg px-3 pr-11 font-mono text-[12px] text-fg transition-[border-color,box-shadow] duration-200 hover:border-accent-bd focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                        {preview.operations.map((item, index) => <option key={`${item.method}-${item.path}`} value={index}>{item.method} {item.path}</option>)}
+                      </select>
+                      <ChevronDown data-testid="endpoint-chevron" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-fg-muted" aria-hidden />
+                    </div>
                     {operation?.summary && <p className="mt-2 text-[12px] text-fg-muted">{operation.summary}</p>}
                   </div>
                   <div>
-                    <label htmlFor="preview-path" className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">Path</label>
+                    <label htmlFor="preview-path" className="text-[12px] font-[700] text-fg">Path</label>
                     <Input id="preview-path" value={path} onChange={(event) => setPath(event.target.value)} className="mt-2 font-mono" />
                     {path.includes("{") && <p className="mt-2 text-[12px] text-fg-muted">Replace each name in braces with an actual ID or value.</p>}
                   </div>
                   {operation?.has_body && (
                     <div>
-                      <label htmlFor="preview-body" className="font-mono text-[10px] font-[700] uppercase tracking-[0.12em] text-fg-faint">JSON body</label>
+                      <label htmlFor="preview-body" className="text-[12px] font-[700] text-fg">JSON body</label>
                       <Textarea id="preview-body" value={body} onChange={(event) => setBody(event.target.value)} spellCheck={false} className="mt-2 min-h-48 font-mono text-[12px]" />
                     </div>
                   )}
@@ -168,10 +173,10 @@ export default function TryApiPage() {
               )}
             </section>
 
-            <section className="rounded-xl border border-border bg-surface p-6" aria-labelledby="response-heading">
+            <section className="rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="response-heading">
               <h2 id="response-heading" className="font-display text-[21px] font-[650] text-fg">Response</h2>
               {response ? (
-                <div className="mt-6">
+                <div className="mt-6 motion-safe:animate-[cfFade_240ms_ease-out]">
                   <p className={`font-mono text-[12px] font-[700] ${response.status < 400 ? "text-ok" : "text-danger"}`}>
                     HTTP {response.status} · {response.duration_ms} ms
                   </p>
@@ -179,7 +184,7 @@ export default function TryApiPage() {
                   <pre className="mt-4 max-h-[32rem] overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[12px] leading-5 whitespace-pre-wrap break-all text-term-fg">{displayBody(response.body) || "No response body"}</pre>
                   {response.truncated && <p className="mt-2 text-[12px] text-warn">Response shortened to 100 KB.</p>}
                 </div>
-              ) : <p className="mt-6 text-[13px] text-fg-muted">Send a request to see what your API returns.</p>}
+              ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">Send a request to see what your API returns.</div>}
             </section>
             </div>
           </section>
