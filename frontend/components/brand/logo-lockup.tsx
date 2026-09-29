@@ -13,12 +13,12 @@ export function LogoLockup({
     <Image
       src={
         variant === "dark"
-          ? "/brand/codeforge-lockup-dark.png"
-          : "/brand/codeforge-lockup-light.png"
+          ? "/brand/codeforge-lockup-dark-v2.png"
+          : "/brand/codeforge-lockup-light-v2.png"
       }
       alt="CodeForge"
-      width={2172}
-      height={724}
+      width={1824}
+      height={447}
       className={cn("h-auto w-auto object-contain", className)}
     />
   );

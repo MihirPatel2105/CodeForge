@@ -250,13 +250,14 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     assert "cid:" not in html
     assert (
         'src="https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/'
-        'frontend/public/brand/codeforge-lockup-light.png"'
+        'frontend/public/brand/codeforge-lockup-light-v2.png"'
     ) in html
     assert 'alt="CodeForge"' in html
 
     monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
     deployed_html = _shell(eyebrow="test", heading="Test", rows="")
-    assert 'src="https://app.codeforge.example/brand/codeforge-lockup-light.png"' in deployed_html
+    deployed_logo_url = "https://app.codeforge.example/brand/codeforge-lockup-light-v2.png"
+    assert f'src="{deployed_logo_url}"' in deployed_html
 
 
 def test_every_message_carries_a_date(monkeypatch):

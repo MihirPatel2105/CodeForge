@@ -73,14 +73,14 @@ _RADIUS = "16px"
 _BRAND = "#2457d6"
 _BRAND_LOCKUP_FALLBACK_URL = (
     "https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/"
-    "frontend/public/brand/codeforge-lockup-light.png"
+    "frontend/public/brand/codeforge-lockup-light-v2.png"
 )
 
 
 def _brand_lockup_url() -> str:
     base_url = settings.app_base_url.rstrip("/")
     if base_url.startswith("https://"):
-        return f"{base_url}/brand/codeforge-lockup-light.png"
+        return f"{base_url}/brand/codeforge-lockup-light-v2.png"
     return _BRAND_LOCKUP_FALLBACK_URL
 
 
@@ -108,8 +108,8 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
                   border-radius:20px;">
       <tr><td style="padding:28px 32px 0 32px;">
         <a href="{html_escape(settings.app_base_url, quote=True)}" style="display:inline-block;text-decoration:none;">
-          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="174" height="58"
-               style="display:block;width:174px;height:auto;border:0;outline:none;text-decoration:none;">
+          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="190" height="47"
+               style="display:block;width:190px;height:auto;border:0;outline:none;text-decoration:none;">
         </a>
       </td></tr>
 
