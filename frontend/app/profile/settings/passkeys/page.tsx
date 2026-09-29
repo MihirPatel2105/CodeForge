@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
 import { useSession } from "@/lib/use-current-user";
 import type { PasskeyInfo } from "@/lib/types";
+import { PASSKEY_NOT_COMPLETED, passkeyWasNotCompleted } from "@/lib/user-errors";
 
 export default function PasskeysPage() {
   const router = useRouter();
@@ -72,13 +73,11 @@ export default function PasskeysPage() {
       setTotpCode("");
       setMessage("Passkey added. You can use it to sign in directly or verify after your password.");
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Could not add passkey.",
-      );
+      if (passkeyWasNotCompleted(err)) {
+        setMessage(PASSKEY_NOT_COMPLETED);
+      } else {
+        setError(err instanceof ApiError ? err.message : "Could not add passkey. Please try again.");
+      }
     } finally {
       setBusy(false);
     }

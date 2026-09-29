@@ -12,11 +12,13 @@ import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, setToken } from "@/lib/api";
 import { clearPendingPasswordMfa } from "@/lib/password-mfa";
+import { PASSKEY_NOT_COMPLETED, passkeyWasNotCompleted } from "@/lib/user-errors";
 
 export default function PasskeyLoginPage() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function finish(token: string | null) {
     if (!token) throw new Error("The server did not return a session.");
@@ -28,6 +30,7 @@ export default function PasskeyLoginPage() {
 
   async function signIn() {
     setError(null);
+    setNotice(null);
     if (!browserSupportsWebAuthn()) {
       setError(
         "This browser does not support passkeys. Sign in with your password instead.",
@@ -41,13 +44,11 @@ export default function PasskeyLoginPage() {
       const result = await api.verifyPasskeyLogin(challenge_id, credential);
       await finish(result.access_token);
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Passkey sign-in failed.",
-      );
+      if (passkeyWasNotCompleted(err)) {
+        setNotice(PASSKEY_NOT_COMPLETED);
+      } else {
+        setError(err instanceof ApiError ? err.message : "Couldn't sign in with a passkey. Please try again.");
+      }
     } finally {
       setBusy(false);
     }
@@ -80,6 +81,11 @@ export default function PasskeyLoginPage() {
               className="mt-5 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
             >
               {error}
+            </p>
+          )}
+          {notice && (
+            <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">
+              {notice}
             </p>
           )}
           <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">

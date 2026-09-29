@@ -42,7 +42,7 @@ export function ForgotPasswordForm() {
       setError(
         err instanceof ApiError
           ? err.message || "Something went wrong. Try again."
-          : "Couldn't reach the server. Check that the backend is running, then try again.",
+          : "Couldn't connect right now. Please try again.",
       );
     } finally {
       setSubmitting(false);

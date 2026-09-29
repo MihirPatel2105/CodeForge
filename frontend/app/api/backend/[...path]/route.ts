@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { NextRequest, NextResponse } from "next/server";
+import { publicApiErrorMessage } from "@/lib/user-errors";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -92,35 +93,30 @@ function clearSession(response: NextResponse, request: NextRequest): void {
   response.cookies.set(PRESENT_COOKIE, "", { ...options, httpOnly: false, maxAge: 0 });
 }
 
+function proxyError(status: number, code: string): NextResponse {
+  return NextResponse.json(
+    { error: { code, message: publicApiErrorMessage(status, code) } },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
+}
+
 async function proxy(request: NextRequest): Promise<NextResponse> {
   if (!isAllowedMutation(request)) {
-    return NextResponse.json(
-      { error: { code: "forbidden", message: "Request origin rejected" } },
-      { status: 403 },
-    );
+    return proxyError(403, "forbidden");
   }
 
   if (!productionFrontendConfigured()) {
-    return NextResponse.json(
-      { error: { code: "service_unavailable", message: "Frontend security configuration is incomplete" } },
-      { status: 503 },
-    );
+    return proxyError(503, "service_unavailable");
   }
 
   const origin = backendOrigin();
   if (!origin) {
-    return NextResponse.json(
-      { error: { code: "service_unavailable", message: "Backend origin is not configured" } },
-      { status: 503 },
-    );
+    return proxyError(503, "service_unavailable");
   }
 
   const path = request.nextUrl.pathname.slice(PROXY_PREFIX.length);
   if (!path.startsWith("/") || path.startsWith("//")) {
-    return NextResponse.json(
-      { error: { code: "bad_request", message: "Invalid API path" } },
-      { status: 400 },
-    );
+    return proxyError(400, "bad_request");
   }
   const headers = new Headers();
   for (const name of [
@@ -139,10 +135,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
     request.method === "POST" &&
     path.startsWith("/auth/")
   ) {
-    return NextResponse.json(
-      { error: { code: "service_unavailable", message: "Client address unavailable" } },
-      { status: 503 },
-    );
+    return proxyError(503, "service_unavailable");
   }
   const secret = process.env.CODEFORGE_PROXY_IP_SECRET;
   if (ip && secret) {
@@ -157,11 +150,11 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const reportedLength = Number(request.headers.get("content-length") ?? 0);
   if (reportedLength > MAX_REQUEST_BYTES) {
-    return NextResponse.json({ error: { code: "too_large", message: "Request is too large" } }, { status: 413 });
+    return proxyError(413, "too_large");
   }
   const body = ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
   if (body && body.byteLength > MAX_REQUEST_BYTES) {
-    return NextResponse.json({ error: { code: "too_large", message: "Request is too large" } }, { status: 413 });
+    return proxyError(413, "too_large");
   }
 
   let upstream: Response;
@@ -175,10 +168,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
       signal: request.signal,
     });
   } catch {
-    return NextResponse.json(
-      { error: { code: "service_unavailable", message: "Backend unavailable" } },
-      { status: 502 },
-    );
+    return proxyError(502, "service_unavailable");
   }
 
   const responseHeaders = new Headers({
@@ -190,6 +180,36 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
     if (value) responseHeaders.set(name, value);
   }
 
+  if (upstream.status >= 400) {
+    let code = "request_failed";
+    if (upstream.headers.get("content-type")?.includes("application/json")) {
+      try {
+        const payload = await upstream.json();
+        const upstreamCode = payload?.error?.code;
+        if (["rate_limited", "account_suspended", "usage_limit_reached"].includes(upstreamCode)) {
+          code = upstreamCode;
+        }
+      } catch {
+        // Never forward an upstream error body to the browser.
+      }
+    }
+    const response = NextResponse.json(
+      { error: { code, message: publicApiErrorMessage(upstream.status, code) } },
+      {
+        status: upstream.status,
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+          ...(responseHeaders.has("retry-after") ? { "Retry-After": responseHeaders.get("retry-after")! } : {}),
+        },
+      },
+    );
+    if (upstream.status === 401 && ["/auth/me", "/auth/sign-out"].includes(path)) {
+      clearSession(response, request);
+    }
+    return response;
+  }
+
   if (
     path.startsWith("/auth/") &&
     upstream.ok &&
@@ -199,10 +219,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
     try {
       payload = await upstream.json();
     } catch {
-      return NextResponse.json(
-        { error: { code: "service_unavailable", message: "Invalid backend response" } },
-        { status: 502 },
-      );
+      return proxyError(502, "service_unavailable");
     }
     if (
       payload &&

@@ -58,6 +58,7 @@ import type {
   ErrorResponse,
 } from "./types";
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON, RegistrationResponseJSON, AuthenticationResponseJSON } from "@simplewebauthn/browser";
+import { publicApiErrorMessage } from "./user-errors";
 
 export const API_BASE_URL = "/api/backend";
 
@@ -119,19 +120,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
 
   if (!res.ok) {
-    let message = res.statusText;
     let code = "unknown";
     try {
       const body = (await res.json()) as Partial<ErrorResponse>;
-      if (body.error) {
-        message = body.error.message;
-        code = body.error.code;
-      }
+      if (typeof body.error?.code === "string") code = body.error.code;
     } catch {
-      // Non-JSON error body (e.g. a raw 502 from something in front of the API) —
-      // the statusText fallback above already covers it.
+      // An upstream HTML error page must never become user-facing copy.
     }
-    throw new ApiError(res.status, code, message);
+    throw new ApiError(res.status, code, publicApiErrorMessage(res.status, code));
   }
 
   if (res.status === 204) return undefined as T;

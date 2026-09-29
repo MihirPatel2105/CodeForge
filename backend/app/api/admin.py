@@ -812,11 +812,11 @@ async def _database_status() -> AdminServiceStatus:
     started = time.perf_counter()
     try:
         await get_database().command({"ping": 1})
-    except Exception as exc:  # noqa: BLE001 - status endpoint must report, not fail
+    except Exception:  # noqa: BLE001 - status endpoint must report, not fail
         return AdminServiceStatus(
             name="MongoDB",
             status="unavailable",
-            detail=f"Database ping failed: {type(exc).__name__}",
+            detail="The database is unavailable right now.",
         )
     return AdminServiceStatus(
         name="MongoDB",
@@ -840,11 +840,11 @@ async def _sandbox_status() -> AdminServiceStatus:
     started = time.perf_counter()
     try:
         detail = await asyncio.to_thread(ping)
-    except Exception as exc:  # noqa: BLE001 - degradation is the response
+    except Exception:  # noqa: BLE001 - degradation is the response
         return AdminServiceStatus(
             name="Sandbox",
             status="unavailable",
-            detail=f"Docker daemon is unreachable: {type(exc).__name__}",
+            detail="The test environment is unavailable right now.",
         )
     return AdminServiceStatus(
         name="Sandbox",

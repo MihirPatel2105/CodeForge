@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
@@ -63,10 +64,53 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 async def codeforge_error_handler(request: Request, exc: CodeForgeError) -> JSONResponse:
     """Single place where a typed exception becomes the documented error body
     (docs/STATE_AND_API.md §3)."""
+    del request
     return JSONResponse(
         status_code=exc.status_code,
-        content={"error": {"code": exc.code, "message": exc.message, "run_id": exc.run_id}},
+        content={
+            "error": {
+                "code": exc.code,
+                "message": _public_error_message(exc.status_code, exc.code),
+                "run_id": exc.run_id,
+            }
+        },
     )
+
+
+async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    del request, exc
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": {
+                "code": "invalid_request",
+                "message": "Check your details and try again.",
+                "run_id": None,
+            }
+        },
+    )
+
+
+def _public_error_message(status: int, code: str) -> str:
+    if code == "rate_limited" or status == 429:
+        return "Too many attempts. Please wait a moment and try again."
+    if code == "account_suspended":
+        return "This account is unavailable. Contact support if you need help."
+    if code == "usage_limit_reached":
+        return "You've reached the current limit. Please try again later."
+    if status == 401:
+        return "Please sign in again or check your details."
+    if status == 403:
+        return "You don't have access to this action."
+    if status == 404:
+        return "We couldn't find what you requested."
+    if status == 413:
+        return "That request is too large. Try a smaller one."
+    if status in (400, 409, 422):
+        return "We couldn't complete that request. Check your details and try again."
+    if status >= 500:
+        return "Something went wrong on our side. Please try again shortly."
+    return "Something went wrong. Please try again."
 
 
 def _configure_logging() -> None:
@@ -97,6 +141,7 @@ def create_app() -> FastAPI:
     _configure_logging()
     app = FastAPI(title="CodeForge", lifespan=lifespan)
     app.add_exception_handler(CodeForgeError, codeforge_error_handler)
+    app.add_exception_handler(RequestValidationError, validation_error_handler)
 
     @app.middleware("http")
     async def abuse_limit_middleware(request: Request, call_next):

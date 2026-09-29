@@ -239,17 +239,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
   );
 }
 
-/** Turns a failed call into something a human can act on. The API's own message is
- * preferred when it has one; the fallbacks cover the cases where it does not. */
+/** Turns a failed call into something a human can act on. */
 function messageFor(err: unknown, mode: Mode): string {
   if (!(err instanceof ApiError)) {
-    return "Couldn't reach the server. Check that the backend is running, then try again.";
+    return "Couldn't connect right now. Please try again.";
   }
   if (err.status === 401) return "That email and password don't match.";
   if (err.status === 409) return "An account with that email already exists.";
   if (err.status === 422) {
-    // FastAPI's validation errors do not use this app's `{error: {...}}` envelope, so
-    // `err.message` here is the bare status text rather than anything readable.
     return mode === "register"
       ? "Check your details — the email must be valid and the password must meet all four requirements."
       : "Check the email address and try again.";

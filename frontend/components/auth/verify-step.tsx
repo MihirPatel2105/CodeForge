@@ -282,8 +282,7 @@ function messageFor(err: unknown): string {
   if (!(err instanceof ApiError)) {
     return "Couldn't reach the server. Check your connection, then try again.";
   }
-  // The API's own text carries the detail worth showing — how many attempts are left,
-  // or that the code expired — so it is preferred over anything invented here.
+  // ApiError carries a safe message chosen by the client, never backend exception text.
   if (err.status === 401 || err.status === 404 || err.status === 429) {
     return err.message || "That code was not accepted.";
   }

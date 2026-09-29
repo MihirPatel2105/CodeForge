@@ -17,7 +17,7 @@ export default function AdminMonitoringPage() {
   const [data, setData] = useState<AdminMonitoringResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const load = useCallback(async () => { setLoading(true); setError(null); try { setData(await api.adminMonitoring(days)); } catch (err) { if (err instanceof ApiError && err.status === 401) return router.replace("/login"); if (err instanceof ApiError && err.status === 403) return router.replace("/projects"); setError(err instanceof ApiError ? err.message : "Monitoring API is unavailable. Start the CodeForge backend and try again."); } finally { setLoading(false); } }, [days, router]);
+  const load = useCallback(async () => { setLoading(true); setError(null); try { setData(await api.adminMonitoring(days)); } catch (err) { if (err instanceof ApiError && err.status === 401) return router.replace("/login"); if (err instanceof ApiError && err.status === 403) return router.replace("/projects"); setError(err instanceof ApiError ? err.message : "Could not load monitoring right now. Please try again."); } finally { setLoading(false); } }, [days, router]);
   useEffect(() => { if (!getToken()) return router.replace("/login"); void load(); }, [load, router]);
   const peak = useMemo(() => Math.max(1, ...(data?.daily.map((item) => item.runs) ?? [1])), [data]);
   const metrics = [{ label: "storage", value: bytes(data?.total_storage_bytes ?? 0), icon: Database }, { label: "tokens", value: (data?.total_tokens ?? 0).toLocaleString(), icon: Coins }, { label: "failure rate", value: `${data?.failure_rate ?? 0}%`, icon: TriangleAlert }, { label: "estimated cost", value: `$${(data?.estimated_cost_usd ?? 0).toFixed(2)}`, icon: Workflow }];

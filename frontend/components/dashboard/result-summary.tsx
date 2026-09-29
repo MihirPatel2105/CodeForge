@@ -57,13 +57,9 @@ function copyFor(
         detail: `Three passes could not clear the blocking findings, so the loop cap held and the work was kept as-is. Not a crash.`,
       };
     case "failed_llm": {
-      const failedAgent = snapshot.failureReason?.match(/agent ['\"]([^'\"]+)['\"]/i)?.[1];
       return {
-        headline: failedAgent
-          ? `${failedAgent[0].toUpperCase()}${failedAgent.slice(1)} could not get a valid AI response.`
-          : "The AI providers could not finish this run.",
-        detail:
-          "The available model routes were rate-limited, overloaded, or returned invalid structured output. Generated files and events are preserved; retry when provider capacity is available.",
+        headline: "This run couldn't finish.",
+        detail: "Your generated files are saved. Please try again later.",
       };
     }
     case "cancelled":

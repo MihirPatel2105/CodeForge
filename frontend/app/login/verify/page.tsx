@@ -16,6 +16,7 @@ import {
   type PendingPasswordMfa,
 } from "@/lib/password-mfa";
 import { cn } from "@/lib/utils";
+import { PASSKEY_NOT_COMPLETED, passkeyWasNotCompleted } from "@/lib/user-errors";
 
 export default function VerifyLoginPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function VerifyLoginPage() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = loadPendingPasswordMfa();
@@ -55,7 +57,7 @@ export default function VerifyLoginPage() {
         : await api.completePasswordLogin(pending.ticket, code);
       await finish(result.access_token);
     } catch (err) {
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not verify that code.");
+      setError(err instanceof ApiError ? err.message : "Could not verify that code.");
     } finally {
       setBusy(false);
     }
@@ -64,6 +66,7 @@ export default function VerifyLoginPage() {
   async function verifyPasskey() {
     if (!pending || busy) return;
     setError(null);
+    setNotice(null);
     if (!browserSupportsWebAuthn()) {
       setError("This browser does not support passkeys. Try an authenticator code or another browser.");
       return;
@@ -75,7 +78,11 @@ export default function VerifyLoginPage() {
       const result = await api.verifyPasswordMfaPasskey(pending.ticket, challenge_id, credential);
       await finish(result.access_token);
     } catch (err) {
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Passkey verification failed.");
+      if (passkeyWasNotCompleted(err)) {
+        setNotice(PASSKEY_NOT_COMPLETED);
+      } else {
+        setError(err instanceof ApiError ? err.message : "Passkey verification failed. Please try again.");
+      }
     } finally {
       setBusy(false);
     }
@@ -106,7 +113,7 @@ export default function VerifyLoginPage() {
                   variant="outline"
                   aria-pressed={method === option}
                   disabled={busy}
-                  onClick={() => { setMethod(option); setCode(""); setError(null); }}
+                  onClick={() => { setMethod(option); setCode(""); setError(null); setNotice(null); }}
                   className={cn("h-auto min-h-[68px] flex-col gap-1.5 rounded-xl border-border-strong px-2 py-3 text-[12px] font-[650] sm:min-h-[76px] sm:flex-row sm:text-[13px]", method === option && "border-accent bg-accent-soft text-accent ring-2 ring-accent/10")}
                 >
                   {option === "passkey" ? <Fingerprint className="h-4 w-4" aria-hidden /> : <KeyRound className="h-4 w-4" aria-hidden />}
@@ -149,6 +156,7 @@ export default function VerifyLoginPage() {
           )}
 
           {error ? <p role="alert" className="mt-5 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger">{error}</p> : null}
+          {notice ? <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">{notice}</p> : null}
           <button type="button" onClick={startAgain} disabled={busy} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"><ArrowLeft className="h-4 w-4" aria-hidden /> Start sign-in again</button>
     </AuthEntryShell>
   );

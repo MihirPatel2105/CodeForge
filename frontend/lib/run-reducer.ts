@@ -110,23 +110,6 @@ function num(v: unknown): number | null {
   return typeof v === "number" ? v : null;
 }
 
-/**
- * Condenses a provider failure into the one line an agent card has room for.
- *
- * `agent.failed` carries up to 400 characters of raw provider JSON. Rendered verbatim
- * into the card's summary it stretched the Tester stage until it pushed Sandbox off the
- * right edge of the screen — breaking the pipeline, which docs/UI_BRIEF.md §4.1 calls
- * the hero element and the thing the demo is built around. The full message is still
- * shown in the timeline entry, where there is room for it.
- */
-function briefFailure(message: string): string {
-  const firstLine = message.split("\n")[0].trim();
-  // These read "Every model failed for agent 'tester': groq/... -> InstructorRetry...".
-  // Everything past the first arrow is transport detail nobody can act on from a card.
-  const head = firstLine.split(" -> ")[0].trim();
-  return head.length > 96 ? `${head.slice(0, 95).trimEnd()}…` : head;
-}
-
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? one : many;
 }
@@ -311,11 +294,12 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
     case "agent.failed": {
       if (!isPipelineStage(event.agent)) return prev;
       const label = stageName(event.agent);
+      const safeFailure = "This step couldn't finish. Please try again.";
       const entry: TimelineEntryData = {
         kind: "message",
         time,
         agent: label,
-        text: `Failed — ${event.message} (${event.code})`,
+        text: safeFailure,
         variant: "failed",
       };
       return {
@@ -326,7 +310,7 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
             ...prev.agents[event.agent],
             state: "failed",
             iteration: event.iteration,
-            summary: briefFailure(event.message),
+            summary: safeFailure,
           },
         },
         timeline: [...prev.timeline, entry],
@@ -479,7 +463,10 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         ...prev,
         status: event.status,
         endedAt: event.at,
-        failureReason: event.reason,
+        failureReason:
+          event.status === "rejected" || event.status === "cancelled"
+            ? null
+            : "This run couldn't finish. Please try again.",
         approval: null,
         agents: settleWorkingAgents(prev.agents),
         currentAgent: null,

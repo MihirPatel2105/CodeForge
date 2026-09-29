@@ -77,13 +77,16 @@ export default function AdminRunPage() {
 
     <dl className="mt-7 grid overflow-hidden rounded-xl border border-border bg-surface sm:grid-cols-2 lg:grid-cols-4">{facts.map(({ label, value, icon: Icon }, index) => <div key={label} className={cn("p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "lg:border-t-0", index % 4 !== 0 && "lg:border-l", index % 4 === 0 && "lg:border-l-0")}><div className="flex items-center justify-between"><dt className={ADMIN_LABEL}>{label}</dt><Icon className="h-4 w-4 text-fg-faint" aria-hidden /></div><dd className="font-display mt-4 text-[20px] font-[650] tracking-[-0.04em] text-fg">{value}</dd></div>)}</dl>
 
-    <section className="mt-10" aria-labelledby="artifacts-heading"><AdminSectionHeading eyebrow="generated evidence" title="Artifacts and failure details" id="artifacts-heading" /><div className="mt-5 grid gap-4 lg:grid-cols-2"><div className="rounded-xl border border-border bg-surface p-5">{artifacts.length ? artifacts.map((artifact) => <button key={artifact.file_id} onClick={() => downloadAdminArtifact(id, artifact.file_id, artifact.filename.split("/").pop() ?? artifact.filename)} className="flex w-full items-center justify-between border-b border-rule py-3 text-left last:border-b-0"><span><span className="block text-[12px] font-[650] text-fg">{artifact.kind.replaceAll("_", " ")}</span><span className="font-mono text-[9px] text-fg-faint">iteration {artifact.iteration} · {artifact.length.toLocaleString()} bytes</span></span><Download className="h-4 w-4 text-accent" aria-hidden /></button>) : <p className="text-[12px] text-fg-faint">No artifacts were persisted for this run.</p>}</div><pre className="max-h-72 overflow-auto rounded-xl border border-border bg-[#111318] p-4 font-mono text-[10px] leading-5 text-[#d5d9e2]">{JSON.stringify({ errors: detail.state.errors ?? [], llm_attempts: detail.state.llm_attempts ?? [], sandbox: detail.state.sandbox ?? null }, null, 2)}</pre></div></section>
+    <section className="mt-10" aria-labelledby="artifacts-heading"><AdminSectionHeading eyebrow="generated evidence" title="Artifacts and status summary" id="artifacts-heading" /><div className="mt-5 grid gap-4 lg:grid-cols-2"><div className="rounded-xl border border-border bg-surface p-5">{artifacts.length ? artifacts.map((artifact) => <button key={artifact.file_id} onClick={() => downloadAdminArtifact(id, artifact.file_id, artifact.filename.split("/").pop() ?? artifact.filename)} className="flex w-full items-center justify-between border-b border-rule py-3 text-left last:border-b-0"><span><span className="block text-[12px] font-[650] text-fg">{artifact.kind.replaceAll("_", " ")}</span><span className="font-mono text-[9px] text-fg-faint">iteration {artifact.iteration} · {artifact.length.toLocaleString()} bytes</span></span><Download className="h-4 w-4 text-accent" aria-hidden /></button>) : <p className="text-[12px] text-fg-faint">No artifacts were persisted for this run.</p>}</div><pre className="max-h-72 overflow-auto rounded-xl border border-border bg-[#111318] p-4 font-mono text-[10px] leading-5 text-[#d5d9e2]">{diagnosticsSummary(detail.state)}</pre></div></section>
 
     <section className="mt-10" aria-labelledby="timeline-heading"><AdminSectionHeading eyebrow="event replay" title="Durable timeline" id="timeline-heading" /><div className="mt-5 overflow-hidden rounded-xl border border-border bg-surface">{detail.events.length === 0 ? <p className="px-5 py-12 text-center text-[13px] text-fg-faint">No events recorded yet.</p> : detail.events.map((event, index) => { const kind = String(event.event ?? "event"); const at = typeof event.at === "string" ? formatTime(event.at) : "--:--:--"; const agent = typeof event.agent === "string" ? event.agent : "system"; const loop = kind === "loop.iteration"; return <div key={`${kind}-${index}`} className={cn("grid gap-2 border-b border-rule px-4 py-3 last:border-b-0 md:grid-cols-[78px_100px_150px_1fr]", loop && "border-loop-bd bg-loop-soft")}><span className="font-mono text-[10px] text-fg-faint">{at}</span><span className={cn("font-mono text-[10px] font-[700] uppercase tracking-[0.08em]", loop ? "text-loop" : "text-fg-muted")}>{agent}</span><span className="font-mono text-[10px] text-fg-faint">{kind}</span><span className="text-[12.5px] leading-5 text-fg-muted">{eventText(event)}</span></div>; })}</div></section>
   </AdminShell>;
 }
 
 function eventText(event: Record<string, unknown>): string {
+  if (event.event === "agent.failed" || event.event === "run.failed") {
+    return "This step couldn't finish. Please try again.";
+  }
   if (typeof event.text === "string") return event.text;
   if (typeof event.message === "string") return event.message;
   if (typeof event.reason === "string") return event.reason;
@@ -91,4 +94,12 @@ function eventText(event: Record<string, unknown>): string {
   if (event.event === "tests.result") return `${String(event.total ?? 0)} tests, ${String(event.failed ?? 0)} failed`;
   if (event.event === "loop.iteration") return `Iteration ${String(event.iteration ?? "—")} returned work to the Coder`;
   return "State transition recorded";
+}
+
+function diagnosticsSummary(state: Record<string, unknown>): string {
+  return JSON.stringify({
+    recorded_errors: Array.isArray(state.errors) ? state.errors.length : 0,
+    model_attempts: Array.isArray(state.llm_attempts) ? state.llm_attempts.length : 0,
+    sandbox_result: state.sandbox ? "Recorded" : "Not recorded",
+  }, null, 2);
 }
