@@ -159,3 +159,11 @@ This second layout pass is checked by TypeScript, ESLint, and an isolated produc
 build. The earlier browser findings above describe the first shared-style pass.
 Servers remain stopped at the user's request; the new layouts and motion have not
 yet received a fresh browser review.
+
+## Heading hierarchy correction
+
+Large display headings belong to marketing and deliberate product introductions.
+Account/security pages use 28–32px headings with a normal 1.2 line height; operational
+admin, API-use, and run titles use 28–36px. Password, passkeys, and two-factor pages
+share compact header spacing. Premium styling must not turn routine tasks into
+landing-page heroes.

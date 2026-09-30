@@ -25,7 +25,7 @@ export function SecuritySettingsLayout({
   const Icon = active.icon;
 
   return (
-    <div className="cf-account min-h-screen bg-bg">
+    <div className="cf-account cf-security-settings min-h-screen bg-bg">
       <AppHeader />
       <main className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
         <Link
@@ -37,14 +37,14 @@ export function SecuritySettingsLayout({
         </Link>
 
         <header className="cf-account-hero relative mt-4 flex flex-col gap-5 overflow-hidden rounded-3xl border border-border bg-surface p-6 sm:flex-row sm:items-start sm:p-8 md:p-10">
-          <span className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
+          <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent-bd bg-accent-soft text-accent">
             <Icon className="h-5 w-5" aria-hidden />
           </span>
           <div className="relative z-10">
             <p className="text-[12px] font-[650] text-accent">
               Account security / {active.label}
             </p>
-            <h1 className="font-display mt-2 text-[32px] font-[650] leading-[1.08] tracking-[-0.055em] text-fg md:text-[42px]">
+            <h1 className="font-display mt-2 text-[28px] font-[600] leading-[1.2] tracking-[-0.035em] text-fg md:text-[32px]">
               {title}
             </h1>
             <p className="mt-3 max-w-[70ch] text-[14px] leading-6 text-fg-muted">

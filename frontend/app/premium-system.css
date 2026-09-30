@@ -105,7 +105,7 @@
 /* Product stages: the landing page's scale, applied to actual account and run content. */
 :is(.cf-projects,.cf-project-detail,.cf-account,.cf-admin,.cf-run-page) { background: var(--surface); }
 :is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 64px; padding-bottom: 96px; }
-:is(.cf-projects,.cf-project-detail,.cf-account) h1 { font-size: clamp(40px,5.4vw,68px); line-height: 1.05; letter-spacing: -.065em; }
+.cf-projects h1 { font-size: clamp(40px,5.4vw,68px); line-height: 1.05; letter-spacing: -.065em; }
 .cf-workspace-stage { display: grid; align-items: center; gap: 48px; padding-block: 24px 64px; }
 .cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: minmax(0,1fr) minmax(0,.65fr); }
 .cf-workspace-stage .cf-projects-intro { overflow: visible; padding: 0; }
@@ -157,7 +157,7 @@
 .cf-admin aside.cf-operations-nav { background: var(--bg); border-color: transparent; }
 .cf-admin main { padding: 16px 0 80px; }
 .cf-admin-page-header { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; padding-bottom: 40px; }
-.cf-admin-page-header h1 { font-size: clamp(38px,4.3vw,60px); }
+.cf-admin-page-header h1 { font-size: clamp(28px,3vw,36px); }
 .cf-admin-page-header p { max-width: 62ch; font-size: 16px; line-height: 1.7; }
 .cf-admin-page-header > div > div > span:first-child { display: none; }
 .cf-admin :is(table,dl) { background: var(--bg); }
@@ -168,13 +168,13 @@
 .cf-run-page > main { max-width: 1440px; padding-top: 40px; padding-bottom: 96px; }
 .cf-run-hero { border: 0; border-radius: 0; }
 .cf-run-hero > .cf-build-stage > div:first-child { padding: 24px 0 40px; }
-.cf-run-hero h1 { font-size: clamp(30px,3.9vw,48px); max-width: 32ch; line-height: 1.14; }
+.cf-run-hero h1 { font-size: clamp(28px,3vw,36px); max-width: 32ch; line-height: 1.14; }
 .cf-build-metrics { border-radius: 24px; background: var(--bg); overflow: hidden; }
 .cf-run-pipeline { margin-top: 40px; background: var(--bg); border-color: transparent; }
 .cf-run-pipeline > div:first-child { background: transparent; border-color: var(--border); padding: 28px 32px; }
 .cf-run-pipeline h2 { font-size: 28px; }
 .cf-api-intro { padding-block: 24px 48px; gap: 28px; }
-.cf-api-intro h1 { font-size: clamp(40px,5.4vw,68px); }
+.cf-api-intro h1 { font-size: clamp(28px,3vw,36px); }
 .cf-api-intro p { font-size: 17px; margin-top: 20px; max-width: 56ch; line-height: 1.7; }
 .cf-use-option-card { min-height: 290px; padding: 32px; border-color: transparent; background: var(--bg); }
 .cf-use-option-card h2 { font-size: 28px; }
@@ -261,3 +261,13 @@ html { scroll-padding-top: 80px; }
   .cf-build-metrics > div { border-top: 0; border-left: 0; }
   .cf-build-metrics > div + div { border-left: 1px solid var(--border); }
 }
+
+/* Task and settings screens use a simple title, not a marketing headline. */
+.cf-account h1 { font-size: clamp(28px,3vw,32px); font-weight: 600; line-height: 1.2; letter-spacing: -.035em; }
+.cf-account > main { padding-top: 32px; }
+.cf-security-settings > main > .cf-account-hero { padding-block: 20px; gap: 20px; }
+.cf-security-settings > main > .cf-account-hero p { font-size: 14px; }
+.cf-security-settings nav[aria-label="Security settings"] { margin-block: 16px 24px; }
+.cf-api-intro h1, .cf-admin-page-header h1, .cf-run-hero h1 { font-weight: 600; line-height: 1.2; letter-spacing: -.035em; }
+
+.cf-project-detail h1 { font-size: clamp(28px,3.5vw,40px); line-height: 1.2; letter-spacing: -.04em; }
