@@ -71,46 +71,28 @@ export default function FaqPage() {
     <div className="cf-subpage cf-premium-marketing min-h-screen bg-surface">
       <SiteHeader />
       <main>
-        <section className="cf-subpage-hero border-b border-rule">
-          <div className="relative z-10 mx-auto grid w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:min-h-[620px] lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.75fr)] lg:px-14">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent"><CircleHelp className="h-3.5 w-3.5" aria-hidden />Frequently asked</span>
-              <h1 className="font-display mt-8 max-w-[13ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[60px]">A little more clarity.</h1>
-              <p className="mt-7 max-w-[58ch] text-[16px] leading-[1.72] text-fg-muted sm:text-[17px]">Clear answers about what CodeForge builds, where it stops, what it costs and what happens when the agents underneath it misbehave.</p>
-              <Link href="#questions" className="mt-9 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Browse the answers<ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
-            </div>
-
-            <div className="grid grid-cols-2 overflow-hidden rounded-3xl border border-border bg-surface">
-              {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
-                <div key={label} className="border-b border-r border-rule p-6 sm:p-7">
-                  <Icon className="h-4 w-4 text-accent" aria-hidden />
-                  <p className="font-display mt-8 text-[28px] font-[650] tracking-[-0.05em] text-fg">{value}</p>
-                  <p className="mt-1 text-[12px] font-[600] text-fg-muted">{label}</p>
-                </div>
-              ))}
-              <div className="col-span-2 flex items-center justify-between gap-4 bg-fg px-6 py-4 text-surface">
-                <span className="text-[12px] font-[650]">Scope before scale</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-ok" />
-              </div>
-            </div>
+        <section className="cf-faq-stage">
+          <div className="mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
+            <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
+            <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
+            <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>
+            <Link href="#questions" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></Link>
           </div>
+          <dl className="cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
+            {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
+              <div key={label} className="text-center">
+                <Icon className="mx-auto size-5 text-accent" aria-hidden />
+                <dd className="mt-4 text-[32px] font-[650] tracking-[-.05em] text-fg">{value}</dd>
+                <dt className="mt-1 text-[13px] text-fg-muted">{label}</dt>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <section id="questions" className="border-b border-rule bg-surface">
-          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 ">
-              <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2"><span className="text-[13px] font-[650] text-fg-muted">The answers</span></div>
-              <div>
-                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                  <h2 className="font-display max-w-[18ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Everything the product promises, plainly.</h2>
-                  <p className="max-w-[44ch] text-[14px] leading-[1.68] text-fg-muted">Open as many answers as you need. Every statement describes current behavior.</p>
-                </div>
-                <div className="mt-12 grid gap-x-10 lg:grid-cols-2">
-                  <FaqColumn items={FAQ.slice(0, 5)} start={1} />
-                  <FaqColumn items={FAQ.slice(5)} start={6} />
-                </div>
-              </div>
-            </div>
+        <section id="questions" className="bg-bg">
+          <div className="cf-faq-reading mx-auto w-full max-w-[960px] px-6 py-16 md:px-10 md:py-24">
+            <h2 className="font-display text-[32px] font-[650] tracking-[-.05em] text-fg">The details that matter.</h2>
+            <div className="mt-8"><FaqColumn items={FAQ} start={1} /></div>
           </div>
         </section>
 

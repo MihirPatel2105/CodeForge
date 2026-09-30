@@ -101,3 +101,163 @@
 .cf-premium-marketing section:not(:first-child) h2 { font-size: clamp(28px,3.3vw,44px); line-height: 1.12; }
 .cf-premium-marketing .cf-how-control::before { content: none; }
 .cf-premium-marketing [class*="lg:flex-col"][class*="lg:items-start"] { flex-direction: row; }
+
+/* Product stages: the landing page's scale, applied to actual account and run content. */
+:is(.cf-projects,.cf-project-detail,.cf-account,.cf-admin,.cf-run-page) { background: var(--surface); }
+:is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 64px; padding-bottom: 96px; }
+:is(.cf-projects,.cf-project-detail,.cf-account) h1 { font-size: clamp(40px,5.4vw,68px); line-height: 1.05; letter-spacing: -.065em; }
+.cf-workspace-stage { display: grid; align-items: center; gap: 48px; padding-block: 24px 64px; }
+.cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: minmax(0,1fr) minmax(0,.65fr); }
+.cf-workspace-stage .cf-projects-intro { overflow: visible; padding: 0; }
+.cf-workspace-stage .cf-projects-intro > div { flex-direction: column; align-items: flex-start; gap: 28px; }
+.cf-workspace-stage .cf-projects-intro p { max-width: 45ch; margin-top: 24px; font-size: 17px; }
+.cf-workspace-summary { grid-template-columns: 1fr; border: 0; background: var(--bg); padding: 16px 32px; }
+.cf-workspace-summary > div { padding: 22px 0; border: 0; }
+.cf-workspace-summary > div + div { border-top: 1px solid var(--border); }
+.cf-workspace-summary dd { font-size: 36px; }
+.cf-workspace-grid { align-items: stretch; }
+.cf-project-card { background: var(--bg); border-color: transparent; padding: 32px; }
+.cf-project-card > span:first-child { display: none; }
+.cf-project-card:hover { background: var(--surface-2); border-color: var(--border); }
+.cf-project-card h3 { font-size: 28px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; }
+.cf-project-new { border-style: solid; background: var(--surface); padding: 32px; }
+.cf-project-new > span:first-child { border: 0; border-radius: 100%; width: 48px; height: 48px; }
+.cf-project-empty { background: var(--bg); border: 0; padding-block: 80px; }
+.cf-project-empty h2 { font-size: clamp(28px,3.5vw,40px); }
+.cf-project-detail-hero { border: 0; border-radius: 0; overflow: visible; }
+.cf-project-detail-hero > div { padding: 24px 0 40px; }
+.cf-project-detail-hero p { max-width: 60ch; margin-top: 24px; font-size: 17px; }
+.cf-project-detail-stats { background: var(--bg); border-radius: 24px; padding: 8px; }
+.cf-prompt-stage { background: var(--bg); border-color: transparent; }
+.cf-project-composer-head { padding: 28px; border: 0; background: transparent; }
+.cf-project-composer-head h2 { font-size: 27px; line-height: 1.16; }
+.cf-project-workspace textarea { min-height: 210px; background: var(--surface); }
+.cf-project-workspace :is(button[type=submit],[data-slot=button]) { border-radius: 100px; }
+.cf-account-hero { border: 0; background: transparent; border-radius: 0; }
+.cf-identity-stage > div:first-child { padding: 32px 0 48px; }
+.cf-identity-stage > div:first-child > p { margin-top: 32px; font-size: 17px; max-width: 58ch; }
+.cf-identity-stage h1 { max-width: 20ch; }
+.cf-identity-metrics { background: var(--bg); border: 0; border-radius: 24px; overflow: hidden; }
+.cf-identity-metrics dd { font-size: 42px; line-height: 1; }
+.cf-account-content > section { border: 0; background: var(--bg); }
+.cf-account-content > section > div:first-child { padding: 28px 32px; border: 0; }
+.cf-account-content h2 { font-size: 26px; }
+.cf-account-content dl { padding-inline: 32px; }
+.cf-settings-layout { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 48px; align-items: start; }
+.cf-settings-nav { position: sticky; top: 96px; flex-direction: column; gap: 8px; }
+.cf-settings-nav a { justify-content: flex-start; min-height: 48px; border: 0; background: var(--bg); border-radius: 16px; padding-inline: 20px; }
+.cf-settings-layout > div > section:first-child { margin-top: 0; }
+.cf-account > main > .cf-account-hero { padding: 32px 0 40px; }
+.cf-account > main > .cf-account-hero p { font-size: 16px; }
+.cf-account > main > .cf-account-hero > div > div:last-child:not(:first-child) { background: var(--bg); border: 0; border-radius: 20px; padding: 20px 24px; }
+.cf-account nav[aria-label="Security settings"] { margin-block: 28px 40px; }
+.cf-account nav[aria-label="Security settings"] a { min-height: 48px; padding-inline: 24px; border-color: transparent; background: var(--bg); }
+.cf-account nav[aria-label="Security settings"] a[aria-current=page] { background: var(--accent-soft); color: var(--accent); }
+.cf-operations-layout { padding: 32px; }
+.cf-admin aside.cf-operations-nav { background: var(--bg); border-color: transparent; }
+.cf-admin main { padding: 16px 0 80px; }
+.cf-admin-page-header { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; padding-bottom: 40px; }
+.cf-admin-page-header h1 { font-size: clamp(38px,4.3vw,60px); }
+.cf-admin-page-header p { max-width: 62ch; font-size: 16px; line-height: 1.7; }
+.cf-admin-page-header > div > div > span:first-child { display: none; }
+.cf-admin :is(table,dl) { background: var(--bg); }
+.cf-admin th { padding-block: 20px; color: var(--fg-muted); }
+.cf-admin td { padding-block: 18px; }
+.cf-admin tbody tr { transition: background-color 180ms ease; }
+.cf-admin tbody tr:hover { background: var(--surface-2); }
+.cf-run-page > main { max-width: 1440px; padding-top: 40px; padding-bottom: 96px; }
+.cf-run-hero { border: 0; border-radius: 0; }
+.cf-run-hero > .cf-build-stage > div:first-child { padding: 24px 0 40px; }
+.cf-run-hero h1 { font-size: clamp(30px,3.9vw,48px); max-width: 32ch; line-height: 1.14; }
+.cf-build-metrics { border-radius: 24px; background: var(--bg); overflow: hidden; }
+.cf-run-pipeline { margin-top: 40px; background: var(--bg); border-color: transparent; }
+.cf-run-pipeline > div:first-child { background: transparent; border-color: var(--border); padding: 28px 32px; }
+.cf-run-pipeline h2 { font-size: 28px; }
+.cf-api-intro { padding-block: 24px 48px; gap: 28px; }
+.cf-api-intro h1 { font-size: clamp(40px,5.4vw,68px); }
+.cf-api-intro p { font-size: 17px; margin-top: 20px; max-width: 56ch; line-height: 1.7; }
+.cf-use-option-card { min-height: 290px; padding: 32px; border-color: transparent; background: var(--bg); }
+.cf-use-option-card h2 { font-size: 28px; }
+.cf-use-option-card p { font-size: 15px; line-height: 1.65; }
+
+/* Editorial public pages: broad product stages, reading columns, and open space. */
+.cf-premium-marketing :is(.cf-about-hero,.cf-subpage-hero,.cf-contact-hero) > div { padding-block: 104px; gap: 80px; }
+.cf-premium-marketing :is(.cf-about-hero,.cf-subpage-hero,.cf-contact-hero) { border: 0; }
+.cf-premium-marketing h1 { font-weight: 700; }
+.cf-editorial-features article h3 { font-size: 24px; line-height: 1.15; }
+.cf-editorial-features article p { font-size: 15px; }
+.cf-editorial-features article > div > span:last-child { display: none; }
+.cf-premium-marketing main > section:not(:first-child) { border-bottom: 0; }
+.cf-premium-marketing main > section:nth-child(2n) { background: var(--bg); }
+.cf-premium-marketing .cf-about-evidence article { border-color: var(--border); padding: 32px; }
+.cf-premium-marketing .cf-about-evidence h3 { font-size: 22px; }
+.cf-faq-stage h1 { max-width: 14ch; }
+.cf-faq-stage > div { margin-inline: auto; }
+.cf-premium-marketing .cf-faq-reading { max-width: 960px; }
+.cf-faq-reading button { padding-block: 28px; }
+.cf-faq-reading button > span:first-child > span:first-child { display: none; }
+.cf-faq-reading button > span:first-child > span:last-child { margin: 0; font-size: 21px; line-height: 1.35; }
+.cf-faq-reading [role=region] p { font-size: 16px; line-height: 1.75; padding-bottom: 28px; max-width: 70ch; }
+.cf-contact-form-stage { box-shadow: 0 24px 80px -40px rgba(23,32,51,.2); }
+.cf-contact-methods p:first-of-type { margin-top: 18px; }
+.cf-premium-marketing main > section { transition: opacity 600ms var(--premium-ease), transform 600ms var(--premium-ease); }
+.cf-premium-marketing main > section.cf-reveal-pending { opacity: 0; transform: translateY(20px); }
+.cf-premium-marketing main > section:focus-within { opacity: 1; transform: none; }
+html { scroll-padding-top: 80px; }
+:target { scroll-margin-top: 16px; }
+[data-slot=dialog-content] { --tw-enter-translate-y: 8px; --tw-exit-translate-y: 4px; }
+[data-slot=button] { transition-timing-function: var(--premium-ease); }
+
+@media (max-width: 1023px) {
+  .cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: 1fr; gap: 32px; }
+  .cf-workspace-summary { grid-template-columns: repeat(3,minmax(0,1fr)); padding: 8px 20px; }
+  .cf-workspace-summary > div { padding: 20px 12px; }
+  .cf-workspace-summary > div + div { border-top: 0; border-left: 1px solid var(--border); }
+  .cf-operations-layout { padding: 0 24px; }
+  .cf-admin main { padding-top: 32px; }
+  .cf-admin nav[aria-label="Admin navigation"] { border: 0; padding-inline: 0; background: transparent; }
+  .cf-settings-layout { grid-template-columns: 180px minmax(0,1fr); gap: 24px; }
+}
+@media (max-width: 767px) {
+  :is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 36px; padding-bottom: 64px; }
+  .cf-workspace-stage { padding-block: 8px 32px; }
+  .cf-workspace-stage .cf-projects-intro p { font-size: 16px; }
+  .cf-project-card,.cf-project-new { padding: 24px; }
+  .cf-project-card h3 { font-size: 25px; }
+  .cf-settings-layout { display: block; margin-top: 32px; }
+  .cf-settings-nav { position: static; flex-direction: row; margin-bottom: 32px; }
+  .cf-settings-nav a { min-height: 44px; padding-inline: 16px; }
+  .cf-account-content { gap: 24px; margin-top: 32px; }
+  .cf-identity-stage > div:first-child { padding-top: 8px; }
+  .cf-identity-metrics dd { font-size: 34px; }
+  .cf-admin-page-header { grid-template-columns: 1fr; padding-bottom: 24px; }
+  .cf-admin-page-header > :last-child:not(:first-child) { justify-self: start; }
+  .cf-operations-layout { padding-inline: 20px; }
+  .cf-run-pipeline > div:first-child { padding: 24px; }
+  .cf-api-intro { padding-block: 16px 24px; }
+  .cf-api-intro p { font-size: 16px; }
+  .cf-use-option-card { min-height: 240px; padding: 24px; }
+  .cf-premium-marketing :is(.cf-about-hero,.cf-subpage-hero,.cf-contact-hero) > div { padding-block: 56px; gap: 48px; }
+  .cf-faq-reading button > span:first-child > span:last-child { font-size: 18px; }
+}
+@media (max-width: 479px) {
+  .cf-workspace-summary { grid-template-columns: 1fr; padding: 8px 24px; }
+  .cf-workspace-summary > div { padding: 18px 0; }
+  .cf-workspace-summary > div + div { border-left: 0; border-top: 1px solid var(--border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html, .cf-run-scroll { scroll-behavior: auto; }
+  .cf-premium-marketing main > section { transition: none; opacity: 1; transform: none; }
+}
+
+.cf-demo-controls { display: flex; flex-direction: row; align-items: center; gap: 32px; padding: 24px 32px; border: 0; border-radius: 24px; }
+.cf-demo-controls > div { flex: 1; min-width: 0; }
+@keyframes cfPanelEnter { from { opacity: .6; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+[data-slot=tabs-content]:not([hidden]) { animation: cfPanelEnter 220ms var(--premium-ease); }
+@media (max-width: 767px) { .cf-demo-controls { flex-direction: column; align-items: stretch; gap: 24px; padding: 24px; } }
+@media (prefers-reduced-motion: reduce) { [data-slot=tabs-content] { animation: none; } }
+
+@media (min-width: 640px) {
+  .cf-build-metrics > div { border-top: 0; border-left: 0; }
+  .cf-build-metrics > div + div { border-left: 1px solid var(--border); }
+}

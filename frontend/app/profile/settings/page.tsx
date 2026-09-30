@@ -128,7 +128,8 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <nav aria-label="Settings sections" className="mt-5 flex flex-wrap gap-2">
+        <div className="cf-settings-layout mt-12">
+        <nav aria-label="Settings sections" className="cf-settings-nav flex flex-wrap gap-2">
           {[
             { href: "#sessions", label: "Sessions and devices" },
             { href: "#sign-in-methods", label: "Sign-in methods" },
@@ -140,6 +141,7 @@ export default function SettingsPage() {
           ))}
         </nav>
 
+        <div className="min-w-0">
         {user?.is_admin ? (
           <section className="mt-6 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/55">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -387,6 +389,8 @@ export default function SettingsPage() {
             )}
           </div>
         </section>
+        </div>
+        </div>
       </main>
 
       {confirming && user && !user.is_admin && (

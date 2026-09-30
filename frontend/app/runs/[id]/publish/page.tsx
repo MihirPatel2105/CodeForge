@@ -130,7 +130,7 @@ export default function PublishApiPage() {
           <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden /> Back to API options
         </RunFlowLink>
 
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
+        <header className="cf-api-intro mt-5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Publish your API</h1>
             <p className="mt-1 max-w-[68ch] text-[14px] leading-6 text-fg-muted">Connect another app with a hosted URL and a private key.</p>

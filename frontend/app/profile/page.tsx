@@ -109,7 +109,7 @@ export default function ProfilePage() {
         </div>
 
         <section className="cf-account-hero relative overflow-hidden rounded-3xl border border-border bg-surface">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_25rem]">
+          <div className="cf-identity-stage grid">
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-lg border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok">
@@ -117,7 +117,7 @@ export default function ProfilePage() {
                   {isAdmin ? "Platform administrator" : "Account protected"}
                 </span>
 
-                <div className="mt-8 flex items-center gap-4 sm:gap-5">
+                <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-7">
                   <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-[21px] font-[700] text-accent sm:h-20 sm:w-20 sm:text-[25px]">
                     {user?.initials ?? "—"}
                   </span>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <dl aria-label="Activity summary" aria-busy={activityLoading} className="grid border-t border-border bg-surface-2/70 sm:grid-cols-3 lg:grid-cols-1 lg:border-l lg:border-t-0">
+            <dl aria-label="Activity summary" aria-busy={activityLoading} className="cf-identity-metrics grid border-t border-border sm:grid-cols-3">
               <ProfileMetric
                 icon={isAdmin ? Users : FolderKanban}
                 label={isAdmin ? "platform users" : "projects"}
@@ -173,7 +173,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+        <div className="cf-account-content mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
           <section className="rounded-3xl border border-border bg-surface">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
@@ -273,8 +273,8 @@ function ProfileMetric({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-5 px-6 py-5 lg:px-7 lg:py-6",
-        bordered && "border-t border-rule sm:border-l sm:border-t-0 lg:border-l-0 lg:border-t",
+        "flex flex-col items-start gap-5 px-6 py-6 lg:px-8 lg:py-8",
+        bordered && "border-t border-rule sm:border-l sm:border-t-0",
       )}
     >
       <div className="flex items-center gap-3">

@@ -120,7 +120,7 @@ export default function TryApiPage() {
           <RunFlowLink href={`/runs/${id}`} className="text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg">Back to run</RunFlowLink>
         </div>
 
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-3">
+        <header className="cf-api-intro mt-5 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 id="try-api-heading" className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Try your API</h1>
             <p className="mt-1 max-w-[70ch] text-[14px] leading-6 text-fg-muted">Choose an endpoint, edit the request, and inspect the response.</p>

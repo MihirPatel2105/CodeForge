@@ -130,9 +130,9 @@ export function ProjectDetail({
             </dl>
         </section>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
+        <div className="cf-project-workspace mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:items-start">
           {/* Prompt entry. Sticky so it stays reachable while a long history scrolls. */}
-          <section className="overflow-hidden rounded-3xl border border-border bg-surface xl:sticky xl:top-[78px]">
+          <section className="cf-prompt-stage overflow-hidden rounded-3xl border border-border bg-surface lg:sticky lg:top-[88px]">
             <div className="cf-project-composer-head border-b border-rule px-5 py-4">
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
@@ -140,7 +140,7 @@ export function ProjectDetail({
                 </span>
                 <div>
                   <h2 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
-                    New run
+                    What do you want to build?
                   </h2>
                   <p className="mt-0.5 text-[13px] text-fg-muted">
                     Describe the API in plain language.

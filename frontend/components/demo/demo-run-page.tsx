@@ -103,7 +103,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
         </Link>
 
         <header className="cf-run-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
+          <div className="cf-build-stage grid">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
@@ -123,7 +123,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
               <p className="mt-2 max-w-[78ch] text-[15px] leading-[1.5] text-fg-muted">{demo.prompt}</p>
             </div>
 
-            <div className="flex flex-col justify-between border-t border-rule bg-surface-2 px-5 py-4 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
+            <div className="cf-demo-controls flex flex-col justify-between border-t border-rule bg-surface-2 px-5 py-4 sm:px-7 lg:border-t-0 lg:border-l lg:px-6">
               <div>
                 <span className="text-[12px] font-[650] text-fg-muted">
                   replay controls

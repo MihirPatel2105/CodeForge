@@ -34,8 +34,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="cf-admin min-h-screen bg-bg">
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-[1540px]">
-        <aside className="sticky top-[64px] hidden h-[calc(100vh-64px)] w-[240px] shrink-0 border-r border-rule px-4 py-8 lg:block">
+      <div className="cf-operations-layout mx-auto flex w-full max-w-[1540px] gap-8">
+        <aside className="cf-operations-nav sticky top-[88px] hidden h-fit w-[220px] shrink-0 rounded-3xl border border-border px-3 py-6 lg:block">
           <span className={cn(ADMIN_LABEL, "px-3")}>Control centre</span>
           <nav className="mt-4 space-y-1" aria-label="Admin navigation">
             {NAV.map(({ href, label, icon: Icon, exact }) => {
@@ -58,7 +58,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <div className="absolute inset-x-4 bottom-7 rounded-lg border border-ok-bd bg-ok-soft p-3">
+          <div className="mx-1 mt-8 rounded-2xl bg-surface-2 p-4">
             <div className="flex items-center gap-2 text-ok">
               <Activity className="h-4 w-4" aria-hidden />
               <span className="text-[12px] font-[650]">
@@ -116,7 +116,7 @@ export function AdminPageHeader({
       <div>
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-ok" aria-hidden />
-          <span className={ADMIN_LABEL}>{eyebrow}</span>
+          <span className={ADMIN_LABEL}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
         </div>
         <h1 className="font-display mt-3 text-[36px] font-[650] tracking-[-0.055em] text-fg md:text-[46px]">
           {title}
@@ -141,7 +141,7 @@ export function AdminSectionHeading({
 }) {
   return (
     <div>
-      <span className={ADMIN_LABEL}>{eyebrow}</span>
+      <span className={ADMIN_LABEL}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
       <h2 id={id} className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
         {title}
       </h2>

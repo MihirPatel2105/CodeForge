@@ -223,7 +223,7 @@ export default function HowItWorksPage() {
 }
 
 function SectionLabel({ index, label }: { index: string; label: string }) {
-  return <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2"><span className="text-[12px] font-[700] text-accent">{index}</span><span className="text-[13px] font-[650] text-fg-muted">{label}</span></div>;
+  return <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2"><span className="sr-only">Section {index}</span><span className="text-[13px] font-[650] text-fg-muted">{label}</span></div>;
 }
 
 function TerminalProof() {

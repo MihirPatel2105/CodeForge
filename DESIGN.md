@@ -1,6 +1,6 @@
 # CodeForge design system
 
-Status: user-approved premium direction, extended across page families on 2026-09-30.
+Status: user-approved premium direction; page layouts and motion redesigned on 2026-09-30.
 The homepage and auth screens are the visual references. Runtime behavior stays authoritative.
 
 ## Purpose and direction
@@ -137,3 +137,25 @@ requirements or user authorization.
   Real login, account mutations, SSE execution, and publishing were not exercised.
 - Dynamic admin detail pages and live run states compile and inherit the shared
   system; every populated state was not individually browser-verified.
+
+## Full layout and motion redesign
+
+Projects use a split introduction/activity stage and roomy workspace cards. Project
+detail promotes prompt entry alongside history. Profile separates identity from a
+horizontal activity ribbon; settings use a dedicated navigation rail. Admin uses
+a floating operations rail and large page introductions. FAQ uses a centered
+introduction and one readable accordion column. API follow-up pages use broad
+introductions and clearly separated tasks. Agent stages have role icons and
+independent state labels.
+
+`PageMotion` animates each route's main region without keying or remounting its
+children. Live state and session hooks keep their original lifecycles. Public
+editorial sections reveal once as they enter the viewport. Native smooth anchor
+scrolling preserves keyboard, touch, and browser scroll restoration. No wheel
+interception or motion dependency is added. Reduced-motion preferences disable
+route/reveal effects and smooth scrolling, including preference changes mid-page.
+
+This second layout pass is checked by TypeScript, ESLint, and an isolated production
+build. The earlier browser findings above describe the first shared-style pass.
+Servers remain stopped at the user's request; the new layouts and motion have not
+yet received a fresh browser review.

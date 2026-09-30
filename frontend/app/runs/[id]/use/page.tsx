@@ -48,7 +48,7 @@ export default function UseApiPage() {
           <ArrowLeft className="size-4" aria-hidden /> Back to run
         </RunFlowLink>
 
-        <header className="mt-5 flex flex-wrap items-end justify-between gap-3">
+        <header className="cf-api-intro mt-5 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Use your API</h1>
             <p className="mt-1 max-w-[70ch] text-[14px] leading-6 text-fg-muted">Test an endpoint, connect another app, or download the runnable source.</p>
@@ -69,7 +69,7 @@ export default function UseApiPage() {
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <ArrowRight className="cf-use-option-arrow size-3.5" aria-hidden /></span>
           </RunFlowLink>
-          <div className="rounded-3xl border border-border bg-surface p-5">
+          <div className="cf-use-option-card rounded-3xl border border-border bg-surface p-5">
             <span className="text-[12px] font-[700] text-fg-muted">Run it yourself</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>

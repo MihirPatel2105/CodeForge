@@ -131,9 +131,9 @@ export default function AboutPage() {
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.17] tracking-[-0.05em] text-fg md:text-[40px]">
                   The model should never be the only thing checking the model.
                 </h2>
-                <div className="mt-12 grid border-l border-t border-rule md:grid-cols-3">
+                <div className="cf-editorial-features mt-12 grid gap-6 md:grid-cols-3">
                   {PRINCIPLES.map(({ icon: Icon, index, title, body }) => (
-                    <article key={index} className="group border-b border-r border-rule p-6 transition-colors hover:bg-bg md:p-8">
+                    <article key={index} className="group rounded-3xl bg-bg p-7 md:p-9">
                       <div className="flex items-center justify-between">
                         <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-bg text-accent transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft">
                           <Icon className="h-4 w-4" aria-hidden />
@@ -254,7 +254,7 @@ export default function AboutPage() {
 function SectionLabel({ index, label }: { index: string; label: string }) {
   return (
     <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2">
-      <span className="text-[12px] font-[700] text-accent">{index}</span>
+      <span className="sr-only">Section {index}</span>
       <span className="text-[13px] font-[650] text-fg-muted">{label}</span>
     </div>
   );

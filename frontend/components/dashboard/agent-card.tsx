@@ -1,3 +1,4 @@
+import { ClipboardList, Boxes, Code2, ShieldCheck, FlaskConical, Terminal } from "lucide-react";
 import type { AgentCardState, AgentName } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
@@ -48,6 +49,8 @@ const STATE_LABEL: Record<AgentCardState, string> = {
   stopped: "stopped",
 };
 
+const STAGE_ICON = { pm: ClipboardList, architect: Boxes, coder: Code2, reviewer: ShieldCheck, tester: FlaskConical, sandbox: Terminal };
+
 export function AgentCard({ data }: { data: AgentCardData }) {
   const {
     index,
@@ -61,6 +64,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
     dimmed,
     loopHighlight,
   } = data;
+  const Icon = STAGE_ICON[data.id];
   const t = tone[STATE_TONE[state]];
   const working = state === "working";
   const failed = state === "failed";
@@ -69,7 +73,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   return (
     <div
       className={cn(
-        "relative flex flex-1 snap-center flex-col gap-[8px] overflow-hidden rounded-2xl border bg-surface px-4 pt-5 pb-4",
+        "relative flex flex-1 snap-center flex-col gap-3 overflow-hidden rounded-3xl border bg-surface px-5 py-6",
         "transition-[transform,box-shadow,border-color,opacity] duration-300 ease-out",
         state === "idle" && "border-border opacity-[0.86]",
         working && "-translate-y-[3px] border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
@@ -90,18 +94,12 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       data-state={state}
     >
       <span className={cn("absolute inset-x-0 top-0 h-[3px]", stateRail)} aria-hidden />
-      {/* Row 1: numbered square, name, iteration badge */}
-      <div className="flex items-center gap-[7px]">
-        <span
-          className={cn(
-            "flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-md",
-            typeScale.metaMono,
-            "text-[11.5px] font-bold",
-            t.soft,
-          )}
-        >
-          {index}
-        </span>
+      <div className="flex items-center justify-between gap-3">
+        <span className={cn("grid size-10 place-items-center rounded-2xl", t.soft)}><Icon size={20} aria-hidden /></span>
+        <span className="text-[12px] tabular-nums text-fg-faint" aria-label={`Stage ${index}`}>{index}</span>
+      </div>
+      {/* Role and repeat pass remain readable independently of the state color. */}
+      <div className="flex flex-wrap items-center gap-2">
         <span className={cn(typeScale.cardTitle, "text-fg")}>{name}</span>
         {iteration > 0 && (
           <span
@@ -125,7 +123,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       {/* Row 3: state pill */}
       <span
         className={cn(
-          "inline-flex w-fit items-center gap-[5px] rounded-lg px-2 py-[3px]",
+          "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1",
           typeScale.label,
           t.soft,
         )}

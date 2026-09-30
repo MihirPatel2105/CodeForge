@@ -1,3 +1,4 @@
-export default function RouteTransition({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="cf-route-transition">{children}</div>;
+export default function RouteTemplate({ children }: Readonly<{ children: React.ReactNode }>) {
+  // PageMotion handles the content transition; chrome stays outside the animation.
+  return <>{children}</>;
 }

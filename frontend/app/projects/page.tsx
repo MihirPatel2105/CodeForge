@@ -115,11 +115,13 @@ export default function ProjectsPage() {
     <div className="cf-projects min-h-screen bg-bg">
       <AppHeader />
       <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-8 md:px-10 md:pt-10 lg:px-14">
+        <div className="cf-workspace-stage">
         <section className="cf-projects-intro relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-7 md:px-9 md:py-8">
           <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
-                Projects
+                Your next API
+                <span className="block">starts here.</span>
               </h1>
               <p className="mt-2 max-w-[58ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
                 Pick up an API or start a new one. Each project keeps its runs, code, and test results together.
@@ -129,7 +131,7 @@ export default function ProjectsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger
                 render={
-                  <Button className="h-11 gap-2 rounded-xl px-5 text-[13px]" />
+                  <Button className="h-12 gap-2 rounded-full px-6 text-[14px]" />
                 }
               >
                 <Plus className="h-4 w-4" aria-hidden />
@@ -149,7 +151,7 @@ export default function ProjectsPage() {
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
         {projects && totals.projects > 0 && (
-          <dl className="mt-4 grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-3">
+          <dl className="cf-workspace-summary grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-3">
             <Figure label="Projects" value={String(totals.projects)} />
             <Figure label="Total runs" value={String(totals.runs)} bordered />
             <Figure
@@ -164,6 +166,8 @@ export default function ProjectsPage() {
             />
           </dl>
         )}
+
+        </div>
 
         {error && (
           <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
@@ -213,7 +217,7 @@ export default function ProjectsPage() {
             </p>
 
             {projects.length ? (
-              <ul className="mt-5 grid gap-5 lg:grid-cols-2">
+              <ul className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
                 {projects.map((project) => (
                   <li key={project.id} className={project.id === newProjectId ? "motion-safe:animate-[cfReadoutEnter_300ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
                     <ProjectCard project={project} />
@@ -287,7 +291,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="cf-project-card group relative flex min-h-[228px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-card group relative flex min-h-[280px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
 
@@ -379,7 +383,7 @@ function NewProjectCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="cf-project-new group relative flex min-h-[228px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-new group relative flex min-h-[280px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
         <FolderPlus className="h-[19px] w-[19px]" aria-hidden />
@@ -443,7 +447,7 @@ function LoadingState() {
         </div>
         <div className="h-2.5 w-16 animate-pulse rounded bg-border" />
       </div>
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
         {[0, 1].map((item) => (
           <div
             key={item}

@@ -217,7 +217,7 @@ export default function LiveRunPage() {
         </Link>
 
         <header className="cf-run-hero mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
+          <div className="cf-build-stage grid">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span
@@ -262,7 +262,7 @@ export default function LiveRunPage() {
               )}
             </div>
 
-            <dl className="grid grid-cols-2 bg-surface-2">
+            <dl className="cf-build-metrics grid grid-cols-2 bg-surface-2 sm:grid-cols-4">
               <RunMetric icon={<ShieldCheck />} label="stages complete" value={`${completedStages}/6`} />
               <RunMetric icon={<ListTree />} label="timeline events" value={String(snapshot.timeline.length)} bordered />
               <RunMetric icon={<FileCode2 />} label="generated files" value={String(snapshot.files.length)} topBorder />
