@@ -172,6 +172,8 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-stack-step { color: var(--lp-muted); font-size: 12px; }
 .lp-stack-body .lp-artifact { margin: 0; min-width: 0; }
 @media (min-width: 701px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
+  /* Keep the deck pinned long enough for the final card to settle over Reviewer. */
+  .lp-agent-stack::after { content: ""; display: block; height: 60vh; }
   .lp-stack-card { position: sticky; top: calc(104px + var(--stack-index) * 16px); z-index: calc(1 + var(--stack-index)); margin-bottom: 24vh; transform: scale(var(--stack-scale,1)); }
   .lp-stack-card:last-child { margin-bottom: 0; }
 }
