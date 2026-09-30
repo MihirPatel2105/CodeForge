@@ -173,8 +173,10 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-stack-body .lp-artifact { margin: 0; min-width: 0; }
 @media (min-width: 701px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
   /* Keep the deck pinned long enough for the final card to settle over Reviewer. */
-  .lp-agent-stack::after { content: ""; display: block; height: 60vh; }
-  .lp-stack-card { position: sticky; top: calc(104px + var(--stack-index) * 16px); z-index: calc(1 + var(--stack-index)); margin-bottom: 24vh; transform: scale(var(--stack-scale,1)); }
+  .lp-agent-stack { display: flex; flex-direction: column; gap: 24vh; }
+  .lp-agent-stack::after { content: ""; display: block; height: 36vh; flex-shrink: 0; }
+  /* Margins affect sticky's bottom boundary; gap keeps every card's release aligned. */
+  .lp-stack-card { position: sticky; flex-shrink: 0; top: calc(104px + var(--stack-index) * 16px); z-index: calc(1 + var(--stack-index)); margin-bottom: 0; transform: scale(var(--stack-scale,1)); }
   .lp-stack-card:last-child { margin-bottom: 0; }
 }
 @media (max-width: 850px) { .lp-stack-body { gap: 24px; padding: 28px; }.lp-stack-head { padding: 18px 28px; } }
