@@ -25,8 +25,10 @@ export function LogoLockup({
         draggable={false}
         width={1824}
         height={447}
-        className="h-full w-full object-contain"
+        className="h-full w-full object-contain opacity-0"
       />
+      <span className="cf-logo-symbol" aria-hidden />
+      <span className="cf-logo-word" aria-hidden />
     </span>
   );
 }
