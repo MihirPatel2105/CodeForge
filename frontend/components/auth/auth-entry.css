@@ -1,5 +1,5 @@
 /* CodeForge auth · spacious product story and focused account forms */
-.pa-auth { --pa-ease: cubic-bezier(.16,1,.3,1); background: var(--surface); color: var(--fg); min-height: 100dvh; display: flex; flex-direction: column; font-family: var(--font-ui); }
+.pa-auth { --pa-intro-height: 22.5px; --pa-intro-gap: 24px; --pa-ease: cubic-bezier(.16,1,.3,1); background: var(--surface); color: var(--fg); min-height: 100dvh; display: flex; flex-direction: column; font-family: var(--font-ui); }
 .pa-auth * { box-sizing: border-box; }
 .pa-auth :is(a,button):focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 .pa-header { max-width: 1440px; width: 100%; padding: 28px 56px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
@@ -8,7 +8,7 @@
 .pa-back:hover { color: var(--accent); }
 .pa-stage { max-width: 1328px; width: 100%; margin: auto; padding: 36px 56px 56px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 100px; align-items: start; }
 .pa-story { min-width: 0; }
-.pa-story-intro { color: var(--fg-muted); font-size: 15px; font-weight: 550; margin: 0 0 24px; }
+.pa-story-intro { color: var(--fg-muted); font-size: 15px; font-weight: 550; line-height: var(--pa-intro-height); margin: 0 0 var(--pa-intro-gap); }
 .pa-story h2 { font-size: clamp(44px,5.1vw,72px); letter-spacing: -.065em; line-height: 1.04; font-weight: 650; margin: 0; overflow-wrap: anywhere; }
 .pa-story-lead { max-width: 440px; font-size: 18px; line-height: 1.7; color: var(--fg-muted); margin: 28px 0 0; }
 .pa-build { margin-top: 44px; background: var(--bg); border-radius: 24px; padding: 28px; }
@@ -23,7 +23,7 @@
 .pa-build-bottom a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .pa-security-note { margin-top: 44px; padding: 28px; background: var(--bg); border-radius: 24px; }
 .pa-security-note svg { color: var(--accent); }.pa-security-note h3 { font-size: 23px; letter-spacing: -.035em; margin: 20px 0 12px; font-weight: 600; }.pa-security-note p { color: var(--fg-muted); font-size: 15px; line-height: 1.7; margin: 0; }
-.pa-form { min-width: 0; border: 1px solid var(--border); border-radius: 28px; padding: 48px 40px; background: var(--surface); animation: pa-enter 500ms var(--pa-ease) both; }
+.pa-form { margin-top: calc(var(--pa-intro-height) + var(--pa-intro-gap)); min-width: 0; border: 1px solid var(--border); border-radius: 28px; padding: 48px 40px; background: var(--surface); animation: pa-enter 500ms var(--pa-ease) both; }
 .pa-form-content { max-width: 420px; margin: auto; }
 .pa-form h1 { font-size: 38px; line-height: 1.12; letter-spacing: -.05em; overflow-wrap: anywhere; }
 .pa-form .cf-auth-eyebrow { display: none; }
@@ -36,6 +36,6 @@
 .pa-footer a { color: var(--fg-muted); min-height: 32px; display: inline-flex; align-items: center; }
 @keyframes pa-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 1100px) { .pa-stage { gap: 48px; padding-inline: 32px; }.pa-header,.pa-footer { padding-inline: 32px; }.pa-form { padding: 36px 28px; }.pa-story h2 { font-size: 54px; } }
-@media (max-width: 800px) { .pa-header { padding: 20px 24px; }.pa-stage { display: flex; flex-direction: column; align-items: stretch; gap: 32px; max-width: 560px; padding: 24px 24px 40px; }.pa-story { order: 2; }.pa-form { padding: 32px; }.pa-story-copy { display: none; }.pa-build,.pa-security-note { margin: 0; }.pa-footer { padding: 12px 24px 24px; }.pa-form h1 { font-size: 36px; } }
+@media (max-width: 800px) { .pa-header { padding: 20px 24px; }.pa-stage { display: flex; flex-direction: column; align-items: stretch; gap: 32px; max-width: 560px; padding: 24px 24px 40px; }.pa-story { order: 2; }.pa-form { margin-top: 0; padding: 32px; }.pa-story-copy { display: none; }.pa-build,.pa-security-note { margin: 0; }.pa-footer { padding: 12px 24px 24px; }.pa-form h1 { font-size: 36px; } }
 @media (max-width: 400px) { .pa-stage { padding: 16px 16px 32px; }.pa-header { padding-inline: 16px; }.pa-form { padding: 28px 20px; border-radius: 24px; }.pa-build { padding: 24px 20px; }.pa-form h1 { font-size: 32px; }.pa-example-prompt { font-size: 20px; }.pa-build-bottom { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { .pa-auth *, .pa-auth *::before, .pa-auth *::after { animation: none !important; transition: none !important; } }
