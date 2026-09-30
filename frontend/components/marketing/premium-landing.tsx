@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import "./premium-landing.css";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ArrowRight, Check, ChevronDown, Code2, FileCode2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
 import { SiteFooter } from "./marketing-actions";
@@ -93,10 +93,41 @@ export function PremiumLanding() {
 
         <section className="lp-control lp-section" aria-labelledby="control-title"><div className="lp-section-intro"><h2 id="control-title">AI does the work.<br />You call the shots.</h2><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></div><div className="lp-control-grid"><article><ShieldCheck size={28} strokeWidth={1.5} aria-hidden /><h3>Approve before it builds.</h3><p>Review the requirements and architecture before the agents move forward.</p></article><article><Code2 size={28} strokeWidth={1.5} aria-hidden /><h3>See inside the process.</h3><p>Follow agent decisions, inspect generated files, and read the review feedback.</p></article><article><Terminal size={28} strokeWidth={1.5} aria-hidden /><h3>Get the actual outcome.</h3><p>Tests run in an isolated sandbox. See the output and download the artifacts.</p></article></div></section>
 
-        <section className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><div>{questions.map(question => <details key={question.title}><summary>{question.title}<ChevronDown size={20} aria-hidden /></summary><p>{question.answer}</p></details>)}</div></section>
+        <section className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><div>{questions.map(question => <LandingFaqItem key={question.title} title={question.title} answer={question.answer} />)}</div></section>
         <section className="lp-closing"><h2>What will you build?</h2><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></section>
       </main>
       <SiteFooter />
+    </div>
+  );
+}
+
+function LandingFaqItem({ title, answer }: { title: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+
+  return (
+    <div className="lp-faq-item" data-open={open}>
+      <h3>
+        <button
+          type="button"
+          id={`${id}-question`}
+          aria-expanded={open}
+          aria-controls={`${id}-answer`}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {title}
+          <ChevronDown size={20} aria-hidden />
+        </button>
+      </h3>
+      <div
+        className="lp-faq-answer"
+        id={`${id}-answer`}
+        aria-labelledby={`${id}-question`}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className="lp-faq-answer-inner"><p>{answer}</p></div>
+      </div>
     </div>
   );
 }
