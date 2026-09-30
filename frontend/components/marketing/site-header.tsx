@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 
 /** Public site header. The brand and account actions stay clear of the page content. */
-export function SiteHeader() {
+export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
+  const pathname = usePathname();
   const { user, loading } = useSession();
   const [floating, setFloating] = useState(false);
 
@@ -43,7 +45,13 @@ export function SiteHeader() {
               </div>
             ) : user ? (
             <>
+              {workspace && user.is_admin && (
+                <Link href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">
+                  Admin
+                </Link>
+              )}
               <Link
+                aria-current={workspace && (pathname.startsWith("/projects") || pathname.startsWith("/runs")) ? "page" : undefined}
                 href="/projects"
                 className="inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-accent/90 active:scale-[0.98] sm:px-4"
               >
