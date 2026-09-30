@@ -5,6 +5,7 @@ import "./premium-landing.css";
 import { useId, useState } from "react";
 import { ArrowRight, Check, ChevronDown, Code2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
+import { AgentScrollStack } from "./agent-scroll-stack";
 import { ProductScrollPreview } from "./product-scroll-preview";
 import { PipelineWalkthrough } from "./pipeline-walkthrough";
 import { SiteFooter } from "./marketing-actions";
@@ -28,10 +29,7 @@ const questions = [
 export function PremiumLanding() {
   const user = useCurrentUser();
   const [example, setExample] = useState(0);
-  const [agent, setAgent] = useState(0);
   const demo = DEMO_RUNS[example];
-  const chosen = agents[agent];
-  const AgentIcon = chosen.icon;
   const start = user ? "/projects" : "/signup";
 
   return (
@@ -57,15 +55,7 @@ export function PremiumLanding() {
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <div className="lp-section-intro"><h2 id="team-title">A team behind<br />every build.</h2><p>Each agent has a job. Every decision has a trail.<br />You see the work, from the first plan to the final test.</p></div>
-          <div className="lp-team-layout">
-            <div className="lp-agent-list" aria-label="Explore the five agents">
-              {agents.map((item, i) => <button key={item.name} type="button" onClick={() => setAgent(i)} aria-pressed={agent === i}><span className="lp-agent-number" aria-hidden>0{i + 1}</span><span><strong>{item.name}</strong><span>{item.verb}</span></span><ArrowRight size={20} aria-hidden /></button>)}
-            </div>
-            <div className="lp-agent-feature" aria-live="polite" aria-atomic="true" key={chosen.name}>
-              <div className="lp-agent-detail lp-change"><AgentIcon size={28} strokeWidth={1.5} aria-hidden /><h3>{chosen.verb}</h3><p>{chosen.detail}</p></div>
-              <div className="lp-artifact lp-change"><div><span>{chosen.artifact}</span><span>Library example</span></div><ul>{chosen.lines.map(line => <li key={line}>{line}</li>)}</ul></div>
-            </div>
-          </div>
+          <AgentScrollStack agents={agents} />
         </section>
 
         <section className="lp-loop-section" aria-labelledby="loop-title">

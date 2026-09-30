@@ -157,3 +157,25 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   .lp-pipeline-stages { grid-template-columns: 1fr; gap: 10px; }.lp-pipeline-stages li { display: grid; grid-template-columns: 36px 1fr auto; column-gap: 12px; padding: 12px; }.lp-stage-top { grid-column: 1; grid-row: 1 / 3; }.lp-stage-number { display: none; }.lp-pipeline-stages h3 { grid-column: 2; margin: 0 0 3px; }.lp-pipeline-stages p { grid-column: 2; margin: 0; min-height: 0; font-size: 11px; }.lp-stage-state { grid-column: 3; grid-row: 1 / 3; align-self: center; }.lp-stage-arrow { top: auto; bottom: -13px; left: 28px; right: auto; transform: rotate(90deg); }
   .lp-pipeline-feedback { gap: 5px; margin: 16px 0; }.lp-pipeline-feedback>span:last-child { width: 100%; margin-left: 19px; }.lp-pipeline-outcome { flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; }.lp-walkthrough-controls { justify-content: space-between; flex-wrap: wrap; }.lp-walkthrough-controls :is(a,button) { font-size: 11px; }
 }
+
+/* Each agent joins the deck as the next card reaches the sticky position. */
+.lp-agent-stack { list-style: none; margin: 0; padding: 0; }
+.lp-stack-card { position: relative; margin: 0 0 24px; border: 1px solid var(--lp-rule); border-radius: var(--lp-radius); background: var(--lp-paper-secondary); box-shadow: 0 20px 48px -36px rgba(23,32,51,.25); transform-origin: top center; }
+.lp-stack-card:nth-child(even) { background: var(--lp-paper); }
+.lp-stack-card:last-child { margin-bottom: 0; }
+.lp-stack-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 20px 36px; border-bottom: 1px solid var(--lp-rule); color: var(--lp-accent); font-size: 18px; font-weight: 600; }
+.lp-stack-head>span { display: flex; align-items: center; gap: 18px; }
+.lp-stack-number { color: var(--lp-muted); font: 12px var(--lp-mono); }
+.lp-stack-body { display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 48px; min-height: 330px; padding: 40px 36px; }
+.lp-stack-copy h3 { margin: 0; font-size: clamp(26px,3vw,36px); line-height: 1.15; font-weight: 600; letter-spacing: -.04em; }
+.lp-stack-copy p { margin: 18px 0 24px; color: var(--lp-muted); font-size: 16px; line-height: 1.7; }
+.lp-stack-step { color: var(--lp-muted); font-size: 12px; }
+.lp-stack-body .lp-artifact { margin: 0; min-width: 0; }
+@media (min-width: 701px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
+  .lp-stack-card { position: sticky; top: calc(104px + var(--stack-index) * 16px); z-index: calc(1 + var(--stack-index)); margin-bottom: 24vh; transform: scale(var(--stack-scale,1)); }
+  .lp-stack-card:last-child { margin-bottom: 0; }
+}
+@media (max-width: 850px) { .lp-stack-body { gap: 24px; padding: 28px; }.lp-stack-head { padding: 18px 28px; } }
+@media (max-width: 700px) {
+  .lp-stack-head { min-height: 64px; padding: 18px 22px; font-size: 16px; }.lp-stack-body { grid-template-columns: 1fr; min-height: 0; gap: 24px; padding: 24px 22px; }.lp-stack-copy h3 { font-size: 26px; }.lp-stack-copy p { font-size: 15px; margin-bottom: 16px; }.lp-stack-card { margin-bottom: 20px; }
+}
