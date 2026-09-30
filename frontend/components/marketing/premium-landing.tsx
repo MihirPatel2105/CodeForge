@@ -3,13 +3,13 @@
 import Link from "next/link";
 import "./premium-landing.css";
 import { useId, useState } from "react";
-import { ArrowRight, Check, ChevronDown, Code2, FileCode2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Code2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
 import { ProductScrollPreview } from "./product-scroll-preview";
+import { PipelineWalkthrough } from "./pipeline-walkthrough";
 import { SiteFooter } from "./marketing-actions";
 import { DEMO_RUNS } from "@/lib/demo-runs";
 import { useCurrentUser } from "@/lib/use-current-user";
-import { tokenizePythonLine } from "@/lib/python-highlight";
 
 const agents = [
   { name: "PM", verb: "Understands the idea.", detail: "Turns your request into a clear scope: the data you need, the operations to support, and what success looks like.", icon: Layers3, artifact: "Requirements", lines: ["Entity: Book", "Fields: title, author, ISBN, genre, read", "Operations: create, read, update, delete", "Checkpoint: your approval"] },
@@ -48,24 +48,9 @@ export function PremiumLanding() {
             <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
           </div>
           <ProductScrollPreview>
-          <div className="lp-product" aria-label="Interactive example API output">
-            <div className="lp-product-head"><span><span className="lp-status-dot" />From request to result</span><span>Example preview</span></div>
-            <div className="lp-product-grid">
-              <div className="lp-request">
-                <div className="lp-example-switch" aria-label="Choose an example">
-                  {DEMO_RUNS.map((item, i) => <button key={item.slug} type="button" aria-pressed={example === i} onClick={() => setExample(i)}>{item.label}</button>)}
-                </div>
-                <p key={demo.slug} className="lp-prompt lp-change" aria-live="polite" aria-atomic="true">{demo.prompt}</p>
-                <div className="lp-request-foot"><span>Plain English in.</span><ArrowRight size={20} aria-hidden /></div>
-              </div>
-              <div className="lp-code-panel">
-                <div className="lp-code-title"><span><FileCode2 size={16} aria-hidden />{demo.preview.file}</span><span>Python</span></div>
-                <pre key={demo.slug} className="lp-code lp-change"><code>{demo.preview.lines.map((line, i) => <span className="lp-code-line" key={i}><span className="lp-line-number" aria-hidden>{i + 1}</span><span>{tokenizePythonLine(line).map((token, n) => <span key={n} className={`lp-syntax-${token.cls}`}>{token.text}</span>)}</span></span>)}</code></pre>
-                <div className="lp-test-result"><Check size={17} aria-hidden /><span>{demo.preview.result}</span><span className="lp-result-note">Example result</span></div>
-              </div>
+            <div className="lp-product lp-pipeline">
+              <PipelineWalkthrough key={demo.slug} demo={demo} example={example} onExampleChange={setExample} />
             </div>
-            <div className="lp-product-bottom"><span>Planned. Reviewed. Tested.</span><span>Code you can inspect.</span></div>
-          </div>
           </ProductScrollPreview>
           <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
