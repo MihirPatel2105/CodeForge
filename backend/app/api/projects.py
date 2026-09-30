@@ -1,16 +1,27 @@
 """Project CRUD. Every query is scoped to the authenticated user (NFR-3)."""
 
 import logging
+import re
 
-from fastapi import APIRouter, status
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import UsageLimitError
+from app.db import aggregate_rows
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
 from app.models import Deployment, Project, Run
 from app.sandbox.deployment import destroy_deployment
-from app.schemas.api import ProjectCreate, ProjectDeleteResponse, ProjectResponse
+from app.schemas.api import (
+    ProjectCreate,
+    ProjectDeleteResponse,
+    ProjectOverviewItem,
+    ProjectOverviewPage,
+    ProjectResponse,
+    ProjectRunStats,
+    RunSummary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +52,159 @@ async def create_project(payload: ProjectCreate, user: CurrentUser) -> ProjectRe
 async def list_projects(user: CurrentUser) -> list[ProjectResponse]:
     projects = await Project.find(Project.user_id == str(user.id)).to_list()
     return [_to_response(p) for p in projects]
+
+
+@router.get("/overview", response_model=ProjectOverviewPage)
+async def project_overview(
+    user: CurrentUser,
+    cursor: str | None = None,
+    limit: int = Query(default=20, ge=1, le=50),
+    q: str = Query(default="", max_length=120),
+) -> ProjectOverviewPage:
+    """Bound the list response and aggregate card metrics on the server."""
+    owner = str(user.id)
+    query: dict = {"user_id": owner}
+    if q.strip():
+        term = re.escape(q.strip())
+        query["$or"] = [
+            {"name": {"$regex": term, "$options": "i"}},
+            {"description": {"$regex": term, "$options": "i"}},
+        ]
+    total_projects = await Project.find(Project.user_id == owner).count()
+    matching_projects = await Project.find(query).count() if q.strip() else total_projects
+    if cursor:
+        if not ObjectId.is_valid(cursor):
+            raise HTTPException(status_code=422, detail="Invalid project cursor")
+        query["_id"] = {"$lt": ObjectId(cursor)}
+    page = await Project.find(query).sort("-_id").limit(limit + 1).to_list()
+    projects = page[:limit]
+    next_cursor = str(projects[-1].id) if len(page) > limit else None
+
+    owner_totals = await aggregate_rows(
+        "runs",
+        [
+            {"$match": {"user_id": owner}},
+            {
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": 1},
+                    "succeeded": {"$sum": {"$cond": [{"$eq": ["$status", "succeeded"]}, 1, 0]}},
+                }
+            },
+        ],
+        1,
+    )
+    totals = owner_totals[0] if owner_totals else {"total": 0, "succeeded": 0}
+
+    by_project: dict[str, dict] = {}
+    if projects:
+        run_view = {
+            "id": {"$toString": "$_id"},
+            "project_id": "$project_id",
+            "prompt": "$prompt",
+            "status": "$status",
+            "iterations": "$iterations",
+            "created_at": "$created_at",
+            "updated_at": "$updated_at",
+        }
+        grouped = await aggregate_rows(
+            "runs",
+            [
+                {
+                    "$match": {
+                        "user_id": owner,
+                        "project_id": {"$in": [str(p.id) for p in projects]},
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$project_id",
+                        "total": {"$sum": 1},
+                        "succeeded": {"$sum": {"$cond": [{"$eq": ["$status", "succeeded"]}, 1, 0]}},
+                        "failed": {
+                            "$sum": {
+                                "$cond": [
+                                    {
+                                        "$in": [
+                                            "$status",
+                                            [
+                                                "failed_max_loops",
+                                                "failed_sandbox",
+                                                "failed_llm",
+                                            ],
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ]
+                            }
+                        },
+                        "active": {
+                            "$sum": {
+                                "$cond": [
+                                    {
+                                        "$in": [
+                                            "$status",
+                                            ["queued", "running", "awaiting_approval"],
+                                        ]
+                                    },
+                                    1,
+                                    0,
+                                ]
+                            }
+                        },
+                        "avg_loops": {
+                            "$avg": {
+                                "$cond": [
+                                    {
+                                        "$in": [
+                                            "$status",
+                                            ["queued", "running", "awaiting_approval"],
+                                        ]
+                                    },
+                                    None,
+                                    "$iterations",
+                                ]
+                            }
+                        },
+                        "recent": {
+                            "$topN": {
+                                "n": 14,
+                                "sortBy": {"created_at": -1, "_id": -1},
+                                "output": run_view,
+                            }
+                        },
+                    }
+                },
+            ],
+        )
+        by_project = {row["_id"]: row for row in grouped}
+
+    items = []
+    for project in projects:
+        row = by_project.get(str(project.id))
+        recent = [RunSummary.model_validate(run) for run in row["recent"]] if row else []
+        stats = ProjectRunStats(
+            total=row["total"] if row else 0,
+            succeeded=row["succeeded"] if row else 0,
+            failed=row["failed"] if row else 0,
+            active=row["active"] if row else 0,
+            avg_loops=row["avg_loops"] if row else None,
+            last=recent[0] if recent else None,
+        )
+        items.append(
+            ProjectOverviewItem(
+                **_to_response(project).model_dump(), stats=stats, recent_runs=recent
+            )
+        )
+    return ProjectOverviewPage(
+        items=items,
+        next_cursor=next_cursor,
+        total_projects=total_projects,
+        matching_projects=matching_projects,
+        total_runs=totals["total"],
+        total_succeeded=totals["succeeded"],
+    )
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)

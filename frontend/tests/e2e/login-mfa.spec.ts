@@ -60,6 +60,7 @@ test("password sign-in sends a device ID when randomUUID is unavailable", async 
 
 test("password sign-in offers both saved methods and completes with an authenticator code", async ({ page }) => {
   await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.route("**/api/backend/projects/overview*", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], next_cursor: null, total_projects: 0, matching_projects: 0, total_runs: 0, total_succeeded: 0 }) }));
   await page.route("**/auth/login", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -90,6 +91,7 @@ test("password sign-in offers both saved methods and completes with an authentic
 
 test("recovery code is not offered as a sign-in verification method", async ({ page }) => {
   await page.route("**/api/backend/projects", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.route("**/api/backend/projects/overview*", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], next_cursor: null, total_projects: 0, matching_projects: 0, total_runs: 0, total_succeeded: 0 }) }));
   await page.route("**/auth/login", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",

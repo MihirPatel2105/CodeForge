@@ -10,3 +10,10 @@ Ask someone who has not worked on CodeForge to use a running local instance. Do 
 6. Explain how to recover if a provider fails or the live connection drops.
 
 The Phase 7 criterion is met only when the viewer can describe the full run afterward without coaching. Save the date, device size, task notes, exact points of confusion, and changes made from the findings. Repeat the check after fixing blocking issues. This document is a test plan, not evidence that the criterion has passed.
+
+## Repeatable interface checks
+
+- Run the mocked browser suite in CI for account recovery, Projects retry/search, project history, Profile, and Try API.
+- At 375px, verify search remains usable by keyboard and the page has no horizontal overflow.
+- Inspect visible focus, error recovery, empty states, and long labels on desktop and mobile before a release.
+- Record page weight and interaction delays from a production build when a real backend is available; do not treat a mocked route as a performance measurement.

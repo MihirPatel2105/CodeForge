@@ -1,6 +1,10 @@
+import asyncio
 import logging
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
+from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -21,9 +25,17 @@ from app.api.stream import router as stream_router
 from app.config import settings
 from app.core.abuse_limits import check_abuse_limit
 from app.core.exceptions import CodeForgeError
+from app.core.monitoring import monitor_loop
 from app.db import connect, disconnect
 
 logger = logging.getLogger(__name__)
+request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
+
+
+class RequestIdFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = request_id_var.get()
+        return True
 
 
 @asynccontextmanager
@@ -53,7 +65,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                     "SMTP is not configured — sign-up will NOT verify email addresses. "
                     "Set SMTP_USER and SMTP_PASSWORD in .env to switch verification on."
                 )
-            yield
+            monitor_task = asyncio.create_task(monitor_loop(app))
+            try:
+                yield
+            finally:
+                monitor_task.cancel()
+                try:
+                    await monitor_task
+                except asyncio.CancelledError:
+                    pass
         finally:
             await disconnect()
     finally:
@@ -127,7 +147,10 @@ def _configure_logging() -> None:
         return
 
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(levelname)-8s %(name)s: %(message)s"))
+    handler.addFilter(RequestIdFilter())
+    handler.setFormatter(
+        logging.Formatter("%(levelname)-8s request=%(request_id)s %(name)s: %(message)s")
+    )
     handler._codeforge = True  # type: ignore[attr-defined]
     root.addHandler(handler)
     root.setLevel(logging.INFO)
@@ -142,6 +165,25 @@ def create_app() -> FastAPI:
     app = FastAPI(title="CodeForge", lifespan=lifespan)
     app.add_exception_handler(CodeForgeError, codeforge_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)
+
+    @app.middleware("http")
+    async def request_context_middleware(request: Request, call_next):
+        request_id = uuid4().hex
+        token = request_id_var.set(request_id)
+        started = time.monotonic()
+        try:
+            response = await call_next(request)
+            response.headers["X-Request-ID"] = request_id
+            logger.info(
+                "HTTP %s %s status=%s duration_ms=%d",
+                request.method,
+                request.url.path,
+                response.status_code,
+                round((time.monotonic() - started) * 1000),
+            )
+            return response
+        finally:
+            request_id_var.reset(token)
 
     @app.middleware("http")
     async def abuse_limit_middleware(request: Request, call_next):

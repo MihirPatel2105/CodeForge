@@ -54,6 +54,67 @@ def test_list_returns_only_own_projects(client, registered_user, project, other_
     assert theirs == []
 
 
+def test_project_overview_is_paginated_and_owner_scoped(
+    client, registered_user, project, other_user
+):
+    second = client.post(
+        "/projects", json={"name": "Tasks API"}, headers=registered_user["headers"]
+    ).json()
+    client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    )
+    first_page = client.get("/projects/overview?limit=1", headers=registered_user["headers"])
+    assert first_page.status_code == 200
+    assert first_page.json()["total_projects"] == 2
+    assert first_page.json()["total_runs"] == 1
+    assert first_page.json()["items"][0]["id"] == second["id"]
+    cursor = first_page.json()["next_cursor"]
+    assert cursor
+
+    next_page = client.get(
+        f"/projects/overview?limit=1&cursor={cursor}", headers=registered_user["headers"]
+    )
+    assert next_page.status_code == 200
+    assert next_page.json()["items"][0]["id"] == project["id"]
+    assert next_page.json()["items"][0]["stats"]["total"] == 1
+    assert len(next_page.json()["items"][0]["recent_runs"]) == 1
+    assert next_page.json()["next_cursor"] is None
+
+    others = client.get("/projects/overview", headers=other_user["headers"])
+    assert others.json()["items"] == []
+    assert others.json()["total_runs"] == 0
+    assert (
+        client.get("/projects/overview?cursor=bad", headers=registered_user["headers"]).status_code
+        == 422
+    )
+
+
+def test_project_run_page_has_full_stats_and_owner_boundary(
+    client, registered_user, project, other_user
+):
+    for prompt in ("first", "second", "third"):
+        response = client.post(
+            "/runs",
+            json={"project_id": project["id"], "prompt": prompt},
+            headers=registered_user["headers"],
+        )
+        assert response.status_code == 202
+    url = f"/projects/{project['id']}/runs/page?limit=2"
+    first = client.get(url, headers=registered_user["headers"])
+    assert first.status_code == 200
+    assert len(first.json()["items"]) == 2
+    assert first.json()["stats"]["total"] == 3
+    cursor = first.json()["next_cursor"]
+    second = client.get(f"{url}&cursor={cursor}", headers=registered_user["headers"])
+    assert second.status_code == 200
+    assert len(second.json()["items"]) == 1
+    assert second.json()["next_cursor"] is None
+    assert client.get(url, headers=other_user["headers"]).status_code == 404
+    assert client.get(f"{url}&cursor=bad", headers=registered_user["headers"]).status_code == 422
+
+
 def test_get_another_users_project_is_404(client, project, other_user):
     """404 rather than 403 — a 403 would confirm the id exists."""
     response = client.get(f"/projects/{project['id']}", headers=other_user["headers"])

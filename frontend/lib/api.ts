@@ -28,6 +28,8 @@ import type {
   DeleteAccountResponse,
   ProjectCreate,
   ProjectResponse,
+  ProjectOverviewPage,
+  ProjectRunPage,
   ProjectDeleteResponse,
   RunCreate,
   RunCreateResponse,
@@ -288,12 +290,21 @@ export const api = {
   adminMonitoring: (days = 30) => request<AdminMonitoringResponse>(`/admin/monitoring?days=${days}`),
 
   listProjects: () => request<ProjectResponse[]>("/projects"),
+  projectOverview: (options: { cursor?: string; q?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (options.cursor) search.set("cursor", options.cursor);
+    if (options.q) search.set("q", options.q);
+    return request<ProjectOverviewPage>(`/projects/overview${search.size ? `?${search}` : ""}`);
+  },
   createProject: (payload: ProjectCreate) =>
     request<ProjectResponse>("/projects", { method: "POST", body: JSON.stringify(payload) }),
   getProject: (id: string) => request<ProjectResponse>(`/projects/${id}`),
   deleteProject: (id: string) =>
     request<ProjectDeleteResponse>(`/projects/${id}`, { method: "DELETE" }),
   listProjectRuns: (projectId: string) => request<RunSummary[]>(`/projects/${projectId}/runs`),
+  projectRunPage: (projectId: string, cursor?: string) => request<ProjectRunPage>(
+    `/projects/${projectId}/runs/page${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`,
+  ),
 
   createRun: (payload: RunCreate) =>
     request<RunCreateResponse>("/runs", { method: "POST", body: JSON.stringify(payload) }),

@@ -583,6 +583,35 @@ class RunSummary(BaseModel):
     updated_at: datetime
 
 
+class ProjectRunStats(BaseModel):
+    total: int = 0
+    succeeded: int = 0
+    failed: int = 0
+    active: int = 0
+    avg_loops: float | None = None
+    last: RunSummary | None = None
+
+
+class ProjectRunPage(BaseModel):
+    items: list[RunSummary]
+    next_cursor: str | None = None
+    stats: ProjectRunStats
+
+
+class ProjectOverviewItem(ProjectResponse):
+    stats: ProjectRunStats = Field(default_factory=ProjectRunStats)
+    recent_runs: list[RunSummary] = Field(default_factory=list)
+
+
+class ProjectOverviewPage(BaseModel):
+    items: list[ProjectOverviewItem]
+    next_cursor: str | None = None
+    total_projects: int
+    matching_projects: int
+    total_runs: int
+    total_succeeded: int
+
+
 class RunResponse(BaseModel):
     id: str
     project_id: str

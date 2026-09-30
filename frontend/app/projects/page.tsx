@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
@@ -17,10 +17,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { api, getToken, ApiError } from "@/lib/api";
-import type { ProjectResponse, RunSummary } from "@/lib/types";
-import { runStats, OUTCOME_FILL, type RunStats } from "@/lib/run-stats";
+import type { ProjectOverviewItem, ProjectResponse, RunSummary } from "@/lib/types";
+import { OUTCOME_FILL, type RunStats } from "@/lib/run-stats";
 import { RUN_STATUS_META, tone } from "@/lib/tone";
-import { formatWhen, parseApiTime } from "@/lib/format";
+import { formatWhen } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/dashboard/app-header";
 
@@ -31,6 +31,17 @@ interface ProjectRow extends ProjectResponse {
 
 const LABEL = "text-[12px] font-[650] text-fg-muted";
 
+function projectRow(item: ProjectOverviewItem): ProjectRow {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    created_at: item.created_at,
+    runs: item.recent_runs,
+    stats: { ...item.stats, avgLoops: item.stats.avg_loops },
+  };
+}
+
 /** Projects (design_handoff/README.md "Other screens"). Renders whichever state the
  * real `/projects` list implies — empty or populated — matching UI_BRIEF.md §7 state 1
  * and the populated example, both live in the same component. */
@@ -39,43 +50,54 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [open, setOpen] = useState(false);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [totals, setTotals] = useState({ projects: 0, runs: 0, succeeded: 0 });
+  const [matchingProjects, setMatchingProjects] = useState(0);
+  const requestId = useRef(0);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (query = "") => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
-      const list = await api.listProjects();
-      // The list endpoint carries no run data, so each project's history is fetched in
-      // parallel rather than adding a field the backend contract does not have. The
-      // whole history is kept now, not just its length — it is what every figure on
-      // this page is derived from, at no extra request cost.
-      const histories = await Promise.all(list.map((p) => api.listProjectRuns(p.id)));
-      const rows = list.map((p, i) => ({
-        ...p,
-        runs: histories[i],
-        stats: runStats(histories[i]),
-      }));
-      // Most recently active first. A list ordered by creation buries the project you
-      // were just working in as soon as there are more than a few.
-      rows.sort((a, b) => {
-        const at = a.stats.last ? parseApiTime(a.stats.last.created_at).getTime() : 0;
-        const bt = b.stats.last ? parseApiTime(b.stats.last.created_at).getTime() : 0;
-        return bt - at;
-      });
-      setProjects(rows);
+      const page = await api.projectOverview({ q: query.trim() });
+      if (currentRequest !== requestId.current) return;
+      setProjects(page.items.map(projectRow));
+      setNextCursor(page.next_cursor);
+      setTotals({ projects: page.total_projects, runs: page.total_runs, succeeded: page.total_succeeded });
+      setMatchingProjects(page.matching_projects);
     } catch (err) {
+      if (currentRequest !== requestId.current) return;
       if (err instanceof ApiError && err.status === 401) {
         router.replace("/login");
         return;
       }
       setError(err instanceof ApiError ? err.message : "Couldn't load projects.");
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, [router]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    const currentRequest = requestId.current;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const page = await api.projectOverview({ cursor: nextCursor, q: search.trim() });
+      if (currentRequest !== requestId.current) return;
+      setProjects((current) => [...(current ?? []), ...page.items.map(projectRow)]);
+      setNextCursor(page.next_cursor);
+    } catch (err) {
+      if (currentRequest === requestId.current) setError(err instanceof ApiError ? err.message : "Couldn't load more projects.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, nextCursor, search]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -83,22 +105,11 @@ export default function ProjectsPage() {
       router.replace("/login");
       return;
     }
-    load();
-  }, [router, load]);
+    const timer = setTimeout(() => void load(search), search.trim() ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [router, load, search]);
 
-  const totals = projects
-    ? projects.reduce(
-        (acc, p) => ({
-          runs: acc.runs + p.stats.total,
-          succeeded: acc.succeeded + p.stats.succeeded,
-        }),
-        { runs: 0, succeeded: 0 },
-      )
-    : null;
-  const query = search.trim().toLocaleLowerCase();
-  const visibleProjects = projects?.filter((project) =>
-    `${project.name} ${project.description ?? ""}`.toLocaleLowerCase().includes(query),
-  );
+  const query = search.trim();
 
   return (
     <div className="cf-projects min-h-screen bg-bg">
@@ -126,10 +137,10 @@ export default function ProjectsPage() {
               </DialogTrigger>
               <NewProjectDialogContent
                 onCreated={(project) => {
-                  setProjects((current) => [{ ...project, runs: [], stats: runStats([]) }, ...(current ?? [])]);
                   setSearch("");
                   setNewProjectId(project.id);
                   setOpen(false);
+                  void load("");
                 }}
               />
             </Dialog>
@@ -137,9 +148,9 @@ export default function ProjectsPage() {
         </section>
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
-        {projects && projects.length > 0 && totals && (
+        {projects && totals.projects > 0 && (
           <dl className="mt-4 grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.035)] sm:grid-cols-3">
-            <Figure label="Projects" value={String(projects.length)} />
+            <Figure label="Projects" value={String(totals.projects)} />
             <Figure label="Total runs" value={String(totals.runs)} bordered />
             <Figure
               label="Successful runs"
@@ -157,7 +168,7 @@ export default function ProjectsPage() {
         {error && (
           <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             <p>{error}</p>
-            <Button type="button" variant="outline" onClick={load} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => void (nextCursor && projects ? loadMore() : load(search))} disabled={loading || loadingMore}>
               Try again
             </Button>
           </div>
@@ -165,7 +176,7 @@ export default function ProjectsPage() {
 
         {loading && projects == null ? (
           <LoadingState />
-        ) : projects == null ? null : projects.length === 0 ? (
+        ) : projects == null ? null : projects.length === 0 && !query ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
           <section className="mt-9" aria-labelledby="project-list-heading">
@@ -197,13 +208,13 @@ export default function ProjectsPage() {
 
             <p role="status" className="mt-4 text-[12px] font-[550] text-fg-muted">
               {query
-                ? `${visibleProjects?.length ?? 0} of ${projects.length} projects`
-                : `${projects.length} ${projects.length === 1 ? "project" : "projects"}`}
+                ? `${projects.length} of ${matchingProjects} matching projects shown`
+                : `${projects.length} of ${totals.projects} projects shown`}
             </p>
 
-            {visibleProjects?.length ? (
+            {projects.length ? (
               <ul className="mt-5 grid gap-5 lg:grid-cols-2">
-                {visibleProjects.map((project) => (
+                {projects.map((project) => (
                   <li key={project.id} className={project.id === newProjectId ? "motion-safe:animate-[cfReadoutEnter_300ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
                     <ProjectCard project={project} />
                   </li>
@@ -225,6 +236,7 @@ export default function ProjectsPage() {
                 </Button>
               </div>
             )}
+            {nextCursor && <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore} className="mt-6">{loadingMore ? "Loading…" : "Load more projects"}</Button>}
           </section>
         )}
       </main>

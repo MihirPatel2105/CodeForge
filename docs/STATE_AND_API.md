@@ -80,7 +80,9 @@ Rules
 | `checkpoints` | managed by LangGraph `MongoDBSaver` — do not hand-edit |
 | GridFS `artifacts` | zipped file tree, sandbox logs, pytest report, keyed by `run_id` |
 
-Indexes: `users.email` unique; `runs.project_id`; `runs.status`; `runs.created_at` desc.
+Indexes: `users.email` unique; `runs.project_id`; `runs.status`; `runs.created_at` desc;
+`runs(user_id, project_id, created_at)` for owner history; `runs(created_at, status)` for
+failure monitoring; `projects(user_id, _id)` for cursor paging.
 
 ---
 
@@ -91,6 +93,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/health` | liveness |
+| GET | `/ready` | MongoDB and configured Redis readiness; returns 503 if either is unavailable |
 | POST | `/auth/register` | create user → JWT |
 | POST | `/auth/login` | JWT, or a five-minute password-verification ticket with available methods |
 | POST | `/auth/login/complete` | exchange the password ticket and authenticator code for a JWT |
@@ -105,6 +108,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/auth/passkeys/mfa/verify` | exchange the password ticket and a user-verified passkey assertion for a JWT |
 | POST | `/projects` | create project |
 | GET | `/projects` | list user's projects |
+| GET | `/projects/overview` | owner-scoped, cursor-paged project cards with aggregated run counts, recent runs, and portfolio totals; `q` searches name and description |
 | GET | `/projects/{id}` | project detail |
 | POST | `/runs` | start a run — body: `{project_id, prompt, rag_enabled?}` → `{run_id}` |
 | GET | `/runs/{id}` | full run state snapshot |
@@ -123,6 +127,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | DELETE | `/runs/{id}/deployment` | Unpublish and delete the generated API's hosted data |
 | GET/POST/PUT/PATCH/DELETE | `/api/v1/deployments/{id}/{path}` | API-key protected gateway to the generated app |
 | GET | `/projects/{id}/runs` | run history |
+| GET | `/projects/{id}/runs/page` | cursor-paged owner run history with full-project aggregate counts |
 | GET | `/admin/overview` | admin-only platform totals and recent runs |
 | GET | `/admin/runs` | paginated cross-user run inventory; status, prompt, RAG, acceptance, failure, and date filters |
 | GET | `/admin/runs/export.csv` | export up to 5,000 filtered-period run records |

@@ -371,6 +371,33 @@ export interface ProjectResponse {
   created_at: string;
 }
 
+export interface ProjectOverviewItem extends ProjectResponse {
+  stats: {
+    total: number;
+    succeeded: number;
+    failed: number;
+    active: number;
+    avg_loops: number | null;
+    last: RunSummary | null;
+  };
+  recent_runs: RunSummary[];
+}
+
+export interface ProjectOverviewPage {
+  items: ProjectOverviewItem[];
+  next_cursor: string | null;
+  total_projects: number;
+  matching_projects: number;
+  total_runs: number;
+  total_succeeded: number;
+}
+
+export interface ProjectRunPage {
+  items: RunSummary[];
+  next_cursor: string | null;
+  stats: ProjectOverviewItem["stats"];
+}
+
 export interface RunCreate {
   project_id: string;
   prompt: string;

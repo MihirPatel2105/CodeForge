@@ -6,10 +6,12 @@ until then a created run stays `queued`.
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Response, status
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import NotFoundError, UsageLimitError
+from app.db import aggregate_rows
 from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
 from app.graph import executor
@@ -23,6 +25,8 @@ from app.schemas.api import (
     FileHistoryResponse,
     FileHistoryVersion,
     FileTreeResponse,
+    ProjectRunPage,
+    ProjectRunStats,
     RunCreate,
     RunCreateResponse,
     RunResponse,
@@ -151,6 +155,74 @@ async def list_project_runs(project_id: str, user: CurrentUser) -> list[RunSumma
         .to_list()
     )
     return [_to_summary(r) for r in runs]
+
+
+@router.get("/projects/{project_id}/runs/page", response_model=ProjectRunPage)
+async def project_run_page(
+    project_id: str,
+    user: CurrentUser,
+    cursor: str | None = None,
+    limit: int = Query(default=20, ge=1, le=50),
+) -> ProjectRunPage:
+    await get_owned(Project, project_id, str(user.id), "Project")
+    owner = str(user.id)
+    match = {"project_id": project_id, "user_id": owner}
+    query = dict(match)
+    if cursor:
+        if not ObjectId.is_valid(cursor):
+            raise HTTPException(status_code=422, detail="Invalid run cursor")
+        query["_id"] = {"$lt": ObjectId(cursor)}
+    page = await Run.find(query).sort("-_id").limit(limit + 1).to_list()
+    items = [_to_summary(run) for run in page[:limit]]
+    rows = await aggregate_rows(
+        "runs",
+        [
+            {"$match": match},
+            {
+                "$group": {
+                    "_id": None,
+                    "total": {"$sum": 1},
+                    "succeeded": {"$sum": {"$cond": [{"$eq": ["$status", "succeeded"]}, 1, 0]}},
+                    "failed": {
+                        "$sum": {
+                            "$cond": [
+                                {
+                                    "$in": [
+                                        "$status",
+                                        ["failed_max_loops", "failed_sandbox", "failed_llm"],
+                                    ]
+                                },
+                                1,
+                                0,
+                            ]
+                        }
+                    },
+                    "avg_loops": {
+                        "$avg": {
+                            "$cond": [
+                                {"$in": ["$status", ["queued", "running", "awaiting_approval"]]},
+                                None,
+                                "$iterations",
+                            ]
+                        }
+                    },
+                }
+            },
+        ],
+        1,
+    )
+    row = rows[0] if rows else {}
+    return ProjectRunPage(
+        items=items,
+        next_cursor=items[-1].id if len(page) > limit else None,
+        stats=ProjectRunStats(
+            total=row.get("total", 0),
+            succeeded=row.get("succeeded", 0),
+            failed=row.get("failed", 0),
+            avg_loops=row.get("avg_loops"),
+            last=items[0] if items else None,
+        ),
+    )
 
 
 @router.get("/runs/{run_id}/artifacts", response_model=ArtifactListResponse)

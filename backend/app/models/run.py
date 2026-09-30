@@ -38,4 +38,8 @@ class Run(Document):
             IndexModel([("user_id", ASCENDING)]),
             IndexModel([("status", ASCENDING)]),
             IndexModel([("created_at", DESCENDING)]),
+            IndexModel(
+                [("user_id", ASCENDING), ("project_id", ASCENDING), ("created_at", DESCENDING)]
+            ),
+            IndexModel([("created_at", DESCENDING), ("status", ASCENDING)]),
         ]

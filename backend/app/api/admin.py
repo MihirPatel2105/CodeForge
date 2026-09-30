@@ -1026,51 +1026,108 @@ async def monitoring(
     del admin
     now = datetime.now(UTC)
     start = now - timedelta(days=days - 1)
-    runs = await Run.find({"created_at": {"$gte": start}}).to_list()
+    database = get_database()
+    match = {"created_at": {"$gte": start}}
+    daily_rows = await (
+        await database["runs"].aggregate(
+            [
+                {"$match": match},
+                {
+                    "$group": {
+                        "_id": {
+                            "$dateToString": {
+                                "format": "%Y-%m-%d",
+                                "date": "$created_at",
+                                "timezone": "UTC",
+                            }
+                        },
+                        "runs": {"$sum": 1},
+                        "succeeded": {"$sum": {"$cond": [{"$eq": ["$status", "succeeded"]}, 1, 0]}},
+                        "failed": {
+                            "$sum": {"$cond": [{"$in": ["$status", _FAILED_STATUSES]}, 1, 0]}
+                        },
+                        "tokens": {"$sum": {"$ifNull": ["$metrics.tokens_total", 0]}},
+                    }
+                },
+            ]
+        )
+    ).to_list(None)
     dates = {
         (start + timedelta(days=offset)).date().isoformat(): AdminDailyMetric(
             date=(start + timedelta(days=offset)).date().isoformat()
         )
         for offset in range(days)
     }
-    provider_counters: dict[str, dict[str, int]] = {}
-    total_tokens = 0
-    failed = 0
-    for run in runs:
-        key = (
-            (run.created_at if run.created_at.tzinfo else run.created_at.replace(tzinfo=UTC))
-            .date()
-            .isoformat()
+    for row in daily_rows:
+        dates[row["_id"]] = AdminDailyMetric(
+            date=row["_id"],
+            runs=row["runs"],
+            succeeded=row["succeeded"],
+            failed=row["failed"],
+            tokens=row["tokens"],
         )
-        daily = dates.setdefault(key, AdminDailyMetric(date=key))
-        daily.runs += 1
-        if run.status == "succeeded":
-            daily.succeeded += 1
-        if run.status in _FAILED_STATUSES:
-            daily.failed += 1
-            failed += 1
-        tokens = run.metrics.tokens_total if run.metrics else 0
-        daily.tokens += tokens
-        total_tokens += tokens
-        attempts = list((run.state or {}).get("llm_attempts") or [])
-        providers_seen: list[str] = []
-        for attempt in attempts:
-            provider = str(attempt.get("model", "unknown")).split("/", 1)[0].lower()
-            counter = provider_counters.setdefault(
-                provider, {"attempts": 0, "successes": 0, "failures": 0, "tokens": 0}
-            )
-            counter["attempts"] += 1
-            counter["successes" if attempt.get("ok") else "failures"] += 1
-            providers_seen.append(provider)
-        if providers_seen and tokens:
-            provider_counters[providers_seen[-1]]["tokens"] += tokens
+    total_runs = sum(row["runs"] for row in daily_rows)
+    failed = sum(row["failed"] for row in daily_rows)
+    total_tokens = sum(row["tokens"] for row in daily_rows)
 
-    database = get_database()
-    artifact_doc = (
-        await database["artifacts.files"]
-        .aggregate([{"$group": {"_id": None, "bytes": {"$sum": "$length"}}}])
-        .to_list(1)
-    )
+    model_provider = {"$toLower": {"$arrayElemAt": [{"$split": ["$model", "/"]}, 0]}}
+    provider_rows = await (
+        await database["runs"].aggregate(
+            [
+                {"$match": match},
+                {"$unwind": "$state.llm_attempts"},
+                {
+                    "$project": {
+                        "model": {"$ifNull": ["$state.llm_attempts.model", "unknown"]},
+                        "ok": "$state.llm_attempts.ok",
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": model_provider,
+                        "attempts": {"$sum": 1},
+                        "successes": {"$sum": {"$cond": ["$ok", 1, 0]}},
+                        "failures": {"$sum": {"$cond": ["$ok", 0, 1]}},
+                    }
+                },
+            ]
+        )
+    ).to_list(None)
+    token_rows = await (
+        await database["runs"].aggregate(
+            [
+                {"$match": match},
+                {
+                    "$project": {
+                        "model": {
+                            "$arrayElemAt": [{"$ifNull": ["$state.llm_attempts.model", []]}, -1]
+                        },
+                        "tokens": {"$ifNull": ["$metrics.tokens_total", 0]},
+                    }
+                },
+                {"$match": {"model": {"$type": "string"}}},
+                {"$group": {"_id": model_provider, "tokens": {"$sum": "$tokens"}}},
+            ]
+        )
+    ).to_list(None)
+    provider_counters = {
+        row["_id"]: {
+            "attempts": row["attempts"],
+            "successes": row["successes"],
+            "failures": row["failures"],
+            "tokens": 0,
+        }
+        for row in provider_rows
+    }
+    for row in token_rows:
+        if row["_id"] in provider_counters:
+            provider_counters[row["_id"]]["tokens"] = row["tokens"]
+
+    artifact_doc = await (
+        await database["artifacts.files"].aggregate(
+            [{"$group": {"_id": None, "bytes": {"$sum": "$length"}}}]
+        )
+    ).to_list(1)
     artifact_bytes = int(artifact_doc[0]["bytes"]) if artifact_doc else 0
     database_bytes = 0
     for collection in ("users", "projects", "runs", "admin_audit_logs"):
@@ -1080,10 +1137,10 @@ async def monitoring(
         except Exception:  # noqa: BLE001 - restricted Atlas roles may deny collStats
             pass
 
-    failure_rate = _percentage(failed, len(runs))
+    failure_rate = _percentage(failed, total_runs)
     alerts: list[AdminAlert] = []
     if (
-        len(runs) >= settings.admin_failure_alert_min_runs
+        total_runs >= settings.admin_failure_alert_min_runs
         and failure_rate >= settings.admin_failure_alert_percent
     ):
         alerts.append(

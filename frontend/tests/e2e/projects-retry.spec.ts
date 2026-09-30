@@ -18,14 +18,14 @@ test("projects replaces a failed load with an actionable retry", async ({ page }
   }));
 
   let requests = 0;
-  await page.route("**/api/backend/projects", (route) => {
+  await page.route("**/api/backend/projects/overview*", (route) => {
     requests += 1;
     return route.fulfill({
       status: requests === 1 ? 500 : 200,
       contentType: "application/json",
       body: requests === 1
         ? JSON.stringify({ error: { code: "server_error", message: "Temporarily unavailable" } })
-        : "[]",
+        : JSON.stringify({ items: [], next_cursor: null, total_projects: 0, matching_projects: 0, total_runs: 0, total_succeeded: 0 }),
     });
   });
 

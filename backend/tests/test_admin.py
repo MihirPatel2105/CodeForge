@@ -164,6 +164,35 @@ def test_quality_uses_persisted_metrics_and_keeps_exclusions_out_of_rates(client
     assert rag_enabled["l5_rate"] == 100.0
 
 
+def test_monitoring_aggregates_daily_and_provider_totals(client, admin_user):
+    run_id = _create_run(client, admin_user, project_name="Monitor API", prompt="Build monitor")
+    with MongoClient(settings.mongo_uri) as mongo:
+        mongo[settings.mongo_db].runs.update_one(
+            {"_id": ObjectId(run_id)},
+            {
+                "$set": {
+                    "status": "failed_llm",
+                    "metrics": {"tokens_total": 50},
+                    "state.llm_attempts": [
+                        {"model": "groq/model-a", "ok": False},
+                        {"model": "openrouter/model-b", "ok": True},
+                    ],
+                }
+            },
+        )
+
+    response = client.get("/admin/monitoring?days=7", headers=admin_user["headers"])
+    assert response.status_code == 200
+    body = response.json()
+    assert body["failure_rate"] == 100.0
+    assert sum(day["runs"] for day in body["daily"]) == 1
+    assert sum(day["tokens"] for day in body["daily"]) == 50
+    providers = {provider["provider"]: provider for provider in body["providers"]}
+    assert providers["groq"]["failures"] == 1
+    assert providers["openrouter"]["successes"] == 1
+    assert providers["openrouter"]["tokens"] == 50
+
+
 def test_admin_cancel_and_session_revoke_are_audited(client, admin_user):
     other = _create_user(client, email="action@example.com")
     run_id = _create_run(client, other, project_name="Action API", prompt="Build actions")

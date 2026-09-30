@@ -4,6 +4,8 @@ The only module that opens a database connection. Agents and routes go through B
 documents or `get_bucket()`; nothing else constructs a client.
 """
 
+from typing import Any
+
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
@@ -43,6 +45,13 @@ def get_database() -> AsyncDatabase:
     if _database is None:
         raise RuntimeError("Database not initialised - connect() must run on startup")
     return _database
+
+
+async def aggregate_rows(
+    collection: str, pipeline: list[dict[str, Any]], limit: int | None = None
+) -> list[dict[str, Any]]:
+    cursor = await get_database()[collection].aggregate(pipeline)
+    return await cursor.to_list(limit)
 
 
 def get_bucket():

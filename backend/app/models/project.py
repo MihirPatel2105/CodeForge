@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from beanie import Document
 from pydantic import Field
-from pymongo import ASCENDING, IndexModel
+from pymongo import ASCENDING, DESCENDING, IndexModel
 
 
 class Project(Document):
@@ -13,4 +13,7 @@ class Project(Document):
 
     class Settings:
         name = "projects"
-        indexes = [IndexModel([("user_id", ASCENDING)])]
+        indexes = [
+            IndexModel([("user_id", ASCENDING)]),
+            IndexModel([("user_id", ASCENDING), ("_id", DESCENDING)]),
+        ]

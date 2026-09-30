@@ -38,9 +38,19 @@ const LABEL = "text-[12px] font-[650] text-fg-muted";
 export function ProjectDetail({
   project,
   history,
+  stats: serverStats,
+  nextCursor,
+  loadingMore,
+  moreError,
+  onLoadMore,
 }: {
   project: ProjectResponse;
   history: RunSummary[];
+  stats?: { total: number; succeeded: number; failed: number; avg_loops: number | null } | null;
+  nextCursor?: string | null;
+  loadingMore?: boolean;
+  moreError?: string | null;
+  onLoadMore?: () => void;
 }) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -49,7 +59,8 @@ export function ProjectDetail({
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const stats = runStats(history);
+  const historyStats = runStats(history);
+  const stats = serverStats ? { ...historyStats, ...serverStats, avgLoops: serverStats.avg_loops } : historyStats;
 
   useEffect(() => {
     const saved = sessionStorage.getItem("codeforge:retry-prompt");
@@ -106,7 +117,7 @@ export function ProjectDetail({
               )}
             </div>
 
-            {/* Every figure is derived from the history already loaded for this page. */}
+            {/* Counts come from the server so they include runs on later pages. */}
             <dl className="cf-project-detail-stats grid grid-cols-2 bg-surface-2/65 sm:grid-cols-4">
               <Figure label="Runs" value={String(stats.total)} />
               <Figure label="Succeeded" value={String(stats.succeeded)} bordered />
@@ -210,7 +221,7 @@ export function ProjectDetail({
                 </h2>
               </div>
               <span className="rounded-xl border border-border bg-surface px-2.5 py-1 text-[12px] font-[600] text-fg-muted">
-                {history.length} {history.length === 1 ? "run" : "runs"}
+                {history.length} of {stats.total} {stats.total === 1 ? "run" : "runs"}
               </span>
             </div>
 
@@ -290,6 +301,8 @@ export function ProjectDetail({
                 );
               })
             )}
+            {moreError && <p role="alert" className="px-5 py-3 text-[13px] text-danger">{moreError}</p>}
+            {nextCursor && <div className="border-t border-border px-5 py-4"><Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>{loadingMore ? "Loading…" : "Load more runs"}</Button></div>}
           </section>
         </div>
 

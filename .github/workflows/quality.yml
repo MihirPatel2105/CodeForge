@@ -53,9 +53,26 @@ jobs:
             if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then break; fi
             sleep 2
           done
-          E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts
+          E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/auth-recovery.spec.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-results
           path: frontend/test-results
+
+  sandbox-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - run: docker build -t codeforge-sandbox:latest ./sandbox
+        working-directory: .
+      - run: RUN_LIVE_DOCKER=1 pytest -q tests/test_sandbox_live.py

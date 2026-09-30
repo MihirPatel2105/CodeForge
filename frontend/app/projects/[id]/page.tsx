@@ -1,19 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getToken, ApiError } from "@/lib/api";
-import type { ProjectResponse, RunSummary } from "@/lib/types";
+import type { ProjectResponse, RunSummary, ProjectOverviewItem } from "@/lib/types";
 import { ProjectDetail } from "@/components/dashboard/project-detail";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { Button } from "@/components/ui/button";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<ProjectResponse | null>(null);
   const [history, setHistory] = useState<RunSummary[]>([]);
+  const [stats, setStats] = useState<ProjectOverviewItem["stats"] | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [moreError, setMoreError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [nextProject, page] = await Promise.all([api.getProject(id), api.projectRunPage(id)]);
+      setProject(nextProject);
+      setHistory(page.items);
+      setStats(page.stats);
+      setNextCursor(page.next_cursor);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      setError(err instanceof ApiError ? err.message : "Couldn't load this project.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, router]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    setMoreError(null);
+    try {
+      const page = await api.projectRunPage(id, nextCursor);
+      setHistory((current) => [...current, ...page.items]);
+      setStats(page.stats);
+      setNextCursor(page.next_cursor);
+    } catch (err) {
+      setMoreError(err instanceof ApiError ? err.message : "Couldn't load more runs.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [id, loadingMore, nextCursor]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -21,20 +63,8 @@ export default function ProjectDetailPage() {
       router.replace("/login");
       return;
     }
-    (async () => {
-      try {
-        const [p, runs] = await Promise.all([api.getProject(id), api.listProjectRuns(id)]);
-        setProject(p);
-        setHistory(runs);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        setError(err instanceof ApiError ? err.message : "Couldn't load this project.");
-      }
-    })();
-  }, [id, router]);
+    void load();
+  }, [load, router]);
 
   if (error) {
     return (
@@ -48,9 +78,10 @@ export default function ProjectDetailPage() {
             Couldn&apos;t open this workspace
           </h1>
           <p className="mt-3 text-[13.5px] leading-[1.6] text-fg-muted">{error}</p>
+          <Button onClick={() => void load()} disabled={loading} className="mt-7">Try again</Button>
           <Link
             href="/projects"
-            className="mt-7 rounded-xl bg-fg px-5 py-3 text-[14px] font-[650] text-surface"
+            className="mt-4 text-[13px] font-[650] text-fg-muted hover:text-fg"
           >
             Back to projects
           </Link>
@@ -59,7 +90,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (!project) {
+  if (!project || loading) {
     return (
       <div className="cf-project-detail min-h-screen bg-bg" aria-label="Loading project" aria-live="polite">
         <AppHeader />
@@ -90,5 +121,5 @@ export default function ProjectDetailPage() {
     );
   }
 
-  return <ProjectDetail project={project} history={history} />;
+  return <ProjectDetail project={project} history={history} stats={stats} nextCursor={nextCursor} loadingMore={loadingMore} moreError={moreError} onLoadMore={loadMore} />;
 }

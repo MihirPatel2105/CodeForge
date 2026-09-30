@@ -484,6 +484,24 @@ async def send_security_alert_email(*, to: str, title: str, detail: str) -> None
     )
 
 
+async def send_platform_alert_email(*, to: str, title: str, detail: str) -> None:
+    when = _stamp()
+    await send_email(
+        to=to,
+        subject=f"CodeForge platform alert: {title}",
+        text=f"{title}\n\n{detail}\n\nWhen: {when}\nCheck the admin monitoring page and backend logs.\n",
+        html=_shell(
+            eyebrow="platform alert",
+            heading=title,
+            rows=_security_rows(
+                when=when,
+                body=detail,
+                warning="Check the admin monitoring page and backend logs.",
+            ),
+        ),
+    )
+
+
 async def send_new_device_email(
     *, to: str, label: str, ip_address: str | None, occurred_at: datetime, review_url: str
 ) -> None:
