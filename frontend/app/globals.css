@@ -1307,3 +1307,26 @@ button.cf-project-action:not(:disabled):active svg { transform: none; }
   button.cf-project-action:not(:disabled):is(:hover,:active),
   button.cf-project-action:not(:disabled):hover svg { transform: none; }
 }
+
+/* Header feedback stays anchored: color and halos replace positional motion. */
+.cf-site-header a.cf-header-projects,
+.cf-site-header a.cf-header-profile {
+  transition: background-color 360ms ease, border-color 360ms ease, box-shadow 420ms cubic-bezier(.16,1,.3,1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cf-site-header a.cf-header-projects:hover {
+    background: color-mix(in srgb, var(--accent) 90%, black);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .cf-site-header a.cf-header-profile:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+}
+.cf-site-header a.cf-header-projects:active,
+.cf-site-header a.cf-header-profile:active { transform: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .cf-site-header a.cf-header-projects,
+  .cf-site-header a.cf-header-profile { transition: none; }
+}

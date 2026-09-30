@@ -53,11 +53,11 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
               <Link
                 aria-current={workspace && (pathname.startsWith("/projects") || pathname.startsWith("/runs")) ? "page" : undefined}
                 href="/projects"
-                className="inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-accent/90 active:scale-[0.98] sm:px-4"
+                className="cf-header-projects inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-accent/90 active:scale-[0.98] sm:px-4"
               >
                 Projects
               </Link>
-              <UserAvatar initials={user.initials} name={user.displayName} />
+              <UserAvatar initials={user.initials} name={user.displayName} className="cf-header-profile" />
             </>
           ) : (
             <>
