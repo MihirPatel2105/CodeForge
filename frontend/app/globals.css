@@ -1278,3 +1278,14 @@
   .cf-site-header-bar .h-16 { padding-left: 12px; padding-right: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .cf-site-header-bar { transition: none; } }
+
+/* Only the inner navigation surface is painted, leaving floating gutters clear. */
+header.cf-site-header[data-floating] {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+.cf-site-header-bar { pointer-events: auto; }
