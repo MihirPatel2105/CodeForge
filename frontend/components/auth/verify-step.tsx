@@ -6,6 +6,7 @@ import { ArrowLeft, Clock3, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
+import { setTourStep } from "@/lib/first-use-tour";
 
 const LENGTH = 6;
 
@@ -63,14 +64,9 @@ export function VerifyStep({
       try {
         const { access_token } = await api.verifyEmail({ email, code: value });
         setToken(access_token);
-        // A brand-new account lands on the landing page, not the dashboard: someone who
-        // just signed up has no projects, so /projects would greet them with an empty
-        // table. The landing page explains what the product does first, and its header
-        // reads "Go to projects" once you are signed in.
-        //
-        // `replace`, not `push`: the code is spent, so going back to this screen could
-        // only ever fail.
-        router.replace("/");
+        setTourStep(email, "projects");
+        // The code is spent; the guided first project starts at the Projects page.
+        router.replace("/projects");
       } catch (err) {
         setError(messageFor(err));
         setDigits(Array(LENGTH).fill(""));
