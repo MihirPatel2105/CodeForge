@@ -183,3 +183,23 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 @media (max-width: 700px) {
   .lp-stack-head { min-height: 64px; padding: 18px 22px; font-size: 16px; }.lp-stack-body { grid-template-columns: 1fr; min-height: 0; gap: 24px; padding: 24px 22px; }.lp-stack-copy h3 { font-size: 26px; }.lp-stack-copy p { font-size: 15px; margin-bottom: 16px; }.lp-stack-card { margin-bottom: 20px; }
 }
+
+/* One entrance sequence per landing mount; preview scale remains scroll-controlled. */
+@keyframes lp-hero-enter {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-hero > .lp-intro,
+  .lp-hero > h1,
+  .lp-hero > .lp-lead,
+  .lp-hero > .lp-actions,
+  .lp-hero > .lp-product-scroll {
+    animation: lp-hero-enter 700ms var(--lp-ease-out) backwards;
+  }
+  .lp-hero > h1 { animation-delay: 70ms; }
+  .lp-hero > .lp-lead { animation-delay: 150ms; }
+  .lp-hero > .lp-actions { animation-delay: 230ms; }
+  .lp-hero > .lp-product-scroll { animation-duration: 850ms; animation-delay: 320ms; }
+  .lp-hero:focus-within > .lp-actions { animation: none; }
+}
