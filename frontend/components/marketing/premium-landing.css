@@ -105,3 +105,10 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .cf-premium button:active { background: var(--lp-accent-soft); }
 .cf-premium button:disabled { opacity: .55; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) { html:has(.cf-premium) { scroll-behavior: auto; } }
+
+/* A compact example grows with scroll; the wrapper also shrinks its layout footprint. */
+.lp-product-scroll { position: relative; width: 100%; max-width: 1100px; margin: 56px auto 0; overflow-anchor: none; }
+.lp-product-scroll > .lp-product { width: 100%; margin: 0; animation: none; transform-origin: top center; }
+.lp-product-scroll[data-scroll-ready=true] > .lp-product { position: absolute; top: 0; left: 0; transform: scale(var(--preview-scale,1)); }
+@media (max-width: 600px) { .lp-product-scroll { margin-top: 32px; }.lp-product-scroll .lp-example-switch button { min-height: 48px; } }
+@media (prefers-reduced-motion: reduce) { .lp-product-scroll[data-scroll-ready=true] > .lp-product { transform: none; } }

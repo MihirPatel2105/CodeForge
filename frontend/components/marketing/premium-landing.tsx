@@ -5,6 +5,7 @@ import "./premium-landing.css";
 import { useId, useState } from "react";
 import { ArrowRight, Check, ChevronDown, Code2, FileCode2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
+import { ProductScrollPreview } from "./product-scroll-preview";
 import { SiteFooter } from "./marketing-actions";
 import { DEMO_RUNS } from "@/lib/demo-runs";
 import { useCurrentUser } from "@/lib/use-current-user";
@@ -46,6 +47,7 @@ export function PremiumLanding() {
             <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
           </div>
+          <ProductScrollPreview>
           <div className="lp-product" aria-label="Interactive example API output">
             <div className="lp-product-head"><span><span className="lp-status-dot" />From request to result</span><span>Example preview</span></div>
             <div className="lp-product-grid">
@@ -64,6 +66,7 @@ export function PremiumLanding() {
             </div>
             <div className="lp-product-bottom"><span>Planned. Reviewed. Tested.</span><span>Code you can inspect.</span></div>
           </div>
+          </ProductScrollPreview>
           <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
 
