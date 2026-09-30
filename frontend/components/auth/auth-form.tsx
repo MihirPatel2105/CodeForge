@@ -139,7 +139,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <AuthEntryShell label={pending ? "Verify your email" : copy.title}>
+    <AuthEntryShell entrance label={pending ? "Verify your email" : copy.title}>
               {pending ? (
                 <VerifyStep
                   email={pending.email}

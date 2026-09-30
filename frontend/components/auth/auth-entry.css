@@ -39,3 +39,26 @@
 @media (max-width: 800px) { .pa-header { padding: 20px 24px; }.pa-stage { display: flex; flex-direction: column; align-items: stretch; gap: 32px; max-width: 560px; padding: 24px 24px 40px; }.pa-story { order: 2; }.pa-form { margin-top: 0; padding: 32px; }.pa-story-copy { display: none; }.pa-build,.pa-security-note { margin: 0; }.pa-footer { padding: 12px 24px 24px; }.pa-form h1 { font-size: 36px; } }
 @media (max-width: 400px) { .pa-stage { padding: 16px 16px 32px; }.pa-header { padding-inline: 16px; }.pa-form { padding: 28px 20px; border-radius: 24px; }.pa-build { padding: 24px 20px; }.pa-form h1 { font-size: 32px; }.pa-example-prompt { font-size: 20px; }.pa-build-bottom { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { .pa-auth *, .pa-auth *::before, .pa-auth *::after { animation: none !important; transition: none !important; } }
+
+/* Sign-in and signup share the public pages' soft, staggered entrance. */
+@keyframes pa-story-enter {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pa-card-enter {
+  from { opacity: .25; transform: translateY(36px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pa-auth-entrance .pa-story-copy > * {
+    animation: pa-story-enter 1000ms var(--pa-ease) backwards;
+  }
+  .pa-auth-entrance .pa-story-copy > :nth-child(2) { animation-delay: 70ms; }
+  .pa-auth-entrance .pa-story-copy > :nth-child(3) { animation-delay: 140ms; }
+  .pa-auth-entrance .pa-build {
+    animation: pa-story-enter 1200ms var(--pa-ease) 210ms backwards;
+  }
+  .pa-auth-entrance .pa-form {
+    animation: pa-card-enter 1200ms var(--pa-ease) 210ms backwards;
+  }
+}

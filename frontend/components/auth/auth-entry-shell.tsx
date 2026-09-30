@@ -5,13 +5,14 @@ import { LogoLockup } from "@/components/brand/logo-lockup";
 import { AuthEntryProof } from "@/components/auth/auth-entry-proof";
 import "./auth-entry.css";
 
-export function AuthEntryShell({ children, label, proof = "product" }: {
+export function AuthEntryShell({ children, label, proof = "product", entrance = false }: {
   children: ReactNode;
   label: string;
   proof?: "product" | "recovery" | "security";
+  entrance?: boolean;
 }) {
   return (
-    <div className="pa-auth">
+    <div className={entrance ? "pa-auth pa-auth-entrance" : "pa-auth"}>
       <header className="pa-header">
         <Link href="/" aria-label="CodeForge home"><LogoLockup className="h-9 w-auto" /></Link>
         <Link href="/" className="pa-back"><ArrowLeft size={16} aria-hidden /><span>Home</span></Link>
