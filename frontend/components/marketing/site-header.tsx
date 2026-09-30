@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { LogoLockup } from "@/components/brand/logo-lockup";
@@ -8,9 +9,23 @@ import { LogoLockup } from "@/components/brand/logo-lockup";
 /** Public site header. The brand and account actions stay clear of the page content. */
 export function SiteHeader() {
   const user = useCurrentUser();
+  const [floating, setFloating] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const update = () => { frame = 0; setFloating(window.scrollY > 48); };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   return (
-    <header className="cf-site-header sticky top-0 z-20 border-b border-rule bg-surface/90 backdrop-blur-xl">
+    <header className="cf-site-header sticky top-0 z-20 h-16" data-floating={floating}>
+      <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
         <Link
           href="/"
@@ -49,6 +64,7 @@ export function SiteHeader() {
             </>
           )}
         </div>
+      </div>
       </div>
     </header>
   );
