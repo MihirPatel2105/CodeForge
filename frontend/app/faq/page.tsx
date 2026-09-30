@@ -72,7 +72,7 @@ export default function FaqPage() {
       <SiteHeader />
       <main>
         <section className="cf-faq-stage">
-          <div className="mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
+          <div className="cf-entrance-copy mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
             <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
             <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
             <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>

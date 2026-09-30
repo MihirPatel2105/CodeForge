@@ -99,7 +99,7 @@ export default function HowItWorksPage() {
       <SiteHeader />
       <main>
         <section className="cf-subpage-hero border-b border-rule">
-          <div className="relative z-10 mx-auto grid min-h-[calc(88svh-64px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.8fr)] lg:px-14">
+          <div className="cf-entrance-grid relative z-10 mx-auto grid min-h-[calc(88svh-64px)] w-full max-w-[1536px] items-center gap-14 px-6 py-16 md:px-10 md:py-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(430px,0.8fr)] lg:px-14">
             <div>
               <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
                 <GitBranch className="h-3.5 w-3.5" aria-hidden />

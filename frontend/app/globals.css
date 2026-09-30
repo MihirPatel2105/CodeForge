@@ -1330,3 +1330,28 @@ button.cf-project-action:not(:disabled):active svg { transform: none; }
   .cf-site-header a.cf-header-projects,
   .cf-site-header a.cf-header-profile { transition: none; }
 }
+
+/* Marketing hero entrances share timing while forms and demos remain usable. */
+@keyframes cfMarketingEnter {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cf-entrance-grid > :first-child > *,
+  .cf-entrance-copy > * {
+    animation: cfMarketingEnter 1000ms cubic-bezier(.16,1,.3,1) backwards;
+  }
+  .cf-entrance-grid > :first-child > :nth-child(2),
+  .cf-entrance-copy > :nth-child(2) { animation-delay: 70ms; }
+  .cf-entrance-grid > :first-child > :nth-child(3),
+  .cf-entrance-copy > :nth-child(3) { animation-delay: 140ms; }
+  .cf-entrance-grid > :first-child > :nth-child(n+4),
+  .cf-entrance-copy > :nth-child(n+4) { animation-delay: 210ms; }
+  .cf-entrance-grid > :last-child,
+  .cf-faq-facts {
+    animation: cfMarketingEnter 1200ms cubic-bezier(.16,1,.3,1) 280ms backwards;
+  }
+  .cf-entrance-grid > :last-child:focus-within,
+  .cf-entrance-grid > :first-child > :focus-within,
+  .cf-entrance-copy > :focus-within { animation: none; }
+}

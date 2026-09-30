@@ -24,7 +24,7 @@ export default function ContactPage() {
       <SiteHeader />
       <main>
         <section className="cf-contact-hero cf-contact-stage">
-          <div className="relative z-10 mx-auto grid w-full max-w-[1536px] gap-14 px-6 py-14 md:px-10 md:py-18 lg:min-h-[calc(100svh-64px)] lg:grid-cols-[minmax(0,0.82fr)_minmax(460px,0.78fr)] lg:items-center lg:px-14 lg:py-16">
+          <div className="cf-entrance-grid relative z-10 mx-auto grid w-full max-w-[1536px] gap-14 px-6 py-14 md:px-10 md:py-18 lg:min-h-[calc(100svh-64px)] lg:grid-cols-[minmax(0,0.82fr)_minmax(460px,0.78fr)] lg:items-center lg:px-14 lg:py-16">
             <div>
               <span className="inline-flex items-center gap-2 rounded-xl border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent"><MessageSquareText className="h-3.5 w-3.5" aria-hidden />Contact CodeForge</span>
               <h1 className="font-display mt-8 max-w-[13ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[58px]">Let’s talk about your next build.</h1>
