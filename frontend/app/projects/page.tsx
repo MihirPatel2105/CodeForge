@@ -23,9 +23,6 @@ import { RUN_STATUS_META, tone } from "@/lib/tone";
 import { formatWhen } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { SketchCoach } from "@/components/dashboard/sketch-coach";
-import { useCurrentUser } from "@/lib/use-current-user";
-import { getTourProject, useFirstUseTour } from "@/lib/first-use-tour";
 
 interface ProjectRow extends ProjectResponse {
   runs: RunSummary[];
@@ -50,8 +47,6 @@ function projectRow(item: ProjectOverviewItem): ProjectRow {
  * and the populated example, both live in the same component. */
 export default function ProjectsPage() {
   const router = useRouter();
-  const user = useCurrentUser();
-  const tour = useFirstUseTour(user?.email);
   const [projects, setProjects] = useState<ProjectRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,7 +110,6 @@ export default function ProjectsPage() {
   }, [router, load, search]);
 
   const query = search.trim();
-  const tourProjectId = newProjectId ?? getTourProject(user?.email);
 
   return (
     <div className="cf-projects min-h-screen bg-bg">
@@ -124,7 +118,7 @@ export default function ProjectsPage() {
         <section className="cf-projects-intro relative overflow-hidden rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_12px_36px_rgba(27,41,70,0.045)] md:px-9 md:py-8">
           <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <h1 data-tour="projects-heading" className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
+              <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
                 Projects
               </h1>
               <p className="mt-2 max-w-[58ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
@@ -135,20 +129,17 @@ export default function ProjectsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger
                 render={
-                  <Button data-tour="new-project" className="h-11 gap-2 rounded-xl px-5 text-[13px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]" />
+                  <Button className="h-11 gap-2 rounded-xl px-5 text-[13px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]" />
                 }
               >
                 <Plus className="h-4 w-4" aria-hidden />
                 New project
               </DialogTrigger>
               <NewProjectDialogContent
-                tourActive={tour.step === "create"}
-                onSkipTour={tour.finish}
                 onCreated={(project) => {
                   setSearch("");
                   setNewProjectId(project.id);
                   setOpen(false);
-                  if (tour.step === "projects" || tour.step === "create") tour.advance("open", project.id);
                   void load("");
                 }}
               />
@@ -225,13 +216,7 @@ export default function ProjectsPage() {
               <ul className="mt-5 grid gap-5 lg:grid-cols-2">
                 {projects.map((project) => (
                   <li key={project.id} className={project.id === newProjectId ? "motion-safe:animate-[cfReadoutEnter_300ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
-                    <ProjectCard
-                      project={project}
-                      tourTarget={tour.step === "open" && project.id === tourProjectId}
-                      onOpen={() => {
-                        if (tour.step === "projects" || tour.step === "create" || tour.step === "open") tour.advance("prompt", project.id);
-                      }}
-                    />
+                    <ProjectCard project={project} />
                   </li>
                 ))}
                 {!query && (
@@ -255,43 +240,6 @@ export default function ProjectsPage() {
           </section>
         )}
       </main>
-      {tour.step === "projects" && !open && (
-        <SketchCoach
-          target="[data-tour='projects-heading']"
-          step={1}
-          title="Your work starts here"
-          description="Projects keep each API idea, its runs, code, and test results together."
-          actionLabel="Next"
-          onAction={() => tour.advance("create")}
-          onSkip={tour.finish}
-        />
-      )}
-      {tour.step === "create" && !open && (
-        <SketchCoach
-          target="[data-tour='new-project']"
-          step={2}
-          title="Create a project"
-          description="Give your API idea a home. Use New project, then enter a name."
-          actionLabel="New project"
-          onAction={() => setOpen(true)}
-          onBack={() => tour.advance("projects")}
-          onSkip={tour.finish}
-        />
-      )}
-      {tour.step === "open" && tourProjectId && !open && (
-        <SketchCoach
-          target="[data-tour='created-project']"
-          step={3}
-          title="Open your project"
-          description="Your new project is here. Open it to describe the API you want to build."
-          actionLabel="Open project"
-          onAction={() => {
-            tour.advance("prompt");
-            router.push(`/projects/${tourProjectId}`);
-          }}
-          onSkip={tour.finish}
-        />
-      )}
     </div>
   );
 }
@@ -325,7 +273,7 @@ function Figure({
   );
 }
 
-function ProjectCard({ project, tourTarget, onOpen }: { project: ProjectRow; tourTarget?: boolean; onOpen?: () => void }) {
+function ProjectCard({ project }: { project: ProjectRow }) {
   const { stats } = project;
   const lastMeta = stats.last
     ? (RUN_STATUS_META[stats.last.status] ?? {
@@ -339,8 +287,6 @@ function ProjectCard({ project, tourTarget, onOpen }: { project: ProjectRow; tou
   return (
     <Link
       href={`/projects/${project.id}`}
-      data-tour={tourTarget ? "created-project" : undefined}
-      onClick={onOpen}
       className="cf-project-card group relative flex min-h-[228px] h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-[0_10px_30px_rgba(27,41,70,0.035)] transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
@@ -515,7 +461,7 @@ function LoadingState() {
   );
 }
 
-function NewProjectDialogContent({ onCreated, tourActive, onSkipTour }: { onCreated: (project: ProjectResponse) => void; tourActive: boolean; onSkipTour: () => void }) {
+function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectResponse) => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -548,13 +494,6 @@ function NewProjectDialogContent({ onCreated, tourActive, onSkipTour }: { onCrea
         </DialogHeader>
       </div>
       <form className="flex flex-col gap-4 px-6 pb-6" onSubmit={handleSubmit}>
-        {tourActive && (
-          <div className="relative mt-4 flex items-start justify-between gap-3 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[12px] leading-5 text-fg">
-            <span><strong className="font-[700]">Start with a name.</strong> You can add an optional description below.</span>
-            <button type="button" onClick={onSkipTour} className="shrink-0 text-fg-muted underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-accent">Skip tour</button>
-            <svg className="pointer-events-none absolute -bottom-7 left-5 h-8 w-10 text-accent" viewBox="0 0 40 32" fill="none" aria-hidden="true"><path d="M4 2 Q 24 4 22 26 M 16 19 L 22 27 L 29 20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </div>
-        )}
         <div className="flex flex-col gap-[6px]">
           <Label htmlFor="project-name" className={LABEL}>
             Name

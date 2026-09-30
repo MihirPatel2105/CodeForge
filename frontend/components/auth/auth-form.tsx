@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
-import { setTourStep } from "@/lib/first-use-tour";
 import { filterName } from "@/lib/input-filters";
 import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
@@ -99,9 +98,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
           return;
         }
         setToken(result.access_token);
-        setTourStep(email, "projects");
-        router.replace("/projects");
-        return;
       } else {
         const result = await api.login({ email, password });
         if (result.mfa_required) {
@@ -132,6 +128,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
         router.replace(user.is_admin ? "/admin" : "/projects");
         return;
       }
+      // New accounts start on the landing page. The OTP path in `verify-step.tsx`
+      // follows the same rule.
+      router.replace("/");
     } catch (err) {
       setError(messageFor(err, mode));
     } finally {

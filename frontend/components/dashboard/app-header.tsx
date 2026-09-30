@@ -1,14 +1,12 @@
 "use client";
 
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Route } from "lucide-react";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { cn } from "@/lib/utils";
 import { LogoLockup } from "@/components/brand/logo-lockup";
-import { setTourStep } from "@/lib/first-use-tour";
 
 /**
  * The persistent app header (design_handoff/README.md "Header (58px, sticky...)"),
@@ -20,7 +18,6 @@ import { setTourStep } from "@/lib/first-use-tour";
  */
 export function AppHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const user = useCurrentUser();
 
   const onProjects =
@@ -65,20 +62,6 @@ export function AppHeader() {
       </div>
 
       <div className="flex items-center gap-2">
-        {user && (
-          <button
-            type="button"
-            onClick={() => {
-              setTourStep(user.email, "projects");
-              router.push("/projects");
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-[650] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
-            aria-label="Start guided tour"
-          >
-            <Route className="h-4 w-4" aria-hidden />
-            <span>Guide</span>
-          </button>
-        )}
         {user && <UserAvatar initials={user.initials} name={user.displayName} />}
       </div>
     </header>

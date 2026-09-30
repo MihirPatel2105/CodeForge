@@ -1,11 +1,5 @@
 # First-time user check
 
-CodeForge's optional in-app guide starts after a new account is verified. It points to
-Projects, project creation, the new project, the API prompt, Start run, and the live
-agent pipeline. The user can skip it or reopen it with **Guide** in the app header.
-The guide state is saved per email in this browser. Completing the guide does not
-count as the uncoached check below.
-
 Ask someone who has not worked on CodeForge to use a running local instance. Do not explain the interface while they work. Record where they hesitate and their own words for what they expect next.
 
 1. From the landing page, explain what CodeForge produces and what it does not produce.

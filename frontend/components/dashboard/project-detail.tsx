@@ -29,9 +29,6 @@ import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse, RunSummary } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { SketchCoach } from "@/components/dashboard/sketch-coach";
-import { useCurrentUser } from "@/lib/use-current-user";
-import { useFirstUseTour } from "@/lib/first-use-tour";
 
 const LABEL = "text-[12px] font-[650] text-fg-muted";
 
@@ -56,8 +53,6 @@ export function ProjectDetail({
   onLoadMore?: () => void;
 }) {
   const router = useRouter();
-  const user = useCurrentUser();
-  const tour = useFirstUseTour(user?.email);
   const [prompt, setPrompt] = useState("");
   const [ragEnabled, setRagEnabled] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -91,7 +86,6 @@ export function ProjectDetail({
         prompt,
         rag_enabled: ragEnabled,
       });
-      if (tour.step === "prompt" || tour.step === "start") tour.advance("run");
       router.push(`/runs/${run_id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't start the run.");
@@ -160,7 +154,6 @@ export function ProjectDetail({
                 <label htmlFor="prompt" className={LABEL}>Describe the API</label>
                 <Textarea
                   id="prompt"
-                  data-tour="api-prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="I want an API to manage…"
@@ -198,7 +191,6 @@ export function ProjectDetail({
               )}
 
               <Button
-                data-tour="start-run"
                 onClick={startRun}
                 disabled={!prompt.trim() || starting}
                 className="h-12 w-full gap-2 rounded-xl text-[14px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]"
@@ -349,32 +341,6 @@ export function ProjectDetail({
           runCount={stats.total}
         />
       </main>
-      {tour.step === "prompt" && !deleteOpen && (
-        <SketchCoach
-          target="[data-tour='api-prompt']"
-          step={4}
-          title="Describe your API"
-          description="Write what the API should manage. For example: an API for books with create, list, update, and delete endpoints."
-          actionLabel="Next"
-          actionDisabled={!prompt.trim()}
-          onAction={() => tour.advance("start")}
-          onBack={() => {
-            tour.advance("open");
-            router.push("/projects");
-          }}
-          onSkip={tour.finish}
-        />
-      )}
-      {tour.step === "start" && !deleteOpen && (
-        <SketchCoach
-          target="[data-tour='start-run']"
-          step={5}
-          title="Start the run"
-          description="The agents will build and test your API. You will review the requirements and design before they continue."
-          onBack={() => tour.advance("prompt")}
-          onSkip={tour.finish}
-        />
-      )}
     </div>
   );
 }

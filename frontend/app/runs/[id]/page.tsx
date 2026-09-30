@@ -23,9 +23,6 @@ import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
 import { preferredScrollBehavior } from "@/lib/motion";
-import { SketchCoach } from "@/components/dashboard/sketch-coach";
-import { useCurrentUser } from "@/lib/use-current-user";
-import { useFirstUseTour } from "@/lib/first-use-tour";
 
 /**
  * The real Live Run screen (docs/UI_BRIEF.md §4) — the same components proven out
@@ -38,8 +35,6 @@ import { useFirstUseTour } from "@/lib/first-use-tour";
 export default function LiveRunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const user = useCurrentUser();
-  const tour = useFirstUseTour(user?.email);
   const { snapshot, connectionLost } = useRunStream(id);
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
   const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
@@ -303,7 +298,7 @@ export default function LiveRunPage() {
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
               <span className="text-[12px] font-[650] text-accent">Live orchestration</span>
-              <h2 id="agent-pipeline-heading" data-tour="agent-pipeline" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
+              <h2 id="agent-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="text-[11px] text-fg-muted">
               <span className="sm:hidden">swipe to inspect →</span>
@@ -394,17 +389,6 @@ export default function LiveRunPage() {
         </section>
 
       </main>
-      {tour.step === "run" && (
-        <SketchCoach
-          target="[data-tour='agent-pipeline']"
-          step={6}
-          title="Watch the agents work"
-          description="Follow the six stages here. When CodeForge pauses for approval, review the checkpoint above; test results and code appear below."
-          actionLabel="Finish tour"
-          onAction={tour.finish}
-          onSkip={tour.finish}
-        />
-      )}
     </div>
   );
 }
