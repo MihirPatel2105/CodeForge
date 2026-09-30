@@ -104,20 +104,20 @@ export function HowRunRoute() {
   }, [activeStep, approval, complete, isPaused, looping, prefersReducedMotion]);
 
   return (
-    <div className="cf-frame mx-auto w-full max-w-[600px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_80px_rgba(22,24,28,0.11)]">
-      <div className="relative border-b border-border bg-fg px-4 py-3.5 text-surface sm:px-5">
+    <div className="cf-frame mx-auto w-full max-w-[600px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_20px_50px_-30px_rgba(22,24,28,0.18)]">
+      <div className="relative border-b border-border bg-surface px-4 py-3.5 text-fg sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className={cn("h-2 w-2 shrink-0 rounded-full", complete ? "bg-ok" : approval ? "bg-warn" : looping ? "bg-loop" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]")} aria-hidden />
-            <span className="truncate text-[11px] font-[650] text-fg sm:text-[12px]">Recorded run route</span>
+            <span className="truncate text-[11px] font-[650] text-fg sm:text-[12px]">Example build pipeline</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className={cn("text-[10px] font-[650] sm:text-[11px]", complete ? "text-ok" : approval ? "text-warn" : looping ? "text-loop" : "text-fg-faint")}>{complete ? "Verified" : approval ? "Approval needed" : looping ? "Repair loop" : prefersReducedMotion ? "Complete" : isPaused ? "Paused" : "Replaying"}</span>
+            <span className={cn("text-[11px] font-[650] sm:text-[11px]", complete ? "text-ok" : approval ? "text-warn" : looping ? "text-loop" : "text-fg-faint")}>{complete ? "Verified" : approval ? "Approval needed" : looping ? "Repair loop" : prefersReducedMotion ? "Complete" : isPaused ? "Paused" : "Replaying"}</span>
             {!prefersReducedMotion && (
               <button
                 type="button"
                 onClick={() => setIsPaused((current) => !current)}
-                className="grid h-7 w-7 place-items-center rounded-lg border border-white/15 text-surface transition-colors hover:border-white/35 hover:bg-white/10"
+                className="grid h-11 w-11 place-items-center rounded-full border border-rule text-fg-muted transition-colors hover:border-accent hover:bg-accent-soft"
                 aria-label={isPaused ? "Resume recorded route" : "Pause recorded route"}
               >
                 {isPaused ? <Play className="h-3 w-3" fill="currentColor" aria-hidden /> : <Pause className="h-3 w-3" fill="currentColor" aria-hidden />}
@@ -125,16 +125,16 @@ export function HowRunRoute() {
             )}
           </div>
         </div>
-        <span className="absolute inset-x-0 bottom-0 h-px bg-white/10" aria-hidden>
+        <span className="absolute inset-x-0 bottom-0 h-px bg-rule" aria-hidden>
           <span className={cn("block h-full transition-[width,background-color] duration-500", approval ? "bg-warn" : looping ? "bg-loop" : complete ? "bg-ok" : "bg-accent")} style={{ width: `${((visibleStep + 1) / STEPS.length) * 100}%` }} />
         </span>
       </div>
 
       <div className="flex items-center justify-between gap-4 border-b border-rule bg-bg px-4 py-3 sm:px-5">
-        <span className="font-mono text-[8px] font-[700] uppercase tracking-[0.12em] text-fg-faint">run / 014</span>
+        <span className="font-sans text-[11px] font-[700] tracking-[0.01em] text-fg-faint">Library example</span>
         <div className="flex items-center gap-2">
           {[0, 1].map((index) => (
-            <span key={index} className={cn("inline-flex h-5 items-center gap-1.5 rounded-full border px-2 font-mono text-[7px] font-[700] uppercase tracking-[0.08em]", step.approvals > index ? "border-ok-bd bg-ok-soft text-ok" : approval && step.approvals === index ? "border-warn-bd bg-warn-soft text-warn" : "border-border bg-surface text-fg-faint")}>
+            <span key={index} className={cn("inline-flex h-5 items-center gap-1.5 rounded-full border px-2 font-sans text-[11px] font-[700] tracking-[0.01em]", step.approvals > index ? "border-ok-bd bg-ok-soft text-ok" : approval && step.approvals === index ? "border-warn-bd bg-warn-soft text-warn" : "border-border bg-surface text-fg-faint")}>
               {step.approvals > index ? <Check className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden /> : <Pause className="h-2.5 w-2.5" fill="currentColor" aria-hidden />}
               approval {index + 1}
             </span>
@@ -147,16 +147,16 @@ export function HowRunRoute() {
         {AGENTS.map((agent, index) => {
           const state = stateForAgent(index, visibleStep);
           return (
-            <li key={agent.name} className={cn("relative flex min-h-[68px] items-center gap-3 border-b border-rule py-2.5 transition-opacity duration-500 last:border-b-0 sm:gap-4", state === "queued" && "opacity-42")}>
-              <span className={cn("relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg border font-mono text-[8px] font-[700] transition-colors duration-300", state === "done" && "border-ok-bd bg-ok-soft text-ok", state === "running" && "border-accent-bd bg-accent-soft text-accent", state === "approval" && "border-warn-bd bg-warn-soft text-warn", state === "returned" && "border-loop-bd bg-loop-soft text-loop", state === "queued" && "border-border bg-surface text-fg-faint")}>{index + 1}</span>
+            <li key={agent.name} className={cn("relative flex min-h-[58px] items-center gap-3 border-b border-rule py-2.5 transition-colors duration-500 last:border-b-0 sm:gap-4", state === "running" && "bg-accent-soft/40", state === "queued" && "opacity-70")}>
+              <span className={cn("relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg border font-sans text-[11px] font-[700] transition-colors duration-300", state === "done" && "border-ok-bd bg-ok-soft text-ok", state === "running" && "border-accent-bd bg-accent-soft text-accent", state === "approval" && "border-warn-bd bg-warn-soft text-warn", state === "returned" && "border-loop-bd bg-loop-soft text-loop", state === "queued" && "border-border bg-surface text-fg-faint")}>{index + 1}</span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-display text-[12px] font-[650] text-fg sm:text-[13px]">{agent.name}</p>
-                  {agent.name === "Coder" && pass === 2 && <span className="rounded-full bg-loop-soft px-1.5 py-0.5 font-mono text-[6.5px] font-[700] uppercase text-loop">pass 2</span>}
+                  {agent.name === "Coder" && pass === 2 && <span className="rounded-full bg-loop-soft px-1.5 py-0.5 font-sans text-[11px] font-[700] text-loop">pass 2</span>}
                 </div>
-                <p className="mt-0.5 truncate text-[10px] text-fg-faint sm:text-[11px]">{state === "done" ? agent.output : agent.job}</p>
+                <p className="mt-0.5 text-[11px] text-fg-faint sm:text-[11px]">{state === "done" ? agent.output : agent.job}</p>
               </div>
-              <div className={cn("flex shrink-0 items-center gap-2 font-mono text-[7px] font-[700] uppercase tracking-[0.08em]", state === "done" && "text-ok", state === "running" && "text-accent", state === "approval" && "text-warn", state === "returned" && "text-loop", state === "queued" && "text-fg-faint")}>
+              <div className={cn("flex shrink-0 items-center gap-2 font-sans text-[11px] font-[700] tracking-[0.01em]", state === "done" && "text-ok", state === "running" && "text-accent", state === "approval" && "text-warn", state === "returned" && "text-loop", state === "queued" && "text-fg-faint")}>
                 <span className="hidden sm:inline">{STATUS_LABEL[state]}</span>
                 <StatusIcon state={state} />
               </div>
@@ -169,9 +169,9 @@ export function HowRunRoute() {
       <div key={step.id} className={cn("m-4 flex min-h-[48px] items-center justify-between gap-3 rounded-lg border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:m-5 sm:px-4", approval ? "border-warn-bd bg-warn-soft text-warn" : looping ? "border-loop-bd bg-loop-soft text-loop" : complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent")} aria-live="polite">
         <div className="flex min-w-0 items-center gap-2.5">
           {approval ? <Pause className="h-3.5 w-3.5 shrink-0" fill="currentColor" aria-hidden /> : looping ? <GitBranch className="h-3.5 w-3.5 shrink-0" aria-hidden /> : complete ? <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden /> : <LoaderCircle className="h-3.5 w-3.5 shrink-0 motion-safe:animate-spin" aria-hidden />}
-          <p className="font-mono text-[7.5px] font-[700] uppercase leading-[1.45] tracking-[0.09em] sm:text-[8px]">{step.event}</p>
+          <p className="font-sans text-[11px] font-[700] leading-[1.45] tracking-[0.01em] sm:text-[11px]">{step.event}</p>
         </div>
-        {looping && <span className="hidden shrink-0 font-mono text-[7px] font-[700] uppercase tracking-[0.09em] sm:inline">back to coder</span>}
+        {looping && <span className="hidden shrink-0 font-sans text-[11px] font-[700] tracking-[0.01em] sm:inline">back to coder</span>}
       </div>
     </div>
   );
