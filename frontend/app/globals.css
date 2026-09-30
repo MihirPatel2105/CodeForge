@@ -998,7 +998,7 @@
 
 @media (min-width: 768px) {
   .cf-run-history-grid {
-    grid-template-columns: minmax(0, 1fr) 150px 62px 88px 118px 28px;
+    grid-template-columns: minmax(80px, 1fr) 110px 44px 68px 100px 20px;
   }
 
   .cf-run-history-prompt {
