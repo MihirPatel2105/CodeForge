@@ -1,0 +1,34 @@
+/* Hallmark · macrostructure: Product Showcase · tone: calm and confident · anchor hue: CodeForge blue */
+.cf-premium {
+  --lp-paper: var(--surface);
+  --lp-paper-secondary: var(--bg);
+  --lp-ink: var(--fg);
+  --lp-muted: var(--fg-muted);
+  --lp-rule: var(--border);
+  --lp-accent: var(--accent);
+  --lp-accent-soft: var(--accent-soft);
+  --lp-success: var(--ok);
+  --lp-success-soft: var(--ok-soft);
+  --lp-dark: var(--term-bg);
+  --lp-light: var(--term-fg);
+  --lp-loop: var(--loop);
+  --lp-loop-soft: var(--loop-soft);
+  --lp-font: var(--font-ui);
+  --lp-mono: var(--font-mono-stack);
+  --lp-space-xs: 4px;
+  --lp-space-sm: 8px;
+  --lp-space-md: 16px;
+  --lp-space-lg: 24px;
+  --lp-space-xl: 32px;
+  --lp-space-2xl: 48px;
+  --lp-space-3xl: 64px;
+  --lp-space-4xl: 96px;
+  --lp-radius: 24px;
+  --lp-radius-sm: 12px;
+  --lp-display: clamp(48px, 7vw, 100px);
+  --lp-heading: clamp(36px, 4.6vw, 64px);
+  --lp-ease-out: cubic-bezier(.16, 1, .3, 1);
+  --lp-ease-in: cubic-bezier(.7, 0, .84, 0);
+  --lp-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --lp-duration: 220ms;
+}
