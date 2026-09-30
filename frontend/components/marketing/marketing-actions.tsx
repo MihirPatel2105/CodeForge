@@ -33,25 +33,25 @@ export function SiteFooter() {
   const user = useCurrentUser();
 
   return (
-    <footer className="cf-invert border-t border-rule bg-bg">
-      <div className="mx-auto w-full max-w-[1536px] px-6 pb-8 pt-14 md:px-10 md:pt-16 lg:px-14 lg:pt-20">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[minmax(0,1.7fr)_repeat(3,minmax(0,1fr))] lg:gap-x-12">
+    <footer className="cf-invert cf-site-footer border-t border-rule bg-bg">
+      <div className="mx-auto w-full max-w-[1200px] px-6 pb-7 pt-14 md:px-10 md:pt-16 lg:px-12">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] lg:gap-x-14">
           <div className="col-span-2 border-b border-rule pb-9 md:col-span-3 lg:col-span-1 lg:border-0 lg:pb-0">
             <Link
               href="/"
               aria-label="CodeForge home"
               className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
             >
-              <LogoLockup variant="dark" className="h-11 w-auto" />
+              <LogoLockup variant="dark" className="h-9 w-auto" />
             </Link>
-            <p className="mt-5 max-w-[40ch] text-[15px] leading-[1.65] text-fg-muted">
-              Five agents build your API. Follow their decisions, review feedback,
-              generated code, and test results as the work happens.
+            <p className="mt-6 text-[20px] font-[550] leading-[1.4] tracking-[-0.025em] text-fg">From idea to tested API.</p>
+            <p className="mt-3 max-w-[32ch] text-[14px] leading-[1.75] text-fg-muted">
+              A team of agents. A visible process. You stay in control of the build.
             </p>
             <address className="mt-6 flex flex-col items-start gap-2 not-italic">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="group inline-flex items-center gap-1.5 rounded-md text-[13px] font-[600] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+                className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-rule px-4 text-[12px] font-[550] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
               >
                 {CONTACT_EMAIL}
                 <ArrowUpRight className="h-3.5 w-3.5 text-accent transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
@@ -105,7 +105,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} CodeForge
           </p>
           <p>
-            $0 — free-tier providers only
+            Plan. Build. Review. Test.
           </p>
         </div>
       </div>
@@ -121,22 +121,22 @@ function FooterColumn({
   links: { href: string; label: string }[];
 }) {
   return (
-    <div>
-      <h2 className="text-[13px] font-[700] text-fg">
+    <nav aria-label={`${heading} links`}>
+      <h2 className="text-[12px] font-[650] tracking-[0.02em] text-fg">
         {heading}
       </h2>
-      <ul className="mt-5 flex flex-col gap-3.5">
+      <ul className="mt-3 flex flex-col gap-0.5">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="rounded-sm text-[13.5px] leading-6 text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="inline-flex min-h-11 items-center rounded-sm text-[14px] leading-6 text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {link.label}
             </Link>
           </li>
         ))}
       </ul>
-    </div>
+    </nav>
   );
 }
