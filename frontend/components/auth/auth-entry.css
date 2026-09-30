@@ -6,7 +6,7 @@
 .pa-header>a { display: inline-flex; align-items: center; min-height: 44px; border-radius: 12px; }
 .pa-back { color: var(--fg-muted); font-size: 14px; gap: 8px; padding: 8px; text-decoration: none; }
 .pa-back:hover { color: var(--accent); }
-.pa-stage { max-width: 1328px; width: 100%; margin: auto; padding: 36px 56px 56px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 100px; align-items: center; }
+.pa-stage { max-width: 1328px; width: 100%; margin: auto; padding: 36px 56px 56px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 100px; align-items: start; }
 .pa-story { min-width: 0; }
 .pa-story-intro { color: var(--fg-muted); font-size: 15px; font-weight: 550; margin: 0 0 24px; }
 .pa-story h2 { font-size: clamp(44px,5.1vw,72px); letter-spacing: -.065em; line-height: 1.04; font-weight: 650; margin: 0; overflow-wrap: anywhere; }
