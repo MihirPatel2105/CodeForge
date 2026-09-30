@@ -32,9 +32,8 @@
   --color-card-foreground: var(--fg);
   --color-popover: var(--surface);
   --color-popover-foreground: var(--fg);
-  /* Primary actions (Approve, Start run, submit) fill with --fg, not --accent — accent
-     is reserved for the "working" pipeline state and the retrieval switch. */
-  --color-primary: var(--fg);
+  /* Approved premium UI: blue primary actions; state colors remain semantic. */
+  --color-primary: var(--accent);
   --color-primary-foreground: var(--surface);
   --color-secondary: var(--surface-2);
   --color-secondary-foreground: var(--fg);

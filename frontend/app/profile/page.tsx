@@ -108,7 +108,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <section className="cf-account-hero relative overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_22px_65px_rgba(23,32,51,0.06)]">
+        <section className="cf-account-hero relative overflow-hidden rounded-3xl border border-border bg-surface">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_25rem]">
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
               <div>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         )}
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-3xl border border-border bg-surface">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
@@ -196,7 +196,7 @@ export default function ProfilePage() {
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-border bg-surface shadow-[0_16px_45px_rgba(23,32,51,0.04)]">
+          <section className="rounded-3xl border border-border bg-surface">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>Quick access</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">

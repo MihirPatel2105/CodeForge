@@ -24,7 +24,7 @@ export default function ChangePasswordPage() {
       description="Choose a new password for your account. This browser stays signed in; all other sessions are signed out."
     >
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <section className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-8">
+        <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
           <span className="text-[12px] font-[650] text-accent">
             Update credentials
           </span>
@@ -37,7 +37,7 @@ export default function ChangePasswordPage() {
           <ChangePasswordForm />
         </section>
 
-        <aside className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <aside className="overflow-hidden rounded-3xl border border-border bg-surface">
           <div className="border-b border-rule bg-bg px-5 py-4">
             <p className="text-[12px] font-[650] text-fg-muted">
               After you save

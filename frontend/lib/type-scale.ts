@@ -6,9 +6,9 @@ export const typeScale = {
   /** 21px/600/-.02em — the user's prompt in the run header. */
   runPrompt: "text-[21px] font-semibold tracking-[-0.02em]",
   /** 17px/650/-.015em — screen titles. */
-  section: "text-[17px] font-[650] tracking-[-0.015em]",
+  section: "text-[19px] font-[650] tracking-[-0.03em]",
   /** 15.5px/650/-.015em, line-height 1.15 — agent card name. */
-  cardTitle: "text-[15.5px] font-[650] tracking-[-0.015em] leading-[1.15]",
+  cardTitle: "text-[16px] font-[650] tracking-[-0.015em] leading-[1.15]",
   /** 14.5px/450/1.4 — the floor for the timeline feed. */
   timelineBody: "text-[14.5px] font-[450] leading-[1.4]",
   /** 13.5px/450/1.62, mono — code panel body. */

@@ -78,7 +78,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
       {chips.length > 0 && (
         <div className="grid gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6">
           {chips.map((chip) => (
-            <div key={chip.label} className="min-w-0 rounded-xl border border-border bg-surface-2/45 px-3.5 py-2.5">
+            <div key={chip.label} className="min-w-0 rounded-2xl border border-border bg-surface-2/45 px-3.5 py-2.5">
               <span className={cn(typeScale.label, "block text-[10.5px] text-fg-faint")}>{chip.label}</span>
               <span className="mt-1 block break-words text-[13.5px] font-[600] leading-5 text-fg">{chip.value}</span>
             </div>
@@ -96,7 +96,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add context for the next step…"
-            className="h-11 rounded-xl border-border-strong bg-white text-[14px]"
+            className="h-11 rounded-2xl border-border-strong bg-white text-[14px]"
           />
         </div>
 
@@ -105,14 +105,14 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             type="button"
             variant="outline"
             onClick={() => onReject(note)}
-            className="h-11 flex-1 rounded-xl border-border-strong px-5 text-[13px] text-danger hover:bg-danger-soft motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
+            className="h-11 flex-1 rounded-2xl border-border-strong px-5 text-[13px] text-danger hover:bg-danger-soft motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >
             Reject
           </Button>
           <Button
             type="button"
             onClick={() => onApprove(note)}
-            className="h-11 flex-1 rounded-xl px-6 text-[13px] motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
+            className="h-11 flex-1 rounded-2xl px-6 text-[13px] motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >
             Approve
           </Button>

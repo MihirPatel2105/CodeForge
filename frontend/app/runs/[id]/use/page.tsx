@@ -57,19 +57,19 @@ export default function UseApiPage() {
         </header>
 
         <section className="mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
-          <RunFlowLink href={`/runs/${id}/try`} className="cf-use-option-card group rounded-xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <RunFlowLink href={`/runs/${id}/try`} className="cf-use-option-card group rounded-3xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <span className="text-[12px] font-[700] text-accent">Test here</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Try your API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Send requests and inspect responses. No setup or key needed.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open tester <ArrowRight className="cf-use-option-arrow size-3.5" aria-hidden /></span>
           </RunFlowLink>
-          <RunFlowLink href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <RunFlowLink href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-3xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <span className="text-[12px] font-[700] text-fg-muted">Connect an app</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Publish API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <ArrowRight className="cf-use-option-arrow size-3.5" aria-hidden /></span>
           </RunFlowLink>
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-3xl border border-border bg-surface p-5">
             <span className="text-[12px] font-[700] text-fg-muted">Run it yourself</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
@@ -81,7 +81,7 @@ export default function UseApiPage() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">
+        <section className="mt-6 rounded-3xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">
           <h2 id="where-to-run-heading" className="font-display text-[17px] font-[650] text-fg">Where does each option run?</h2>
           <div className="mt-3 grid gap-3 text-[12px] leading-5 text-fg-muted md:grid-cols-3">
             <p><strong className="text-fg">Try here:</strong> Works in your browser. Nothing to install.</p>

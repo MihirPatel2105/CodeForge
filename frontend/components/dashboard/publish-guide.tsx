@@ -72,7 +72,7 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
   const requestCopyId = `request-${selected}-${language}-${shell}`;
 
   return (
-    <section className="min-w-0 rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-guide-heading">
+    <section className="min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-guide-heading">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 id="publish-guide-heading" className="font-display text-[21px] font-[650] text-fg">Make a request</h3>
         <p className="text-[13px] leading-5 text-fg-muted">Set your key, choose an endpoint, then copy an example.</p>

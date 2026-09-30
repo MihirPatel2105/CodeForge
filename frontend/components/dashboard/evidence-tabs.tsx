@@ -32,7 +32,7 @@ export function EvidenceTabs({
   }
 
   return (
-    <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-lg border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
+    <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
       {VIEWS.map((view, index) => (
         <button
           key={view}
@@ -45,11 +45,11 @@ export function EvidenceTabs({
           onClick={() => onValueChange(view)}
           onKeyDown={(event) => onKeyDown(event, index)}
           className={cn(
-            "min-h-11 border-r border-border px-2 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.08em] last:border-r-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent",
-            value === view ? "bg-fg text-surface" : "bg-surface text-fg-muted hover:bg-surface-2",
+            "min-h-11 border-r border-border px-2 py-3 text-[13px] font-semibold last:border-r-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent",
+            value === view ? "bg-accent-soft text-accent" : "bg-surface text-fg-muted hover:bg-surface-2",
           )}
         >
-          {view}
+          {view.charAt(0).toUpperCase() + view.slice(1)}
         </button>
       ))}
     </div>

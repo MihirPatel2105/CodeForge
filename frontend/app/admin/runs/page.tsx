@@ -67,7 +67,7 @@ export default function AdminRunsPage() {
       <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => load(debouncedFilters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
       {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
 
-      <form onSubmit={submit} className="mt-7 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
+      <form onSubmit={submit} className="mt-7 grid gap-3 rounded-3xl border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="relative block">
           <span className="sr-only">Search prompts</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden />
           <Input value={filters.q} onChange={(event) => set("q", event.target.value)} placeholder="Search run prompt" className="h-10 rounded-lg pl-9" />

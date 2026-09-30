@@ -19,11 +19,11 @@ export function MarketingPage({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="cf-premium-marketing min-h-screen bg-surface">
       <SiteHeader />
 
-      <header className="cf-grid border-b border-rule">
-        <div className="mx-auto grid w-full gap-x-16 px-6 pt-14 pb-12 md:px-10 md:pt-16 lg:grid-cols-[1fr_auto] lg:px-14">
+      <header className="cf-marketing-hero border-b border-rule">
+        <div className="mx-auto grid w-full max-w-[1200px] gap-x-16 px-6 pt-14 pb-12 md:px-10 md:pt-16 lg:grid-cols-[1fr_auto] lg:px-14">
           <div>
             <span className="text-[13px] font-[650] text-accent">
               {eyebrow}
@@ -39,7 +39,7 @@ export function MarketingPage({
         </div>
       </header>
 
-      <main className="mx-auto w-full px-6 py-14 md:px-10 md:py-16 lg:px-14">{children}</main>
+      <main className="mx-auto w-full max-w-[1200px] px-6 py-14 md:px-10 md:py-16 lg:px-14">{children}</main>
 
       <SiteFooter />
     </div>
@@ -64,12 +64,12 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-x-14 gap-y-5 border-t border-rule py-10 first:border-t-0 first:pt-0 lg:grid-cols-[11rem_1fr]">
+    <section className="grid gap-x-14 gap-y-5 border-t border-rule py-10 first:border-t-0 first:pt-0 ">
       <div className="flex items-baseline gap-3 lg:flex-col lg:gap-2">
         <span className="text-[13px] font-[650] text-accent">{index}</span>
-        <span className="text-[13px] font-[600] text-fg-muted">
+        <h2 className="text-[28px] font-[650] tracking-[-0.04em] text-fg">
           {heading}
-        </span>
+        </h2>
       </div>
       <div className={wide ? undefined : "max-w-[74ch]"}>{children}</div>
     </section>

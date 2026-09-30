@@ -110,7 +110,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_16px_45px_rgba(34,48,78,0.06)] sm:flex-row">
+    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface sm:flex-row">
       {/* File rail */}
       <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-[#f7f9fd] sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
@@ -138,7 +138,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                         setView("current");
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between gap-2 rounded-xl border border-transparent px-2.5 py-2 text-left",
+                        "flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-2.5 py-2 text-left",
                         "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-white hover:text-fg",
                         isSelected && "border-accent-bd bg-white font-bold text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]",
                       )}
@@ -179,7 +179,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {canDiff && (
-                  <div className="flex gap-[2px] rounded-xl bg-surface-2 p-[2px]">
+                  <div className="flex gap-[2px] rounded-2xl bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
                     <button
                       key={v}

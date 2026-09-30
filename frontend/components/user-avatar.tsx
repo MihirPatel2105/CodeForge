@@ -23,8 +23,8 @@ export function UserAvatar({
       aria-label={`Profile — ${name}`}
       title={name}
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-strong bg-surface-2",
-        "font-mono text-[12px] font-[700] tracking-[0.04em] text-fg transition-colors hover:border-fg",
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong bg-surface-2",
+        "text-[13px] font-[650] text-fg transition-colors hover:border-fg",
         className,
       )}
     >

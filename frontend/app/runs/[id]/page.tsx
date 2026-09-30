@@ -216,7 +216,7 @@ export default function LiveRunPage() {
           Projects
         </Link>
 
-        <header className="cf-run-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
+        <header className="cf-run-hero mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_310px]">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -294,7 +294,7 @@ export default function LiveRunPage() {
           )}
         </ApprovalPresence>
 
-        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
+        <section className="cf-run-pipeline mt-5 overflow-hidden rounded-3xl border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
               <span className="text-[12px] font-[650] text-accent">Live orchestration</span>
@@ -334,7 +334,7 @@ export default function LiveRunPage() {
         <section className="mt-8" aria-labelledby="run-workbench-heading">
           <div className="mb-4 flex items-end justify-between border-b border-rule pb-4">
             <div>
-              <span className="font-mono text-[9.5px] font-[650] uppercase tracking-[0.14em] text-fg-faint">execution evidence</span>
+              <span className="text-[12px] font-[600] text-fg-faint">Execution evidence</span>
               <h2 id="run-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Inspect the run</h2>
             </div>
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>

@@ -17,7 +17,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { cn } from "@/lib/utils";
 
 export const ADMIN_LABEL =
-  "text-[11px] font-[650] text-fg-muted";
+  "text-[12px] font-[600] text-fg-muted";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -32,10 +32,10 @@ const NAV = [
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="cf-admin min-h-screen bg-bg">
       <AppHeader />
       <div className="mx-auto flex w-full max-w-[1540px]">
-        <aside className="sticky top-[58px] hidden h-[calc(100vh-58px)] w-[220px] shrink-0 border-r border-rule px-4 py-8 lg:block">
+        <aside className="sticky top-[64px] hidden h-[calc(100vh-64px)] w-[240px] shrink-0 border-r border-rule px-4 py-8 lg:block">
           <span className={cn(ADMIN_LABEL, "px-3")}>Control centre</span>
           <nav className="mt-4 space-y-1" aria-label="Admin navigation">
             {NAV.map(({ href, label, icon: Icon, exact }) => {
@@ -46,7 +46,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   href={href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-[600] transition-colors",
+                    "flex items-center gap-3 rounded-xl px-4 py-3 text-[13px] font-[600] transition-colors",
                     active
                       ? "bg-accent-soft text-accent"
                       : "text-fg-muted hover:bg-surface-2 hover:text-fg",
@@ -61,8 +61,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className="absolute inset-x-4 bottom-7 rounded-lg border border-ok-bd bg-ok-soft p-3">
             <div className="flex items-center gap-2 text-ok">
               <Activity className="h-4 w-4" aria-hidden />
-              <span className="font-mono text-[10px] font-[700] uppercase tracking-[0.1em]">
-                audited actions
+              <span className="text-[12px] font-[650]">
+                Audited actions
               </span>
             </div>
             <p className="mt-2 text-[11px] leading-5 text-fg-muted">
@@ -112,16 +112,16 @@ export function AdminPageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col justify-between gap-5 border-b border-rule pb-7 sm:flex-row sm:items-end">
+    <header className="cf-admin-page-header flex flex-col justify-between gap-5 pb-8 sm:flex-row sm:items-end">
       <div>
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-ok" aria-hidden />
           <span className={ADMIN_LABEL}>{eyebrow}</span>
         </div>
-        <h1 className="font-display mt-3 text-[30px] font-[650] tracking-[-0.055em] text-fg md:text-[38px]">
+        <h1 className="font-display mt-3 text-[36px] font-[650] tracking-[-0.055em] text-fg md:text-[46px]">
           {title}
         </h1>
-        <p className="mt-3 max-w-[72ch] text-[14px] leading-6 text-fg-muted">{description}</p>
+        <p className="mt-3 max-w-[72ch] text-[15px] leading-6 text-fg-muted">{description}</p>
       </div>
       {actions}
     </header>

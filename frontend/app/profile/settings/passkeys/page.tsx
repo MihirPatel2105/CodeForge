@@ -119,7 +119,7 @@ export default function PasskeysPage() {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
             onSubmit={addPasskey}
-            className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7"
+            className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-7"
           >
             <span className="text-[12px] font-[650] text-accent">
               New passkey
@@ -190,7 +190,7 @@ export default function PasskeysPage() {
               </Button>
             </div>
           </form>
-          <section className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_16px_45px_rgba(23,32,51,0.04)] md:px-7">
+          <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-7">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[12px] font-[650] text-fg-muted">Saved methods</span>
@@ -271,7 +271,7 @@ export default function PasskeysPage() {
           </p>
         )}
         <Dialog open={pendingRemoval !== null} onOpenChange={(open) => { if (!open && !busy) { setPendingRemoval(null); setError(null); } }}>
-          <DialogContent showCloseButton={!busy} className="rounded-xl border border-danger-bd bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)] sm:max-w-md">
+          <DialogContent showCloseButton={!busy} className="rounded-3xl border border-danger-bd bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)] sm:max-w-md">
             <div className="border-b border-danger-bd bg-danger-soft px-6 py-5">
               <DialogHeader>
                 <DialogTitle className="font-display text-[22px] tracking-[-0.04em] text-fg">Remove this passkey?</DialogTitle>

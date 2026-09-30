@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./premium-system.css";
 
 export const metadata: Metadata = {
   title: "CodeForge",

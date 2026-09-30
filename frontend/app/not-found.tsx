@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/marketing/marketing-actions";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="cf-not-found flex min-h-screen flex-col bg-surface">
       <SiteHeader />
 
       <main className="flex flex-1 items-center border-b border-rule">
@@ -13,7 +13,7 @@ export default function NotFound() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 font-mono text-[11px] font-[700] tracking-[0.08em] text-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-              404 · ROUTE NOT FOUND
+              Page not found
             </span>
 
             <h1 className="font-display mt-8 max-w-[12ch] text-[42px] font-[650] leading-[1.06] tracking-[-0.065em] text-fg sm:text-[54px] lg:text-[64px]">
@@ -26,7 +26,7 @@ export default function NotFound() {
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
                 href="/"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-fg px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
               >
                 <House className="h-4 w-4" aria-hidden />
                 Go home
@@ -43,14 +43,14 @@ export default function NotFound() {
 
           <div className="relative overflow-hidden rounded-xl border border-border bg-surface shadow-[0_28px_80px_rgba(22,24,28,0.07)]" aria-hidden>
             <div className="flex items-center justify-between border-b border-rule px-6 py-4">
-              <span className="font-mono text-[11px] font-[700] tracking-[0.1em] text-fg-faint">CODEFORGE / NAVIGATION</span>
+              <span className="font-mono text-[11px] font-[700] tracking-[0.1em] text-fg-faint">CodeForge navigation</span>
               <span className="flex items-center gap-2 font-mono text-[11px] font-[650] text-fg-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-warn" />
-                MISSING
+                Missing
               </span>
             </div>
             <div className="px-6 py-12 sm:px-10 sm:py-16">
-              <p className="font-mono text-[clamp(6rem,18vw,11rem)] font-[700] leading-none tracking-[-0.1em] text-fg">404</p>
+              <p className="font-display text-[clamp(6rem,18vw,11rem)] font-[700] leading-none tracking-[-0.1em] text-fg">404</p>
               <div className="mt-9 flex items-center gap-3 border-t border-rule pt-5 font-mono text-[11px] text-fg-faint sm:text-[12px]">
                 <span className="h-2 w-2 shrink-0 rounded-full bg-warn" />
                 The requested path could not be found.

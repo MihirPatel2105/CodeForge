@@ -105,7 +105,7 @@ export function ProjectDetail({
           Projects
         </Link>
 
-        <section className="cf-project-detail-hero mt-4 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.045)]">
+        <section className="cf-project-detail-hero mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
             <div className="relative px-6 py-6 md:px-9 md:py-7">
               <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
                 {project.name}
@@ -132,7 +132,7 @@ export function ProjectDetail({
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[390px_minmax(0,1fr)] xl:items-start">
           {/* Prompt entry. Sticky so it stays reachable while a long history scrolls. */}
-          <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)] xl:sticky xl:top-[78px]">
+          <section className="overflow-hidden rounded-3xl border border-border bg-surface xl:sticky xl:top-[78px]">
             <div className="cf-project-composer-head border-b border-rule px-5 py-4">
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
@@ -193,7 +193,7 @@ export function ProjectDetail({
               <Button
                 onClick={startRun}
                 disabled={!prompt.trim() || starting}
-                className="h-12 w-full gap-2 rounded-xl text-[14px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]"
+                className="h-12 w-full gap-2 rounded-xl text-[14px]"
               >
                 {starting ? (
                   "Starting…"
@@ -213,7 +213,7 @@ export function ProjectDetail({
           </section>
 
           {/* Run history */}
-          <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(27,41,70,0.035)]" aria-labelledby="run-history-heading">
+          <section className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface" aria-labelledby="run-history-heading">
             <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-5 md:px-6">
               <div>
                 <h2 id="run-history-heading" className="font-display text-[22px] font-[700] tracking-[-0.04em] text-fg">

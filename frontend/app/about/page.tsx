@@ -73,13 +73,13 @@ const EVIDENCE = [
 ] as const;
 
 const PRIMARY_ACTION =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-fg px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 const SECONDARY_ACTION =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 
 export default function AboutPage() {
   return (
-    <div className="cf-about min-h-screen bg-bg">
+    <div className="cf-about cf-premium-marketing min-h-screen bg-surface">
       <SiteHeader />
       <main>
         <section className="cf-about-hero relative border-b border-rule">
@@ -90,7 +90,7 @@ export default function AboutPage() {
                 About CodeForge
               </span>
               <h1 className="font-display mt-8 max-w-[14ch] text-[42px] font-[650] leading-[1.04] tracking-[-0.065em] text-fg sm:text-[54px] lg:text-[62px]">
-                Code generation should be a process you can inspect.
+                Built to be understood.
               </h1>
               <p className="mt-7 max-w-[58ch] text-[16px] leading-[1.72] text-fg-muted sm:text-[17px]">
                 CodeForge asks a focused question: can specialized AI agents, human
@@ -98,7 +98,7 @@ export default function AboutPage() {
                 model answering once?
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="/#how" className={PRIMARY_ACTION}>
+                <Link href="/demo/library" className={PRIMARY_ACTION}>
                   Watch a run
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                 </Link>
@@ -125,7 +125,7 @@ export default function AboutPage() {
 
         <section className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="01" label="The thesis" />
               <div>
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.17] tracking-[-0.05em] text-fg md:text-[40px]">
@@ -152,7 +152,7 @@ export default function AboutPage() {
 
         <section className="border-b border-rule">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="02" label="Designed limits" />
               <div className="grid gap-12 xl:grid-cols-[0.7fr_1.3fr]">
                 <div>
@@ -163,7 +163,7 @@ export default function AboutPage() {
                     easier to explain.
                   </p>
                 </div>
-                <dl className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_20px_55px_rgba(22,24,28,0.055)]">
+                <dl className="overflow-hidden rounded-3xl border border-border bg-surface">
                   {CONSTRAINTS.map((item, index) => (
                     <div key={item.label} className="grid gap-3 border-b border-rule px-5 py-5 last:border-b-0 sm:grid-cols-[3rem_7rem_1fr] sm:items-start sm:gap-5 md:px-6">
                       <span className="font-mono text-[9px] font-[700] tracking-[0.13em] text-fg-faint">{String(index + 1).padStart(2, "0")}</span>
@@ -182,7 +182,7 @@ export default function AboutPage() {
 
         <section className="cf-invert cf-about-evidence border-b border-rule bg-bg">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="03" label="What remains" />
               <div>
                 <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
@@ -198,7 +198,7 @@ export default function AboutPage() {
                     more useful when it leaves enough evidence to continue the work.
                   </p>
                 </div>
-                <div className="mt-12 grid overflow-hidden rounded-xl border border-border bg-surface/30 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-12 grid overflow-hidden rounded-3xl border border-border bg-surface/30 sm:grid-cols-2 xl:grid-cols-4">
                   {EVIDENCE.map(({ icon: Icon, title, body }) => (
                     <article key={title} className="border-b border-r border-border p-6 last:border-b-0 xl:border-b-0">
                       <Icon className="h-5 w-5 text-accent" aria-hidden />
@@ -209,7 +209,7 @@ export default function AboutPage() {
                 </div>
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-5 border-t border-border pt-7">
                   <p className="text-[13px] text-fg-muted">Generated files · findings · tests · terminal output</p>
-                  <Link href="/#outcome" className="inline-flex items-center gap-2 rounded-lg text-[13px] font-[650] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                  <Link href="/demo/library" className="inline-flex items-center gap-2 rounded-lg text-[13px] font-[650] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                     Inspect an example
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                   </Link>
@@ -221,7 +221,7 @@ export default function AboutPage() {
 
         <section className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="04" label="The standard" />
               <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
                 <blockquote className="font-display max-w-[22ch] text-[30px] font-[650] leading-[1.22] tracking-[-0.05em] text-fg md:text-[42px]">“A result should be a fact you can inspect, not a claim you have to trust.”</blockquote>
@@ -239,7 +239,7 @@ export default function AboutPage() {
 
         <section>
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-x-14 ">
               <div aria-hidden className="hidden lg:block" />
               <ClosingBanner />
             </div>

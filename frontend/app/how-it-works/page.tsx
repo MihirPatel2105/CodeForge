@@ -95,7 +95,7 @@ const TECHNOLOGY = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="cf-subpage min-h-screen bg-bg">
+    <div className="cf-subpage cf-premium-marketing min-h-screen bg-surface">
       <SiteHeader />
       <main>
         <section className="cf-subpage-hero border-b border-rule">
@@ -106,7 +106,7 @@ export default function HowItWorksPage() {
                 How it works
               </span>
               <h1 className="font-display mt-8 max-w-[14ch] text-[42px] font-[650] leading-[1.05] tracking-[-0.065em] text-fg sm:text-[52px] lg:text-[60px]">
-                One request. Six focused jobs. A result that ran.
+                An idea. A plan. An API.
               </h1>
               <p className="mt-7 max-w-[60ch] text-[16px] leading-[1.72] text-fg-muted sm:text-[17px]">
                 Work moves forward through specialized agents. You approve the two
@@ -114,11 +114,11 @@ export default function HowItWorksPage() {
                 work back to the Coder.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="#stages" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-fg px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+                <Link href="#stages" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Follow the run
                   <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                 </Link>
-                <Link href="/#how" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+                <Link href="/demo/library" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Watch it move
                 </Link>
               </div>
@@ -129,7 +129,7 @@ export default function HowItWorksPage() {
 
         <section id="stages" className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="01" label="The six stages" />
               <div>
                 <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -159,11 +159,11 @@ export default function HowItWorksPage() {
 
         <section className="cf-invert cf-how-control border-b border-rule bg-bg">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="02" label="Control points" />
               <div>
                 <h2 className="font-display max-w-[20ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The run pauses for judgment and loops on evidence.</h2>
-                <div className="mt-12 grid overflow-hidden rounded-xl border border-border bg-surface/25 md:grid-cols-3">
+                <div className="mt-12 grid overflow-hidden rounded-3xl border border-border bg-surface/25 md:grid-cols-3">
                   {STOPS.map(({ icon: Icon, label, title, body }) => (
                     <article key={label} className="border-b border-r border-border p-6 last:border-b-0 md:border-b-0 md:p-8">
                       <div className="flex items-center gap-3"><Icon className="h-4 w-4 text-accent" aria-hidden /><span className="text-[12px] font-[650] text-accent">{label}</span></div>
@@ -179,7 +179,7 @@ export default function HowItWorksPage() {
 
         <section className="border-b border-rule">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="03" label="The finish line" />
               <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
@@ -195,7 +195,7 @@ export default function HowItWorksPage() {
 
         <section id="technology" className="cf-invert cf-how-control border-b border-rule bg-bg scroll-mt-20">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
-            <div className="grid gap-12 lg:grid-cols-[11rem_1fr]">
+            <div className="grid gap-12 ">
               <SectionLabel index="04" label="Technology" />
               <div>
                 <h2 className="font-display max-w-[24ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">The tools behind each run</h2>
@@ -214,7 +214,7 @@ export default function HowItWorksPage() {
         </section>
 
         <section>
-          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14"><div className="grid gap-x-14 lg:grid-cols-[11rem_1fr]"><div aria-hidden className="hidden lg:block" /><ClosingBanner /></div></div>
+          <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14"><div className="grid gap-x-14 "><div aria-hidden className="hidden lg:block" /><ClosingBanner /></div></div>
         </section>
       </main>
       <SiteFooter />
@@ -228,7 +228,7 @@ function SectionLabel({ index, label }: { index: string; label: string }) {
 
 function TerminalProof() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-term-bg shadow-[0_24px_70px_rgba(22,24,28,0.12)]">
+    <div className="overflow-hidden rounded-3xl border border-border bg-term-bg">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><span className="text-[12px] font-[650] text-term-dim">Sandbox output</span><span className="h-2 w-2 rounded-full bg-term-pass" /></div>
       <div className="space-y-3 px-5 py-6 font-mono text-[12px] leading-[1.55]"><p className="text-term-dim">$ pytest -q</p><p className="text-term-fg">........</p><p className="text-term-pass">8 passed in 1.42s</p><p className="border-t border-white/10 pt-4 text-[11px] text-term-dim">Process exited with code 0</p></div>
       <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 text-[11px] font-[650]"><span className="text-term-dim">Network disabled</span><span className="flex items-center gap-2 text-term-pass"><span className="h-1.5 w-1.5 rounded-full bg-term-pass" />Verified</span></div>

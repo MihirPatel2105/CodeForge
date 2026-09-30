@@ -140,9 +140,9 @@ export default function PublishApiPage() {
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
 
-        {loading ? <section className="mt-6 rounded-xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : deployment ? (
+        {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : deployment ? (
           <div className="mt-6 space-y-4 motion-safe:animate-[cfFade_300ms_ease-out]">
-            <section className="min-w-0 rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-status-heading">
+            <section className="min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-status-heading">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -184,7 +184,7 @@ export default function PublishApiPage() {
             </div>
           </div>
         ) : (
-          <section className="mt-6 rounded-xl border border-border bg-surface p-6 sm:p-8" aria-labelledby="publish-status-heading">
+          <section className="mt-6 rounded-3xl border border-border bg-surface p-6 sm:p-8" aria-labelledby="publish-status-heading">
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
               <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. One API can be published per account.</p>
@@ -194,7 +194,7 @@ export default function PublishApiPage() {
         )}
       </main>
       <Dialog open={confirmAction !== null} onOpenChange={(open) => { if (!open && !busy) setConfirmAction(null); }}>
-        <DialogContent showCloseButton={!busy} className="rounded-xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)] sm:max-w-md">
+        <DialogContent showCloseButton={!busy} className="rounded-3xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)] sm:max-w-md">
           <div className={`border-b px-6 py-5 ${confirmAction === "unpublish" ? "border-danger-bd bg-danger-soft" : "border-border bg-bg"}`}>
             <DialogHeader>
               <DialogTitle className="font-display text-[22px] tracking-[-0.04em] text-fg">

@@ -162,7 +162,7 @@ export function TotpSettings({
     <div className="space-y-6">
       <section
         className={cn(
-          "overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(23,32,51,0.04)]",
+          "overflow-hidden rounded-2xl border",
           enabled ? "border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
         )}
       >
@@ -197,14 +197,14 @@ export function TotpSettings({
 
       {!enabled ? (
         <>
-          <ol className="grid overflow-hidden rounded-2xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
+          <ol className="grid overflow-hidden rounded-3xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
             <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
             <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
-            <section className="grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_18px_50px_rgba(23,32,51,0.04)] lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="grid overflow-hidden rounded-3xl border border-border bg-surface lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="px-6 py-7 md:px-8 md:py-8">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
@@ -229,7 +229,7 @@ export function TotpSettings({
             </section>
           ) : (
             <>
-              <section className="rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_18px_50px_rgba(23,32,51,0.04)] md:px-8">
+              <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
                 <span className={cn(LABEL, "text-accent")}>step 02</span>
                 <div className="mt-2 flex items-start gap-3">
                   <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />
@@ -245,7 +245,7 @@ export function TotpSettings({
               </section>
 
               <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
-                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
+                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-3xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
                   <DialogHeader className="border-b border-rule px-6 py-6 pr-14">
                     <span className={cn(LABEL, "text-accent")}>{setupStage === "method" ? "step 02 · authenticator setup" : "step 03 · verification"}</span>
                     <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">{setupStage === "method" ? "Add CodeForge to your app" : "Verify your authenticator"}</DialogTitle>
@@ -254,7 +254,7 @@ export function TotpSettings({
 
                   {setupStage === "method" ? (
                     <div className="px-6 py-6">
-                      <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-xl border border-border bg-bg p-1">
+                      <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-3xl border border-border bg-bg p-1">
                         <span
                           aria-hidden
                           className={cn(
@@ -273,7 +273,7 @@ export function TotpSettings({
                       {setupMethod === "qr" ? <div className="pt-6">
                         <h3 className="text-[14px] font-[700] text-fg">Scan the QR code</h3>
                         <p className="mt-2 text-[12px] leading-5 text-fg-muted">In your authenticator app, add a new account and scan this code.</p>
-                        <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-xl border border-border bg-white p-4 shadow-sm">
+                        <div role="img" aria-label="CodeForge two-factor setup QR code" className="mx-auto mt-5 w-fit rounded-3xl border border-border bg-white p-4 shadow-sm">
                           <QRCodeSVG value={uri!} size={210} level="M" marginSize={1} aria-hidden />
                         </div>
                       </div> : null}
@@ -328,7 +328,7 @@ export function TotpSettings({
         </>
       ) : (
         <div className="space-y-6">
-        <section className="rounded-xl border border-border bg-surface px-6 py-6 md:px-8">
+        <section className="rounded-3xl border border-border bg-surface px-6 py-6 md:px-8">
           <h2 className="font-display text-[21px] font-[650] text-fg">Recovery codes</h2>
           <p className="mt-2 text-[12.5px] leading-5 text-fg-muted">If you did not save your codes, generate a new set. This immediately invalidates every previous code.</p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -337,7 +337,7 @@ export function TotpSettings({
           </div>
           <Button type="button" variant="outline" onClick={regenerateRecoveryCodes} disabled={busy || !recoveryPassword || recoveryTotp.length !== 6} className="mt-4">Generate new recovery codes</Button>
         </section>
-        <section className="rounded-xl border border-danger-bd bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
+        <section className="rounded-3xl border border-danger-bd bg-surface">
           <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">Confirm with your password and an authenticator code. If you lost the authenticator, use one saved recovery code instead.</p></div>
           <div className="grid gap-4 px-6 py-6 md:grid-cols-2 md:px-8">
             <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-lg bg-bg" /></div>
@@ -358,7 +358,7 @@ export function TotpSettings({
         </div>
       )}
 
-      <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
+      <section className="flex flex-col gap-4 rounded-3xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div className="flex items-start gap-3">
           <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
           <div>

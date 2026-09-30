@@ -135,7 +135,7 @@ export default function TryApiPage() {
         ) : preview ? (
           <section className="mt-6" aria-labelledby="try-api-heading">
             <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <section className="rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="request-heading">
+            <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="request-heading">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="request-heading" className="font-display text-[21px] font-[650] text-fg">Request</h2>
                 <Button variant="outline" size="sm" onClick={reset} disabled={sending} className="group">
@@ -174,7 +174,7 @@ export default function TryApiPage() {
               )}
             </section>
 
-            <section className="rounded-xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="response-heading">
+            <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="response-heading">
               <h2 id="response-heading" className="font-display text-[21px] font-[650] text-fg">Response</h2>
               {pendingAction && <p role="status" className="mt-4 flex items-center gap-2 text-[12px] font-[650] text-accent"><span className="size-1.5 rounded-full bg-accent motion-safe:animate-[cfDot_1.1s_ease-in-out_infinite]" aria-hidden />{pendingAction === "send" ? "Sending request…" : "Resetting preview…"}</p>}
               {response ? (

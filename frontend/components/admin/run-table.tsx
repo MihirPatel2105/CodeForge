@@ -14,7 +14,7 @@ export function AdminRunTable({
   emptyLabel?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-[0_18px_50px_rgba(22,24,28,0.045)]">
+    <div className="overflow-hidden rounded-3xl border border-border bg-surface">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] border-collapse text-left">
           <thead className="bg-surface-2">

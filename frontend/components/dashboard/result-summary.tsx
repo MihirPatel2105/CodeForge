@@ -107,7 +107,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-6 rounded-2xl border p-5 shadow-[0_12px_36px_rgba(27,41,70,0.06)] sm:p-6",
+        "flex flex-wrap items-center gap-6 rounded-2xl border p-5 sm:p-6",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         t.border,
         t.soft,
@@ -158,7 +158,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
               type="button"
               onClick={onDownload}
               disabled={snapshot.files.length === 0 || downloadState === "pending"}
-              className="inline-flex min-w-[215px] shrink-0 items-center justify-center rounded-lg bg-fg px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] hover:bg-fg/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] motion-safe:active:translate-y-0 motion-safe:active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-fg disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:disabled:hover:translate-y-0 motion-safe:disabled:hover:scale-100"
+              className="inline-flex min-w-[215px] shrink-0 items-center justify-center rounded-full bg-accent px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] hover:bg-accent/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] motion-safe:active:translate-y-0 motion-safe:active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-accent disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:disabled:hover:translate-y-0 motion-safe:disabled:hover:scale-100"
             >
               <span key={downloadState} className="inline-flex items-center justify-center gap-2 motion-safe:animate-[cfFade_0.22s_ease-out]" aria-live="polite">
                 {downloadState === "pending" && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden="true" />}

@@ -115,7 +115,7 @@ export default function ProjectsPage() {
     <div className="cf-projects min-h-screen bg-bg">
       <AppHeader />
       <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-8 md:px-10 md:pt-10 lg:px-14">
-        <section className="cf-projects-intro relative overflow-hidden rounded-2xl border border-border bg-surface px-6 py-7 shadow-[0_12px_36px_rgba(27,41,70,0.045)] md:px-9 md:py-8">
+        <section className="cf-projects-intro relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-7 md:px-9 md:py-8">
           <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
@@ -129,7 +129,7 @@ export default function ProjectsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger
                 render={
-                  <Button className="h-11 gap-2 rounded-xl px-5 text-[13px] shadow-[0_8px_22px_rgba(23,32,51,0.12)]" />
+                  <Button className="h-11 gap-2 rounded-xl px-5 text-[13px]" />
                 }
               >
                 <Plus className="h-4 w-4" aria-hidden />
@@ -149,7 +149,7 @@ export default function ProjectsPage() {
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
         {projects && totals.projects > 0 && (
-          <dl className="mt-4 grid overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_36px_rgba(27,41,70,0.035)] sm:grid-cols-3">
+          <dl className="mt-4 grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-3">
             <Figure label="Projects" value={String(totals.projects)} />
             <Figure label="Total runs" value={String(totals.runs)} bordered />
             <Figure
@@ -226,7 +226,7 @@ export default function ProjectsPage() {
                 )}
               </ul>
             ) : (
-              <div className="mt-5 rounded-2xl border border-border bg-surface px-6 py-14 text-center">
+              <div className="mt-5 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
                 <h3 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
                   No matching projects
                 </h3>
@@ -287,7 +287,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="cf-project-card group relative flex min-h-[228px] h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-[0_10px_30px_rgba(27,41,70,0.035)] transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-card group relative flex min-h-[228px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
 
@@ -414,7 +414,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function EmptyState({ onNewProject }: { onNewProject: () => void }) {
   return (
-    <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-border px-6 py-20 text-center shadow-[0_10px_30px_rgba(27,41,70,0.035)]">
+    <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-border px-6 py-20 text-center">
       <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-accent-bd bg-accent-soft">
         <FolderPlus className="h-6 w-6 text-accent" aria-hidden />
       </div>

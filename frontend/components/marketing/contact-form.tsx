@@ -98,7 +98,7 @@ export function ContactForm() {
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-xl bg-fg px-6 py-[13px] text-[14px] font-[650] text-surface transition-opacity hover:opacity-88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="inline-flex items-center justify-center rounded-full bg-accent px-6 py-[13px] text-[14px] font-[650] text-surface transition-opacity hover:opacity-88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Sign in
           </Link>

@@ -57,7 +57,7 @@ export default function AdminAuditPage() {
 
       {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
 
-      <section className="mt-6 rounded-xl border border-border bg-surface p-4 sm:p-5" aria-label="Audit log filters">
+      <section className="mt-6 rounded-3xl border border-border bg-surface p-4 sm:p-5" aria-label="Audit log filters">
         <div className="grid gap-4 md:grid-cols-[minmax(220px,1fr)_minmax(150px,190px)_minmax(150px,190px)]">
           <label className="block min-w-0">
             <span className={ADMIN_LABEL}>Action</span>
@@ -78,7 +78,7 @@ export default function AdminAuditPage() {
         </div>
       </section>
 
-      <section className="mt-5 overflow-hidden rounded-xl border border-border bg-surface" aria-label="Audit records" aria-busy={loading}>
+      <section className="mt-5 overflow-hidden rounded-3xl border border-border bg-surface" aria-label="Audit records" aria-busy={loading}>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
             <ClipboardCheck className="h-4 w-4 text-accent" aria-hidden />

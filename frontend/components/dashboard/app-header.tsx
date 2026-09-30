@@ -26,8 +26,8 @@ export function AppHeader() {
     pathname.startsWith("/runs/");
 
   return (
-    <header className="sticky top-0 z-20 flex h-[58px] shrink-0 items-center justify-between border-b border-rule bg-bg/90 px-4 backdrop-blur-xl sm:px-6">
-      <div className="flex items-center gap-7">
+    <header className="cf-app-header sticky top-0 z-20 flex h-[64px] shrink-0 items-center justify-between border-b border-rule bg-surface/90 px-4 backdrop-blur-xl sm:px-6">
+      <div className="flex items-center gap-5">
         {/* The wordmark goes to the landing page, not to Projects — that is what a
             wordmark does everywhere else on the web, and the Projects link sitting
             right beside it already covers the other destination. */}
@@ -42,8 +42,8 @@ export function AppHeader() {
         <Link
           href="/projects"
           className={cn(
-            "hidden rounded-lg px-3 py-2 text-[13px] font-[600] transition-colors sm:block",
-            onProjects ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
+            "hidden rounded-full px-4 py-2.5 text-[13px] font-[600] transition-colors sm:block",
+            onProjects ? "bg-accent-soft text-accent" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
           )}
         >
           Projects
@@ -52,8 +52,8 @@ export function AppHeader() {
           <Link
             href="/admin"
             className={cn(
-              "hidden rounded-lg px-3 py-2 text-[13px] font-[600] transition-colors sm:block",
-              pathname.startsWith("/admin") ? "bg-surface-2 text-fg" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
+              "hidden rounded-full px-4 py-2.5 text-[13px] font-[600] transition-colors sm:block",
+              pathname.startsWith("/admin") ? "bg-accent-soft text-accent" : "text-fg-muted hover:bg-surface-2 hover:text-fg",
             )}
           >
             Admin
