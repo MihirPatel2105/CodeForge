@@ -1244,3 +1244,14 @@
     top: 0px;
   }
 }
+
+/* Match public dark sections to the landing page's charcoal surface. */
+.cf-invert:is(footer, .cf-about-evidence, .cf-how-control) {
+  --bg: var(--term-bg);
+  background: var(--bg);
+}
+
+.cf-about-evidence::before,
+.cf-how-control::before {
+  background-image: none;
+}
