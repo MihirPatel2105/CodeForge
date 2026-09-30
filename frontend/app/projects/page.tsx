@@ -130,7 +130,7 @@ export default function ProjectsPage() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger
                 render={
-                  <Button className="h-12 gap-2 rounded-full px-6 text-[14px]" />
+                  <Button className="cf-project-action h-12 gap-2 rounded-full px-6 text-[14px]" />
                 }
               >
                 <Plus className="h-4 w-4" aria-hidden />
@@ -432,7 +432,7 @@ function EmptyState({ onNewProject }: { onNewProject: () => void }) {
       <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-fg-muted">
         A project holds the runs for one API. Name it after the thing you are building.
       </p>
-      <Button onClick={onNewProject} className="mt-7 h-11 gap-2 px-5">
+      <Button onClick={onNewProject} className="cf-project-action mt-7 h-11 gap-2 px-5">
         <Plus className="h-4 w-4" aria-hidden />
         New project
       </Button>
