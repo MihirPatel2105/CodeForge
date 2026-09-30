@@ -186,7 +186,7 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 
 /* One entrance sequence per landing mount; preview scale remains scroll-controlled. */
 @keyframes lp-hero-enter {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -195,11 +195,11 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   .lp-hero > .lp-lead,
   .lp-hero > .lp-actions,
   .lp-hero > .lp-product-scroll {
-    animation: lp-hero-enter 700ms var(--lp-ease-out) backwards;
+    animation: lp-hero-enter 1000ms cubic-bezier(.22,.68,.25,1) backwards;
   }
-  .lp-hero > h1 { animation-delay: 70ms; }
-  .lp-hero > .lp-lead { animation-delay: 150ms; }
-  .lp-hero > .lp-actions { animation-delay: 230ms; }
-  .lp-hero > .lp-product-scroll { animation-duration: 850ms; animation-delay: 320ms; }
+  .lp-hero > h1 { animation-delay: 50ms; }
+  .lp-hero > .lp-lead { animation-delay: 110ms; }
+  .lp-hero > .lp-actions { animation-delay: 170ms; }
+  .lp-hero > .lp-product-scroll { animation-duration: 1100ms; animation-delay: 230ms; }
   .lp-hero:focus-within > .lp-actions { animation: none; }
 }
