@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 /** Supplied CodeForge identity, sized as one lockup so the mark and wordmark never drift. */
@@ -9,18 +10,23 @@ export function LogoLockup({
   className?: string;
   variant?: "light" | "dark";
 }) {
+  const source = variant === "dark"
+    ? "/brand/codeforge-lockup-dark-v2.png"
+    : "/brand/codeforge-lockup-light-v2.png";
+
   return (
-    <Image
-      src={
-        variant === "dark"
-          ? "/brand/codeforge-lockup-dark-v2.png"
-          : "/brand/codeforge-lockup-light-v2.png"
-      }
-      alt="CodeForge"
-      draggable={false}
-      width={1824}
-      height={447}
-      className={cn("pointer-events-none h-auto w-auto select-none object-contain", className)}
-    />
+    <span
+      className={cn("cf-logo-lockup pointer-events-none inline-flex select-none", className)}
+      style={{ aspectRatio: "1824 / 447", "--cf-logo-mask": `url("${source}")` } as CSSProperties}
+    >
+      <Image
+        src={source}
+        alt="CodeForge"
+        draggable={false}
+        width={1824}
+        height={447}
+        className="h-full w-full object-contain"
+      />
+    </span>
   );
 }
