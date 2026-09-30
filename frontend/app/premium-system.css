@@ -271,3 +271,9 @@ html { scroll-padding-top: 80px; }
 .cf-api-intro h1, .cf-admin-page-header h1, .cf-run-hero h1 { font-weight: 600; line-height: 1.2; letter-spacing: -.035em; }
 
 .cf-project-detail h1 { font-size: clamp(28px,3.5vw,40px); line-height: 1.2; letter-spacing: -.04em; }
+
+/* A run request is readable body content, even when the prompt is long. */
+.cf-run-summary > .cf-build-stage > div:first-child { padding-block: 16px 20px; }
+.cf-run-summary h1.cf-run-request { max-width: none; font-size: 18px; font-weight: 500; line-height: 1.5; letter-spacing: -.01em; }
+.cf-run-summary .cf-build-metrics > div { min-height: 68px; padding-block: 12px; }
+@media (max-width: 639px) { .cf-run-summary h1.cf-run-request { font-size: 16px; } }

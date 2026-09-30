@@ -216,7 +216,7 @@ export default function LiveRunPage() {
           Projects
         </Link>
 
-        <header className="cf-run-hero mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
+        <header className="cf-run-hero cf-run-summary mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
           <div className="cf-build-stage grid">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -242,10 +242,10 @@ export default function LiveRunPage() {
                 </span>
               </div>
 
-              <p className="mt-4 text-[12px] font-[650] text-accent">
+              <p className="mt-3 text-[12px] font-[650] text-accent">
                 API build request
               </p>
-              <h1 className="font-display mt-2 max-w-[60ch] text-[23px] font-[700] leading-[1.3] tracking-[-0.04em] text-fg sm:text-[28px]">
+              <h1 className="cf-run-request mt-1.5 text-[18px] font-[500] leading-[1.5] text-fg">
                 {snapshot.prompt ?? "Preparing the agent workflow…"}
               </h1>
 
@@ -255,7 +255,7 @@ export default function LiveRunPage() {
                   variant="outline"
                   onClick={handleCancel}
                   disabled={cancelling}
-                  className="mt-6 border-danger-bd bg-surface text-danger hover:bg-danger-soft"
+                  className="mt-3 border-danger-bd bg-surface text-danger hover:bg-danger-soft"
                 >
                   {cancelling ? "Cancelling…" : "Cancel run"}
                 </Button>
