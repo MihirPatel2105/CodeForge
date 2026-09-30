@@ -96,11 +96,13 @@ export function setToken(token: string): void {
   if (!token) return;
   localStorage.removeItem(TOKEN_KEY);
   document.cookie = `${PRESENT_COOKIE}=1; Path=/; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  window.dispatchEvent(new Event("codeforge-session-change"));
 }
 
 export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
   document.cookie = `${PRESENT_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+  window.dispatchEvent(new Event("codeforge-session-change"));
 }
 
 export class ApiError extends Error {

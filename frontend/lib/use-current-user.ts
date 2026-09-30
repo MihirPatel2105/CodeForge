@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { api, getToken, clearToken } from "@/lib/api";
 import type { UserResponse } from "@/lib/types";
 
@@ -24,57 +24,75 @@ function initialsFor(user: UserResponse): string {
   return (user.email[0] ?? "?").toUpperCase();
 }
 
-/**
- * Who is looking at the page, or null when nobody is signed in.
- *
- * One implementation for every surface that needs it — both headers, the closing
- * banner, the footer and the profile page. Three copies of an auth check is three
- * chances for one of them to keep offering "Create an account" to somebody who
- * already has one.
- *
- * Always starts null and resolves after mount: the browser session marker is only
- * read on the client, so returning a signed-in value on the first
- * client pass would guarantee a hydration mismatch against the server's markup.
- */
 export interface Session {
   user: CurrentUser | null;
-  /** True until the token has been checked. See `useSession` for why this matters. */
   loading: boolean;
 }
 
-/**
- * The session, including whether it is still being resolved.
- *
- * `user === null` is ambiguous on its own: it means both "signed out" and "we have not
- * looked yet", and the second is always true for one render because browser cookies
- * are checked after mount. Anything that *gates* on being signed in needs to tell those apart, or
- * it shows a signed-in visitor a "please sign in" screen for a moment before correcting
- * itself. Surfaces that merely swap a label can keep using `useCurrentUser`.
- */
-export function useSession(): Session {
-  const [user, setUser] = useState<CurrentUser | null>(null);
-  const [loading, setLoading] = useState(true);
+const initialSession: Session = { user: null, loading: true };
+let session = initialSession;
+let generation = 0;
+let pending = false;
+const listeners = new Set<() => void>();
+let listening = false;
 
-  useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
+function publish(next: Session) {
+  session = next;
+  listeners.forEach((listener) => listener());
+}
+
+function resolveSession() {
+  if (!getToken()) {
+    if (session.user || session.loading) {
+      generation++;
+      pending = false;
+      publish({ user: null, loading: false });
     }
-    api
-      .me()
-      .then((u) => {
-        const name = [u.first_name, u.last_name].filter(Boolean).join(" ");
-        setUser({ ...u, displayName: name || u.email, initials: initialsFor(u) });
-      })
-      .catch(() => {
-        // Expired or revoked: drop the marker rather than leave the UI in a signed-in state
-        // that no longer works.
-        clearToken();
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    return;
+  }
+  if (pending || session.user) return;
+  pending = true;
+  const requestGeneration = ++generation;
+  api.me()
+    .then((user) => {
+      if (generation !== requestGeneration) return;
+      const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
+      publish({ user: { ...user, displayName: name || user.email, initials: initialsFor(user) }, loading: false });
+    })
+    .catch(() => {
+      if (generation !== requestGeneration) return;
+      clearToken();
+    })
+    .finally(() => {
+      if (generation === requestGeneration) pending = false;
+    });
+}
 
-  return { user, loading };
+function onSessionChange() {
+  // A late response must not restore a user after sign-out or session replacement.
+  generation++;
+  pending = false;
+  publish(initialSession);
+  resolveSession();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  if (!listening) {
+    window.addEventListener("codeforge-session-change", onSessionChange);
+    listening = true;
+  }
+  return () => {
+    listeners.delete(listener);
+
+  };
+}
+
+/** Reuse the verified session across routes; the server snapshot remains unknown. */
+export function useSession(): Session {
+  const current = useSyncExternalStore(subscribe, () => session, () => initialSession);
+  useEffect(resolveSession, []);
+  return current;
 }
 
 export function useCurrentUser(): CurrentUser | null {

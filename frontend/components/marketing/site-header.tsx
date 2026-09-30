@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useCurrentUser } from "@/lib/use-current-user";
+import { useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 
 /** Public site header. The brand and account actions stay clear of the page content. */
 export function SiteHeader() {
-  const user = useCurrentUser();
+  const { user, loading } = useSession();
   const [floating, setFloating] = useState(false);
 
   useEffect(() => {
@@ -36,7 +36,12 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
-          {user ? (
+          {loading ? (
+              <div role="status" aria-label="Loading account" className="flex h-10 items-center gap-3">
+                <span aria-hidden className="h-10 w-24 rounded-full bg-fg/5 motion-safe:animate-pulse" />
+                <span aria-hidden className="h-10 w-10 rounded-full bg-fg/5 motion-safe:animate-pulse" />
+              </div>
+            ) : user ? (
             <>
               <Link
                 href="/projects"
