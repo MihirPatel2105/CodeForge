@@ -1297,7 +1297,7 @@ button.cf-project-action svg { transition: transform 360ms cubic-bezier(.16,1,.3
     background: color-mix(in srgb, var(--accent) 92%, black);
     box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 50%, transparent);
   }
-  button.cf-project-action:not(:disabled):hover svg { transform: scale(1.1); }
+  button.cf-project-action:not(:disabled):hover svg { transform: rotate(90deg) scale(1.1); }
 }
 button.cf-project-action:not(:disabled):active { transform: scale(.98); box-shadow: none; }
 button.cf-project-action:not(:disabled):active svg { transform: none; }
