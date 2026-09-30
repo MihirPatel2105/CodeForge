@@ -189,17 +189,22 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes lp-preview-enter {
+  from { opacity: 0; transform: translateY(56px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 @media (prefers-reduced-motion: no-preference) {
   .lp-hero > .lp-intro,
   .lp-hero > h1,
   .lp-hero > .lp-lead,
-  .lp-hero > .lp-actions,
-  .lp-hero > .lp-product-scroll {
+  .lp-hero > .lp-actions {
     animation: lp-hero-enter 1000ms cubic-bezier(.22,.68,.25,1) backwards;
   }
   .lp-hero > h1 { animation-delay: 50ms; }
   .lp-hero > .lp-lead { animation-delay: 110ms; }
   .lp-hero > .lp-actions { animation-delay: 170ms; }
-  .lp-hero > .lp-product-scroll { animation-duration: 1100ms; animation-delay: 230ms; }
+  .lp-hero > .lp-product-scroll {
+    animation: lp-preview-enter 1200ms cubic-bezier(.16,1,.3,1) 300ms backwards;
+  }
   .lp-hero:focus-within > .lp-actions { animation: none; }
 }
