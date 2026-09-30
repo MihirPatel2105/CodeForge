@@ -102,55 +102,56 @@
 .cf-premium-marketing .cf-how-control::before { content: none; }
 .cf-premium-marketing [class*="lg:flex-col"][class*="lg:items-start"] { flex-direction: row; }
 
-/* Product stages: the landing page's scale, applied to actual account and run content. */
+/* Product screens share the landing palette with a compact task hierarchy. */
 :is(.cf-projects,.cf-project-detail,.cf-account,.cf-admin,.cf-run-page) { background: var(--surface); }
-:is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 64px; padding-bottom: 96px; }
-.cf-projects h1 { font-size: clamp(40px,5.4vw,68px); line-height: 1.05; letter-spacing: -.065em; }
-.cf-workspace-stage { display: grid; align-items: center; gap: 48px; padding-block: 24px 64px; }
-.cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: minmax(0,1fr) minmax(0,.65fr); }
+:is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 36px; padding-bottom: 64px; }
+.cf-projects h1 { font-size: clamp(28px,3vw,36px); line-height: 1.2; letter-spacing: -.04em; }
+.cf-workspace-stage { display: grid; align-items: center; gap: 24px; padding-block: 0 8px; }
+.cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: 1fr; }
 .cf-workspace-stage .cf-projects-intro { overflow: visible; padding: 0; }
-.cf-workspace-stage .cf-projects-intro > div { flex-direction: column; align-items: flex-start; gap: 28px; }
-.cf-workspace-stage .cf-projects-intro p { max-width: 45ch; margin-top: 24px; font-size: 17px; }
-.cf-workspace-summary { grid-template-columns: 1fr; border: 0; background: var(--bg); padding: 16px 32px; }
-.cf-workspace-summary > div { padding: 22px 0; border: 0; }
-.cf-workspace-summary > div + div { border-top: 1px solid var(--border); }
-.cf-workspace-summary dd { font-size: 36px; }
+.cf-workspace-stage .cf-projects-intro > div { flex-direction: row; align-items: center; gap: 24px; }
+.cf-workspace-stage .cf-projects-intro p { max-width: 62ch; margin-top: 12px; font-size: 15px; }
+.cf-workspace-summary { grid-template-columns: repeat(3,minmax(0,1fr)); border: 1px solid var(--border); background: var(--bg); padding: 4px 8px; }
+.cf-workspace-summary > div { padding: 16px 20px; border: 0; min-width: 0; }
+.cf-workspace-summary > div + div { border-left: 1px solid var(--border); }
+.cf-workspace-summary dd { flex-wrap: wrap; gap: 6px 12px; }
+.cf-workspace-summary dd > span:first-child { font-size: 28px; }
 .cf-workspace-grid { align-items: stretch; }
-.cf-project-card { background: var(--bg); border-color: transparent; padding: 32px; }
+.cf-project-card { background: var(--bg); border-color: transparent; padding: 24px; min-height: 240px; }
 .cf-project-card > span:first-child { display: none; }
 .cf-project-card:hover { background: var(--surface-2); border-color: var(--border); }
-.cf-project-card h3 { font-size: 28px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; }
-.cf-project-new { border-style: solid; background: var(--surface); padding: 32px; }
+.cf-project-card h3 { font-size: 22px; line-height: 1.15; white-space: normal; overflow-wrap: anywhere; }
+.cf-project-new { border-style: solid; background: var(--surface); padding: 24px; min-height: 240px; }
 .cf-project-new > span:first-child { border: 0; border-radius: 100%; width: 48px; height: 48px; }
-.cf-project-empty { background: var(--bg); border: 0; padding-block: 80px; }
-.cf-project-empty h2 { font-size: clamp(28px,3.5vw,40px); }
+.cf-project-empty { background: var(--bg); border: 0; padding-block: 48px; min-height: 300px; }
+.cf-project-empty h2 { font-size: clamp(24px,2.5vw,28px); }
 .cf-project-detail-hero { border: 0; border-radius: 0; overflow: visible; }
-.cf-project-detail-hero > div { padding: 24px 0 40px; }
-.cf-project-detail-hero p { max-width: 60ch; margin-top: 24px; font-size: 17px; }
+.cf-project-detail-hero > div { padding: 16px 0 24px; }
+.cf-project-detail-hero p { max-width: 60ch; margin-top: 12px; font-size: 15px; }
 .cf-project-detail-stats { background: var(--bg); border-radius: 24px; padding: 8px; }
 .cf-prompt-stage { background: var(--bg); border-color: transparent; }
-.cf-project-composer-head { padding: 28px; border: 0; background: transparent; }
-.cf-project-composer-head h2 { font-size: 27px; line-height: 1.16; }
-.cf-project-workspace textarea { min-height: 210px; background: var(--surface); }
+.cf-project-composer-head { padding: 24px; border: 0; background: transparent; }
+.cf-project-composer-head h2 { font-size: 23px; line-height: 1.16; }
+.cf-project-workspace textarea { min-height: 160px; background: var(--surface); }
 .cf-project-workspace :is(button[type=submit],[data-slot=button]) { border-radius: 100px; }
 .cf-account-hero { border: 0; background: transparent; border-radius: 0; }
-.cf-identity-stage > div:first-child { padding: 32px 0 48px; }
-.cf-identity-stage > div:first-child > p { margin-top: 32px; font-size: 17px; max-width: 58ch; }
+.cf-identity-stage > div:first-child { padding: 16px 0 24px; }
+.cf-identity-stage > div:first-child > p { margin-top: 16px; font-size: 15px; max-width: 58ch; }
 .cf-identity-stage h1 { max-width: 20ch; }
 .cf-identity-metrics { background: var(--bg); border: 0; border-radius: 24px; overflow: hidden; }
-.cf-identity-metrics dd { font-size: 42px; line-height: 1; }
+.cf-identity-metrics dd { font-size: 30px; line-height: 1; }
 .cf-account-content > section { border: 0; background: var(--bg); }
 .cf-account-content > section > div:first-child { padding: 28px 32px; border: 0; }
-.cf-account-content h2 { font-size: 26px; }
+.cf-account-content h2 { font-size: 22px; }
 .cf-account-content dl { padding-inline: 32px; }
-.cf-settings-layout { display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 48px; align-items: start; }
+.cf-settings-layout { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 28px; align-items: start; }
 .cf-settings-nav { position: sticky; top: 96px; flex-direction: column; gap: 8px; }
 .cf-settings-nav a { justify-content: flex-start; min-height: 48px; border: 0; background: var(--bg); border-radius: 16px; padding-inline: 20px; }
 .cf-settings-layout > div > section:first-child { margin-top: 0; }
-.cf-account > main > .cf-account-hero { padding: 32px 0 40px; }
+.cf-account > main > .cf-account-hero { padding: 16px 0 24px; }
 .cf-account > main > .cf-account-hero p { font-size: 16px; }
 .cf-account > main > .cf-account-hero > div > div:last-child:not(:first-child) { background: var(--bg); border: 0; border-radius: 20px; padding: 20px 24px; }
-.cf-account nav[aria-label="Security settings"] { margin-block: 28px 40px; }
+.cf-account nav[aria-label="Security settings"] { margin-block: 20px 28px; }
 .cf-account nav[aria-label="Security settings"] a { min-height: 48px; padding-inline: 24px; border-color: transparent; background: var(--bg); }
 .cf-account nav[aria-label="Security settings"] a[aria-current=page] { background: var(--accent-soft); color: var(--accent); }
 .cf-operations-layout { padding: 32px; }
@@ -165,19 +166,19 @@
 .cf-admin td { padding-block: 18px; }
 .cf-admin tbody tr { transition: background-color 180ms ease; }
 .cf-admin tbody tr:hover { background: var(--surface-2); }
-.cf-run-page > main { max-width: 1440px; padding-top: 40px; padding-bottom: 96px; }
+.cf-run-page > main { max-width: 1440px; padding-top: 28px; padding-bottom: 64px; }
 .cf-run-hero { border: 0; border-radius: 0; }
-.cf-run-hero > .cf-build-stage > div:first-child { padding: 24px 0 40px; }
+.cf-run-hero > .cf-build-stage > div:first-child { padding: 16px 0 24px; }
 .cf-run-hero h1 { font-size: clamp(28px,3vw,36px); max-width: 32ch; line-height: 1.14; }
 .cf-build-metrics { border-radius: 24px; background: var(--bg); overflow: hidden; }
-.cf-run-pipeline { margin-top: 40px; background: var(--bg); border-color: transparent; }
-.cf-run-pipeline > div:first-child { background: transparent; border-color: var(--border); padding: 28px 32px; }
-.cf-run-pipeline h2 { font-size: 28px; }
-.cf-api-intro { padding-block: 24px 48px; gap: 28px; }
+.cf-run-pipeline { margin-top: 24px; background: var(--bg); border-color: transparent; }
+.cf-run-pipeline > div:first-child { background: transparent; border-color: var(--border); padding: 20px 24px; }
+.cf-run-pipeline h2 { font-size: 24px; }
+.cf-api-intro { padding-block: 12px 24px; gap: 20px; }
 .cf-api-intro h1 { font-size: clamp(28px,3vw,36px); }
-.cf-api-intro p { font-size: 17px; margin-top: 20px; max-width: 56ch; line-height: 1.7; }
-.cf-use-option-card { min-height: 290px; padding: 32px; border-color: transparent; background: var(--bg); }
-.cf-use-option-card h2 { font-size: 28px; }
+.cf-api-intro p { font-size: 15px; margin-top: 12px; max-width: 56ch; line-height: 1.7; }
+.cf-use-option-card { min-height: 240px; padding: 24px; border-color: transparent; background: var(--bg); }
+.cf-use-option-card h2 { font-size: 23px; }
 .cf-use-option-card p { font-size: 15px; line-height: 1.65; }
 
 /* Editorial public pages: broad product stages, reading columns, and open space. */
@@ -209,7 +210,7 @@ html { scroll-padding-top: 80px; }
 [data-slot=button] { transition-timing-function: var(--premium-ease); }
 
 @media (max-width: 1023px) {
-  .cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: 1fr; gap: 32px; }
+  .cf-workspace-stage:has(.cf-workspace-summary) { grid-template-columns: 1fr; gap: 24px; }
   .cf-workspace-summary { grid-template-columns: repeat(3,minmax(0,1fr)); padding: 8px 20px; }
   .cf-workspace-summary > div { padding: 20px 12px; }
   .cf-workspace-summary > div + div { border-top: 0; border-left: 1px solid var(--border); }
@@ -220,16 +221,16 @@ html { scroll-padding-top: 80px; }
 }
 @media (max-width: 767px) {
   :is(.cf-projects,.cf-project-detail,.cf-account) > main { padding-top: 36px; padding-bottom: 64px; }
-  .cf-workspace-stage { padding-block: 8px 32px; }
+  .cf-workspace-stage { padding-block: 8px; }
   .cf-workspace-stage .cf-projects-intro p { font-size: 16px; }
   .cf-project-card,.cf-project-new { padding: 24px; }
-  .cf-project-card h3 { font-size: 25px; }
+  .cf-project-card h3 { font-size: 22px; }
   .cf-settings-layout { display: block; margin-top: 32px; }
   .cf-settings-nav { position: static; flex-direction: row; margin-bottom: 32px; }
   .cf-settings-nav a { min-height: 44px; padding-inline: 16px; }
   .cf-account-content { gap: 24px; margin-top: 32px; }
   .cf-identity-stage > div:first-child { padding-top: 8px; }
-  .cf-identity-metrics dd { font-size: 34px; }
+  .cf-identity-metrics dd { font-size: 28px; }
   .cf-admin-page-header { grid-template-columns: 1fr; padding-bottom: 24px; }
   .cf-admin-page-header > :last-child:not(:first-child) { justify-self: start; }
   .cf-operations-layout { padding-inline: 20px; }
@@ -250,7 +251,7 @@ html { scroll-padding-top: 80px; }
   .cf-premium-marketing main > section { transition: none; opacity: 1; transform: none; }
 }
 
-.cf-demo-controls { display: flex; flex-direction: row; align-items: center; gap: 32px; padding: 24px 32px; border: 0; border-radius: 24px; }
+.cf-demo-controls { display: flex; flex-direction: row; align-items: center; gap: 24px; padding: 20px 24px; border: 0; border-radius: 24px; }
 .cf-demo-controls > div { flex: 1; min-width: 0; }
 @keyframes cfPanelEnter { from { opacity: .6; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 [data-slot=tabs-content]:not([hidden]) { animation: cfPanelEnter 220ms var(--premium-ease); }
@@ -270,10 +271,29 @@ html { scroll-padding-top: 80px; }
 .cf-security-settings nav[aria-label="Security settings"] { margin-block: 16px 24px; }
 .cf-api-intro h1, .cf-admin-page-header h1, .cf-run-hero h1 { font-weight: 600; line-height: 1.2; letter-spacing: -.035em; }
 
-.cf-project-detail h1 { font-size: clamp(28px,3.5vw,40px); line-height: 1.2; letter-spacing: -.04em; }
+.cf-project-detail h1 { font-size: clamp(28px,3vw,36px); line-height: 1.2; letter-spacing: -.04em; }
 
 /* A run request is readable body content, even when the prompt is long. */
 .cf-run-summary > .cf-build-stage > div:first-child { padding-block: 16px 20px; }
 .cf-run-summary h1.cf-run-request { max-width: none; font-size: 18px; font-weight: 500; line-height: 1.5; letter-spacing: -.01em; }
 .cf-run-summary .cf-build-metrics > div { min-height: 68px; padding-block: 12px; }
 @media (max-width: 639px) { .cf-run-summary h1.cf-run-request { font-size: 16px; } }
+
+/* Compact workspace chrome remains usable on narrow screens. */
+@media (max-width: 767px) {
+  .cf-workspace-stage .cf-projects-intro > div { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .cf-workspace-summary > div { padding: 12px; }
+  .cf-project-card,.cf-project-new { padding: 22px; min-height: 220px; }
+  .cf-account nav[aria-label="Security settings"] a { min-height: 44px; padding-inline: 16px; }
+}
+@media (max-width: 479px) {
+  .cf-workspace-summary { grid-template-columns: repeat(3,minmax(0,1fr)); padding: 4px; }
+  .cf-workspace-summary > div { padding: 12px 8px; }
+  .cf-workspace-summary > div + div { border-top: 0; border-left: 1px solid var(--border); }
+  .cf-workspace-summary dt { font-size: 11px; }
+  .cf-workspace-summary dd > span:first-child { font-size: 24px; }
+  .cf-workspace-summary dd > span:last-child:not(:first-child) { font-size: 10px; }
+}
+
+.cf-project-workspace { margin-top: 32px; gap: 28px; }
+.cf-project-history-empty { min-height: 280px; padding-block: 48px; }

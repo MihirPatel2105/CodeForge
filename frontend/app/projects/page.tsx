@@ -120,8 +120,7 @@ export default function ProjectsPage() {
           <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
-                Your next API
-                <span className="block">starts here.</span>
+                Projects
               </h1>
               <p className="mt-2 max-w-[58ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
                 Pick up an API or start a new one. Each project keeps its runs, code, and test results together.
@@ -150,7 +149,11 @@ export default function ProjectsPage() {
         </section>
 
         {/* Portfolio totals. Only rendered once there is something to total. */}
-        {projects && totals.projects > 0 && (
+        {loading && projects == null ? (
+          <div className="cf-workspace-summary grid rounded-3xl" aria-hidden="true">
+            {[0, 1, 2].map((item) => <div key={item} className="space-y-2"><div className="h-3 w-16 animate-pulse rounded bg-border" /><div className="h-7 w-12 animate-pulse rounded bg-border" /></div>)}
+          </div>
+        ) : projects && totals.projects > 0 && (
           <dl className="cf-workspace-summary grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-3">
             <Figure label="Projects" value={String(totals.projects)} />
             <Figure label="Total runs" value={String(totals.runs)} bordered />
@@ -183,7 +186,7 @@ export default function ProjectsPage() {
         ) : projects == null ? null : projects.length === 0 && !query ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
-          <section className="mt-9" aria-labelledby="project-list-heading">
+          <section className="mt-6" aria-labelledby="project-list-heading">
             <div className="flex flex-wrap items-end justify-between gap-5 border-b border-rule pb-4">
               <div>
                 <span className={LABEL}>Your workspaces</span>
@@ -439,7 +442,7 @@ function EmptyState({ onNewProject }: { onNewProject: () => void }) {
 
 function LoadingState() {
   return (
-    <div className="mt-12" aria-label="Loading projects" aria-live="polite">
+    <div className="mt-6" aria-label="Loading projects" aria-live="polite">
       <div className="flex items-end justify-between border-b border-rule pb-4">
         <div className="space-y-2.5">
           <div className="h-2.5 w-24 animate-pulse rounded bg-border" />
@@ -451,7 +454,7 @@ function LoadingState() {
         {[0, 1].map((item) => (
           <div
             key={item}
-            className="min-h-[258px] animate-pulse rounded-xl border border-border bg-surface p-6"
+            className="min-h-[240px] animate-pulse rounded-3xl border border-border bg-bg p-6"
           >
             <div className="h-2.5 w-28 rounded bg-border" />
             <div className="mt-5 h-6 w-44 rounded bg-border" />

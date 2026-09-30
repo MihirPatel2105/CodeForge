@@ -15,8 +15,8 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
     const main = document.querySelector("main");
     if (main && typeof main.animate === "function") {
       animations.push(main.animate(
-        [{ opacity: 0.65, transform: "translateY(10px)" }, { opacity: 1, transform: "translateY(0)" }],
-        { duration: 420, easing: "cubic-bezier(.16,1,.3,1)" },
+        [{ opacity: 0.8 }, { opacity: 1 }],
+        { duration: 260, easing: "cubic-bezier(.16,1,.3,1)" },
       ));
     }
 
