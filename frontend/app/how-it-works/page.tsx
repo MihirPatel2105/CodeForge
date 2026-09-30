@@ -114,11 +114,11 @@ export default function HowItWorksPage() {
                 work back to the Coder.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="#stages" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+                <Link href="#stages" className="cf-marketing-action cf-marketing-primary cf-action-down inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Follow the run
                   <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                 </Link>
-                <Link href="/demo/library" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+                <Link href="/demo/library" className="cf-marketing-action cf-marketing-secondary inline-flex min-h-12 items-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                   Watch it move
                 </Link>
               </div>

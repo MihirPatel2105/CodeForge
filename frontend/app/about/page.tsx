@@ -73,9 +73,9 @@ const EVIDENCE = [
 ] as const;
 
 const PRIMARY_ACTION =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "cf-marketing-action cf-marketing-primary inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 const SECONDARY_ACTION =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "cf-marketing-action cf-marketing-secondary inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong bg-surface/70 px-6 text-[14px] font-[650] text-fg transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 
 export default function AboutPage() {
   return (

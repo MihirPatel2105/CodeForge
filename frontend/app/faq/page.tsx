@@ -76,7 +76,7 @@ export default function FaqPage() {
             <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
             <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
             <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>
-            <Link href="#questions" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></Link>
+            <Link href="#questions" className="cf-marketing-action cf-marketing-primary mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></Link>
           </div>
           <dl className="cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
             {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
