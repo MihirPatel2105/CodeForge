@@ -211,3 +211,37 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   }
   .lp-hero:focus-within > .lp-actions { animation: none; }
 }
+
+/* Hero actions respond without changing their layout or replaying the entrance. */
+.lp-hero .lp-actions > a {
+  transition: transform 360ms cubic-bezier(.16,1,.3,1), background-color 360ms ease, box-shadow 360ms ease;
+}
+.lp-hero .lp-actions > a svg {
+  transition: transform 360ms cubic-bezier(.16,1,.3,1);
+}
+.lp-hero .lp-actions > .lp-text-link {
+  border-radius: 100px;
+  padding-inline: 12px;
+  margin-inline: -12px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-hero .lp-actions > .lp-button:hover {
+    transform: translateY(-3px);
+    background: color-mix(in srgb, var(--lp-accent) 92%, black);
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--lp-accent) 50%, transparent);
+  }
+  .lp-hero .lp-actions > .lp-button:hover svg { transform: translateX(3px); }
+  .lp-hero .lp-actions > .lp-text-link:hover {
+    text-decoration: none;
+    background: color-mix(in srgb, var(--lp-accent) 7%, transparent);
+    transform: translateY(-2px);
+  }
+  .lp-hero .lp-actions > .lp-text-link:hover svg { transform: translateX(2px) scale(1.08); }
+}
+.lp-hero .lp-actions > a:active { transform: scale(.98); box-shadow: none; }
+.lp-hero .lp-actions > a:active svg { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero .lp-actions > a:hover,
+  .lp-hero .lp-actions > a:active,
+  .lp-hero .lp-actions > a:hover svg { transform: none; }
+}
