@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SecuritySettingsLayout } from "@/components/auth/security-settings-layout";
+import { SecuritySettingsLayout, SecuritySettingsLoading } from "@/components/auth/security-settings-layout";
 import { TotpSettings } from "@/components/auth/totp-settings";
 import { useSession } from "@/lib/use-current-user";
 
@@ -15,7 +15,7 @@ export default function SettingsTwoFactorPage() {
     if (!user) router.replace("/login");
   }, [loading, router, user]);
 
-  if (loading || !user) return null;
+  if (loading || !user) return <SecuritySettingsLoading current="/profile/settings/2fa" />;
 
   return (
     <SecuritySettingsLayout

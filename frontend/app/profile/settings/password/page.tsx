@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LockKeyhole, MonitorX, ShieldCheck } from "lucide-react";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
-import { SecuritySettingsLayout } from "@/components/auth/security-settings-layout";
+import { SecuritySettingsLayout, SecuritySettingsLoading } from "@/components/auth/security-settings-layout";
 import { useSession } from "@/lib/use-current-user";
 
 export default function ChangePasswordPage() {
@@ -15,7 +15,7 @@ export default function ChangePasswordPage() {
     if (!loading && !user) router.replace("/login");
   }, [loading, router, user]);
 
-  if (loading || !user) return null;
+  if (loading || !user) return <SecuritySettingsLoading current="/profile/settings/password" />;
 
   return (
     <SecuritySettingsLayout

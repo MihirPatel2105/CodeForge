@@ -77,3 +77,38 @@ export function SecuritySettingsLayout({
     </div>
   );
 }
+
+/** Public chrome stays visible while the session is checked; account controls stay gated. */
+export function SecuritySettingsLoading({ current }: { current: (typeof pages)[number]["href"] }) {
+  const content = {
+    "/profile/settings/password": {
+      title: "Change your password",
+      description: "Choose a new password for your account. This browser stays signed in; all other sessions are signed out.",
+    },
+    "/profile/settings/passkeys": {
+      title: "Passkeys",
+      description: "Use a passkey to sign in directly, or as the second step after your password. Direct passkey sign-in does not need an extra authenticator code.",
+    },
+    "/profile/settings/2fa": {
+      title: "Two-factor authentication",
+      description: "Use an authenticator code after password sign-in. If you also have a passkey, you can choose either method; direct passkey sign-in needs no extra code.",
+    },
+  }[current];
+
+  return (
+    <SecuritySettingsLayout current={current} {...content}>
+      <div role="status" aria-label="Loading security settings" className="grid items-start gap-5 lg:grid-cols-2">
+        {[0, 1].map((item) => (
+          <div key={item} aria-hidden="true" className="space-y-5 rounded-3xl border border-border bg-surface p-6 motion-safe:animate-pulse">
+            <div className="h-3 w-24 rounded bg-border" />
+            <div className="h-6 w-3/5 rounded bg-border" />
+            <div className="h-3 w-4/5 rounded bg-border" />
+            <div className="h-11 rounded-xl bg-bg" />
+            <div className="h-11 rounded-xl bg-bg" />
+          </div>
+        ))}
+        <span className="sr-only">Loading security settings…</span>
+      </div>
+    </SecuritySettingsLayout>
+  );
+}

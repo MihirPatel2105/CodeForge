@@ -7,7 +7,7 @@ import {
   browserSupportsWebAuthn,
 } from "@simplewebauthn/browser";
 import { Fingerprint, KeyRound, LockKeyhole, Plus, ShieldCheck } from "lucide-react";
-import { SecuritySettingsLayout } from "@/components/auth/security-settings-layout";
+import { SecuritySettingsLayout, SecuritySettingsLoading } from "@/components/auth/security-settings-layout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -108,7 +108,7 @@ export default function PasskeysPage() {
     }
   }
 
-  if (loading || !user) return null;
+  if (loading || !user) return <SecuritySettingsLoading current="/profile/settings/passkeys" />;
 
   return (
     <SecuritySettingsLayout
