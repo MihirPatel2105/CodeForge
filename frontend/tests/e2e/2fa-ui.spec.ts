@@ -85,7 +85,7 @@ test("normal users can open 2FA settings and use QR or manual enrollment", async
 
   await page.goto("/profile/settings/2fa");
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
-  await expect(page.getByText("account security")).toBeVisible();
+  await expect(page.getByRole("main").getByText("Account security / Two-factor", { exact: true })).toBeVisible();
   await expect(page.getByText("Authenticator codes are off")).toBeVisible();
 
   await page.getByLabel("current password").fill("test-password");

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { MotionButton } from "@/components/ui/motion-button";
+import { MotionCollapse } from "@/components/ui/motion-collapse";
+import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import type { TestsSnapshot } from "@/lib/run-reducer";
@@ -21,6 +23,7 @@ export interface TestsPanelProps {
  * panel"). Deliberately renders nothing until `tests.result` arrives — the wire
  * contract has no per-test count before then, only the Tester's free-text summary. */
 export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPanelProps) {
+  const failureId = useId();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const liveFailureOutput = terminalLines
@@ -72,27 +75,29 @@ export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPa
 
       {tests && tests.failed > 0 && failures.length > 0 && (
         <div className="flex flex-col gap-[6px]">
-          {failures.map((f) => {
+          {failures.map((f, index) => {
             const isOpen = expanded.has(f.name);
             return (
               <div key={f.name} className="rounded-lg border border-danger-bd bg-danger-soft p-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate font-mono text-[12.5px] font-[650] text-danger">{f.name}</span>
-                  <button
+                  <MotionButton
+                    aria-expanded={isOpen}
+                    aria-controls={`${failureId}-${index}`}
                     type="button"
                     onClick={() => toggle(f.name)}
                     className="shrink-0 text-[11.5px] font-bold text-fg-muted underline-offset-2 hover:underline"
                   >
                     {isOpen ? "hide" : "show"}
-                  </button>
+                  </MotionButton>
                 </div>
-                {isOpen && (
+                <MotionCollapse open={isOpen} id={`${failureId}-${index}`}>
                   <pre className="mt-[6px] font-mono text-[12px] whitespace-pre-wrap text-fg-muted">
                     {f.location}
                     {"\n"}
                     {f.detail}
                   </pre>
-                )}
+                </MotionCollapse>
               </div>
             );
           })}

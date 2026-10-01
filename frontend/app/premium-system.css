@@ -201,12 +201,9 @@
 .cf-faq-reading [role=region] p { font-size: 16px; line-height: 1.75; padding-bottom: 28px; max-width: 70ch; }
 .cf-contact-form-stage { box-shadow: 0 24px 80px -40px rgba(23,32,51,.2); }
 .cf-contact-methods p:first-of-type { margin-top: 18px; }
-.cf-premium-marketing main > section { transition: opacity 600ms var(--premium-ease), transform 600ms var(--premium-ease); }
-.cf-premium-marketing main > section.cf-reveal-pending { opacity: 0; transform: translateY(20px); }
 .cf-premium-marketing main > section:focus-within { opacity: 1; transform: none; }
 html { scroll-padding-top: 80px; }
 :target { scroll-margin-top: 16px; }
-[data-slot=dialog-content] { --tw-enter-translate-y: 8px; --tw-exit-translate-y: 4px; }
 [data-slot=button] { transition-timing-function: var(--premium-ease); }
 
 @media (max-width: 1023px) {

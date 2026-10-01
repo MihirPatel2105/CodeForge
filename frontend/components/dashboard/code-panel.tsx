@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { MotionButton } from "@/components/ui/motion-button";
+
+import { LayoutGroup, motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motionSpring } from "@/lib/motion-tokens";
+import { useEffect, useId, useRef, useState } from "react";
 import { FileCode2, WrapText } from "lucide-react";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -57,6 +62,8 @@ function CodeLine({ text }: { text: string }) {
  * joined here from mock data during dev playback or the REST file endpoints on a live run.
  */
 export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelProps) {
+  const reducedMotion = useMotionPreference();
+  const selectionId = useId();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
   const [view, setView] = useState<"current" | "diff">("current");
@@ -125,12 +132,13 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
           </div>
         ) : (
           <ScrollArea className="flex-1">
-            <ul className="flex flex-col gap-1 p-2">
+            <LayoutGroup id={selectionId}><ul className="flex flex-col gap-1 p-2">
               {files.map((f) => {
                 const isSelected = f.path === selectedPath;
                 return (
                   <li key={f.path}>
-                    <button
+                    <MotionButton
+                      aria-pressed={isSelected}
                       type="button"
                       onClick={() => {
                         setSelectedPath(f.path);
@@ -138,11 +146,12 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                         setView("current");
                       }}
                       className={cn(
-                        "flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-2.5 py-2 text-left",
+                        "relative isolate flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-2.5 py-2 text-left",
                         "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-white hover:text-fg",
-                        isSelected && "border-accent-bd bg-white font-bold text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]",
+                        isSelected && "border-accent-bd font-bold text-accent",
                       )}
                     >
+                      {isSelected && <motion.span layoutId="file-selection" transition={reducedMotion ? { duration: 0 } : motionSpring} className="absolute inset-0 -z-10 rounded-2xl bg-white shadow-[0_2px_9px_rgba(35,50,81,0.07)]" aria-hidden />}
                       <span className="truncate">{f.path}</span>
                       <span
                         className={cn(
@@ -152,11 +161,11 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                       >
                         {f.status}
                       </span>
-                    </button>
+                    </MotionButton>
                   </li>
                 );
               })}
-            </ul>
+            </ul></LayoutGroup>
           </ScrollArea>
         )}
       </div>
@@ -181,21 +190,22 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                 {canDiff && (
                   <div className="flex gap-[2px] rounded-2xl bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
-                    <button
+                    <MotionButton
                       key={v}
                       type="button"
                       onClick={() => setView(v)}
+                      aria-pressed={view === v}
                       className={cn(
                         "rounded-lg px-[10px] py-[3px] text-[12.5px] font-[650] capitalize",
                         view === v ? "bg-fg text-surface" : "text-fg-muted",
                       )}
                     >
                       {v}
-                    </button>
+                    </MotionButton>
                   ))}
                   </div>
                 )}
-                <button
+                <MotionButton
                   type="button"
                   onClick={() => setWrap((value) => !value)}
                   aria-pressed={wrap}
@@ -208,15 +218,15 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                 >
                   <WrapText className="h-3.5 w-3.5" aria-hidden />
                   Wrap
-                </button>
-                <button
+                </MotionButton>
+                <MotionButton
                   type="button"
                   onClick={copyCurrentFile}
                   aria-label={copied ? "Code copied" : "Copy code"}
                   className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
                 >
                   <CopyFeedback copied={copied} label="Copy" />
-                </button>
+                </MotionButton>
               </div>
             </div>
 

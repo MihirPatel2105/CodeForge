@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { MotionCollapse } from "@/components/ui/motion-collapse";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -11,6 +14,7 @@ type FaqItem = {
 };
 
 export function FaqColumn({ items, start }: { items: readonly FaqItem[]; start: number }) {
+  const reducedMotion = useMotionPreference();
   const [openItems, setOpenItems] = useState<string[]>([]);
 
   function toggleItem(question: string) {
@@ -46,39 +50,22 @@ export function FaqColumn({ items, start }: { items: readonly FaqItem[]; start: 
                   {item.q}
                 </span>
               </span>
-              <span
+              <motion.span
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={reducedMotion ? { duration: 0 } : undefined}
                 aria-hidden
                 className={cn(
-                  "mt-3 grid h-6 w-6 place-items-center rounded-full border border-border font-mono text-[15px] leading-none text-fg-faint transition-[transform,border-color,color,background-color] duration-300",
-                  isOpen && "rotate-180 border-accent-bd bg-accent-soft text-accent",
+                  "mt-3 grid h-6 w-6 place-items-center rounded-full border border-border font-mono text-[15px] leading-none text-fg-faint transition-[border-color,color,background-color] duration-300",
+                  isOpen && "border-accent-bd bg-accent-soft text-accent",
                 )}
               >
                 <ChevronDown size={16} aria-hidden />
-              </span>
+              </motion.span>
             </button>
 
-            <div
-              id={panelId}
-              role="region"
-              aria-labelledby={questionId}
-              aria-hidden={!isOpen}
-              inert={!isOpen}
-              className={cn(
-                "grid transition-[grid-template-rows] duration-[360ms] ease-[cubic-bezier(0.22,0.7,0.28,1)] motion-reduce:transition-none",
-                isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-              )}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <p
-                  className={cn(
-                    "pb-7 pr-10 text-[14px] leading-[1.72] text-fg-muted transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
-                    isOpen ? "translate-y-0 opacity-100 delay-75" : "-translate-y-1 opacity-0",
-                  )}
-                >
-                  {item.a}
-                </p>
-              </div>
-            </div>
+            <MotionCollapse open={isOpen} id={panelId} role="region" aria-labelledby={questionId}>
+              <p className="pb-7 pr-10 text-[14px] leading-[1.72] text-fg-muted">{item.a}</p>
+            </MotionCollapse>
           </div>
         );
       })}

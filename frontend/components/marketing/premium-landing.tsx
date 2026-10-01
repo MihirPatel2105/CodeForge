@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { MotionCollapse } from "@/components/ui/motion-collapse";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
 import { useId, useState } from "react";
@@ -80,6 +83,7 @@ export function PremiumLanding() {
 }
 
 function LandingFaqItem({ title, answer }: { title: string; answer: string }) {
+  const reducedMotion = useMotionPreference();
   const [open, setOpen] = useState(false);
   const id = useId();
 
@@ -94,18 +98,19 @@ function LandingFaqItem({ title, answer }: { title: string; answer: string }) {
           onClick={() => setOpen((value) => !value)}
         >
           {title}
-          <ChevronDown size={20} aria-hidden />
+          <motion.span animate={{ rotate: open ? 180 : 0 }} transition={reducedMotion ? { duration: 0 } : undefined} className="inline-flex" aria-hidden><ChevronDown size={20} /></motion.span>
         </button>
       </h3>
-      <div
+      <MotionCollapse
         className="lp-faq-answer"
+        open={open}
         id={`${id}-answer`}
         aria-labelledby={`${id}-question`}
         aria-hidden={!open}
         inert={!open}
       >
         <div className="lp-faq-answer-inner"><p>{answer}</p></div>
-      </div>
+      </MotionCollapse>
     </div>
   );
 }

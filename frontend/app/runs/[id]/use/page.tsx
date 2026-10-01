@@ -2,13 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Download } from "lucide-react";
+import { motionSpring } from "@/lib/motion-tokens";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { useSession } from "@/lib/use-current-user";
 import { ApiError, downloadLatestFileTree } from "@/lib/api";
 
+const MotionLink = motion.create(Link);
+const cardVariants = {
+  rest: { y: 0, scale: 1 },
+  hover: { y: -3, scale: 1 },
+  press: { y: -1, scale: 0.995 },
+};
+const arrowVariants = { rest: { x: 0 }, hover: { x: 4 }, press: { x: 2 } };
+
 export default function UseApiPage() {
+  const reducedMotion = useMotionPreference();
+  const cardMotion = {
+    initial: "rest",
+    animate: "rest",
+    whileHover: reducedMotion ? "rest" : "hover",
+    whileFocus: reducedMotion ? "rest" : "hover",
+    whileTap: reducedMotion ? "rest" : "press",
+    variants: cardVariants,
+    transition: reducedMotion ? { duration: 0 } : motionSpring,
+  };
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user, loading: sessionLoading } = useSession();
@@ -57,19 +79,19 @@ export default function UseApiPage() {
         </header>
 
         <section className="mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
-          <RunFlowLink href={`/runs/${id}/try`} className="cf-use-option-card group rounded-3xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+          <MotionLink {...cardMotion} href={`/runs/${id}/try`} className="cf-use-option-card group rounded-3xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <span className="text-[12px] font-[700] text-accent">Test here</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Try your API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Send requests and inspect responses. No setup or key needed.</p>
-            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open tester <ArrowRight className="cf-use-option-arrow size-3.5" aria-hidden /></span>
-          </RunFlowLink>
-          <RunFlowLink href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-3xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open tester <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>
+          </MotionLink>
+          <MotionLink {...cardMotion} href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-3xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <span className="text-[12px] font-[700] text-fg-muted">Connect an app</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Publish API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
-            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <ArrowRight className="cf-use-option-arrow size-3.5" aria-hidden /></span>
-          </RunFlowLink>
-          <div className="cf-use-option-card rounded-3xl border border-border bg-surface p-5">
+            <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>
+          </MotionLink>
+          <motion.div {...cardMotion} className="cf-use-option-card rounded-3xl border border-border bg-surface p-5">
             <span className="text-[12px] font-[700] text-fg-muted">Run it yourself</span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
@@ -78,7 +100,7 @@ export default function UseApiPage() {
               {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : "Download project"} {downloadState === "started" ? <Check className="size-3.5 text-ok" aria-hidden /> : <Download className="size-3.5" aria-hidden />}
             </button>
             <span role="status" className="sr-only">{downloadState === "started" ? "Project download started." : ""}</span>
-          </div>
+          </motion.div>
         </section>
 
         <section className="mt-6 rounded-3xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">

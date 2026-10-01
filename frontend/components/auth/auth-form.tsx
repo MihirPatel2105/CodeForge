@@ -1,5 +1,7 @@
 "use client";
 
+import { MotionButton } from "@/components/ui/motion-button";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -186,10 +188,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       </div>
                       <div className="relative">
                         <Input id="password" type={showPassword ? "text" : "password"} autoComplete={registering ? "new-password" : "current-password"} aria-describedby={registering ? "password-rules" : undefined} required value={password} onChange={(e) => setPassword(e.target.value)} className={cn(FIELD, "w-full pr-[88px]")} />
-                        <button type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-1 top-1/2 inline-flex h-10 min-w-[76px] -translate-y-1/2 items-center justify-center gap-1.5 rounded-lg text-[12px] font-[650] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent">
+                        <MotionButton type="button" onClick={() => setShowPassword((s) => !s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-1 top-1/2 inline-flex h-10 min-w-[76px] -translate-y-1/2 items-center justify-center gap-1.5 rounded-lg text-[12px] font-[650] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent">
                           {showPassword ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
                           {showPassword ? "Hide" : "Show"}
-                        </button>
+                        </MotionButton>
                       </div>
                     </div>
 

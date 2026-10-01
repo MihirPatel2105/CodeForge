@@ -1,3 +1,8 @@
+"use client";
+
+import { motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motionSpring } from "@/lib/motion-tokens";
 import { ClipboardList, Boxes, Code2, ShieldCheck, FlaskConical, Terminal } from "lucide-react";
 import type { AgentCardState, AgentName } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -52,6 +57,7 @@ const STATE_LABEL: Record<AgentCardState, string> = {
 const STAGE_ICON = { pm: ClipboardList, architect: Boxes, coder: Code2, reviewer: ShieldCheck, tester: FlaskConical, sandbox: Terminal };
 
 export function AgentCard({ data }: { data: AgentCardData }) {
+  const reducedMotion = useMotionPreference();
   const {
     index,
     name,
@@ -71,24 +77,27 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   const stateRail = loopHighlight ? "bg-loop" : working ? "bg-accent" : state === "done" ? "bg-ok" : failed ? "bg-danger" : "bg-border-strong";
 
   return (
-    <div
+    <motion.div
+      initial={false}
+      animate={{ y: reducedMotion ? 0 : working || loopHighlight ? -3 : 0, opacity: dimmed ? 0.32 : state === "idle" ? 0.86 : state === "stopped" ? 0.82 : 1 }}
+      transition={reducedMotion ? { duration: 0 } : motionSpring}
       className={cn(
         "relative flex flex-1 snap-center flex-col gap-3 overflow-hidden rounded-3xl border bg-surface px-5 py-6",
-        "transition-[transform,box-shadow,border-color,opacity] duration-300 ease-out",
-        state === "idle" && "border-border opacity-[0.86]",
-        working && "-translate-y-[3px] border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
+        "transition-[box-shadow,border-color] duration-300 ease-out",
+        state === "idle" && "border-border",
+        working && "border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
         state === "done" && "border-ok-bd",
         failed && "border-danger-bd",
         // Reads as "ran, then was interrupted": not faded as far as idle, which means
         // "not reached yet", and carrying no verdict colour of its own.
-        state === "stopped" && "border-border-strong opacity-[0.82]",
+        state === "stopped" && "border-border-strong",
         // Transient loop-moment overrides — applied last so they win over the card's
         // own state styling (cn/tailwind-merge resolves same-property conflicts by
         // keeping the last class), since even a "done" card must dim while the loop
         // fires, and the trigger must lift regardless of its own state.
-        dimmed && "opacity-[0.32]",
+
         loopHighlight &&
-          "-translate-y-[3px] border-loop-bd shadow-[0_12px_28px_rgba(109,40,217,0.14)]",
+          "border-loop-bd shadow-[0_12px_28px_rgba(109,40,217,0.14)]",
       )}
       data-stage={data.id}
       data-state={state}
@@ -170,6 +179,6 @@ export function AgentCard({ data }: { data: AgentCardData }) {
           {durationLabel && <span className="shrink-0">{durationLabel}</span>}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

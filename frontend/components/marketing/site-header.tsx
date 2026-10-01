@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motionSpring } from "@/lib/motion-tokens";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -7,8 +10,12 @@ import { useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 
+const MotionLink = motion.create(Link);
+
 /** Public site header. The brand and account actions stay clear of the page content. */
 export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
+  const reducedMotion = useMotionPreference();
+  const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
   const { user, loading } = useSession();
   const [floating, setFloating] = useState(false);
@@ -29,13 +36,13 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
     <header className="cf-site-header sticky top-0 z-20 h-16" data-floating={floating}>
       <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
-        <Link
+        <MotionLink {...pressMotion}
           href="/"
           aria-label="CodeForge home"
           className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           <LogoLockup className="h-9 w-auto shrink-0" />
-        </Link>
+        </MotionLink>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           {loading ? (
@@ -46,34 +53,34 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
             ) : user ? (
             <>
               {workspace && user.is_admin && (
-                <Link href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">
+                <MotionLink {...pressMotion} href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">
                   Admin
-                </Link>
+                </MotionLink>
               )}
-              <Link
+              <MotionLink {...pressMotion}
                 aria-current={workspace && (pathname.startsWith("/projects") || pathname.startsWith("/runs")) ? "page" : undefined}
                 href="/projects"
-                className="cf-header-projects inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-accent/90 active:scale-[0.98] sm:px-4"
+                className="cf-header-projects inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color] hover:bg-accent/90 sm:px-4"
               >
                 Projects
-              </Link>
+              </MotionLink>
               <UserAvatar initials={user.initials} name={user.displayName} className="cf-header-profile" />
             </>
           ) : (
             <>
-              <Link
+              <MotionLink {...pressMotion}
                 href="/login"
                 className="inline-flex h-10 items-center rounded-lg px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-3"
               >
                 Sign in
-              </Link>
-              <Link
+              </MotionLink>
+              <MotionLink {...pressMotion}
                 href="/signup"
-                className="inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color,transform] hover:bg-accent/90 active:scale-[0.98] sm:px-4"
+                className="inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color] hover:bg-accent/90 sm:px-4"
               >
                 <span className="hidden min-[380px]:inline">Get started</span>
                 <span className="min-[380px]:hidden">Start</span>
-              </Link>
+              </MotionLink>
             </>
           )}
         </div>

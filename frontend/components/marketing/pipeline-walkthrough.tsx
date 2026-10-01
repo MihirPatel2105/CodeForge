@@ -1,5 +1,7 @@
 "use client";
 
+import { MotionButton } from "@/components/ui/motion-button";
+
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, ClipboardList, Code2, FlaskConical, Layers3, Pause, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
@@ -59,7 +61,7 @@ export function PipelineWalkthrough({ demo, example, onExampleChange }: {
     <div ref={root} className="lp-pipeline-content" aria-label="Example prompt to tested API walkthrough">
       <div className="lp-product-head"><span><span className="lp-status-dot" />From request to result</span><span>Example walkthrough</span></div>
       <div className="lp-pipeline-request">
-        <div className="lp-pipeline-request-head"><span className="lp-pipeline-label">Start with an idea</span><div className="lp-example-switch" aria-label="Choose an example">{DEMO_RUNS.map((item, index) => <button key={item.slug} type="button" aria-pressed={example === index} onClick={() => onExampleChange(index)}>{item.label}</button>)}</div></div>
+        <div className="lp-pipeline-request-head"><span className="lp-pipeline-label">Start with an idea</span><div className="lp-example-switch" aria-label="Choose an example">{DEMO_RUNS.map((item, index) => <MotionButton key={item.slug} type="button" aria-pressed={example === index} onClick={() => onExampleChange(index)}>{item.label}</MotionButton>)}</div></div>
         <p className="lp-prompt" aria-live="polite" aria-atomic="true">{demo.prompt}</p>
       </div>
       <div className="lp-pipeline-body">
@@ -79,7 +81,7 @@ export function PipelineWalkthrough({ demo, example, onExampleChange }: {
         <div className="lp-pipeline-feedback" data-repair={repair}><RotateCcw size={14} aria-hidden /><span>Reviewer → Coder → Reviewer</span><span>{step < 3 ? "Feedback keeps the build moving." : repair ? "Missing response model → returned for repair" : "Response model fixed. Review passed."}</span></div>
         <div className="lp-pipeline-outcome" data-complete={finished}>
           <div><span className="lp-outcome-icon">{finished ? <Check size={18} aria-hidden /> : <ArrowRight size={18} aria-hidden />}</span><div><strong>{finished ? `Tests passed · ${demo.tests}/${demo.tests}` : `${stages[active].name} · ${repair ? "review & repair" : "in progress"}`}</strong><p>{messages[step]}</p></div></div>
-          <div className="lp-walkthrough-controls">{finished ? <Link href={`/demo/${demo.slug}`}>Inspect generated code<ArrowRight size={14} aria-hidden /></Link> : null}<button type="button" onClick={() => { if (finished) { setStep(0); setPlaying(true); } else setPlaying(value => !value); }} disabled={reducedMotion} aria-label={finished ? "Replay walkthrough" : playing ? "Pause walkthrough" : "Play walkthrough"}>{finished ? <RotateCcw size={15} aria-hidden /> : playing ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}{finished ? "Replay" : playing ? "Pause" : "Play"}</button></div>
+          <div className="lp-walkthrough-controls">{finished ? <Link href={`/demo/${demo.slug}`}>Inspect generated code<ArrowRight size={14} aria-hidden /></Link> : null}<MotionButton type="button" onClick={() => { if (finished) { setStep(0); setPlaying(true); } else setPlaying(value => !value); }} disabled={reducedMotion} aria-label={finished ? "Replay walkthrough" : playing ? "Pause walkthrough" : "Play walkthrough"}>{finished ? <RotateCcw size={15} aria-hidden /> : playing ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}{finished ? "Replay" : playing ? "Pause" : "Play"}</MotionButton></div>
         </div>
       </div>
     </div>

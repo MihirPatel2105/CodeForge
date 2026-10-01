@@ -1,3 +1,7 @@
+"use client";
+
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motion } from "motion/react";
 import { Check, Copy } from "lucide-react";
 
 export function CopyFeedback({ copied, label, iconClassName = "h-3.5 w-3.5" }: {
@@ -5,16 +9,17 @@ export function CopyFeedback({ copied, label, iconClassName = "h-3.5 w-3.5" }: {
   label: string;
   iconClassName?: string;
 }) {
-  const transition = "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transform-none motion-reduce:transition-none";
+  const reducedMotion = useMotionPreference();
+  const transition = reducedMotion ? { duration: 0 } : { duration: 0.18 };
 
   return (
     <span className="inline-grid items-center" aria-hidden="true">
-      <span className={`col-start-1 row-start-1 inline-flex items-center gap-1.5 ${transition} ${copied ? "-translate-y-1 opacity-0" : "translate-y-0 opacity-100"}`}>
+      <motion.span initial={false} animate={{ opacity: copied ? 0 : 1, y: reducedMotion ? 0 : copied ? -4 : 0 }} transition={transition} className="col-start-1 row-start-1 inline-flex items-center gap-1.5">
         <Copy className={iconClassName} />{label}
-      </span>
-      <span className={`col-start-1 row-start-1 inline-flex items-center gap-1.5 ${transition} ${copied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
+      </motion.span>
+      <motion.span initial={false} animate={{ opacity: copied ? 1 : 0, y: reducedMotion ? 0 : copied ? 0 : 4 }} transition={transition} className="col-start-1 row-start-1 inline-flex items-center gap-1.5">
         <Check className={`${iconClassName} text-ok`} />Copied
-      </span>
+      </motion.span>
     </span>
   );
 }

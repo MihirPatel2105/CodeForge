@@ -84,10 +84,7 @@
 .lp-faq-item { border-bottom: 1px solid var(--lp-rule); }
 .lp-faq-item h3 { margin: 0; }
 .lp-faq-item button { display: flex; width: 100%; justify-content: space-between; gap: 24px; align-items: center; padding: 24px 0; border: 0; background: transparent; color: var(--lp-ink); text-align: left; font: inherit; font-size: 18px; font-weight: 550; }
-.lp-faq-item button>svg { flex-shrink: 0; transition: transform var(--lp-duration) var(--lp-ease-in-out); }
-.lp-faq-item[data-open=true] button>svg { transform: rotate(180deg); }
-.lp-faq-answer { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 280ms var(--lp-ease-in-out), opacity var(--lp-duration) var(--lp-ease-in-out); }
-.lp-faq-item[data-open=true] .lp-faq-answer { grid-template-rows: 1fr; opacity: 1; }
+.lp-faq-item button > span { flex-shrink: 0; }
 .lp-faq-answer-inner { min-height: 0; overflow: hidden; }
 .lp-faq-answer p { font-size: 16px; line-height: 1.7; color: var(--lp-muted); margin: 0 32px 28px 0; }
 .lp-closing { text-align: center; background: var(--lp-paper-secondary); padding: 96px 24px; }

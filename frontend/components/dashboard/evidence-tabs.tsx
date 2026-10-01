@@ -1,5 +1,8 @@
 "use client";
 
+import { LayoutGroup, motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { motionSpring } from "@/lib/motion-tokens";
 import type { KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +22,7 @@ export function EvidenceTabs({
   idPrefix: string;
   label: string;
 }) {
+  const reducedMotion = useMotionPreference();
   function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const next = event.key === "ArrowRight" ? (index + 1) % VIEWS.length
       : event.key === "ArrowLeft" ? (index - 1 + VIEWS.length) % VIEWS.length
@@ -32,7 +36,7 @@ export function EvidenceTabs({
   }
 
   return (
-    <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
+    <LayoutGroup id={idPrefix}><div className="mb-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-border bg-surface xl:hidden" role="tablist" aria-label={label}>
       {VIEWS.map((view, index) => (
         <button
           key={view}
@@ -45,13 +49,14 @@ export function EvidenceTabs({
           onClick={() => onValueChange(view)}
           onKeyDown={(event) => onKeyDown(event, index)}
           className={cn(
-            "min-h-11 border-r border-border px-2 py-3 text-[13px] font-semibold last:border-r-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent",
-            value === view ? "bg-accent-soft text-accent" : "bg-surface text-fg-muted hover:bg-surface-2",
+            "relative isolate min-h-11 border-r border-border px-2 py-3 text-[13px] font-semibold last:border-r-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent",
+            value === view ? "text-accent" : "text-fg-muted hover:bg-surface-2",
           )}
         >
+          {value === view && <motion.span layoutId="evidence-selection" className="absolute inset-0 -z-10 bg-accent-soft" transition={reducedMotion ? { duration: 0 } : motionSpring} aria-hidden />}
           {view.charAt(0).toUpperCase() + view.slice(1)}
         </button>
       ))}
-    </div>
+    </div></LayoutGroup>
   );
 }

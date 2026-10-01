@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MotionProvider } from "@/components/layout/motion-provider";
 import { PageMotion } from "@/components/layout/page-motion";
 import "./globals.css";
 import "./premium-system.css";
@@ -18,7 +19,7 @@ export default function RootLayout({
       <body className="antialiased">
         {/* Light only. A dark theme's black levels are unreliable on an unknown
             projector, so the product ships the one appearance it can vouch for. */}
-        <PageMotion>{children}</PageMotion>
+        <MotionProvider><PageMotion>{children}</PageMotion></MotionProvider>
       </body>
     </html>
   );
