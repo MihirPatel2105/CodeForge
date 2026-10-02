@@ -168,7 +168,7 @@ export function ProjectDetail({
             </div>
 
             <div className="flex flex-col gap-4 p-5">
-              <label className="text-[13px] font-semibold">Start from a template<select aria-label="Starter template" value={template} onChange={e => setTemplate(e.target.value)} className="mt-2 h-11 w-full rounded-xl border border-border bg-bg px-3"><option value="">Choose a template</option>{API_TEMPLATES.map((item, index) => <option key={item.name} value={index}>{item.name}</option>)}</select></label>
+              <label className="text-[13px] font-semibold">Start from a template<select aria-label="Starter template" value={template} onChange={e => setTemplate(e.target.value)} className="cf-project-select mt-2 h-11 w-full rounded-xl border border-border bg-bg px-3"><option value="">Choose a template</option>{API_TEMPLATES.map((item, index) => <option key={item.name} value={index}>{item.name}</option>)}</select></label>
               {template !== "" && <Button variant="outline" onClick={() => { setPrompt(API_TEMPLATES[Number(template)].prompt); setParentRunId(null); setTemplate(""); }}>Use template{prompt.trim() ? " and replace draft" : ""}</Button>}
               <p className="text-[13px] leading-5 text-fg-muted">Describe 1–2 entities, their fields, and validation rules. CodeForge builds CRUD REST APIs; generated apps do not include a frontend or sign-in system.</p>
               <div className="flex flex-col gap-[7px]">
@@ -249,7 +249,7 @@ export function ProjectDetail({
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><select aria-label="Filter run outcome" value={outcome} onChange={e => onFilter?.(query, e.target.value)} className="h-11 rounded-lg border border-border bg-bg px-3 text-sm"><option value="">All outcomes</option>{Object.entries(RUN_STATUS_META).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</select></div>
+            <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><select aria-label="Filter run outcome" value={outcome} onChange={e => onFilter?.(query, e.target.value)} className="cf-project-select h-11 rounded-lg border border-border bg-bg px-3 text-sm"><option value="">All outcomes</option>{Object.entries(RUN_STATUS_META).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</select></div>
             {filtering && <p role="status" className="px-5 py-2 text-sm text-fg-muted">Searching runs…</p>}
             <div
               className="cf-run-history-grid hidden items-center gap-x-4 border-b border-border bg-bg/45 px-5 py-[11px] md:grid md:px-6"
