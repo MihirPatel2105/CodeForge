@@ -1,5 +1,6 @@
 from app.agents.base import BaseAgent
 from app.agents.coder import describe_entities
+from app.agents.revisions import revision_guidance
 from app.llm.client import LLMResult
 from app.prompts import architect as prompt
 from app.schemas.agents import Design, Requirements
@@ -19,7 +20,9 @@ class ArchitectAgent(BaseAgent):
                 summary=requirements.summary,
                 entities=describe_entities(requirements),
                 operations=", ".join(requirements.operations),
-            ),
+            )
+            + "\n"
+            + revision_guidance(state, "architect"),
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),
         )

@@ -81,6 +81,8 @@ class RunState(TypedDict, total=False):
     thread_id: str  # LangGraph checkpointer thread
 
     # input
+    revision_context: dict
+    checkpoint_revisions: list[dict]
     user_prompt: str
     prompt_id: str | None
 

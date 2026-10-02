@@ -71,6 +71,14 @@ class SingleFileCoderAgent(CoderAgent):
         requirements: Requirements = state["requirements"]
         design = state["design"]
 
+        source = next(
+            (
+                f["content"]
+                for f in (state.get("revision_context") or {}).get("files", [])
+                if f["path"] == spec.path
+            ),
+            "",
+        )
         return await self.call(
             prompt.render_file(
                 path=spec.path,
@@ -84,6 +92,11 @@ class SingleFileCoderAgent(CoderAgent):
                     f"{spec.path} {spec.purpose} {requirements.summary}",
                     enabled=state.get("rag_enabled", False),
                 ),
+            )
+            + (
+                "\nExisting version of this file (preserve unaffected behavior):\n" + source
+                if source
+                else ""
             ),
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),

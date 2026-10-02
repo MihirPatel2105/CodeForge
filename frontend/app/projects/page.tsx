@@ -36,6 +36,7 @@ function projectRow(item: ProjectOverviewItem): ProjectRow {
     id: item.id,
     name: item.name,
     description: item.description,
+    archived: item.archived,
     created_at: item.created_at,
     runs: item.recent_runs,
     stats: { ...item.stats, avgLoops: item.stats.avg_loops },
@@ -54,6 +55,7 @@ export default function ProjectsPage() {
   const [open, setOpen] = useState(false);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [archived, setArchived] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [totals, setTotals] = useState({ projects: 0, runs: 0, succeeded: 0 });
   const [matchingProjects, setMatchingProjects] = useState(0);
@@ -64,7 +66,7 @@ export default function ProjectsPage() {
     setLoading(true);
     setError(null);
     try {
-      const page = await api.projectOverview({ q: query.trim() });
+      const page = await api.projectOverview({ q: query.trim(), archived });
       if (currentRequest !== requestId.current) return;
       setProjects(page.items.map(projectRow));
       setNextCursor(page.next_cursor);
@@ -80,7 +82,7 @@ export default function ProjectsPage() {
     } finally {
       if (currentRequest === requestId.current) setLoading(false);
     }
-  }, [router]);
+  }, [router, archived]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore) return;
@@ -88,7 +90,7 @@ export default function ProjectsPage() {
     setLoadingMore(true);
     setError(null);
     try {
-      const page = await api.projectOverview({ cursor: nextCursor, q: search.trim() });
+      const page = await api.projectOverview({ cursor: nextCursor, q: search.trim(), archived });
       if (currentRequest !== requestId.current) return;
       setProjects((current) => [...(current ?? []), ...page.items.map(projectRow)]);
       setNextCursor(page.next_cursor);
@@ -97,7 +99,7 @@ export default function ProjectsPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, nextCursor, search]);
+  }, [loadingMore, nextCursor, search, archived]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -172,6 +174,8 @@ export default function ProjectsPage() {
 
         </div>
 
+        <div className="mt-5 flex gap-2" aria-label="Project view"><Button variant={!archived ? "default" : "outline"} onClick={() => setArchived(false)}>Active projects</Button><Button variant={archived ? "default" : "outline"} onClick={() => setArchived(true)}>Archived projects</Button></div>
+
         {error && (
           <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             <p>{error}</p>
@@ -183,7 +187,7 @@ export default function ProjectsPage() {
 
         {loading && projects == null ? (
           <LoadingState />
-        ) : projects == null ? null : projects.length === 0 && !query ? (
+        ) : projects == null ? null : projects.length === 0 && !query && !archived ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
           <section className="mt-6" aria-labelledby="project-list-heading">
@@ -235,7 +239,7 @@ export default function ProjectsPage() {
             ) : (
               <div className="mt-5 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
                 <h3 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
-                  No matching projects
+                  {archived ? "No archived projects found" : "No matching projects"}
                 </h3>
                 <p className="mt-2 text-[14px] text-fg-muted">Try a different name or description.</p>
                 <Button type="button" variant="outline" onClick={() => setSearch("")} className="mt-5 rounded-xl">

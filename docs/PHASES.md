@@ -633,3 +633,14 @@ A rough dashboard with a working loop passes. A beautiful dashboard with a fake 
 | Live demo failure | Recorded video + saved runs + cold-start rehearsal |
 | Loop burns quota | `MAX_LOOPS = 3`, small prompts during dev, RAG to reduce iterations |
 | Beanie generation unreliable | Fallback to sync `pymongo` in generated apps — decide by end of Month 2 |
+
+### 2026-10-02 authorized workspace experience extension
+
+Implemented templates, account/project-scoped local drafts, prompt reuse, project
+rename/archive/restore, run-history filters, richer checkpoint evidence, bounded
+PM/Architect revision requests, an attention inbox with optional browser notifications,
+linked API versions with source comparison, schema-driven tester fields, saved
+requests/recent responses, returned-ID reuse, an optional CRUD walkthrough, and
+mobile/action-control polish. Contracts and limitations are in
+`docs/WORKSPACE_EXPERIENCE.md`. This authorized product work does not close the
+Phase 7 first-time human observer criterion or the Phase 8 live benchmark.

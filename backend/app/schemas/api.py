@@ -535,7 +535,21 @@ class ProjectCreate(BaseModel):
     description: str = ""
 
 
+class ProjectUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    description: str = Field(default="", max_length=2000)
+    archived: bool = False
+
+    @field_validator("name")
+    @classmethod
+    def nonblank_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Project name is required")
+        return value.strip()
+
+
 class ProjectResponse(BaseModel):
+    archived: bool = False
     id: str
     name: str
     description: str
@@ -562,6 +576,7 @@ class RunCreate(BaseModel):
     project_id: str
     prompt: str = Field(min_length=1)
     rag_enabled: bool = True
+    parent_run_id: str | None = None
 
 
 class RunCreateResponse(BaseModel):
@@ -572,6 +587,8 @@ class RunCreateResponse(BaseModel):
 
 
 class RunSummary(BaseModel):
+    parent_run_id: str | None = None
+    change_request: str | None = None
     """List view — omits the full state snapshot, which is large."""
 
     id: str
@@ -613,6 +630,8 @@ class ProjectOverviewPage(BaseModel):
 
 
 class RunResponse(BaseModel):
+    parent_run_id: str | None = None
+    change_request: str | None = None
     id: str
     project_id: str
     prompt: str
@@ -630,6 +649,7 @@ class PreviewOperation(BaseModel):
     has_body: bool = False
     example_body: Any | None = None
     example_response: Any | None = None
+    body_schema: dict[str, Any] | None = None
 
 
 class PreviewInfo(BaseModel):
@@ -686,7 +706,21 @@ class FileHistoryResponse(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
+class RevisionRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=0, le=3)
+    phase: Literal["pm", "architect"]
+    note: str = Field(min_length=3, max_length=2000)
+
+    @field_validator("note")
+    @classmethod
+    def nonblank_note(cls, value: str) -> str:
+        if len(value.strip()) < 3:
+            raise ValueError("Describe the requested changes")
+        return value.strip()
+
+
 class ApprovalRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=0, le=3)
     phase: ApprovalPhase
     approved: bool
     note: str | None = None

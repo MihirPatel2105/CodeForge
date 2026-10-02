@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import type { ApprovalSnapshot } from "@/lib/run-reducer";
 import { Button } from "@/components/ui/button";
+import { ApprovalDetails } from "./approval-details";
 import { Input } from "@/components/ui/input";
 
 export interface ApprovalBarProps {
   approval: ApprovalSnapshot;
   onApprove: (note: string) => void;
   onReject: (note: string) => void;
+  onRevise?: (note: string) => void;
+  busy?: boolean;
 }
 
 const PHASE_TITLE: Record<string, string> = {
@@ -57,7 +60,7 @@ function factChips(phase: string, payload: Record<string, unknown>): FactChip[] 
 
 /** The paused checkpoint sits immediately after the run summary so it is visible
  * before the user starts inspecting the long evidence workbench. */
-export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps) {
+export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = false }: ApprovalBarProps) {
   const [note, setNote] = useState("");
   const chips = factChips(approval.phase, approval.payload);
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
@@ -86,6 +89,8 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
         </div>
       )}
 
+      <ApprovalDetails details={approval.payload.details} />
+      <p className="px-5 pb-3 text-sm text-fg-muted sm:px-6">Approve to continue. Request changes to review a revised plan. Reject ends this run. {Number(approval.payload.revisions_used || 0)}/3 revisions used.</p>
       <div className="flex flex-col gap-3 border-t border-border bg-surface-2/40 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:gap-4">
         <div className="min-w-0 flex-1">
           <label htmlFor="approval-note" className={cn(typeScale.label, "mb-1.5 block text-fg-muted")}>Note to agents (optional)</label>
@@ -93,6 +98,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
             id="approval-note"
             name="approval_note"
             autoComplete="off"
+            maxLength={2000}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add context for the next step…"
@@ -100,10 +106,12 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
           />
         </div>
 
-        <div className="flex gap-2 lg:shrink-0">
+        <div className="flex flex-wrap gap-2 lg:shrink-0">
+          {onRevise && <Button variant="outline" disabled={busy || note.trim().length < 3 || Number(approval.payload.revisions_used || 0) >= 3} onClick={() => onRevise(note)} className="h-11 rounded-2xl">Request changes</Button>}
           <Button
             type="button"
             variant="outline"
+            disabled={busy}
             onClick={() => onReject(note)}
             className="h-11 flex-1 rounded-2xl border-border-strong px-5 text-[13px] text-danger hover:bg-danger-soft motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >
@@ -111,6 +119,7 @@ export function ApprovalBar({ approval, onApprove, onReject }: ApprovalBarProps)
           </Button>
           <Button
             type="button"
+            disabled={busy}
             onClick={() => onApprove(note)}
             className="h-11 flex-1 rounded-2xl px-6 text-[13px] motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >

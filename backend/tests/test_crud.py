@@ -348,6 +348,11 @@ def _start_run(client, registered_user, project) -> str:
 
 def test_rejection_records_excluded_terminal_metrics(client, registered_user, project):
     run_id = _start_run(client, registered_user, project)
+    with MongoClient(settings.mongo_uri) as mongo:
+        mongo[settings.mongo_db].runs.update_one(
+            {"_id": ObjectId(run_id)},
+            {"$set": {"status": "awaiting_approval", "state.awaiting_approval": "pm"}},
+        )
     response = client.post(
         f"/runs/{run_id}/approve",
         json={"phase": "pm", "approved": False, "note": "requirements need revision"},

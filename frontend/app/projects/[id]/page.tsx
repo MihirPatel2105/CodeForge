@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, getToken, ApiError } from "@/lib/api";
@@ -12,6 +12,10 @@ import { Button } from "@/components/ui/button";
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [outcome, setOutcome] = useState("");
+  const [filtering, setFiltering] = useState(false);
+  const generation = useRef(0);
   const [project, setProject] = useState<ProjectResponse | null>(null);
   const [history, setHistory] = useState<RunSummary[]>([]);
   const [stats, setStats] = useState<ProjectOverviewItem["stats"] | null>(null);
@@ -41,12 +45,25 @@ export default function ProjectDetailPage() {
     }
   }, [id, router]);
 
+  useEffect(() => {
+    const current = ++generation.current;
+    const timer = setTimeout(async () => {
+      setFiltering(true); setMoreError(null);
+      try { const page = await api.projectRunPage(id, undefined, query, outcome); if (current !== generation.current) return; setHistory(page.items); setStats(page.stats); setNextCursor(page.next_cursor); }
+      catch (err) { if (current === generation.current) setMoreError(err instanceof ApiError ? err.message : "Could not search runs."); }
+      finally { if (current === generation.current) setFiltering(false); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [id, query, outcome]);
+
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
     setMoreError(null);
     try {
-      const page = await api.projectRunPage(id, nextCursor);
+      const current = generation.current;
+      const page = await api.projectRunPage(id, nextCursor, query, outcome);
+      if (current !== generation.current) return;
       setHistory((current) => [...current, ...page.items]);
       setStats(page.stats);
       setNextCursor(page.next_cursor);
@@ -55,7 +72,7 @@ export default function ProjectDetailPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [id, loadingMore, nextCursor]);
+  }, [id, loadingMore, nextCursor, query, outcome]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -121,5 +138,5 @@ export default function ProjectDetailPage() {
     );
   }
 
-  return <ProjectDetail project={project} history={history} stats={stats} nextCursor={nextCursor} loadingMore={loadingMore} moreError={moreError} onLoadMore={loadMore} />;
+  return <ProjectDetail key={id} onProjectSaved={setProject} query={query} outcome={outcome} filtering={filtering} onFilter={(q, status) => { setQuery(q); setOutcome(status); }} project={project} history={history} stats={stats} nextCursor={nextCursor} loadingMore={loadingMore} moreError={moreError} onLoadMore={loadMore} />;
 }

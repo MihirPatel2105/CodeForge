@@ -4,13 +4,14 @@
 until then a created run stays `queued`.
 """
 
+import re
 from datetime import UTC, datetime
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.core.deps import CurrentUser, get_owned
-from app.core.exceptions import NotFoundError, UsageLimitError
+from app.core.exceptions import ConflictError, NotFoundError, UsageLimitError
 from app.db import aggregate_rows
 from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
@@ -27,6 +28,7 @@ from app.schemas.api import (
     FileTreeResponse,
     ProjectRunPage,
     ProjectRunStats,
+    RevisionRequest,
     RunCreate,
     RunCreateResponse,
     RunResponse,
@@ -49,6 +51,8 @@ def _to_response(run: Run) -> RunResponse:
         id=str(run.id),
         project_id=run.project_id,
         prompt=run.prompt,
+        parent_run_id=run.parent_run_id,
+        change_request=run.change_request,
         status=run.status,
         state=run.state,
         metrics=run.metrics,
@@ -62,6 +66,8 @@ def _to_summary(run: Run) -> RunSummary:
         id=str(run.id),
         project_id=run.project_id,
         prompt=run.prompt,
+        parent_run_id=run.parent_run_id,
+        change_request=run.change_request,
         status=run.status,
         iterations=run.iterations,
         created_at=run.created_at,
@@ -83,10 +89,22 @@ async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse
         if count >= user.monthly_run_limit:
             raise UsageLimitError(f"Monthly run limit reached ({user.monthly_run_limit}).")
 
+    parent = None
+    if payload.parent_run_id:
+        parent = await get_owned(Run, payload.parent_run_id, str(user.id), "Run")
+        if parent.project_id != payload.project_id:
+            raise ConflictError("The source run belongs to a different project.")
+        if parent.status != "succeeded" or not parent.metrics or not parent.metrics.tests_passed:
+            raise ConflictError("Choose a run that passed its tests before improving it.")
+    prompt = payload.prompt.strip()
+    if not prompt or len(prompt) > 12000:
+        raise HTTPException(status_code=422, detail="Describe the API in 1 to 12000 characters")
     run = Run(
+        parent_run_id=payload.parent_run_id,
+        change_request=prompt if parent else None,
         project_id=payload.project_id,
         user_id=str(user.id),
-        prompt=payload.prompt,
+        prompt=prompt,
         status="queued",
     )
     await run.insert()
@@ -103,6 +121,13 @@ async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse
     run.state = {k: v for k, v in state.items() if k not in {"started_at", "finished_at"}}
     run.state["started_at"] = state["started_at"].isoformat()
     run.state["rag_enabled"] = payload.rag_enabled
+    if parent:
+        run.state["revision_context"] = {
+            "requirements": parent.state.get("requirements"),
+            "design": parent.state.get("design"),
+            "files": parent.state.get("files") or [],
+            "change_request": prompt,
+        }
     await run.save()
 
     # Returns immediately; the pipeline continues in the background and the client
@@ -110,6 +135,26 @@ async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse
     await executor.start_run(run)
 
     return RunCreateResponse(run_id=run_id, status="running")
+
+
+@router.get("/runs/attention", response_model=list[RunSummary])
+async def attention_runs(user: CurrentUser) -> list[RunSummary]:
+    owner = str(user.id)
+    pending = (
+        await Run.find({"user_id": owner, "status": "awaiting_approval"})
+        .sort("-updated_at")
+        .limit(30)
+        .to_list()
+    )
+    completed = (
+        await Run.find({"user_id": owner, "status": {"$in": list(_TERMINAL_STATUSES)}})
+        .sort("-updated_at")
+        .limit(20)
+        .to_list()
+    )
+    return [
+        _to_summary(run) for run in [*pending, *completed] if not executor.is_running(str(run.id))
+    ]
 
 
 @router.get("/runs/{run_id}", response_model=RunResponse)
@@ -163,11 +208,17 @@ async def project_run_page(
     user: CurrentUser,
     cursor: str | None = None,
     limit: int = Query(default=20, ge=1, le=50),
+    q: str = Query(default="", max_length=200),
+    outcome: str = Query(default="", max_length=40),
 ) -> ProjectRunPage:
     await get_owned(Project, project_id, str(user.id), "Project")
     owner = str(user.id)
     match = {"project_id": project_id, "user_id": owner}
     query = dict(match)
+    if q.strip():
+        query["prompt"] = {"$regex": re.escape(q.strip()), "$options": "i"}
+    if outcome:
+        query["status"] = outcome
     if cursor:
         if not ObjectId.is_valid(cursor):
             raise HTTPException(status_code=422, detail="Invalid run cursor")
@@ -271,6 +322,37 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
     )
 
 
+async def _claim_checkpoint(run: Run, phase: str, expected_revision: int | None = None) -> None:
+    revisions = sum(item["phase"] == phase for item in run.state.get("checkpoint_revisions", []))
+    if expected_revision is not None and revisions != expected_revision:
+        raise ConflictError("This plan has changed. Review the latest checkpoint first.")
+    checkpoint = next(
+        (event for event in reversed(run.events) if event.get("event") == "approval.required"), None
+    )
+    expected = (run.state or {}).get("awaiting_approval")
+    if checkpoint:
+        expected = checkpoint.get("data", {}).get("phase", expected)
+    if run.status != "awaiting_approval" or phase != expected:
+        raise ConflictError("This checkpoint is no longer awaiting that decision. Refresh the run.")
+    result = await Run.get_pymongo_collection().update_one(
+        {"_id": run.id, "status": "awaiting_approval", "updated_at": run.updated_at},
+        {"$set": {"status": "running", "updated_at": datetime.now(UTC)}},
+    )
+    if result.modified_count != 1:
+        raise ConflictError("A decision is already being processed.")
+
+
+@router.post("/runs/{run_id}/revise", response_model=RunCreateResponse)
+async def revise_run(run_id: str, payload: RevisionRequest, user: CurrentUser) -> RunCreateResponse:
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+    history = (run.state or {}).get("checkpoint_revisions") or []
+    if sum(item["phase"] == payload.phase for item in history) >= 3:
+        raise ConflictError("This checkpoint has reached its three-revision limit.")
+    await _claim_checkpoint(run, payload.phase, payload.expected_revision)
+    await executor.revise_run(run_id, payload.phase, payload.note)
+    return RunCreateResponse(run_id=run_id, status="running")
+
+
 @router.post("/runs/{run_id}/approve", response_model=ApprovalResponse)
 async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) -> ApprovalResponse:
     """Resolve a human checkpoint: resume the pipeline, or end the run.
@@ -279,6 +361,20 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     thread again, which continues from the checkpoint rather than restarting.
     """
     run = await get_owned(Run, run_id, str(user.id), "Run")
+
+    if payload.phase == "final":
+        if run.status not in _TERMINAL_STATUSES or executor.is_running(run_id):
+            raise ConflictError("Final review is available after the run finishes.")
+        record = {
+            "approved": payload.approved,
+            "note": payload.note,
+            "at": datetime.now(UTC).isoformat(),
+        }
+        await run.set({"state.approvals.final": record})
+        return ApprovalResponse(
+            run_id=run_id, phase="final", approved=payload.approved, status=run.status
+        )
+    await _claim_checkpoint(run, payload.phase, payload.expected_revision)
 
     # `run` is a snapshot read before any of the emits below, each of which persists via
     # an atomic `$push` (bus.py). `run.save()` further down writes this whole in-memory

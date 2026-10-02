@@ -7,6 +7,8 @@ import { ArrowLeft, FileCode2, FlaskConical, ListTree, RotateCcw, ShieldCheck } 
 import { useRunStream } from "@/lib/use-run-stream";
 import { api, getToken, downloadLatestFileTree, ApiError } from "@/lib/api";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
+import { RunVersions } from "@/components/dashboard/run-versions";
+import { PIPELINE_STAGES } from "@/lib/pipeline";
 import { RunStory } from "@/components/dashboard/run-story";
 import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
@@ -41,7 +43,9 @@ export default function LiveRunPage() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadState, setDownloadState] = useState<"idle" | "pending" | "started">("idle");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [deciding, setDeciding] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [sourceRunId, setSourceRunId] = useState<string | null>(null);
   const [runProjectId, setRunProjectId] = useState<string | null>(null);
   const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
   const pipelineViewport = useRef<HTMLDivElement>(null);
@@ -60,7 +64,7 @@ export default function LiveRunPage() {
 
   useEffect(() => {
     if (!getToken()) return;
-    api.getRun(id).then((run) => setRunProjectId(run.project_id)).catch(() => {
+    api.getRun(id).then((run) => { setRunProjectId(run.project_id); setSourceRunId(run.parent_run_id ?? null); }).catch(() => {
       // The event stream still renders the run. This only disables the convenience
       // action that returns to the original project with the prompt prefilled.
     });
@@ -126,31 +130,43 @@ export default function LiveRunPage() {
   }
 
   async function handleApprove(note: string) {
-    if (!snapshot.approval) return;
+    if (!snapshot.approval || deciding) return;
+    setDeciding(true);
     setActionError(null);
     try {
       await api.approveRun(id, {
         phase: snapshot.approval.phase as ApprovalPhase,
+        expected_revision: Number(snapshot.approval.payload.revisions_used || 0),
         approved: true,
         note: note || null,
       });
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't approve the run.");
-    }
+    } finally { setDeciding(false); }
   }
 
   async function handleReject(note: string) {
-    if (!snapshot.approval) return;
+    if (!snapshot.approval || deciding) return;
+    setDeciding(true);
     setActionError(null);
     try {
       await api.approveRun(id, {
         phase: snapshot.approval.phase as ApprovalPhase,
+        expected_revision: Number(snapshot.approval.payload.revisions_used || 0),
         approved: false,
         note: note || null,
       });
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't reject the run.");
-    }
+    } finally { setDeciding(false); }
+  }
+
+  async function handleRevise(note: string) {
+    if (!snapshot.approval || deciding) return;
+    setDeciding(true); setActionError(null);
+    try { await api.reviseRun(id, snapshot.approval.phase, note, Number(snapshot.approval.payload.revisions_used || 0)); }
+    catch (err) { setActionError(err instanceof ApiError ? err.message : "Could not request changes."); }
+    finally { setDeciding(false); }
   }
 
   async function handleCancel() {
@@ -188,7 +204,7 @@ export default function LiveRunPage() {
     if (!runProjectId || !snapshot.prompt) return;
     sessionStorage.setItem(
       "codeforge:retry-prompt",
-      JSON.stringify({ projectId: runProjectId, prompt: snapshot.prompt }),
+      JSON.stringify({ projectId: runProjectId, prompt: snapshot.prompt, parentRunId: sourceRunId }),
     );
     router.push(`/projects/${runProjectId}`);
   }
@@ -277,6 +293,8 @@ export default function LiveRunPage() {
           </div>
         </header>
 
+        {snapshot.approval && <a href="#approval-heading" className="sticky top-16 z-10 mt-3 block rounded-xl border border-warn-bd bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">Your decision is needed · Review checkpoint ↑</a>}
+        {snapshot.endedAt && <a href={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : "#run-workbench-heading"} className="sticky top-16 z-10 mt-3 block rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-accent">{snapshot.status === "succeeded" && snapshot.tests?.ok ? "Use your API →" : "Inspect run evidence ↓"}</a>}
         {actionError && (
           <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
             {actionError}
@@ -286,7 +304,9 @@ export default function LiveRunPage() {
         <ApprovalPresence show={snapshot.approval != null}>
           {snapshot.approval && (
             <ApprovalBar
-              key={snapshot.approval.phase}
+              key={`${snapshot.approval.phase}:${snapshot.approval.payload.revisions_used ?? 0}`}
+              busy={deciding}
+              onRevise={handleRevise}
               approval={snapshot.approval}
               onApprove={handleApprove}
               onReject={handleReject}
@@ -301,12 +321,13 @@ export default function LiveRunPage() {
               <h2 id="agent-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="text-[11px] text-fg-muted">
-              <span className="sm:hidden">swipe to inspect →</span>
+              <span className="sm:hidden">6 stages</span>
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
           <RunStory snapshot={snapshot} />
-          <div ref={pipelineViewport} className="cf-run-scroll snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
+          <ol className="divide-y divide-border px-5 sm:hidden" aria-label="Pipeline stages">{PIPELINE_STAGES.map(stage => <li key={stage.id} className="flex gap-3 py-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-sm">{stage.index}</span><div><p className="text-sm font-semibold">{stage.name} · {snapshot.agents[stage.id].state}</p><p className="text-xs text-fg-muted">{snapshot.agents[stage.id].summary || stage.job}</p></div></li>)}</ol>
+          <div ref={pipelineViewport} className="cf-run-scroll hidden sm:block snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
             <div className="min-w-[1180px]">
               <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
             </div>
@@ -324,6 +345,8 @@ export default function LiveRunPage() {
             />
           </section>
         )}
+
+        {(snapshot.endedAt || sourceRunId) && <RunVersions key={id} id={id} completed={Boolean(snapshot.endedAt)} />}
 
         {downloadError && (
           <p role="alert" className="mt-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">

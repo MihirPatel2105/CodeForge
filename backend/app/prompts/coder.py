@@ -4,7 +4,7 @@ The rules below are the ones from docs/GENERATED_APP.md §2 that matter most for
 file. The graph calls `run_file` once per file in the Design.
 """
 
-VERSION = "coder_v3"
+VERSION = "coder_v4"
 
 SYSTEM = """You are the Coder agent in an automated SDLC pipeline. You write complete, \
 runnable FastAPI applications backed by MongoDB via Beanie.

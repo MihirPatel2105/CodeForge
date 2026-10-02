@@ -20,6 +20,7 @@ from app.schemas.api import (
     ProjectOverviewPage,
     ProjectResponse,
     ProjectRunStats,
+    ProjectUpdate,
     RunSummary,
 )
 
@@ -33,6 +34,7 @@ def _to_response(project: Project) -> ProjectResponse:
         id=str(project.id),
         name=project.name,
         description=project.description,
+        archived=project.archived,
         created_at=project.created_at,
     )
 
@@ -60,10 +62,11 @@ async def project_overview(
     cursor: str | None = None,
     limit: int = Query(default=20, ge=1, le=50),
     q: str = Query(default="", max_length=120),
+    archived: bool = False,
 ) -> ProjectOverviewPage:
     """Bound the list response and aggregate card metrics on the server."""
     owner = str(user.id)
-    query: dict = {"user_id": owner}
+    query: dict = {"user_id": owner, "archived": True if archived else {"$ne": True}}
     if q.strip():
         term = re.escape(q.strip())
         query["$or"] = [
@@ -71,7 +74,7 @@ async def project_overview(
             {"description": {"$regex": term, "$options": "i"}},
         ]
     total_projects = await Project.find(Project.user_id == owner).count()
-    matching_projects = await Project.find(query).count() if q.strip() else total_projects
+    matching_projects = await Project.find(query).count()
     if cursor:
         if not ObjectId.is_valid(cursor):
             raise HTTPException(status_code=422, detail="Invalid project cursor")
@@ -102,6 +105,8 @@ async def project_overview(
             "id": {"$toString": "$_id"},
             "project_id": "$project_id",
             "prompt": "$prompt",
+            "parent_run_id": "$parent_run_id",
+            "change_request": "$change_request",
             "status": "$status",
             "iterations": "$iterations",
             "created_at": "$created_at",
@@ -210,6 +215,15 @@ async def project_overview(
 @router.get("/{project_id}", response_model=ProjectResponse)
 async def get_project(project_id: str, user: CurrentUser) -> ProjectResponse:
     project = await get_owned(Project, project_id, str(user.id), "Project")
+    return _to_response(project)
+
+
+@router.patch("/{project_id}", response_model=ProjectResponse)
+async def update_project(
+    project_id: str, payload: ProjectUpdate, user: CurrentUser
+) -> ProjectResponse:
+    project = await get_owned(Project, project_id, str(user.id), "Project")
+    await project.set(payload.model_dump())
     return _to_response(project)
 
 

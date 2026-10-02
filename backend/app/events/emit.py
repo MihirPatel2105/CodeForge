@@ -54,9 +54,19 @@ async def approval_required(run_id: str, phase: str, payload: dict[str, Any]) ->
 
 
 async def approval_resolved(
-    run_id: str, phase: str, approved: bool, note: str | None = None
+    run_id: str,
+    phase: str,
+    approved: bool,
+    note: str | None = None,
+    *,
+    revision_requested: bool = False,
 ) -> None:
-    await emit(run_id, ev.ApprovalResolved(phase=phase, approved=approved, note=note))
+    await emit(
+        run_id,
+        ev.ApprovalResolved(
+            phase=phase, approved=approved, note=note, revision_requested=revision_requested
+        ),
+    )
 
 
 async def loop_iteration(

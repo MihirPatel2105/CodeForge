@@ -365,6 +365,7 @@ export interface ProjectCreate {
 }
 
 export interface ProjectResponse {
+  archived?: boolean;
   id: string;
   name: string;
   description: string;
@@ -399,6 +400,8 @@ export interface ProjectRunPage {
 }
 
 export interface RunCreate {
+  parent_run_id?: string | null;
+  change_request?: string | null;
   project_id: string;
   prompt: string;
   rag_enabled?: boolean;
@@ -411,6 +414,8 @@ export interface RunCreateResponse {
 
 /** List view — omits the full state snapshot. */
 export interface RunSummary {
+  parent_run_id?: string | null;
+  change_request?: string | null;
   id: string;
   project_id: string;
   prompt: string;
@@ -421,6 +426,8 @@ export interface RunSummary {
 }
 
 export interface RunResponse {
+  parent_run_id?: string | null;
+  change_request?: string | null;
   id: string;
   project_id: string;
   prompt: string;
@@ -431,7 +438,20 @@ export interface RunResponse {
   updated_at: string;
 }
 
+export interface JsonSchema {
+  type?: string;
+  properties?: Record<string, JsonSchema>;
+  required?: string[];
+  enum?: unknown[];
+  anyOf?: JsonSchema[];
+  format?: string;
+  description?: string;
+  minimum?: number;
+  maximum?: number;
+}
+
 export interface PreviewOperation {
+  body_schema?: JsonSchema | null;
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   summary: string;
@@ -522,6 +542,7 @@ export interface Finding {
 }
 
 export interface ApprovalRequest {
+  expected_revision?: number;
   phase: ApprovalPhase;
   approved: boolean;
   note?: string | null;
@@ -602,6 +623,7 @@ export interface ApprovalRequiredEvent extends EventBase {
 }
 
 export interface ApprovalResolvedEvent extends EventBase {
+  revision_requested?: boolean;
   event: "approval.resolved";
   phase: string;
   approved: boolean;

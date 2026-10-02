@@ -86,6 +86,7 @@ class ApprovalRequired(BaseEvent):
 
 
 class ApprovalResolved(BaseEvent):
+    revision_requested: bool = False
     event: Literal["approval.resolved"] = "approval.resolved"
     phase: str
     approved: bool

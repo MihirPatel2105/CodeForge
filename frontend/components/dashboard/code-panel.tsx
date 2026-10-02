@@ -210,7 +210,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                   onClick={() => setWrap((value) => !value)}
                   aria-pressed={wrap}
                   className={cn(
-                    "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em]",
+                    "inline-flex h-10 items-center gap-1.5 rounded-lg border px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em]",
                     wrap
                       ? "border-accent-bd bg-accent-soft text-accent"
                       : "border-border bg-surface text-fg-muted hover:border-border-strong",
@@ -223,7 +223,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                   type="button"
                   onClick={copyCurrentFile}
                   aria-label={copied ? "Code copied" : "Copy code"}
-                  className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[10px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
                 >
                   <CopyFeedback copied={copied} label="Copy" />
                 </MotionButton>

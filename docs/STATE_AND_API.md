@@ -305,3 +305,25 @@ FastAPI app and calls one designed endpoint before pytest; its marker establishe
 tests fail. Excluded attempts remain in the JSON/CSV report but do not enter success-rate
 denominators. The evaluator checks a fingerprint of the backend and sandbox implementation before
 resuming, so RAG arms from different versions cannot be combined accidentally.
+
+## Workspace evolution (2026-10-02)
+
+- `PATCH /projects/{id}` accepts `name`, `description`, and `archived` and is owner-only.
+- `GET /projects/overview?archived=true` lists archived workspaces; default is active.
+- `GET /projects/{id}/runs/page` supports `q` and `outcome` alongside its cursor.
+- `GET /runs/attention` returns up to 30 pending approvals and 20 recent terminal runs
+  for the current owner.
+- `POST /runs` optionally accepts `parent_run_id`. The source must belong to the same
+  owner/project and have passed its tests. The new run stores source context and
+  `change_request`; source runs and deployments are not modified.
+- `POST /runs/{id}/revise` accepts `phase` (`pm` or `architect`), a 3–2000 character
+  `note`, and optional `expected_revision` (0–3). It atomically claims the checkpoint
+  and schedules that phase again, up to three revisions per phase.
+- `POST /runs/{id}/approve` also accepts `expected_revision`. A stale phase/version or
+  duplicate decision returns 409. Final judgement records the decision without
+  resuming a terminal run.
+- Approval payloads now include `details` and `revisions_used`.
+  `approval.resolved.revision_requested` differentiates revisions from rejection.
+- Preview operations include a resolved, depth-bounded `body_schema` for field input.
+
+See `WORKSPACE_EXPERIENCE.md` for lifecycle, device storage, and notification limits.

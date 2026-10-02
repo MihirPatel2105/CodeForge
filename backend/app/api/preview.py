@@ -83,6 +83,24 @@ def _example(
     return "example"
 
 
+def _resolve_schema(schema: dict, components: dict, depth: int = 0) -> dict:
+    if depth > 6:
+        return {}
+    ref = schema.get("$ref", "")
+    if ref.startswith("#/components/schemas/"):
+        return _resolve_schema(components.get(ref.rsplit("/", 1)[-1], {}), components, depth + 1)
+    return {
+        key: {name: _resolve_schema(value, components, depth + 1) for name, value in item.items()}
+        if key == "properties"
+        else [_resolve_schema(value, components, depth + 1) for value in item]
+        if key in {"anyOf", "oneOf", "allOf"}
+        else _resolve_schema(item, components, depth + 1)
+        if key == "items" and isinstance(item, dict)
+        else item
+        for key, item in schema.items()
+    }
+
+
 def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:
     components = openapi.get("components", {}).get("schemas", {})
     operations = []
@@ -115,6 +133,7 @@ def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:
                     path=path,
                     summary=operation.get("summary") or "",
                     has_body=body_schema is not None,
+                    body_schema=_resolve_schema(body_schema, components) if body_schema else None,
                     example_body=_example(body_schema, components) if body_schema else None,
                     example_response=(
                         _example(response_schema, components) if response_schema else None

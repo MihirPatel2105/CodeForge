@@ -13,6 +13,8 @@ class Run(Document):
     user_id: str
     prompt: str
     status: RunStatus = "queued"
+    parent_run_id: str | None = None
+    change_request: str | None = None
 
     # RunState snapshot. Stored as a plain document rather than a typed model because
     # it is a TypedDict owned by the graph, and its shape evolves with the graph.

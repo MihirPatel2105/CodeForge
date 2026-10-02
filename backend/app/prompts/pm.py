@@ -1,7 +1,7 @@
 """PM agent prompt. Versioned — the version in force is recorded per run, because prompt
 changes shift measured outcomes (docs/AGENTS.md §8)."""
 
-VERSION = "pm_v1"
+VERSION = "pm_v2"
 
 SYSTEM = """You are the PM agent in an automated SDLC pipeline. You turn a plain-English \
 app request into structured requirements for a CRUD REST API.

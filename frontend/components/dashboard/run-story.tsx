@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { stageMeta } from "@/lib/pipeline";
 import type { RunSnapshot } from "@/lib/run-reducer";
@@ -6,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 /** A plain-language readout beside the visual pipeline, including its feedback loop. */
 export function RunStory({ snapshot }: { snapshot: RunSnapshot }) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => { setNow(Date.now()); const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const status = displayStatus(snapshot.status, snapshot.tests?.ok ?? null);
   const active = snapshot.currentAgent ? stageMeta(snapshot.currentAgent) : null;
   const isWorking = active != null && snapshot.agents[active.id].state === "working";
@@ -47,6 +51,7 @@ export function RunStory({ snapshot }: { snapshot: RunSnapshot }) {
           <p className="text-[12px] font-[650] text-fg-muted">Current state</p>
           <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg">{title}</p>
           <p className="mt-1 text-[14px] leading-snug text-fg-muted">{description}</p>
+          {now && !snapshot.endedAt && <p className="mt-2 text-xs text-fg-muted">{isWorking && active && snapshot.agents[active.id].startedAt ? `Stage active for ${Math.max(0, Math.floor((now - new Date(snapshot.agents[active.id].startedAt!).getTime()) / 1000))}s. ` : ""}{snapshot.lastEventAt ? `Last update ${Math.max(0, Math.floor((now - new Date(snapshot.lastEventAt).getTime()) / 1000))}s ago.` : "Waiting for the first update."}</p>}
         </div>
       </div>
       <div className={cn("relative min-w-0 border-t border-rule px-5 py-4 sm:border-l sm:border-t-0 sm:px-6", loop ? "bg-loop-soft/55" : "bg-surface-2/60")}>

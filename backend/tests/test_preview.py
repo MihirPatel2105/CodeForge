@@ -123,6 +123,7 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
                 "has_body": True,
                 "example_body": {"name": "Alex", "count": 0},
                 "example_response": {"id": "example", "name": "Alex"},
+                "body_schema": openapi["components"]["schemas"]["ItemCreate"],
             }
         ]
         execute.return_value = {

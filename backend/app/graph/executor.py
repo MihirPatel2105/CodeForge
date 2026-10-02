@@ -49,6 +49,10 @@ def _approval_payload(phase: str, state: dict[str, Any]) -> dict[str, Any]:
             "project_name": req.project_name,
             "entity": entity_detail,
             "operations": ", ".join(req.operations),
+            "details": req.model_dump(mode="json"),
+            "revisions_used": sum(
+                r["phase"] == phase for r in state.get("checkpoint_revisions", [])
+            ),
         }
     if phase == "architect":
         design = state.get("design")
@@ -56,6 +60,10 @@ def _approval_payload(phase: str, state: dict[str, Any]) -> dict[str, Any]:
             return {}
         return {
             "endpoints": str(len(design.endpoints)),
+            "details": design.model_dump(mode="json"),
+            "revisions_used": sum(
+                r["phase"] == phase for r in state.get("checkpoint_revisions", [])
+            ),
             "collection": ", ".join(c.name for c in design.collections),
             "files_planned": ", ".join(Path(f.path).stem for f in design.files if f.path),
         }
@@ -78,7 +86,8 @@ async def _after_invoke(run_id: str, graph, config: dict) -> None:
     run = await Run.get(run_id)
     if run is not None:
         run.status = "awaiting_approval"
-        run.updated_at = datetime.now()
+        run.updated_at = datetime.now(UTC)
+        run.state = {**run.state, "awaiting_approval": phase}
         await run.save()
 
     await events.approval_required(run_id, phase, _approval_payload(phase, snapshot.values))
@@ -203,6 +212,7 @@ async def start_run(run: Run, *, with_approvals: bool = True) -> None:
         rag_enabled=bool((run.state or {}).get("rag_enabled", True)),
     )
 
+    state["revision_context"] = (run.state or {}).get("revision_context") or {}
     run.status = "running"
     run.updated_at = datetime.now()
     await run.save()
@@ -227,6 +237,11 @@ async def resume_run(run_id: str) -> None:
 
     async def _continue() -> None:
         try:
+            run = await Run.get(run_id)
+            if run:
+                await graph.aupdate_state(
+                    config, {"approvals": run.state.get("approvals", {}), "awaiting_approval": None}
+                )
             await graph.ainvoke(None, config=config)
             await _after_invoke(run_id, graph, config)
         except asyncio.CancelledError:
@@ -239,6 +254,44 @@ async def resume_run(run_id: str) -> None:
 
     task = asyncio.create_task(_continue())
     _running[run_id] = task
+
+
+async def revise_run(run_id: str, phase: str, note: str) -> None:
+    async def revise() -> None:
+        try:
+            graph = compile_graph(with_approvals=True)
+            config = thread_config(run_id)
+            snapshot = await graph.aget_state(config)
+            history = [
+                *(snapshot.values.get("checkpoint_revisions") or []),
+                {"phase": phase, "note": note, "at": datetime.now(UTC).isoformat()},
+            ]
+            await graph.aupdate_state(
+                config,
+                {
+                    "checkpoint_revisions": history,
+                    "awaiting_approval": None,
+                    "status": "running",
+                    **(
+                        {"requirements": None, "design": None}
+                        if phase == "pm"
+                        else {"design": None}
+                    ),
+                },
+                as_node="__start__" if phase == "pm" else "pm",
+            )
+            await events.approval_resolved(run_id, phase, False, note, revision_requested=True)
+            await graph.ainvoke(None, config=config)
+            await _after_invoke(run_id, graph, config)
+        except asyncio.CancelledError:
+            await _finish(run_id, "cancelled", "cancelled by the user")
+            raise
+        except Exception as exc:
+            await _finish(run_id, "failed_llm", f"{type(exc).__name__}: {exc}"[:400])
+        finally:
+            _running.pop(run_id, None)
+
+    _running[run_id] = asyncio.create_task(revise())
 
 
 async def await_all(seconds: float | None = None) -> None:

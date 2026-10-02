@@ -46,7 +46,7 @@ export function useRunStream(runId: string) {
       try {
         const event = JSON.parse(dataLines.join("\n")) as CodeForgeEvent;
         if (id != null && Number.isFinite(id)) lastEventId = id;
-        setSnapshot((prev) => applyEvent(prev, event));
+        setSnapshot((prev) => ({ ...applyEvent(prev, event), lastEventAt: event.at }));
         if (event.event === "run.completed" || event.event === "run.failed") {
           terminalSeen = true;
           setConnectionLost(null);

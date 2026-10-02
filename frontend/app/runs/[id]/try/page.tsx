@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
+import { RequestFields } from "@/components/dashboard/request-fields";
+import { readLocal, writeLocal } from "@/lib/workspace-storage";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/lib/use-current-user";
 import { api, ApiError } from "@/lib/api";
 import type { PreviewInfo, PreviewOperation, PreviewResult } from "@/lib/types";
+
+type SavedRequest = { key: string; method: PreviewOperation["method"]; endpoint: string; path: string; body: string; response?: PreviewResult; at: string };
 
 function displayBody(body: string): string {
   try {
@@ -31,11 +35,21 @@ export default function TryApiPage() {
   const [response, setResponse] = useState<PreviewResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<"send" | "reset" | null>(null);
+  const [mode, setMode] = useState<"json" | "fields">("json");
+  const [fieldsValid, setFieldsValid] = useState(true);
+  const [saved, setSaved] = useState<SavedRequest[]>([]);
+  const [recent, setRecent] = useState<SavedRequest[]>([]);
+  const [recordId, setRecordId] = useState<{ collection: string; value: string } | null>(null);
+  const [guide, setGuide] = useState(false);
+  const [notice, setNotice] = useState("");
+  const storageKey = user ? `codeforge:requests:${user.id}:${id}` : null;
+  useEffect(() => { if (storageKey) { const stored = readLocal<SavedRequest[]>(storageKey, []); setSaved(Array.isArray(stored) ? stored : []); } }, [storageKey]);
   const [error, setError] = useState<string | null>(null);
   const sending = pendingAction !== null;
 
   const choose = useCallback((operation: PreviewOperation, index: number) => {
     setSelected(index);
+    setMode("json"); setFieldsValid(true);
     setPath(operation.path);
     setBody(operation.has_body ? JSON.stringify(operation.example_body ?? {}, null, 2) : "");
     setResponse(null);
@@ -80,11 +94,17 @@ export default function TryApiPage() {
     }
     setPendingAction("send");
     try {
-      setResponse(await api.sendPreviewRequest(id, {
+      const result = await api.sendPreviewRequest(id, {
         method: operation.method,
         path: path.trim(),
         body: parsedBody,
-      }));
+      });
+      setResponse(result);
+      setRecent(current => [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path, body, response: { ...result, body: result.body.slice(0, 20000) }, at: new Date().toISOString() }, ...current].slice(0, 10));
+      if (result.session_started) setRecordId(null);
+      if (result.status < 400 && operation.method === "POST") {
+        try { const data = JSON.parse(result.body); if (typeof data.id === "string" || typeof data.id === "number") setRecordId({ collection: operation.path.replace(/\/$/, ""), value: String(data.id) }); } catch { /* Some APIs return no JSON body. */ }
+      }
     } catch (err) {
       setResponse(null);
       setError(err instanceof ApiError ? err.message : "Couldn't send the request.");
@@ -98,6 +118,7 @@ export default function TryApiPage() {
     setError(null);
     try {
       await api.resetPreview(id);
+      setRecordId(null); setRecent([]);
       setResponse(null);
       await load();
     } catch (err) {
@@ -108,6 +129,17 @@ export default function TryApiPage() {
   }
 
   const operation = preview?.operations[selected];
+
+  function saveRequest() {
+    if (!operation || !storageKey) return;
+    const next = [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path, body, at: new Date().toISOString() }, ...saved].slice(0, 20);
+    setSaved(next); setNotice(writeLocal(storageKey, next) ? "Request saved on this device." : "Could not save this request on this device.");
+  }
+  function restore(item: SavedRequest) {
+    const index = preview?.operations.findIndex(operation => operation.method === item.method && operation.path === item.endpoint) ?? -1;
+    if (index < 0) { setError("That endpoint is no longer available."); return; }
+    choose(preview!.operations[index], index); setPath(item.path); setBody(item.body); setResponse(item.response ?? null);
+  }
 
   return (
     <div className="cf-run-page min-h-screen bg-bg">
@@ -128,6 +160,8 @@ export default function TryApiPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent"><span className="size-1.5 rounded-full bg-accent" />Private preview · resets after 15 minutes</span>
         </header>
 
+        <div className="mt-5"><Button variant="outline" onClick={() => setGuide(!guide)}>{guide ? "Hide CRUD walkthrough" : "Show CRUD walkthrough"}</Button>{guide && <ol className="mt-3 grid gap-2 rounded-xl border border-border bg-surface p-4 text-sm sm:grid-cols-4">{["1. POST: create a record", "2. GET: inspect the new record", "3. PUT/PATCH: change a field", "4. DELETE: remove the test record"].map(step => <li key={step}>{step}</li>)}<li className="text-fg-muted sm:col-span-4">Select each endpoint below and send it yourself. After POST, use the returned ID for the other requests. Preview data is temporary.</li></ol>}</div>
+        {notice && <p role="status" className="mt-3 text-sm text-fg-muted">{notice}</p>}
         {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
 
         {loading ? (
@@ -159,15 +193,18 @@ export default function TryApiPage() {
                   <div>
                     <label htmlFor="preview-path" className="text-[12px] font-[700] text-fg">Path</label>
                     <Input id="preview-path" value={path} onChange={(event) => setPath(event.target.value)} className="mt-2 font-mono" />
+                    {recordId && operation?.path.startsWith(`${recordId.collection}/`) && /\{[^}]+\}/.test(operation.path) && <Button variant="outline" size="sm" className="mt-2" onClick={() => setPath(operation.path.replace(/\{[^}]+\}/, encodeURIComponent(recordId.value)))}>Use this ID: {recordId.value}</Button>}
                     {path.includes("{") && <p className="mt-2 text-[12px] text-fg-muted">Replace each name in braces with an actual ID or value.</p>}
                   </div>
                   {operation?.has_body && (
                     <div>
-                      <label htmlFor="preview-body" className="text-[12px] font-[700] text-fg">JSON body</label>
-                      <Textarea id="preview-body" value={body} onChange={(event) => setBody(event.target.value)} spellCheck={false} className="mt-2 min-h-48 font-mono text-[12px]" />
+                      {operation.body_schema?.properties && <div className="mb-3 flex gap-2"><Button variant={mode === "json" ? "default" : "outline"} size="sm" onClick={() => { setMode("json"); setFieldsValid(true); }}>JSON</Button><Button variant={mode === "fields" ? "default" : "outline"} size="sm" onClick={() => { try { const parsed = JSON.parse(body); if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error(); setMode("fields"); setError(null); } catch { setError("Use a JSON object before switching to fields."); } }}>Fields</Button></div>}
+                      {mode === "fields" && operation.body_schema ? <RequestFields key={`${selected}:fields`} schema={operation.body_schema} body={body} onChange={setBody} onValidity={setFieldsValid} /> : <><label htmlFor="preview-body" className="text-[12px] font-[700] text-fg">JSON body</label>
+                      <Textarea id="preview-body" value={body} onChange={(event) => setBody(event.target.value)} spellCheck={false} className="mt-2 min-h-48 font-mono text-[12px]" /></>}
                     </div>
                   )}
-                  <Button onClick={send} disabled={sending || path.includes("{")} className="h-10 gap-2 px-5">
+                  <Button variant="outline" onClick={saveRequest} disabled={sending || !fieldsValid}>Save request</Button>
+                  <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid} className="h-10 gap-2 px-5">
                     <Play className="h-3.5 w-3.5" aria-hidden /> {sending ? "Sending…" : "Send request"}
                   </Button>
                 </div>
@@ -189,6 +226,7 @@ export default function TryApiPage() {
               ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}
             </section>
             </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">{[{ title: "Saved requests", items: saved }, { title: "Recent responses", items: recent }].map(group => <section key={group.title} className="rounded-2xl border border-border bg-surface p-5"><h2 className="font-semibold">{group.title}</h2><p className="mt-1 text-xs text-fg-muted">{group.title === "Saved requests" ? "Stored on this device. Loading a request does not send it." : "Last 10 responses in this visit; previews limited to 20 KB."}</p>{group.items.length ? group.items.map(item => <div key={item.key} className="mt-3 flex items-center gap-2"><Button variant="outline" className="h-auto min-h-10 min-w-0 flex-1 justify-start whitespace-normal break-all text-left text-xs" disabled={sending} onClick={() => restore(item)}>{item.method} {item.path}{item.response ? ` · HTTP ${item.response.status}` : ""}</Button>{group.title === "Saved requests" && <Button variant="ghost" size="sm" onClick={() => { const next = saved.filter(value => value.key !== item.key); setSaved(next); if (storageKey) writeLocal(storageKey, next); }}>Remove</Button>}</div>) : <p className="mt-3 text-sm text-fg-muted">Nothing saved yet.</p>}</section>)}</div>
           </section>
         ) : (
           <Button variant="outline" onClick={() => void load()} className="mt-6">Try again</Button>

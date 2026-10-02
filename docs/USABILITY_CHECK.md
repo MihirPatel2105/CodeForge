@@ -17,3 +17,17 @@ The Phase 7 criterion is met only when the viewer can describe the full run afte
 - At 375px, verify search remains usable by keyboard and the page has no horizontal overflow.
 - Inspect visible focus, error recovery, empty states, and long labels on desktop and mobile before a release.
 - Record page weight and interaction delays from a production build when a real backend is available; do not treat a mocked route as a performance measurement.
+
+## Workspace experience follow-up
+
+After the 2026-10-02 additions, also observe whether the first-time user can:
+
+1. Choose and customize a template, leave the project, and recover their draft.
+2. Request a checkpoint change and recognize the revised plan before approving.
+3. Find a pending approval in the header inbox while visiting another project.
+4. Create a record in Try API, reuse its returned ID, and load a saved request.
+5. Build an improved version, inspect its diff, and explain which version is published.
+6. Rename/archive a project and restore it from the archived view.
+
+Record actual observations here or in an attached test report. The existence of
+these tasks and automated coverage is not a completed human usability study.

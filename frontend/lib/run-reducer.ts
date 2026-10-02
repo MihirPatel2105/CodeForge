@@ -13,6 +13,7 @@ import { formatTime } from "./format";
 import type { TimelineEntryData } from "@/components/dashboard/timeline-entry";
 
 export interface AgentSnapshot {
+  startedAt?: string;
   state: AgentCardState;
   iteration: number;
   durationMs: number | null;
@@ -52,6 +53,7 @@ export interface LoopSnapshot {
 }
 
 export interface RunSnapshot {
+  lastEventAt?: string;
   runId: string | null;
   prompt: string | null;
   status: string;
@@ -244,7 +246,7 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         currentAgent: event.agent,
         agents: {
           ...prev.agents,
-          [event.agent]: { ...prev.agents[event.agent], state: "working", iteration: event.iteration },
+          [event.agent]: { ...prev.agents[event.agent], state: "working", startedAt: event.at, iteration: event.iteration },
         },
       };
     }
@@ -338,14 +340,14 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         kind: "message",
         time,
         agent: "—",
-        text: event.approved ? "Approved" : "Rejected",
-        variant: event.approved ? "approval-resolved" : "rejected",
+        text: event.revision_requested ? "Changes requested — revising this checkpoint" : event.approved ? "Approved" : "Rejected",
+        variant: event.approved || event.revision_requested ? "approval-resolved" : "rejected",
       };
       return {
         ...prev,
         // A rejection ends the run; that terminal status arrives on run.failed, so this
         // only clears the paused state on approval — never assume "running" on reject.
-        status: event.approved ? "running" : prev.status,
+        status: event.approved || event.revision_requested ? "running" : prev.status,
         approval: null,
         timeline: [...prev.timeline, entry],
       };
@@ -413,7 +415,7 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         currentAgent: "sandbox",
         agents: {
           ...prev.agents,
-          sandbox: { ...prev.agents.sandbox, state: "working", model: event.image },
+          sandbox: { ...prev.agents.sandbox, state: "working", startedAt: event.at, model: event.image },
         },
       };
 

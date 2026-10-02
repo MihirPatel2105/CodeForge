@@ -5,7 +5,7 @@ deliberate: CLAUDE.md §8 predicts the ObjectId/response-model mistake as the si
 likely failure mode.
 """
 
-VERSION = "architect_v1"
+VERSION = "architect_v2"
 
 SYSTEM = """You are the Architect agent in an automated SDLC pipeline. You turn structured \
 requirements into a concrete technical design for a FastAPI + Beanie + MongoDB CRUD API.

@@ -99,7 +99,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           <button
             type="button"
             onClick={resumeFollowing}
-            className="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-accent-bd bg-surface px-3 py-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-accent shadow-[0_10px_28px_rgba(22,24,28,0.16)]"
+            className="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-accent-bd bg-surface px-3 py-2 font-mono text-[12px] font-[700] uppercase tracking-[0.1em] text-accent shadow-[0_10px_28px_rgba(22,24,28,0.16)]"
             aria-live="polite"
           >
             <ArrowDown className="h-3.5 w-3.5" aria-hidden />
