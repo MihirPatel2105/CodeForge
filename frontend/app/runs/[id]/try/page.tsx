@@ -203,10 +203,12 @@ export default function TryApiPage() {
                       <Textarea id="preview-body" value={body} onChange={(event) => setBody(event.target.value)} spellCheck={false} className="mt-2 min-h-48 font-mono text-[12px]" /></>}
                     </div>
                   )}
-                  <Button variant="outline" onClick={saveRequest} disabled={sending || !fieldsValid}>Save request</Button>
-                  <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid} className="h-10 gap-2 px-5">
-                    <Play className="h-3.5 w-3.5" aria-hidden /> {sending ? "Sending…" : "Send request"}
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button variant="outline" onClick={saveRequest} disabled={sending || !fieldsValid}>Save request</Button>
+                    <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid}>
+                      <Play className="h-3.5 w-3.5" aria-hidden /> {sending ? "Sending…" : "Send request"}
+                    </Button>
+                  </div>
                 </div>
               )}
             </section>
