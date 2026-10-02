@@ -11,14 +11,19 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError, downloadAdminCsv, getToken } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import type { AdminPageInfo, AdminUserSummary } from "@/lib/types";
+import { useAdminFilters } from "@/lib/use-admin-filters";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
 
+const USER_FILTERS = { q: "", date_from: "", date_to: "" };
+
 export default function AdminUsersPage() {
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const { filters, setFilters, ready } = useAdminFilters(USER_FILTERS);
+  const { q: query, date_from: from, date_to: to } = filters;
+  const setQuery = (value: string) => setFilters(current => ({ ...current, q: value }));
+  const setFrom = (value: string) => setFilters(current => ({ ...current, date_from: value }));
+  const setTo = (value: string) => setFilters(current => ({ ...current, date_to: value }));
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [pagination, setPagination] = useState<AdminPageInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +43,7 @@ export default function AdminUsersPage() {
     } finally { if (requestId === requestSequence.current) setLoading(false); }
   }, [from, router, to]);
 
-  useEffect(() => { if (!getToken()) return router.replace("/login"); void load(debouncedQuery); }, [debouncedQuery, load, router]);
+  useEffect(() => { if (!getToken()) return router.replace("/login"); if (ready) void load(debouncedQuery); }, [debouncedQuery, load, router, ready]);
   const submit = (event: FormEvent) => { event.preventDefault(); void load(query); };
 
   return (
@@ -48,7 +53,7 @@ export default function AdminUsersPage() {
       <form onSubmit={submit} className="mt-7 grid max-w-4xl gap-2 md:grid-cols-[minmax(16rem,1fr)_12rem_12rem_auto]"><label className="relative block"><span className="sr-only">Search users</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name or email" className="h-10 rounded-lg pl-9" /></label><Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} aria-label="Users from date" className="h-10 rounded-lg" /><Input type="date" value={to} onChange={(event) => setTo(event.target.value)} aria-label="Users to date" className="h-10 rounded-lg" /><Button type="submit" className="h-10 rounded-lg" disabled={loading}>Search</Button></form>
       <p role="status" className="mt-4 text-[12px] font-[600] text-fg-muted">{loading ? "Updating accounts…" : `${pagination?.total ?? users.length} accounts`}</p>
       <div className="mt-2 overflow-hidden rounded-3xl border border-border bg-surface" aria-busy={loading}>
-        <div className={cn("overflow-x-auto transition-opacity duration-200 motion-reduce:transition-none", loading && users.length > 0 && "opacity-45")}><table className="w-full min-w-[820px] text-left"><thead className="bg-surface-2"><tr>{["Account", "Projects", "Runs", "Succeeded", "Last activity", ""].map((label) => <th key={label} className={cn(ADMIN_LABEL, "border-b border-rule px-4 py-3")}>{label}</th>)}</tr></thead><tbody>
+        <div className={cn("max-h-[65vh] overflow-auto transition-opacity duration-200 motion-reduce:transition-none", loading && users.length > 0 && "opacity-45")}><table className="w-full min-w-[820px] text-left"><thead className="sticky top-0 z-10 bg-surface-2"><tr>{["Account", "Projects", "Runs", "Succeeded", "Last activity", ""].map((label) => <th key={label} className={cn(ADMIN_LABEL, "border-b border-rule px-4 py-3")}>{label}</th>)}</tr></thead><tbody>
           {users.map((user) => <tr key={user.id} className="border-b border-rule last:border-b-0 hover:bg-surface-2/60"><td className="px-4 py-4"><div className="flex items-center gap-2"><p className="text-[13px] font-[650] text-fg">{[user.first_name, user.last_name].filter(Boolean).join(" ") || "Unnamed user"}</p>{user.is_admin ? <ShieldCheck className="h-4 w-4 text-accent" aria-label="Administrator" /> : null}{user.is_suspended ? <span className="rounded-full bg-danger-soft px-2 py-1 font-mono text-[8px] font-[700] uppercase text-danger">Suspended</span> : null}{user.email_verified ? <span className="rounded-full bg-ok-soft px-2 py-1 font-mono text-[8px] font-[700] uppercase text-ok">Verified</span> : null}</div><p className="mt-1 font-mono text-[10.5px] text-fg-faint">{user.email}</p></td><td className="px-4 py-4 font-mono text-[12px] text-fg-muted">{user.project_count}</td><td className="px-4 py-4 font-mono text-[12px] text-fg-muted">{user.run_count}</td><td className="px-4 py-4 font-mono text-[12px] text-fg-muted">{user.succeeded_runs}</td><td className="px-4 py-4 font-mono text-[10.5px] text-fg-faint">{user.last_activity_at ? formatWhen(user.last_activity_at) : "No runs"}</td><td className="px-4 py-4 text-right"><Link href={`/admin/users/${user.id}`} aria-label={`Open ${user.email}`} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-fg-faint hover:border-fg hover:text-fg"><ArrowUpRight className="h-4 w-4" aria-hidden /></Link></td></tr>)}
           {users.length === 0 && !loading ? <tr><td colSpan={6} className="px-5 py-12 text-center text-[13px] text-fg-faint">No accounts match this search.</td></tr> : null}
         </tbody></table></div>

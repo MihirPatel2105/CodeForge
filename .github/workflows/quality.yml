@@ -53,7 +53,7 @@ jobs:
             if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then break; fi
             sleep 2
           done
-          E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/auth-recovery.spec.ts tests/e2e/workspace-experience.spec.ts
+          E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/auth-recovery.spec.ts tests/e2e/workspace-experience.spec.ts tests/e2e/admin-operations.spec.ts tests/e2e/admin-live-search.spec.ts tests/e2e/admin-user-delete-ui.spec.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

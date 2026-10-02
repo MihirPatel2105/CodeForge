@@ -58,7 +58,7 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
             <>
               <AttentionInbox key={user.id} userId={user.id} />
               {workspace && user.is_admin && (
-                <MotionLink {...pressMotion} href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">
+                <MotionLink {...pressMotion} href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="hidden sm:inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">
                   Admin
                 </MotionLink>
               )}

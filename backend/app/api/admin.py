@@ -17,6 +17,7 @@ from fastapi import APIRouter, BackgroundTasks, Query, Response
 
 from app.config import settings
 from app.core.account_deletion import delete_user_account
+from app.core.admin_guidance import failure_guidance
 from app.core.deps import AdminUser, is_admin_user
 from app.core.email import send_account_deleted_email
 from app.core.exceptions import AuthError, ConflictError, NotFoundError
@@ -277,6 +278,7 @@ async def list_runs(
     admin: AdminUser,
     status: RunStatus | None = None,
     q: str = Query(default="", max_length=200),
+    user_id: str | None = Query(default=None, max_length=24),
     rag_enabled: bool | None = None,
     acceptance_level: str | None = Query(default=None, pattern=r"^L[0-5]$"),
     failure_category: str | None = None,
@@ -287,6 +289,8 @@ async def list_runs(
 ) -> AdminRunPage:
     del admin
     filters: dict[str, Any] = {}
+    if user_id:
+        filters["user_id"] = user_id
     if status:
         filters["status"] = status
     if q.strip():
@@ -364,7 +368,13 @@ async def get_run(run_id: str, admin: AdminUser) -> AdminRunDetail:
     del admin
     run = await _get_run(run_id)
     summary = (await _run_summaries([run]))[0]
-    return AdminRunDetail(run=summary, state=run.state, events=run.events)
+    guidance = failure_guidance(run)
+    return AdminRunDetail(
+        run=summary,
+        state=run.state,
+        events=run.events,
+        failure_guidance=guidance.model_dump() if guidance else None,
+    )
 
 
 @router.post("/runs/{run_id}/retry", response_model=AdminActionResponse)
@@ -943,6 +953,20 @@ async def system_health(admin: AdminUser) -> AdminSystemHealthResponse:
         providers.append(
             AdminProviderStatus(
                 name=provider,
+                observation=(
+                    "not_configured"
+                    if not configured
+                    else "not_observed"
+                    if observed["last"] is None
+                    else "stale"
+                    if (datetime.now(UTC) - observed["last"].replace(tzinfo=UTC)).total_seconds()
+                    > 3600
+                    else "rate_limited"
+                    if observed["rate_limits"]
+                    else "failed"
+                    if observed["successes"] == 0
+                    else "successful"
+                ),
                 status=status,
                 configured=configured,
                 recent_attempts=observed["attempts"],

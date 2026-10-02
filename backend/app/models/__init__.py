@@ -1,4 +1,5 @@
 from app.models.admin_audit import AdminAuditLog
+from app.models.admin_incident import AdminIncident
 from app.models.deployment import Deployment
 from app.models.device import Device
 from app.models.login_session import LoginSession
@@ -28,10 +29,12 @@ DOCUMENT_MODELS = [
     Project,
     Run,
     AdminAuditLog,
+    AdminIncident,
 ]
 
 __all__ = [
     "AdminAuditLog",
+    "AdminIncident",
     "DOCUMENT_MODELS",
     "Device",
     "Deployment",

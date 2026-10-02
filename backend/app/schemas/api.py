@@ -361,6 +361,7 @@ class AdminOverviewResponse(BaseModel):
 
 
 class AdminRunDetail(BaseModel):
+    failure_guidance: dict[str, str] | None = None
     run: AdminRunSummary
     state: dict[str, Any] = Field(default_factory=dict)
     events: list[dict[str, Any]] = Field(default_factory=list)
@@ -425,6 +426,9 @@ class AdminServiceStatus(BaseModel):
 
 
 class AdminProviderStatus(BaseModel):
+    observation: Literal[
+        "not_configured", "not_observed", "stale", "rate_limited", "failed", "successful"
+    ] = "not_observed"
     name: str
     status: AdminHealthStatus
     configured: bool

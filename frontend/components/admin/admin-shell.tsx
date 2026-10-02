@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Globe,
+  ShieldAlert,
   BarChart3,
   ClipboardList,
   LayoutDashboard,
@@ -22,6 +24,8 @@ export const ADMIN_LABEL =
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/runs", label: "Runs", icon: Workflow, exact: false },
+  { href: "/admin/deployments", label: "API hosting", icon: Globe, exact: false },
+  { href: "/admin/incidents", label: "Incidents", icon: ShieldAlert, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
   { href: "/admin/quality", label: "Quality", icon: BarChart3, exact: false },
   { href: "/admin/monitoring", label: "Monitoring", icon: TrendingUp, exact: false },

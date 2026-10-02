@@ -6,6 +6,7 @@
  * in an HttpOnly cookie and attaches it to backend calls on the server.
  */
 
+import type { AdminAttention, AdminDeployments, AdminIncidents, AdminTrends, AdminSupport } from "@/lib/types";
 import type {
   PasskeyInfo,
   PasskeyOptions,
@@ -235,8 +236,16 @@ export const api = {
   sendContactMessage: (payload: ContactRequest) =>
     request<ContactResponse>("/contact", { method: "POST", body: JSON.stringify(payload) }),
 
+  adminAttention: () => request<AdminAttention>("/admin/attention"),
+  adminDeployments: () => request<AdminDeployments>("/admin/deployments"),
+  adminStopDeployment: (id: string, reason: string) => request<AdminActionResponse>(`/admin/deployments/${id}/stop`, { method: "POST", body: JSON.stringify({ reason }) }),
+  adminIncidents: () => request<AdminIncidents>("/admin/incidents"),
+  adminUpdateIncident: (key: string, status: "open" | "acknowledged" | "resolved", note: string) => request<AdminActionResponse>(`/admin/incidents/${encodeURIComponent(key)}`, { method: "PATCH", body: JSON.stringify({ status, note }) }),
+  adminTrends: (days = 7) => request<AdminTrends>(`/admin/trends?days=${days}`),
+  adminSupport: (id: string) => request<AdminSupport>(`/admin/users/${id}/support`),
   adminOverview: () => request<AdminOverviewResponse>("/admin/overview"),
   adminRuns: (filters: {
+    user_id?: string;
     q?: string;
     status?: string;
     rag_enabled?: boolean;

@@ -15,9 +15,10 @@ export function AdminRunTable({
 }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-surface">
-      <div className="overflow-x-auto">
+      <div className="divide-y divide-border md:hidden">{runs.map(run => <article key={run.id} className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h3 className="text-sm font-semibold">{run.project_name}</h3><p className="mt-1 line-clamp-2 text-xs text-fg-muted">{run.prompt}</p></div><Link href={`/admin/runs/${run.id}`} aria-label={`Inspect run ${run.id}`} className="shrink-0 rounded-full border border-border p-2 text-accent"><ArrowUpRight className="size-4" aria-hidden /></Link></div><Link href={`/admin/users/${run.user_id}`} className="mt-3 block break-all text-xs text-accent">{run.user_email}</Link><div className="mt-3 flex flex-wrap gap-3 text-xs text-fg-muted"><span className={tone[(RUN_STATUS_META[run.status] ?? { tone: "neutral" }).tone].text}>{run.status.replaceAll("_", " ")}</span><span>{run.acceptance_level ?? "Not scored"}</span><span>{formatWhen(run.updated_at)}</span></div></article>)}{runs.length === 0 && <p className="p-5 text-sm text-fg-muted">{emptyLabel}</p>}</div>
+      <div className="hidden max-h-[65vh] overflow-auto md:block">
         <table className="w-full min-w-[980px] border-collapse text-left">
-          <thead className="bg-surface-2">
+          <thead className="sticky top-0 z-10 bg-surface-2">
             <tr>
               {["Project / prompt", "User", "Outcome", "Quality", "Loops", "Updated", ""].map(
                 (label) => (
@@ -43,7 +44,7 @@ export function AdminRunTable({
                     </div>
                     <p className="mt-1 truncate text-[12px] text-fg-muted">{run.prompt}</p>
                   </td>
-                  <td className="px-4 py-4 font-mono text-[11px] text-fg-muted">{run.user_email}</td>
+                  <td className="px-4 py-4 font-mono text-[11px] text-fg-muted"><Link href={`/admin/users/${run.user_id}`} className="text-accent hover:underline">{run.user_email}</Link></td>
                   <td className="px-4 py-4">
                     <span className={cn("inline-flex rounded-full px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em]", tone[meta.tone].soft)}>
                       {meta.label}

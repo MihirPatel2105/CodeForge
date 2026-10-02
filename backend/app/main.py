@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
 from app.api.admin import router as admin_router
+from app.api.admin_operations import router as admin_operations_router
 from app.api.auth import router as auth_router
 from app.api.contact import router as contact_router
 from app.api.deployments import router as deployments_router
@@ -202,6 +203,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(passkeys_router)
     app.include_router(admin_router)
+    app.include_router(admin_operations_router)
     app.include_router(contact_router)
     app.include_router(deployments_router)
     app.include_router(projects_router)

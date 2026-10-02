@@ -167,3 +167,73 @@ async def destroy_deployment(deployment_id: str) -> None:
     lock = _locks.setdefault(deployment_id, asyncio.Lock())
     async with lock:
         await asyncio.to_thread(_destroy_blocking, deployment_id)
+
+
+def _inspect_blocking(deployment_ids: list[str]) -> dict[str, dict[str, Any]]:
+    """Read only labelled CodeForge containers; never start an API during inspection."""
+    from docker.errors import NotFound
+
+    client = _client()
+    results = {}
+    try:
+        for deployment_id in deployment_ids:
+            try:
+                container = client.containers.get(_name(deployment_id))
+                if not _owned(container, deployment_id):
+                    results[deployment_id] = {
+                        "runtime_status": "unknown",
+                        "detail": "Runtime ownership could not be verified.",
+                    }
+                    continue
+                container.reload()
+                running = container.status == "running"
+                ready = (
+                    running
+                    and container.exec_run(
+                        ["test", "-f", "/tmp/codeforge-deployment-ready"]
+                    ).exit_code
+                    == 0
+                )
+                stats = container.stats(stream=False) if running else {}
+                memory = stats.get("memory_stats", {})
+                results[deployment_id] = {
+                    "runtime_status": "ready" if ready else "starting" if running else "stopped",
+                    "started_at": container.attrs.get("State", {}).get("StartedAt")
+                    if running
+                    else None,
+                    "memory_bytes": memory.get("usage"),
+                    "memory_limit_bytes": memory.get("limit"),
+                    "detail": "Runtime is running and its startup marker is present."
+                    if ready
+                    else "Runtime has not completed startup."
+                    if running
+                    else "Runtime is stopped.",
+                }
+            except NotFound:
+                results[deployment_id] = {
+                    "runtime_status": "missing",
+                    "detail": "No runtime container was found.",
+                }
+            except Exception:
+                results[deployment_id] = {
+                    "runtime_status": "unknown",
+                    "detail": "Runtime inspection is temporarily unavailable.",
+                }
+    finally:
+        client.close()
+    return results
+
+
+async def inspect_deployments(deployment_ids: list[str]) -> dict[str, dict[str, Any]]:
+    if not deployment_ids:
+        return {}
+    try:
+        return await asyncio.to_thread(_inspect_blocking, deployment_ids)
+    except Exception:
+        return {
+            key: {
+                "runtime_status": "unknown",
+                "detail": "Docker could not be inspected. Check system health.",
+            }
+            for key in deployment_ids
+        }

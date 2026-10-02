@@ -327,3 +327,18 @@ resuming, so RAG arms from different versions cannot be combined accidentally.
 - Preview operations include a resolved, depth-bounded `body_schema` for field input.
 
 See `WORKSPACE_EXPERIENCE.md` for lifecycle, device storage, and notification limits.
+
+## Admin operations (2026-10-02)
+
+- `GET /admin/attention`: active workflows and recent failures with safe guidance.
+- `GET /admin/deployments`: published API ownership and current runtime observations.
+- `POST /admin/deployments/{id}/stop`: reason-required audited runtime/data cleanup.
+- `GET /admin/users/{id}/support`: monthly usage, active sessions, failures and APIs.
+- `GET /admin/incidents`: seven-day failures grouped by outcome and UTC day.
+- `PATCH /admin/incidents/{key}`: status and required internal note; newer failures reopen groups.
+- `GET /admin/trends?days=7`: equal current/previous period comparisons (1–90 days).
+- `GET /admin/runs` accepts `user_id`; run detail includes safe failure guidance.
+- Provider health includes passive observation freshness and unobserved states.
+- `admin_incidents` persists group status, observed timestamp and the latest 30 notes.
+
+See `ADMIN_OPERATIONS.md` for thresholds, freshness and destructive stop semantics.

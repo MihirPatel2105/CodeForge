@@ -10,19 +10,23 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError, downloadAdminCsv, getToken } from "@/lib/api";
 import { formatWhen } from "@/lib/format";
 import type { AdminAuditEntry, AdminPageInfo } from "@/lib/types";
+import { useAdminFilters } from "@/lib/use-admin-filters";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { cn } from "@/lib/utils";
 
 type AuditFilters = { action: string; from: string; to: string };
+const AUDIT_DEFAULTS = { action: "", from: "", to: "" };
 const COLUMNS = ["Action", "Administrator", "Target", "Reason", "Recorded"];
 
 export default function AdminAuditPage() {
   const router = useRouter();
   const [entries, setEntries] = useState<AdminAuditEntry[]>([]);
   const [pagination, setPagination] = useState<AdminPageInfo | null>(null);
-  const [action, setAction] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const { filters: urlFilters, setFilters, ready } = useAdminFilters(AUDIT_DEFAULTS);
+  const { action, from, to } = urlFilters;
+  const setAction = (value: string) => setFilters(current => ({ ...current, action: value }));
+  const setFrom = (value: string) => setFilters(current => ({ ...current, from: value }));
+  const setTo = (value: string) => setFilters(current => ({ ...current, to: value }));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const requestSequence = useRef(0);
@@ -30,7 +34,7 @@ export default function AdminAuditPage() {
   const debouncedFilters = useDebouncedValue(filters);
   const hasFilters = Boolean(action || from || to);
   const load = useCallback(async (next: AuditFilters, page = 1) => { const requestId = ++requestSequence.current; setLoading(true); setError(null); try { const result = await api.adminAuditLog({ action: next.action, date_from: next.from || undefined, date_to: next.to ? `${next.to}T23:59:59Z` : undefined, page }); if (requestId !== requestSequence.current) return; setEntries(result.items); setPagination(result.pagination); } catch (err) { if (requestId !== requestSequence.current) return; if (err instanceof ApiError && err.status === 401) return router.replace("/login"); if (err instanceof ApiError && err.status === 403) return router.replace("/projects"); setError(err instanceof ApiError ? err.message : "Could not load the audit log."); } finally { if (requestId === requestSequence.current) setLoading(false); } }, [router]);
-  useEffect(() => { if (!getToken()) return router.replace("/login"); void load(debouncedFilters); }, [debouncedFilters, load, router]);
+  useEffect(() => { if (!getToken()) return router.replace("/login"); if (ready) void load(debouncedFilters); }, [debouncedFilters, load, router, ready]);
 
   function clearFilters() {
     setAction("");
@@ -87,9 +91,9 @@ export default function AdminAuditPage() {
           </div>
           <p className={ADMIN_LABEL}>{loading ? "Updating…" : `${pagination?.total ?? entries.length} records`}</p>
         </div>
-        <div className={cn("overflow-x-auto transition-opacity duration-200 motion-reduce:transition-none", loading && entries.length > 0 && "opacity-45")}>
+        <div className={cn("max-h-[65vh] overflow-auto transition-opacity duration-200 motion-reduce:transition-none", loading && entries.length > 0 && "opacity-45")}>
           <table className="w-full min-w-[880px] border-collapse text-left">
-            <thead className="bg-surface-2/75">
+            <thead className="sticky top-0 z-10 bg-surface-2/75">
               <tr>{COLUMNS.map((label) => <th key={label} scope="col" className={cn(ADMIN_LABEL, "border-b border-rule px-4 py-3.5 first:pl-5 last:pr-5")}>{label}</th>)}</tr>
             </thead>
             <tbody>

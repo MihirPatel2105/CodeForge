@@ -246,6 +246,7 @@ export interface AdminOverviewResponse {
 }
 
 export interface AdminRunDetail {
+  failure_guidance?: FailureGuidance | null;
   run: AdminRunSummary;
   state: Record<string, unknown>;
   events: Array<Record<string, unknown>>;
@@ -309,6 +310,7 @@ export interface AdminServiceStatus {
 }
 
 export interface AdminProviderStatus {
+  observation?: "not_configured" | "not_observed" | "stale" | "rate_limited" | "failed" | "successful";
   name: string;
   status: AdminHealthStatus;
   configured: boolean;
@@ -692,3 +694,15 @@ export type CodeForgeEvent =
   | RunFailedEvent;
 
 export type EventName = CodeForgeEvent["event"];
+
+
+export interface FailureGuidance { category: string; stage: string; explanation: string; next_step: string; }
+export interface AdminAttentionItem { run: AdminRunSummary; priority: "urgent" | "review" | "recent"; reason: string; waiting_minutes: number; guidance: FailureGuidance | null; }
+export interface AdminAttention { checked_at: string; total: number; items: AdminAttentionItem[]; }
+export interface AdminDeployment { id: string; run_id: string; project_id: string; project_name: string; user_id: string; user_email: string; status: string; created_at: string; runtime_status: "ready" | "starting" | "stopped" | "missing" | "unknown"; started_at: string | null; memory_bytes: number | null; memory_limit_bytes: number | null; detail: string; }
+export interface AdminDeployments { checked_at: string; capacity: number; items: AdminDeployment[]; }
+export interface AdminIncident { key: string; title: string; count: number; latest_at: string; sample_run_id: string; status: "open" | "acknowledged" | "resolved"; notes: { admin_email: string; text: string; at: string }[]; }
+export interface AdminIncidents { checked_at: string; items: AdminIncident[]; }
+export interface AdminPeriod { runs: number; failed: number; succeeded: number; tokens: number; }
+export interface AdminTrends { checked_at: string; days: number; current: AdminPeriod; previous: AdminPeriod; }
+export interface AdminSupport { checked_at: string; monthly_runs: number; active_sessions: number; failed_runs: number; deployments: AdminDeployment[]; }
