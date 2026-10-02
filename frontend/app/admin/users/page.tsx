@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,7 +44,7 @@ export default function AdminUsersPage() {
   return (
     <AdminShell>
       <AdminPageHeader eyebrow="access and support" title="Users" description="Find an account, verify access, apply limits, and resolve compromised sessions with audited actions." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => downloadAdminCsv("users")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => load(debouncedQuery, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
-      {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+      {error ? <Notice className="mt-6">{error}</Notice> : null}
       <form onSubmit={submit} className="mt-7 grid max-w-4xl gap-2 md:grid-cols-[minmax(16rem,1fr)_12rem_12rem_auto]"><label className="relative block"><span className="sr-only">Search users</span><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name or email" className="h-10 rounded-lg pl-9" /></label><Input type="date" value={from} onChange={(event) => setFrom(event.target.value)} aria-label="Users from date" className="h-10 rounded-lg" /><Input type="date" value={to} onChange={(event) => setTo(event.target.value)} aria-label="Users to date" className="h-10 rounded-lg" /><Button type="submit" className="h-10 rounded-lg" disabled={loading}>Search</Button></form>
       <p role="status" className="mt-4 text-[12px] font-[600] text-fg-muted">{loading ? "Updating accounts…" : `${pagination?.total ?? users.length} accounts`}</p>
       <div className="mt-2 overflow-hidden rounded-3xl border border-border bg-surface" aria-busy={loading}>

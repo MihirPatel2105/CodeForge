@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -255,12 +256,9 @@ export default function PasskeysPage() {
           </section>
       </div>
         {error && !pendingRemoval && (
-          <p
-            role="alert"
-            className="mt-5 rounded-lg border border-danger-bd bg-danger-soft p-3 text-[13px] text-danger"
-          >
+          <Notice className="mt-5">
             {error}
-          </p>
+          </Notice>
         )}
         {message && (
           <p
@@ -280,8 +278,8 @@ export default function PasskeysPage() {
             <DialogDescription className="px-6 text-[14px] leading-6 text-fg-muted">
               {pendingRemoval && <>“{pendingRemoval.label}” will no longer work for sign-in or verification.</>}
             </DialogDescription>
-            {passkeys.length === 1 && !user.totp_enabled && <p className="mx-6 rounded-lg border border-warn-bd bg-warn-soft px-3 py-2 text-[12px] leading-5 text-fg">This is your only second-step method. After removal, password sign-in will no longer require verification.</p>}
-            {error && <p role="alert" className="mx-6 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[12px] text-danger">{error}</p>}
+            {passkeys.length === 1 && !user.totp_enabled && <Notice variant="warning" className="mx-6">This is your only second-step method. After removal, password sign-in will no longer require verification.</Notice>}
+            {error && <Notice className="mx-6">{error}</Notice>}
             <DialogFooter className="border-t border-border bg-surface px-6 py-5">
               <Button type="button" variant="outline" onClick={() => { setPendingRemoval(null); setError(null); }} disabled={busy}>Cancel</Button>
               <Button type="button" variant="destructive" onClick={() => void removePasskey()} disabled={busy}>{busy ? "Removing…" : "Remove passkey"}</Button>

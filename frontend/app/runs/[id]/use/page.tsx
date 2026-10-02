@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -112,7 +113,7 @@ export default function UseApiPage() {
           </div>
         </section>
 
-        {downloadError && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{downloadError}</p>}
+        {downloadError && <Notice className="mt-5">{downloadError}</Notice>}
       </main>
     </div>
   );

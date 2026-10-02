@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse } from "@/lib/types";
@@ -24,7 +25,7 @@ export function ProjectSettings({ project, onSaved }: { project: ProjectResponse
       <label className="text-sm">Project name<Input value={name} maxLength={120} onChange={e => setName(e.target.value)} /></label>
       <label className="text-sm">Description<Textarea value={description} maxLength={2000} onChange={e => setDescription(e.target.value)} /></label>
       <p className="text-sm text-fg-muted">Archiving moves this workspace out of your active list. Its runs and published APIs remain available.</p>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+      {error && <Notice>{error}</Notice>}
       <div className="flex flex-wrap gap-2"><Button disabled={busy || !name.trim()} onClick={() => save(Boolean(project.archived))}>{busy ? "Saving…" : "Save changes"}</Button><Button variant="outline" disabled={busy || !name.trim()} onClick={() => save(!project.archived)}>{project.archived ? "Restore project" : "Archive project"}</Button></div>
     </DialogContent></Dialog></>;
 }

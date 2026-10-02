@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -231,12 +232,9 @@ export default function SettingsPage() {
             </div>
 
             {sessionError && (
-              <p
-                role="alert"
-                className="mx-6 mb-6 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-danger"
-              >
+              <Notice className="mx-6 mb-6">
                 {sessionError}
-              </p>
+              </Notice>
             )}
           </section>
 

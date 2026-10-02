@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -138,7 +139,7 @@ export default function PublishApiPage() {
           {deployment && !loading && <RunFlowLink href={`/runs/${id}/try`} className="group inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden /></RunFlowLink>}
         </header>
 
-        {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
+        {error && <Notice className="mt-5">{error}</Notice>}
 
         {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : deployment ? (
           <div className="mt-6 space-y-4 motion-safe:animate-[cfFade_300ms_ease-out]">
@@ -165,21 +166,20 @@ export default function PublishApiPage() {
                   </div>
                 </div>
                 {apiKey ? (
-                  <div className="min-w-0 rounded-lg border border-warn-bd bg-warn-soft p-4">
-                    <p className="text-[12px] font-[700] text-fg">Save your API key now. It is shown only once.</p>
+                  <Notice variant="warning" title="Save your API key now. It is shown only once.">
                     <p className="mt-1 text-[12px] text-fg-muted">Store it on your server. Anyone with this key can use the published API.</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <code className="min-w-0 flex-1 overflow-x-auto text-[12px] text-fg">{showKey ? apiKey : "••••••••••••••••••••"}</code>
                       <Button variant="outline" size="sm" onClick={() => setShowKey((value) => !value)}>{showKey ? "Hide key" : "Show key"}</Button>
                       <Button variant="outline" size="sm" aria-label={copied === "key" ? "API key copied" : "Copy API key"} onClick={() => void copy(apiKey, "key")}><CopyFeedback copied={copied === "key"} label="Copy key" /></Button>
                     </div>
-                  </div>
+                  </Notice>
                 ) : <div className="rounded-lg border border-border bg-bg p-4"><p className="text-[12px] font-[700] text-fg">API key</p><p className="mt-2 text-[12px] leading-5 text-fg-muted"><code>{deployment.key_prefix}…</code> · The full key was shown when published. Rotate it if you lost it.</p></div>}
               </div>
               <span role="status" className="sr-only">{copied ? `${copied === "key" ? "API key" : copied === "URL" ? "Base URL" : copied === "setup" ? "Terminal setup" : "Request example"} copied.` : ""}</span>
             </section>
             <div className="min-w-0 space-y-3">
-              {operationsError && <div className="flex flex-wrap items-center gap-3 rounded-lg border border-warn-bd bg-warn-soft p-3 text-[12px] text-fg"><span>Endpoint examples could not load.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry examples</Button></div>}
+              {operationsError && <Notice variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Endpoint examples could not load.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry examples</Button></div></Notice>}
               <PublishGuide url={deployment.url} status={deployment.status} apiKey={apiKey} operations={operations} copied={copied} onCopy={(value, label) => void copy(value, label)} />
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function PublishApiPage() {
               ? "Your published URL will stop working and its hosted data will be permanently deleted. This cannot be undone."
               : "The current key will stop working immediately. Update any apps using it with the new key, which will be shown only once."}
           </DialogDescription>
-          {error && <p role="alert" className="mx-6 rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] text-danger">{error}</p>}
+          {error && <Notice className="mx-6">{error}</Notice>}
           <DialogFooter className="border-t border-border bg-surface px-6 py-5">
             <Button type="button" variant="outline" onClick={() => setConfirmAction(null)} disabled={busy}>Cancel</Button>
             <Button

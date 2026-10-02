@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, LoaderCircle, ShieldCheck, ShieldAlert } from "lucide-react";
@@ -55,7 +56,7 @@ export function SignInAlertReview({ token }: { token: string }) {
               <Button type="button" variant="outline" disabled={pending} onClick={() => void respond("not_me")} className="h-12 w-full rounded-xl border-danger-bd text-[14px] font-[650] text-danger hover:bg-danger-soft">No, sign out all devices</Button>
             </div>
             <p className="mt-5 text-[13px] leading-5 text-fg-muted">This link works once and expires after 24 hours. If this wasn&apos;t you, all sessions will end and you&apos;ll need to reset your password.</p>
-            {error ? <p role="alert" className="mt-4 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger">{error}</p> : null}
+            {error ? <Notice className="mt-4">{error}</Notice> : null}
           </>
         )}
     </AuthEntryShell>

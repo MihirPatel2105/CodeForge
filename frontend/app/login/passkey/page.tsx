@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -76,12 +77,9 @@ export default function PasskeyLoginPage() {
             {busy ? "Waiting for passkey…" : "Continue with passkey"}
           </Button>
           {error && (
-            <p
-              role="alert"
-              className="mt-5 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
-            >
+            <Notice className="mt-5">
               {error}
-            </p>
+            </Notice>
           )}
           {notice && (
             <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">

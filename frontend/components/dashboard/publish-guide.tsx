@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import { AnimatedDisclosure } from "@/components/dashboard/animated-disclosure";
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
         </AnimatedDisclosure>
       </div>
       <div className="mt-4 space-y-2">
-        {localOnly && <p className="rounded-lg border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg">This URL uses <code>localhost</code>, so it is reachable only from the device running CodeForge. To call it from another device or a hosted app, CodeForge needs a publicly reachable HTTPS backend URL.</p>}
+        {localOnly && <Notice variant="warning">This URL uses <code>localhost</code>, so it is reachable only from the device running CodeForge. To call it from another device or a hosted app, CodeForge needs a publicly reachable HTTPS backend URL.</Notice>}
         <p className="text-[12px] leading-5 text-fg-muted">Status: {status} · 60 requests per minute. Keep your CodeForge backend and Docker host online; unpublishing deletes hosted data.</p>
       </div>
     </section>

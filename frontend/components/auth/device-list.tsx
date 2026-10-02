@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -79,7 +80,7 @@ export function DeviceList() {
           </div>
         ))}
       </div>
-      {error ? <p role="alert" className="py-3 text-[12px] text-danger">{error}</p> : null}
+      {error ? <Notice>{error}</Notice> : null}
     </div>
   );
 }

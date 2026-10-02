@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardCheck, Download, RefreshCw, SearchX } from "lucide-react";
@@ -55,7 +56,7 @@ export default function AdminAuditPage() {
         }
       />
 
-      {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+      {error ? <Notice className="mt-6">{error}</Notice> : null}
 
       <section className="mt-6 rounded-3xl border border-border bg-surface p-4 sm:p-5" aria-label="Audit log filters">
         <div className="grid gap-4 md:grid-cols-[minmax(220px,1fr)_minmax(150px,190px)_minmax(150px,190px)]">

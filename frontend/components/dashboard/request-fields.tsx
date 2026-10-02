@@ -1,4 +1,5 @@
 "use client";
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { JsonSchema } from "@/lib/types";
@@ -39,7 +40,7 @@ export function RequestFields({ schema, body, onChange, onValidity }: { schema: 
     const inputId = `field-${name}`;
     return <div key={name}><div className="flex items-center justify-between gap-3"><label htmlFor={inputId} className="text-sm font-semibold">{name} <span className="font-normal text-fg-muted">{required ? "Required" : "Optional"}</span></label>{!required && <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={!omitted.includes(name)} onChange={event => update(values, event.target.checked ? omitted.filter(key => key !== name) : [...omitted, name])} />Include</label>}</div>
       {field.type === "boolean" ? <select id={inputId} disabled={omitted.includes(name)} value={values[name] ?? "false"} onChange={event => update({ ...values, [name]: event.target.value })} className="cf-project-select mt-1 h-11 w-full rounded-lg border border-border bg-bg px-3 text-sm"><option value="false">false</option><option value="true">true</option></select> : <Input id={inputId} disabled={omitted.includes(name)} value={values[name] ?? ""} inputMode={field.type === "integer" || field.type === "number" ? "decimal" : "text"} onChange={event => update({ ...values, [name]: event.target.value })} aria-invalid={Boolean(errors[name])} placeholder={field.type === "array" ? '["example"]' : field.format || field.type} className="mt-1" />}
-      {field.description && <p className="mt-1 text-xs text-fg-muted">{field.description}</p>}{errors[name] && <p role="alert" className="mt-1 text-xs text-danger">{errors[name]}</p>}
+      {field.description && <p className="mt-1 text-xs text-fg-muted">{field.description}</p>}{errors[name] && <Notice compact className="mt-1">{errors[name]}</Notice>}
     </div>;
   })}</div>;
 }

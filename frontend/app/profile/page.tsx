@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -165,12 +166,12 @@ export default function ProfilePage() {
         </section>
 
         {error && (
-          <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3">
-            <p className="text-[13px] text-danger">{error}</p>
+          <Notice className="mt-5"><div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="min-w-0 flex-1">{error}</p>
             <Button variant="outline" size="sm" onClick={() => void load(isAdmin)}>
               Retry activity
             </Button>
-          </div>
+          </div></Notice>
         )}
 
         <div className="cf-account-content mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">

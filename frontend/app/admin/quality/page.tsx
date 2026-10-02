@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Braces, CheckCircle2, Clock3, RefreshCw, Repeat2, Sparkles, TestTube2 } from "lucide-react";
@@ -29,7 +30,7 @@ export default function AdminQualityPage() {
   return (
     <AdminShell>
       <AdminPageHeader eyebrow="outcome analytics" title="Quality" description="Measured results from persisted RunMetrics. The cards use eligible completed runs; exclusions are reported separately." actions={<Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={load} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button>} />
-      {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+      {error ? <Notice className="mt-6">{error}</Notice> : null}
       <div className="mt-6 rounded-lg border border-accent-bd bg-accent-soft px-4 py-3 text-[12px] leading-5 text-fg-muted"><strong className="text-fg">Population:</strong> {quality?.eligible_runs ?? "—"} eligible of {quality?.measured_runs ?? "—"} measured runs. Cancelled, rejected, and infrastructure or quota failures before completion are excluded from outcome rates.</div>
 
       <section className="pt-8" aria-labelledby="quality-kpis"><AdminSectionHeading eyebrow="01 / core signals" title="Outcome scorecard" id="quality-kpis" /><Kpis quality={quality} loading={loading} /></section>

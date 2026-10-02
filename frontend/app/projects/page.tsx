@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -177,12 +178,12 @@ export default function ProjectsPage() {
         <div className="mt-5 flex gap-2" aria-label="Project view"><Button variant={!archived ? "default" : "outline"} onClick={() => setArchived(false)}>Active projects</Button><Button variant={archived ? "default" : "outline"} onClick={() => setArchived(true)}>Archived projects</Button></div>
 
         {error && (
-          <div role="alert" className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <Notice className="mt-6"><div className="flex flex-wrap items-center justify-between gap-3">
             <p>{error}</p>
             <Button type="button" variant="outline" onClick={() => void (nextCursor && projects ? loadMore() : load(search))} disabled={loading || loadingMore}>
               Try again
             </Button>
-          </div>
+          </div></Notice>
         )}
 
         {loading && projects == null ? (

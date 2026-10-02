@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
@@ -162,7 +163,7 @@ export default function TryApiPage() {
 
         <div className="mt-5"><Button variant="outline" onClick={() => setGuide(!guide)}>{guide ? "Hide CRUD walkthrough" : "Show CRUD walkthrough"}</Button>{guide && <ol className="mt-3 grid gap-2 rounded-xl border border-border bg-surface p-4 text-sm sm:grid-cols-4">{["1. POST: create a record", "2. GET: inspect the new record", "3. PUT/PATCH: change a field", "4. DELETE: remove the test record"].map(step => <li key={step}>{step}</li>)}<li className="text-fg-muted sm:col-span-4">Select each endpoint below and send it yourself. After POST, use the returned ID for the other requests. Preview data is temporary.</li></ol>}</div>
         {notice && <p role="status" className="mt-3 text-sm text-fg-muted">{notice}</p>}
-        {error && <p role="alert" className="mt-5 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p>}
+        {error && <Notice className="mt-5">{error}</Notice>}
 
         {loading ? (
           <p className="mt-8 font-mono text-[12px] text-fg-muted">Starting your temporary API…</p>
@@ -223,7 +224,7 @@ export default function TryApiPage() {
                   </p>
                   {response.session_started && <p className="mt-2 text-[12px] text-fg-muted">A fresh temporary database was started for this request.</p>}
                   <pre className="mt-4 max-h-[32rem] overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[12px] leading-5 whitespace-pre-wrap break-all text-term-fg">{displayBody(response.body) || "No response body"}</pre>
-                  {response.truncated && <p className="mt-2 text-[12px] text-warn">Response shortened to 100 KB.</p>}
+                  {response.truncated && <Notice variant="warning" compact className="mt-2">Response shortened to 100 KB.</Notice>}
                 </div>
               ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}
             </section>

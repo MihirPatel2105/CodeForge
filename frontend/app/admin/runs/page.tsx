@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download, Filter, RefreshCw, Search } from "lucide-react";
@@ -65,7 +66,7 @@ export default function AdminRunsPage() {
   return (
     <AdminShell>
       <AdminPageHeader eyebrow="run operations" title="Runs" description="Search every workspace run, isolate failures, retry safely, and export operational data." actions={<div className="flex gap-2"><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => downloadAdminCsv("runs")}><Download className="h-4 w-4" aria-hidden />Export CSV</Button><Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => load(debouncedFilters, pagination?.page ?? 1)} disabled={loading}><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} aria-hidden />Refresh</Button></div>} />
-      {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+      {error ? <Notice className="mt-6">{error}</Notice> : null}
 
       <form onSubmit={submit} className="mt-7 grid gap-3 rounded-3xl border border-border bg-surface p-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="relative block">

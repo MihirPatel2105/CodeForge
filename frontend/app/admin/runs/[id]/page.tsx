@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -54,7 +55,7 @@ export default function AdminRunPage() {
     finally { setBusy(false); }
   };
 
-  if (!detail) return <AdminShell><Link href="/admin/runs" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Runs</Link>{error ? <p role="alert" className="mt-6 text-[13px] text-danger">{error}</p> : <div className="flex min-h-[55vh] items-center justify-center"><RefreshCw className="h-5 w-5 animate-spin text-accent" aria-label="Loading run" /></div>}</AdminShell>;
+  if (!detail) return <AdminShell><Link href="/admin/runs" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Runs</Link>{error ? <Notice className="mt-6">{error}</Notice> : <div className="flex min-h-[55vh] items-center justify-center"><RefreshCw className="h-5 w-5 animate-spin text-accent" aria-label="Loading run" /></div>}</AdminShell>;
 
   const { run } = detail;
   const meta = RUN_STATUS_META[run.status] ?? { label: run.status, tone: "neutral" as const };
@@ -70,7 +71,7 @@ export default function AdminRunPage() {
     <Link href="/admin/runs" className="mb-5 inline-flex items-center gap-2 font-mono text-[10px] font-[700] uppercase tracking-[0.1em] text-fg-muted hover:text-fg"><ArrowLeft className="h-4 w-4" aria-hidden />Back to runs</Link>
     <AdminPageHeader eyebrow={`run / ${run.id}`} title={run.project_name} description={run.prompt} actions={<div className="flex gap-2">{TERMINAL.has(run.status) ? <Button variant="outline" className="h-10 gap-2 rounded-lg" onClick={() => setShowRetry((value) => !value)}><RotateCcw className="h-4 w-4" aria-hidden />Retry run</Button> : null}{canCancel ? <Button variant="outline" className="h-10 gap-2 rounded-lg border-danger-bd text-danger" onClick={() => setShowCancel((value) => !value)}><Ban className="h-4 w-4" aria-hidden />Cancel run</Button> : null}</div>} />
     <div className="mt-4 flex flex-wrap items-center gap-3"><span className={cn("rounded-full px-2.5 py-1 font-mono text-[9px] font-[700] uppercase tracking-[0.08em]", tone[meta.tone].soft)}>{meta.label}</span><span className={ADMIN_LABEL}>{run.user_email}</span><span className={ADMIN_LABEL}>Started {formatWhen(run.created_at)}</span></div>
-    {error ? <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</p> : null}
+    {error ? <Notice className="mt-6">{error}</Notice> : null}
     {notice ? <p role="status" className="mt-6 rounded-lg border border-ok-bd bg-ok-soft px-4 py-3 text-[13px] text-ok">{notice}</p> : null}
     {showCancel ? <section className="mt-6 rounded-3xl border border-danger-bd bg-danger-soft p-5" aria-labelledby="cancel-run-heading"><div className="flex gap-3"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-danger" aria-hidden /><div className="flex-1"><h2 id="cancel-run-heading" className="text-[14px] font-[700] text-fg">Stop this pipeline</h2><p className="mt-1 text-[12px] leading-5 text-fg-muted">The executor task is cancelled, the run becomes terminal, and the reason is audited.</p><Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason for cancellation" maxLength={240} className="mt-4 h-10 rounded-lg bg-surface" /><div className="mt-3 flex gap-2"><Button className="h-9 rounded-lg bg-danger text-white hover:bg-danger/90" disabled={busy} onClick={cancelRun}>{busy ? "Cancelling…" : "Confirm cancellation"}</Button><Button variant="ghost" className="h-9 rounded-lg" onClick={() => setShowCancel(false)}>Keep running</Button></div></div></div></section> : null}
     {showRetry ? <section className="mt-6 rounded-3xl border border-accent-bd bg-accent-soft p-5"><h2 className="text-[14px] font-[700] text-fg">Retry as a new run</h2><p className="mt-1 text-[12px] text-fg-muted">The original evidence stays unchanged. A new audited run starts with the same prompt and RAG mode.</p><Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason for retry" maxLength={240} className="mt-4 h-10 rounded-lg bg-surface" /><div className="mt-3 flex gap-2"><Button disabled={busy} onClick={retryRun}>Start retry</Button><Button variant="ghost" onClick={() => setShowRetry(false)}>Cancel</Button></div></section> : null}

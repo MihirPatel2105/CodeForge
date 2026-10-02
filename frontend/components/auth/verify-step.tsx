@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock3, MailCheck } from "lucide-react";
@@ -204,12 +205,9 @@ export function VerifyStep({
       </div>
 
       {error && (
-        <p
-          role="alert"
-          className="mt-4 rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
-        >
+        <Notice className="mt-4">
           {error}
-        </p>
+        </Notice>
       )}
 
       {resent && !error && (

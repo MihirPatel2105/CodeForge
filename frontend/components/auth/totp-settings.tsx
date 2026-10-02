@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -290,11 +291,10 @@ export function TotpSettings({
                         </Button>
                       </div> : null}
 
-                    <p className="mt-6 flex items-start gap-3 rounded-lg border border-warn-bd bg-warn-soft px-4 py-3 text-[12px] leading-5 text-fg-muted">
-                      <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />
+                    <Notice variant="warning" className="mt-6">
                       Treat the QR code and setup key like a password. Do not share or save them in screenshots.
-                    </p>
-                    {error ? <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                    </Notice>
+                    {error ? <Notice className="mt-4">{error}</Notice> : null}
                     </div>
                   ) : (
                     <form onSubmit={(event) => { event.preventDefault(); void verify(); }}>
@@ -305,7 +305,7 @@ export function TotpSettings({
                         </div>
                         <label htmlFor="totp-verification-code" className={cn(LABEL, "mt-6 block text-fg-faint")}>six-digit authenticator code</label>
                         <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 w-full max-w-xs rounded-lg bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
-                        {error ? <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+                        {error ? <Notice className="mt-4">{error}</Notice> : null}
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
                         <Button type="button" variant="ghost" onClick={() => { setError(null); setSetupStage("method"); }} className="h-10 rounded-lg px-2 text-fg-muted">Back to setup</Button>
@@ -369,7 +369,7 @@ export function TotpSettings({
         <Link href="/profile/settings/passkeys" className="shrink-0 font-mono text-[11px] font-[700] uppercase tracking-[0.1em] text-accent underline underline-offset-4">Manage passkeys</Link>
       </section>
 
-      {error && !setupOpen ? <p role="alert" className="rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[12.5px] text-danger">{error}</p> : null}
+      {error && !setupOpen ? <Notice>{error}</Notice> : null}
       {message ? <p role="status" className="flex items-center gap-2 rounded-lg border border-ok-bd bg-ok-soft px-4 py-3 text-[12.5px] text-ok"><CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{message}</p> : null}
     </div>
   );

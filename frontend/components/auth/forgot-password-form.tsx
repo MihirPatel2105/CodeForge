@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, KeyRound, LoaderCircle, MailCheck } from "lucide-react";
@@ -111,12 +112,9 @@ export function ForgotPasswordForm() {
                 </div>
 
                 {error && (
-                  <p
-                    role="alert"
-                    className="rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger"
-                  >
+                  <Notice>
                     {error}
-                  </p>
+                  </Notice>
                 )}
 
                 <Button

@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -296,9 +297,9 @@ export default function LiveRunPage() {
         {snapshot.approval && <a href="#approval-heading" className="sticky top-16 z-10 mt-3 block rounded-xl border border-warn-bd bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">Your decision is needed · Review checkpoint ↑</a>}
         {snapshot.endedAt && <a href={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : "#run-workbench-heading"} className="sticky top-16 z-10 mt-3 block rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-accent">{snapshot.status === "succeeded" && snapshot.tests?.ok ? "Use your API →" : "Inspect run evidence ↓"}</a>}
         {actionError && (
-          <p role="alert" className="mt-4 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <Notice className="mt-4">
             {actionError}
-          </p>
+          </Notice>
         )}
 
         <ApprovalPresence show={snapshot.approval != null}>
@@ -349,9 +350,9 @@ export default function LiveRunPage() {
         {(snapshot.endedAt || sourceRunId) && <RunVersions key={id} id={id} completed={Boolean(snapshot.endedAt)} />}
 
         {downloadError && (
-          <p role="alert" className="mt-3 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <Notice className="mt-3">
             {downloadError}
-          </p>
+          </Notice>
         )}
 
         <section className="mt-8" aria-labelledby="run-workbench-heading">

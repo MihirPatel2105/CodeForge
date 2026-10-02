@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -96,7 +97,7 @@ function RefreshButton({ loading, onClick }: { loading: boolean; onClick: () => 
 }
 
 function ErrorBanner({ message }: { message: string }) {
-  return <p role="alert" className="mt-6 rounded-lg border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] text-danger">{message}</p>;
+  return <Notice className="mt-6">{message}</Notice>;
 }
 
 function MetricGrid({ overview, loading }: { overview: AdminOverviewResponse | null; loading: boolean }) {

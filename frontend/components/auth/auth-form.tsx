@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { MotionButton } from "@/components/ui/motion-button";
 
 import { useState } from "react";
@@ -214,7 +215,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       </div>
                     )}
 
-                    {error && <p role="alert" className="rounded-xl border border-danger-bd bg-danger-soft px-4 py-3 text-[13px] leading-5 text-danger">{error}</p>}
+                    {error && <Notice>{error}</Notice>}
 
                     <Button type="submit" disabled={submitting} className="mt-1 h-12 w-full rounded-xl text-[14px] font-[650] shadow-sm transition-transform active:scale-[0.99]">
                       {submitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}

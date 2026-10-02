@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -207,12 +208,9 @@ export function ProjectDetail({
               </div>
 
               {error && (
-                <p
-                  role="alert"
-                  className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
-                >
+                <Notice>
                   {error}
-                </p>
+                </Notice>
               )}
 
               <Button
@@ -333,7 +331,7 @@ export function ProjectDetail({
                 );
               })
             )}
-            {moreError && <p role="alert" className="px-5 py-3 text-[13px] text-danger">{moreError}</p>}
+            {moreError && <Notice>{moreError}</Notice>}
             {nextCursor && <div className="border-t border-border px-5 py-4"><Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>{loadingMore ? "Loading…" : "Load more runs"}</Button></div>}
           </section>
         </div>
@@ -449,12 +447,9 @@ function DeleteProjectDialog({
             />
           </div>
           {error && (
-            <p
-              role="alert"
-              className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
-            >
+            <Notice>
               {error}
-            </p>
+            </Notice>
           )}
         </div>
         <DialogFooter className="border-t border-rule px-6 py-5">

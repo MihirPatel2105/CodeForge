@@ -1,5 +1,6 @@
 "use client";
 
+import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -134,12 +135,9 @@ export function ChangePasswordForm() {
         </ul>
 
         {error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-danger-bd bg-danger-soft px-3 py-2 text-[13px] leading-[1.45] text-danger"
-          >
+          <Notice>
             {error}
-          </p>
+          </Notice>
         )}
 
         {done && (
