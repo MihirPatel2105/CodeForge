@@ -113,6 +113,10 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 
 
 def _public_error_message(status: int, code: str) -> str:
+    if code == "published_response_too_large":
+        return "API response exceeded the size limit. Request fewer records or use pagination."
+    if code == "published_response_invalid":
+        return "The generated API returned invalid JSON. Check its response format."
     if code == "rate_limited" or status == 429:
         return "Too many attempts. Please wait a moment and try again."
     if code == "account_suspended":

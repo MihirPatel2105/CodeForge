@@ -488,12 +488,21 @@ export interface DeploymentInfo {
   run_id: string;
   url: string;
   key_prefix: string;
-  status: "active" | "deleting";
+  status: "starting" | "active" | "deleting";
   created_at: string;
 }
 
 export interface DeploymentCreated extends DeploymentInfo {
   api_key: string;
+}
+
+export interface DeploymentHealth {
+  ready: boolean;
+  checked_at: string;
+  duration_ms: number;
+  requests_this_minute: number;
+  request_limit: number;
+  detail: string;
 }
 
 export interface RunMetrics {

@@ -682,12 +682,21 @@ class DeploymentInfo(BaseModel):
     run_id: str
     url: str
     key_prefix: str
-    status: Literal["active", "deleting"]
+    status: Literal["starting", "active", "deleting"]
     created_at: datetime
 
 
 class DeploymentCreated(DeploymentInfo):
     api_key: str
+
+
+class DeploymentHealth(BaseModel):
+    ready: bool
+    checked_at: datetime
+    duration_ms: int
+    requests_this_minute: int
+    request_limit: int
+    detail: str
 
 
 class FileTreeResponse(BaseModel):

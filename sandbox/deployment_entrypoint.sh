@@ -2,7 +2,7 @@
 # The generated app and Mongo remain private inside this container. Docker keeps the
 # container running across host restarts; its named volume keeps the application data.
 set -u
-rm -f /tmp/codeforge-deployment-ready
+rm -f /tmp/codeforge-deployment-ready /tmp/codeforge-api-ready*
 
 mongod --dbpath /data/db --bind_ip 127.0.0.1 --quiet > /tmp/deployment-mongod.log 2>&1 &
 MONGO_PID=$!

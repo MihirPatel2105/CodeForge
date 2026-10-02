@@ -2,6 +2,30 @@ import { expect, test } from "@playwright/test";
 
 const runId = "507f1f77bcf86cd799439012";
 
+for (const status of ["starting", "deleting", "load-error"] as const) {
+  test(`publication handles ${status} without offering unsafe actions`, async ({ page }) => {
+    await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+    await page.route("**/api/backend/auth/me", (route) => route.fulfill({
+      status: 200, contentType: "application/json", body: JSON.stringify({ id: "user-1", email: "user@example.com", first_name: "Regular", is_admin: false, email_verified: true }),
+    }));
+    await page.route(`**/api/backend/runs/${runId}/preview`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ operations: [] }) }));
+    await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => route.fulfill({
+      status: status === "load-error" ? 503 : 200, contentType: "application/json",
+      body: JSON.stringify(status === "load-error" ? { error: { code: "service_unavailable" } } : { id: "deployment-1", run_id: runId, url: "http://localhost:8000/api/v1/deployments/deployment-1", key_prefix: "cf_live_abc", status, created_at: "2026-10-02T00:00:00Z" }),
+    }));
+    await page.goto(`/runs/${runId}/publish`);
+    if (status === "load-error") {
+      await expect(page.getByRole("button", { name: "Retry status" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Publish API", exact: true })).toHaveCount(0);
+    } else {
+      await expect(page.getByText(status === "starting" ? "Starting" : "Unpublishing", { exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Check connection" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Rotate key" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: status === "deleting" ? "Retry unpublish" : "Unpublish", exact: true })).toBeEnabled();
+    }
+  });
+}
+
 test("a user can send a generated API request and reset preview data", async ({ page }) => {
   await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
   await page.route("**/api/backend/auth/me", (route) => route.fulfill({
@@ -95,6 +119,11 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
     body: JSON.stringify({ expires_after_seconds: 900, session_started: false, operations: [{ method: "GET", path: "/items", summary: "List items", has_body: false, example_body: null, example_response: [{ id: "example", name: "example" }] }] }),
   }));
   let published = false;
+  let ready = true;
+  await page.route(`**/api/backend/runs/${runId}/deployment/check`, (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ ready, checked_at: "2026-10-02T10:00:00Z", duration_ms: 42, requests_this_minute: 7, request_limit: 60, detail: ready ? "The hosted API answered successfully." : "The hosted API could not answer." }),
+  }));
   await page.route(`**/api/backend/runs/${runId}/deployment`, (route) => {
     const method = route.request().method();
     if (method === "POST") published = true;
@@ -113,6 +142,12 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
   await expect(page.getByText("http://localhost:8000/api/v1/deployments/deployment-1", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Connection details" })).toBeVisible();
+  await page.getByRole("button", { name: "Check connection" }).click();
+  await expect(page.getByText("Ready", { exact: true })).toBeVisible();
+  await expect(page.getByText(/42 ms · 7\/60 gateway requests/)).toBeVisible();
+  ready = false;
+  await page.getByRole("button", { name: "Check connection" }).click();
+  await expect(page.getByText("Unavailable", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Make a request" })).toBeVisible();
   await expect(page.getByText(/reachable only from the device running CodeForge/)).toBeVisible();
   await expect(page.getByRole("group", { name: "Published endpoints" }).getByRole("button", { name: /GET.*\/items/ })).toBeVisible();

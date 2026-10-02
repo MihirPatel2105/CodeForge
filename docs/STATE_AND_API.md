@@ -123,6 +123,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | DELETE | `/runs/{id}/preview` | Remove the preview and its temporary data |
 | POST | `/runs/{id}/deployment` | Publish a passed run; return stable URL and API key once |
 | GET | `/runs/{id}/deployment` | Read publication status and URL without revealing the key |
+| POST | `/runs/{id}/deployment/check` | Owner-only hosted application check; return readiness, timestamp, response time and current-minute usage |
 | POST | `/runs/{id}/deployment/rotate-key` | Replace the key and return the new key once |
 | DELETE | `/runs/{id}/deployment` | Unpublish and delete the generated API's hosted data |
 | GET/POST/PUT/PATCH/DELETE | `/api/v1/deployments/{id}/{path}` | API-key protected gateway to the generated app |

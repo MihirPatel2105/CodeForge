@@ -10,28 +10,33 @@ import type { PreviewOperation } from "@/lib/types";
 type Language = "cURL" | "Node.js" | "Python";
 type Shell = "Bash / zsh" | "PowerShell";
 
+function shellString(value: string, shell: Shell): string {
+  return shell === "PowerShell" ? `'${value.replaceAll("'", "''")}'` : `'${value.replaceAll("'", "'\\''")}'`;
+}
+
 function requestCode(language: Language, shell: Shell, url: string, operation: PreviewOperation): string {
   const endpoint = `${url}${operation.path}`;
   const body = operation.has_body ? JSON.stringify(operation.example_body ?? {}, null, 2) : null;
   if (language === "cURL") {
     if (shell === "PowerShell") {
       const lines = [
-        `Invoke-RestMethod -Method ${operation.method} -Uri '${endpoint}'`,
+        `Invoke-RestMethod -Method ${operation.method} -Uri ${shellString(endpoint, shell)} -TimeoutSec 30`,
         '  -Headers @{ Authorization = "Bearer $env:CODEFORGE_API_KEY" }',
       ];
-      if (body) lines.push(`  -ContentType 'application/json' -Body @'\n${body}\n'@`);
+      if (body) lines.push(`  -ContentType 'application/json' -Body ${shellString(JSON.stringify(operation.example_body ?? {}), shell)}`);
       return lines.join(" `\n");
     }
     const lines = [
-      `curl -X ${operation.method} "${endpoint}"`,
+      `curl --max-time 30 -X ${operation.method} ${shellString(endpoint, shell)}`,
       '  -H "Authorization: Bearer $CODEFORGE_API_KEY"',
     ];
-    if (body) lines.push('  -H "Content-Type: application/json"', `  -d '${JSON.stringify(operation.example_body ?? {})}'`);
+    if (body) lines.push('  -H "Content-Type: application/json"', `  -d ${shellString(JSON.stringify(operation.example_body ?? {}), shell)}`);
     return lines.join(" \\\n");
   }
   if (language === "Node.js") {
-    return `const response = await fetch(\`${endpoint}\`, {
+    return `const response = await fetch(${JSON.stringify(endpoint)}, {
   method: "${operation.method}",
+  signal: AbortSignal.timeout(30000),
   headers: {
     Authorization: \`Bearer \${process.env.CODEFORGE_API_KEY}\`,${body ? '\n    "Content-Type": "application/json",' : ""}
   },${body ? `\n  body: JSON.stringify(${body}),` : ""}
@@ -44,7 +49,8 @@ import requests
 
 response = requests.request(
     "${operation.method}",
-    "${endpoint}",
+    ${JSON.stringify(endpoint)},
+    timeout=30,
     headers={"Authorization": f"Bearer {os.environ['CODEFORGE_API_KEY']}"},${body ? `\n    json=json.loads(${JSON.stringify(JSON.stringify(operation.example_body ?? {}))}),` : ""}
 )
 print(response.status_code, response.text)`;
@@ -61,16 +67,18 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
   const [selected, setSelected] = useState(0);
   const [language, setLanguage] = useState<Language>("cURL");
   const [shell, setShell] = useState<Shell>("Bash / zsh");
-  const localOnly = url.startsWith("http://localhost") || url.startsWith("http://127.0.0.1");
+  const hostname = new URL(url).hostname.toLowerCase();
+  const localOnly = hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "[::1]" || hostname === "0.0.0.0" || /^127\./.test(hostname);
   const setupCommand = shell === "PowerShell"
     ? `$env:CODEFORGE_API_KEY='${apiKey ?? "PASTE_KEY_HERE"}'`
     : `export CODEFORGE_API_KEY='${apiKey ?? "PASTE_KEY_HERE"}'`;
   const visibleSetupCommand = shell === "PowerShell"
     ? "$env:CODEFORGE_API_KEY='PASTE_KEY_HERE'"
     : "export CODEFORGE_API_KEY='PASTE_KEY_HERE'";
-  const operation = operations[selected];
+  const selectedIndex = Math.min(selected, Math.max(0, operations.length - 1));
+  const operation = operations[selectedIndex];
   const snippet = operation ? requestCode(language, shell, url, operation) : "";
-  const requestCopyId = `request-${selected}-${language}-${shell}`;
+  const requestCopyId = `request-${selectedIndex}-${language}-${shell}`;
 
   return (
     <section className="min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-guide-heading">
@@ -96,8 +104,8 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
             <p className="text-[12px] font-[700] text-fg">2. Choose an endpoint</p>
             <div className="mt-2 flex max-h-56 flex-wrap gap-1.5 overflow-y-auto lg:flex-col lg:flex-nowrap" role="group" aria-label="Published endpoints">
               {operations.map((item, index) => (
-                <button key={`${item.method}-${item.path}`} type="button" onClick={() => setSelected(index)} aria-pressed={selected === index}
-                  className={`inline-flex max-w-full min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-left font-mono text-[11px] transition-[color,background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none lg:w-full ${selected === index ? "border-accent-bd bg-accent-soft text-fg shadow-[inset_3px_0_0_var(--accent)]" : "border-border bg-bg text-fg-muted hover:border-accent-bd hover:bg-accent-soft/30 hover:text-fg"}`}>
+                <button key={`${item.method}-${item.path}`} type="button" onClick={() => setSelected(index)} aria-pressed={selectedIndex === index}
+                  className={`inline-flex max-w-full min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-left font-mono text-[11px] transition-[color,background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none lg:w-full ${selectedIndex === index ? "border-accent-bd bg-accent-soft text-fg shadow-[inset_3px_0_0_var(--accent)]" : "border-border bg-bg text-fg-muted hover:border-accent-bd hover:bg-accent-soft/30 hover:text-fg"}`}>
                   <span className="shrink-0 font-[700] text-accent">{item.method}</span><span className="truncate">{item.path}</span>
                 </button>
               ))}

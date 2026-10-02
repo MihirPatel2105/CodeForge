@@ -84,3 +84,13 @@ class PreviewRequestError(CodeForgeError):
 class PreviewUnavailableError(CodeForgeError):
     status_code = 503
     code = "preview_unavailable"
+
+
+class PublishedResponseTooLargeError(CodeForgeError):
+    status_code = 502
+    code = "published_response_too_large"
+
+
+class PublishedResponseInvalidError(CodeForgeError):
+    status_code = 502
+    code = "published_response_invalid"

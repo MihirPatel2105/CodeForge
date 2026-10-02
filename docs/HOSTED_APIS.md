@@ -10,6 +10,9 @@ container with `network_mode=none`. No container port is published.
 2. Choose **Publish API**. Copy the one-time key and the base URL; reveal the key only if needed.
 3. Follow the on-page guide: select an endpoint, copy its cURL, Node.js, or Python example,
    and send `Authorization: Bearer <key>` from a server or terminal.
+   Use **Check connection** to probe the hosted application and see its response time and
+   current-minute request usage. This checks the private runtime; it does not prove that
+   the configured backend URL is reachable from another device.
 4. Rotate the key if it is lost or exposed. The old key stops working immediately.
 5. Click **Unpublish and delete data** to remove the container and named data volume.
 
@@ -21,8 +24,16 @@ a server-side environment variable. Do not ship it in browser JavaScript.
 
 - One publication per account; two active publications on one CodeForge host.
 - Up to 60 gateway requests per minute per publication.
-- JSON request bodies up to 16 KB; response text is shortened to 100,000 characters.
+- JSON request bodies up to 16 KB. Responses over 100,000 characters return an explicit
+  `502 published_response_too_large` error instead of incomplete data. Invalid JSON
+  returns `502 published_response_invalid`; generated server errors use safe gateway copy.
+- Successful gateway responses and rate-limit errors include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and
+  `X-RateLimit-Reset`. Rate-limit responses also include `Retry-After` in seconds.
+  Owner connection checks share the publication's allowance.
 - Each generated request is limited to 20 seconds, 512 MB memory, 1 CPU, and 256 PIDs.
+  Queue waits are bounded to two seconds; container recovery/startup is a separate step.
+  Requests still run in separate application processes, so this is intended for modest
+  CRUD traffic. Publication activates only after the application serves valid OpenAPI.
 - Hosted data stays on a Docker named volume across container recreation. Unpublishing
   or deleting the owning project/account removes that volume.
 - The URL works only while the CodeForge backend and Docker host are online. This is

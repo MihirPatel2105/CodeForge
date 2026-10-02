@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, ApiError } from "@/lib/api";
-import type { DeploymentInfo, PreviewOperation } from "@/lib/types";
+import type { DeploymentHealth, DeploymentInfo, PreviewOperation } from "@/lib/types";
 import { useSession } from "@/lib/use-current-user";
 
 export default function PublishApiPage() {
@@ -22,7 +22,10 @@ export default function PublishApiPage() {
   const [operations, setOperations] = useState<PreviewOperation[]>([]);
   const [operationsError, setOperationsError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [publicationError, setPublicationError] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [health, setHealth] = useState<DeploymentHealth | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,13 +35,21 @@ export default function PublishApiPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const [published, preview] = await Promise.allSettled([
       api.getDeployment(id),
       api.getPreview(id),
     ]);
     if (published.status === "fulfilled") {
       setDeployment(published.value);
-    } else if (!(published.reason instanceof ApiError && published.reason.status === 404)) {
+      setPublicationError(false);
+    } else if (published.reason instanceof ApiError && published.reason.status === 404) {
+      setPublicationError(false);
+      setDeployment(null);
+      setApiKey(null);
+      setHealth(null);
+    } else {
+      setPublicationError(true);
       setError(published.reason instanceof ApiError ? published.reason.message : "Couldn't load publishing status.");
     }
     if (preview.status === "fulfilled") {
@@ -69,6 +80,7 @@ export default function PublishApiPage() {
     try {
       const created = await api.publishRun(id);
       setDeployment(created);
+      setHealth(null);
       setApiKey(created.api_key);
       setShowKey(false);
     } catch (err) {
@@ -100,13 +112,32 @@ export default function PublishApiPage() {
     try {
       await api.unpublishRun(id);
       setDeployment(null);
+      setHealth(null);
       setApiKey(null);
       setShowKey(false);
       setConfirmAction(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't unpublish this API.");
+      try {
+        setDeployment(await api.getDeployment(id));
+      } catch {
+        // Keep the failure visible; the status can be retried after connectivity returns.
+      }
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function checkConnection() {
+    setChecking(true);
+    setError(null);
+    setHealth(null);
+    try {
+      setHealth(await api.checkDeployment(id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't check this API. Try again.");
+    } finally {
+      setChecking(false);
     }
   }
 
@@ -141,22 +172,35 @@ export default function PublishApiPage() {
 
         {error && <Notice className="mt-5">{error}</Notice>}
 
-        {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : deployment ? (
+        {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : publicationError ? (
+          <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">
+            <p>Publication status is unavailable. Retry before making changes.</p>
+            <Button className="mt-3" variant="outline" size="sm" onClick={() => void load()}>Retry status</Button>
+          </section>
+        ) : deployment ? (
           <div className="mt-6 space-y-4 motion-safe:animate-[cfFade_300ms_ease-out]">
             <section className="min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-status-heading">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 id="publish-status-heading" className="font-display text-[21px] font-[650] text-fg">Connection details</h2>
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[700] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" />Published</span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-[700] ${deployment.status === "active" && health?.ready !== false ? "border-ok-bd bg-ok-soft text-ok" : "border-border bg-bg text-fg-muted"}`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      {deployment.status === "deleting" ? "Unpublishing" : deployment.status === "starting" ? "Starting" : health?.ready === false ? "Unavailable" : health?.ready ? "Ready" : "Published"}
+                    </span>
                   </div>
                   <p className="mt-1 text-[13px] leading-5 text-fg-muted">Use the URL from your backend and keep the key private.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy}>Rotate key</Button>
-                  <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy}>Unpublish</Button>
+                  <Button variant="outline" size="sm" onClick={() => void checkConnection()} disabled={busy || checking || deployment.status !== "active"}>{checking ? "Checking…" : "Check connection"}</Button>
+                  <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy || checking || deployment.status !== "active"}>Rotate key</Button>
+                  <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy || checking}>{deployment.status === "deleting" ? "Retry unpublish" : "Unpublish"}</Button>
                 </div>
               </div>
+              <div role="status" className="mt-4 text-[12px] leading-5 text-fg-muted">
+                {checking ? "Checking the hosted API…" : deployment.status === "deleting" ? "Cleanup has not finished. Retry unpublish to finish removing the API and its hosted data." : deployment.status === "starting" ? "The API is starting. Refresh its status shortly." : health ? `${health.detail} Checked at ${new Date(health.checked_at).toLocaleTimeString()}. ${health.duration_ms} ms · ${health.requests_this_minute}/${health.request_limit} gateway requests this minute.` : "Runtime health has not been checked in this session."}
+              </div>
+              {deployment.status === "starting" && <Button variant="outline" size="sm" className="mt-2" onClick={() => void load()}>Refresh status</Button>}
               <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
                 <div className="min-w-0 rounded-lg border border-border bg-bg p-4">
                   <p className="text-[12px] font-[700] text-fg">Base URL</p>

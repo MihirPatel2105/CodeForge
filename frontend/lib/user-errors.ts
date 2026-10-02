@@ -1,5 +1,11 @@
 /** Public copy for API failures. Server text is never rendered in the browser. */
 export function publicApiErrorMessage(status: number, code: string): string {
+  if (code === "published_response_too_large") {
+    return "API response exceeded the size limit. Request fewer records or use pagination.";
+  }
+  if (code === "published_response_invalid") {
+    return "The generated API returned invalid JSON. Check its response format.";
+  }
   if (code === "admin_verification_required") {
     return "Admin access is locked. Sign in again with your authenticator or passkey.";
   }
