@@ -18,6 +18,7 @@ const EMPTY_PAGE = {
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  await page.route("**/api/backend/auth/admin-access", route => route.fulfill({ json: { allowed: true, expires_at: new Date(Date.now() + 3600000).toISOString() } }));
   await page.route("**/api/backend/auth/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",

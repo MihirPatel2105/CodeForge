@@ -34,6 +34,15 @@ class PermissionError_(CodeForgeError):
     code = "forbidden"
 
 
+class AdminVerificationError(PermissionError_):
+    code = "admin_verification_required"
+
+
+class SecurityServiceError(CodeForgeError):
+    status_code = 503
+    code = "service_unavailable"
+
+
 class ConflictError(CodeForgeError):
     status_code = 409
     code = "conflict"

@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
     catch (err) {
       if (requestId !== requestSequence.current) return;
       if (err instanceof ApiError && err.status === 401) return router.replace("/login");
-      if (err instanceof ApiError && err.status === 403) return router.replace("/projects");
+      if (err instanceof ApiError && err.status === 403 && err.code !== "admin_verification_required") return router.replace("/projects");
       setError(err instanceof ApiError ? err.message : "Could not load users.");
     } finally { if (requestId === requestSequence.current) setLoading(false); }
   }, [from, router, to]);

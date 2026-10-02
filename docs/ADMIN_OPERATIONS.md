@@ -4,6 +4,31 @@ The admin area provides an attention queue, run diagnostics, published API inven
 user support information, monitoring comparisons, system observations and incident follow-up.
 All operations endpoints require an administrator account.
 
+## Admin security
+
+Admin access requires the configured `ADMIN_EMAIL` account, verified email, and an active
+server-recorded login session at the account's current token version. The session must
+have completed authenticator verification or a user-verified passkey assertion within
+the last hour. Password-only, signup, password reset and recovery-code sessions do not
+grant admin access. Old sessions have no strong-auth timestamp and fail closed.
+
+To access admin after upgrading, enable an authenticator or passkey in account security
+and sign in again with it. Recovery remains available for ordinary account access and
+replacing lost authentication factors. An account whose email has not been verified
+cannot operate admin controls; offline development fixtures simulate mail verification.
+
+The browser checks access before mounting admin pages, removes them at expiry and when
+the backend rejects the proof, and rechecks after returning to the tab. The server guard
+enforces every admin endpoint, including exports, independently of the browser.
+Admin responses use `Cache-Control: no-store`; CSV exports neutralize user-controlled
+spreadsheet formulas. The existing HttpOnly cookie proxy and mutation origin checks
+remain in place.
+
+Redis applies shared per-account limits of 180 reads and 20 mutations per minute,
+independent of token or IP. When configured Redis is unavailable, admin operations fail
+closed with 503. Production startup requires Redis; offline development without Redis
+does not apply these request counters. Existing sign-in/MFA limits remain unchanged.
+
 ## Attention and diagnostics
 
 The queue includes active runs regardless of age and failures from the last seven days.

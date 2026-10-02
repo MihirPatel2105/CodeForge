@@ -12,9 +12,9 @@ from app.graph.state import RunMetrics
 
 
 @pytest.fixture
-def admin_user(registered_user, monkeypatch):
-    monkeypatch.setattr(settings, "admin_email", registered_user["email"])
-    return registered_user
+def admin_user(strong_auth_user, monkeypatch):
+    monkeypatch.setattr(settings, "admin_email", strong_auth_user["email"])
+    return strong_auth_user
 
 
 def _create_user(client, *, email: str, first_name: str = "Other") -> dict:
@@ -386,7 +386,9 @@ def test_admin_cannot_delete_the_configured_administrator(client, admin_user):
     assert response.json()["error"]["code"] == "conflict"
 
 
-def test_admin_totp_setup_changes_login_to_two_step(client, admin_user):
+def test_admin_totp_setup_changes_login_to_two_step(client, registered_user, monkeypatch):
+    admin_user = registered_user
+    monkeypatch.setattr(settings, "admin_email", admin_user["email"])
     setup = client.post(
         "/auth/totp/setup",
         json={"current_password": admin_user["password"]},

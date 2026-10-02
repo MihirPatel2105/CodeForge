@@ -1,14 +1,20 @@
 """Shared FastAPI dependencies."""
 
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import settings
-from app.core.exceptions import AccountSuspendedError, AuthError, PermissionError_
+from app.core.exceptions import (
+    AccountSuspendedError,
+    AdminVerificationError,
+    AuthError,
+    PermissionError_,
+)
 from app.core.security import decode_access_token
-from app.models import RevokedToken, User
+from app.models import LoginSession, PasskeyCredential, RevokedToken, User
 
 # auto_error=False so a missing header raises our AuthError, keeping the response body in
 # the project's error shape rather than FastAPI's default.
@@ -26,7 +32,12 @@ async def get_current_user(
     if not user_id:
         raise AuthError("Token has no subject")
 
-    user = await User.get(user_id)
+    from bson.errors import InvalidId
+
+    try:
+        user = await User.get(user_id)
+    except (InvalidId, ValueError, TypeError):
+        raise AuthError("Invalid or expired token") from None
     if user is None:
         raise AuthError("User no longer exists")
 
@@ -61,9 +72,50 @@ def is_admin_user(user: User) -> bool:
     return bool(configured and user.email.lower() == configured)
 
 
-async def get_current_admin(user: CurrentUser) -> User:
+ADMIN_AUTH_LIFETIME = timedelta(minutes=60)
+
+
+async def admin_access_until(user: User, claims: dict) -> datetime | None:
+    if not is_admin_user(user) or not user.email_verified or user.password_reset_required:
+        return None
+    now = datetime.now(UTC)
+    session = await LoginSession.find_one(
+        {
+            "jti": claims.get("jti"),
+            "user_id": str(user.id),
+            "token_version": user.token_version,
+            "revoked_at": None,
+            "expires_at": {"$gt": now},
+        }
+    )
+    if session is None or session.strong_auth_at is None:
+        return None
+    if (
+        not user.totp_enabled
+        and await PasskeyCredential.find_one(PasskeyCredential.user_id == str(user.id)) is None
+    ):
+        return None
+    verified = session.strong_auth_at
+    verified = verified.replace(tzinfo=UTC) if verified.tzinfo is None else verified.astimezone(UTC)
+    expires = session.expires_at
+    expires = expires.replace(tzinfo=UTC) if expires.tzinfo is None else expires.astimezone(UTC)
+    until = min(verified + ADMIN_AUTH_LIFETIME, expires)
+    return until if verified <= now < until else None
+
+
+async def get_current_admin(
+    user: CurrentUser,
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> User:
     if not is_admin_user(user):
         raise PermissionError_("Administrator access required")
+    claims = decode_access_token(credentials.credentials) if credentials else {}
+    if await admin_access_until(user, claims) is None:
+        raise AdminVerificationError("Sign in with an authenticator or passkey to access admin.")
+    from app.core.abuse_limits import check_admin_limit
+
+    await check_admin_limit(request, str(user.id))
     return user
 
 

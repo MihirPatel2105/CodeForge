@@ -175,6 +175,9 @@ def create_app() -> FastAPI:
         try:
             response = await call_next(request)
             response.headers["X-Request-ID"] = request_id
+            if request.url.path.startswith("/admin/") or request.url.path == "/auth/admin-access":
+                response.headers["Cache-Control"] = "no-store"
+                response.headers["X-Content-Type-Options"] = "nosniff"
             logger.info(
                 "HTTP %s %s status=%s duration_ms=%d",
                 request.method,

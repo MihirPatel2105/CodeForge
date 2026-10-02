@@ -24,7 +24,7 @@ export function useAdminResource<T>(fetcher: () => Promise<T>, interval = 60000)
     } catch (err) {
       if (current !== generation.current) return;
       if (err instanceof ApiError && err.status === 401) router.replace("/login");
-      else if (err instanceof ApiError && err.status === 403) router.replace("/projects");
+      else if (err instanceof ApiError && err.status === 403 && err.code !== "admin_verification_required") router.replace("/projects");
       else setError(err instanceof ApiError ? err.message : "Could not refresh this view. Try again.");
     } finally {
       if (current === generation.current) { pending.current = null; setLoading(false); }

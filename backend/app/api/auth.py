@@ -16,7 +16,7 @@ from pymongo import ReturnDocument
 
 from app.config import settings
 from app.core.account_deletion import delete_user_account
-from app.core.deps import CurrentUser, TokenClaims, is_admin_user
+from app.core.deps import CurrentUser, TokenClaims, admin_access_until, is_admin_user
 from app.core.email import (
     send_account_deleted_email,
     send_new_device_email,
@@ -31,6 +31,7 @@ from app.core.exceptions import (
     AuthError,
     ConflictError,
     NotFoundError,
+    PermissionError_,
     RateLimitError,
 )
 from app.core.login_activity import issue_session, revoke_device_sessions
@@ -63,6 +64,7 @@ from app.models import (
     SignInAlert,
     User,
 )
+from app.schemas.admin_operations import AdminAccessStatus
 from app.schemas.api import (
     ChangePasswordRequest,
     DeleteAccountRequest,
@@ -93,6 +95,16 @@ from app.schemas.api import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+@router.get("/admin-access", response_model=AdminAccessStatus)
+async def admin_access(user: CurrentUser, claims: TokenClaims) -> AdminAccessStatus:
+    if not is_admin_user(user):
+        raise PermissionError_("Administrator access required")
+    until = await admin_access_until(user, claims)
+    return AdminAccessStatus(allowed=until is not None, expires_at=until)
+
+
 PASSWORD_MFA_LIFETIME = timedelta(minutes=5)
 PASSWORD_MFA_MAX_ATTEMPTS = 5
 
@@ -451,17 +463,23 @@ async def complete_password_login(
         await _record_failed_login(user, background)
         raise AuthError("The two-factor code is not correct")
     await consume_password_mfa_ticket(payload.ticket, user)
-    return TokenResponse(access_token=await finish_login(user, background, request))
+    return TokenResponse(
+        access_token=await finish_login(
+            user, background, request, strong_auth=payload.recovery_code is None
+        )
+    )
 
 
-async def finish_login(user: User, background: BackgroundTasks, request: Request) -> str:
+async def finish_login(
+    user: User, background: BackgroundTasks, request: Request, *, strong_auth: bool = False
+) -> str:
     """Apply the same session and new-device alert rules to every sign-in method."""
     now = _now()
     user.failed_login_attempts = 0
     user.locked_until = None
     user.last_login_at = now
     await user.save()
-    token, device, is_new = await issue_session(user, request)
+    token, device, is_new = await issue_session(user, request, strong_auth=strong_auth)
     if is_new and user.email_verified and settings.email_verification_enabled:
         alert_token = generate_reset_token()
         await SignInAlert(

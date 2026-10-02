@@ -186,7 +186,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
       try {
         const payload = await upstream.json();
         const upstreamCode = payload?.error?.code;
-        if (["rate_limited", "account_suspended", "usage_limit_reached"].includes(upstreamCode)) {
+        if (["rate_limited", "account_suspended", "usage_limit_reached", "admin_verification_required"].includes(upstreamCode)) {
           code = upstreamCode;
         }
       } catch {

@@ -275,7 +275,9 @@ async def login_passkey(
     payload: PasskeyAssertion, background: BackgroundTasks, request: Request
 ) -> PasskeyLoginResult:
     user = await _verify_login_assertion(payload, "login")
-    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
+    return PasskeyLoginResult(
+        access_token=await finish_login(user, background, request, strong_auth=True)
+    )
 
 
 @router.post("/mfa/options", response_model=PasskeyOptions)
@@ -304,7 +306,9 @@ async def password_mfa_verify(
     await _verify_login_assertion(payload, "password_mfa_passkey", str(user.id))
     user = await password_mfa_user(payload.ticket)
     await consume_password_mfa_ticket(payload.ticket, user)
-    return PasskeyLoginResult(access_token=await finish_login(user, background, request))
+    return PasskeyLoginResult(
+        access_token=await finish_login(user, background, request, strong_auth=True)
+    )
 
 
 async def _verify_login_assertion(

@@ -314,7 +314,20 @@ async def list_runs(
 def _csv_response(filename: str, rows: list[list[Any]]) -> Response:
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerows(rows)
+    # User-controlled names and audit notes must not become spreadsheet formulas.
+    writer.writerows(
+        [
+            "'" + value
+            if isinstance(value, str)
+            and (
+                value.lstrip().startswith(("=", "+", "-", "@"))
+                or value.startswith(("\t", "\r", "\n"))
+            )
+            else value
+            for value in row
+        ]
+        for row in rows
+    )
     return Response(
         content=output.getvalue(),
         media_type="text/csv",

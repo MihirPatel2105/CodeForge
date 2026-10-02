@@ -96,6 +96,21 @@ def test_passkey_login_and_passkey_only_password_mfa(client, registered_user, mo
         "/auth/me", headers={"Authorization": f"Bearer {response.json()['access_token']}"}
     )
     assert signed_in.status_code == 200
+    # A verified passkey can unlock admin; client-supplied role flags cannot.
+    monkeypatch.setattr(settings, "admin_email", registered_user["email"])
+    from pymongo import MongoClient
+
+    with MongoClient(settings.mongo_uri) as mongo:
+        mongo[settings.mongo_db].users.update_one(
+            {"email": registered_user["email"]}, {"$set": {"email_verified": True}}
+        )
+    assert (
+        client.get(
+            "/auth/admin-access",
+            headers={"Authorization": f"Bearer {response.json()['access_token']}"},
+        ).json()["allowed"]
+        is True
+    )
     assert client.post("/auth/passkeys/login/verify", json=login_payload).status_code == 401
 
     password_login = client.post(

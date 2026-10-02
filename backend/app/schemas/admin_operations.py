@@ -8,6 +8,11 @@ from pydantic import BaseModel, Field, field_validator
 from app.schemas.api import AdminRunSummary
 
 
+class AdminAccessStatus(BaseModel):
+    allowed: bool
+    expires_at: datetime | None = None
+
+
 class FailureGuidance(BaseModel):
     category: str
     stage: str

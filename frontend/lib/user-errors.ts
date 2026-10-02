@@ -1,5 +1,8 @@
 /** Public copy for API failures. Server text is never rendered in the browser. */
 export function publicApiErrorMessage(status: number, code: string): string {
+  if (code === "admin_verification_required") {
+    return "Admin access is locked. Sign in again with your authenticator or passkey.";
+  }
   if (code === "rate_limited" || status === 429) {
     return "Too many attempts. Please wait a moment and try again.";
   }

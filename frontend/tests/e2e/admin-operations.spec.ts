@@ -5,6 +5,7 @@ const run = { id: "old-run", project_id: "project", project_name: "Tasks", user_
 async function session(page: Page) {
   await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
   await page.route("**/api/backend/**", route => route.fulfill({ status: 404, json: { error: { code: "not_found", message: "Unavailable" } } }));
+  await page.route("**/api/backend/auth/admin-access", route => route.fulfill({ json: { allowed: true, expires_at: new Date(Date.now() + 3600000).toISOString() } }));
   await page.route("**/api/backend/auth/me", route => route.fulfill({ json: user }));
   await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
 }

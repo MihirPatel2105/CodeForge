@@ -34,7 +34,7 @@ export default function AdminUserPage() {
     try { setDetail(await api.adminUser(id)); }
     catch (err) {
       if (err instanceof ApiError && err.status === 401) return router.replace("/login");
-      if (err instanceof ApiError && err.status === 403) return router.replace("/projects");
+      if (err instanceof ApiError && err.status === 403 && err.code !== "admin_verification_required") return router.replace("/projects");
       setError(err instanceof ApiError ? err.message : "Could not load this user.");
     }
   }, [id, router]);

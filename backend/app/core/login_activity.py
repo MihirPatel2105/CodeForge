@@ -54,7 +54,9 @@ def _device_label(request: Request) -> str:
     return f"{browser} on {system}"
 
 
-async def issue_session(user: User, request: Request) -> tuple[str, Device, bool]:
+async def issue_session(
+    user: User, request: Request, *, strong_auth: bool = False
+) -> tuple[str, Device, bool]:
     """Return token, device, and whether this browser is new for this account."""
     now = datetime.now(UTC)
     uid = str(user.id)
@@ -93,6 +95,7 @@ async def issue_session(user: User, request: Request) -> tuple[str, Device, bool
         token_version=user.token_version,
         created_at=now,
         expires_at=datetime.fromtimestamp(claims["exp"], tz=UTC),
+        strong_auth_at=now if strong_auth else None,
     ).insert()
     return token, device, is_new
 

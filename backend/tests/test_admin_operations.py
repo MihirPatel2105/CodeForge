@@ -10,9 +10,9 @@ from app.config import settings
 
 
 @pytest.fixture
-def operator(registered_user, monkeypatch):
-    monkeypatch.setattr(settings, "admin_email", registered_user["email"])
-    return registered_user
+def operator(strong_auth_user, monkeypatch):
+    monkeypatch.setattr(settings, "admin_email", strong_auth_user["email"])
+    return strong_auth_user
 
 
 def database():

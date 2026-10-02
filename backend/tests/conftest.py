@@ -120,6 +120,43 @@ def clean_database():
 
 
 @pytest.fixture
+def strong_auth_user(client, registered_user):
+    """Exercise the real authenticator login path for admin integration fixtures."""
+    import time
+
+    from app.core.security import _totp
+
+    # Offline signup deliberately leaves email unverified; simulate completed mail verification.
+    with MongoClient(settings.mongo_uri) as mongo:
+        mongo[settings.mongo_db].users.update_one(
+            {"email": registered_user["email"]}, {"$set": {"email_verified": True}}
+        )
+
+    setup = client.post(
+        "/auth/totp/setup",
+        json={"current_password": registered_user["password"]},
+        headers=registered_user["headers"],
+    )
+    assert setup.status_code == 200
+    code = _totp(setup.json()["secret"], int(time.time()) // 30)
+    enabled = client.post(
+        "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
+    )
+    assert enabled.status_code == 200
+    login = client.post(
+        "/auth/login",
+        json={"email": registered_user["email"], "password": registered_user["password"]},
+    )
+    assert login.status_code == 200
+    complete = client.post(
+        "/auth/login/complete", json={"ticket": login.json()["mfa_ticket"], "totp_code": code}
+    )
+    assert complete.status_code == 200
+    token = complete.json()["access_token"]
+    return {**registered_user, "token": token, "headers": {"Authorization": f"Bearer {token}"}}
+
+
+@pytest.fixture
 def registered_user(client):
     """A registered account plus its auth header."""
     payload = {

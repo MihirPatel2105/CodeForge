@@ -33,7 +33,7 @@ export default function AdminRunPage() {
     try { const [run, artifactList] = await Promise.all([api.adminRun(id), api.adminRunArtifacts(id)]); setDetail(run); setArtifacts(artifactList.artifacts); }
     catch (err) {
       if (err instanceof ApiError && err.status === 401) return router.replace("/login");
-      if (err instanceof ApiError && err.status === 403) return router.replace("/projects");
+      if (err instanceof ApiError && err.status === 403 && err.code !== "admin_verification_required") return router.replace("/projects");
       setError(err instanceof ApiError ? err.message : "Could not load this run.");
     }
   }, [id, router]);

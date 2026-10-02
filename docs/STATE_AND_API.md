@@ -330,6 +330,12 @@ See `WORKSPACE_EXPERIENCE.md` for lifecycle, device storage, and notification li
 
 ## Admin operations (2026-10-02)
 
+- `GET /auth/admin-access`: operator-only access status and strong-auth expiry.
+- Admin endpoints require a verified account and active session with authenticator/passkey
+  proof within one hour. `login_sessions.strong_auth_at` is server-recorded after verification.
+- Missing or stale proof returns `403 admin_verification_required`; recovery sessions remain
+  valid for account access. Admin reads/mutations have separate shared Redis limits.
+
 - `GET /admin/attention`: active workflows and recent failures with safe guidance.
 - `GET /admin/deployments`: published API ownership and current runtime observations.
 - `POST /admin/deployments/{id}/stop`: reason-required audited runtime/data cleanup.

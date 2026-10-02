@@ -132,6 +132,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch {
       // An upstream HTML error page must never become user-facing copy.
     }
+    if (code === "admin_verification_required" && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("codeforge-admin-locked"));
+    }
     throw new ApiError(res.status, code, publicApiErrorMessage(res.status, code));
   }
 
@@ -140,6 +143,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  adminAccess: () => request<{ allowed: boolean; expires_at: string | null }>("/auth/admin-access"),
   register: (payload: RegisterRequest) =>
     request<RegisterResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) }),
   verifyEmail: (payload: VerifyEmailRequest) =>

@@ -12,6 +12,8 @@ class LoginSession(Document):
     created_at: datetime
     expires_at: datetime
     revoked_at: datetime | None = None
+    # Only set after a verified authenticator or user-verified WebAuthn assertion.
+    strong_auth_at: datetime | None = None
 
     class Settings:
         name = "login_sessions"

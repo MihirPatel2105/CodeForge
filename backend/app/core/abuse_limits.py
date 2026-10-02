@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from redis.exceptions import RedisError
 
 from app.config import settings
+from app.core.exceptions import RateLimitError, SecurityServiceError
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
@@ -44,6 +45,25 @@ local count = redis.call('INCR', KEYS[1])
 if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
 return {count, redis.call('TTL', KEYS[1])}
 """
+
+
+async def check_admin_limit(request: Request, user_id: str) -> None:
+    """Shared per-account limits cannot be bypassed by changing session or IP."""
+    if not settings.redis_url:
+        # Production config already requires Redis; local development can be offline.
+        return
+    mutation = request.method not in {"GET", "HEAD", "OPTIONS"}
+    bucket = "write" if mutation else "read"
+    identity = hmac.new(settings.jwt_secret.encode(), user_id.encode(), hashlib.sha256).hexdigest()
+    try:
+        count, _ttl = await request.app.state.redis.eval(
+            _INCREMENT, 1, f"codeforge:admin:{bucket}:{identity}", 60
+        )
+    except RedisError:
+        logger.exception("Admin limiter is unavailable")
+        raise SecurityServiceError("Security checks are unavailable. Try again shortly.") from None
+    if count > (20 if mutation else 180):
+        raise RateLimitError("Too many admin requests. Try again shortly.")
 
 
 def _client_ip(request: Request) -> str:
