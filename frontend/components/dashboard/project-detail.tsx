@@ -9,6 +9,7 @@ import {
   BookOpen,
   Clock3,
   Play,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -282,10 +283,10 @@ export function ProjectDetail({
                 const elapsedMs =
                   new Date(run.updated_at).getTime() - new Date(run.created_at).getTime();
                 return (
-                  <div key={run.id}><Link
-                    href={`/runs/${run.id}`}
-                    className="cf-run-history-grid group grid gap-x-4 gap-y-4 border-b border-border px-5 py-5 transition-colors last:border-b-0 hover:bg-accent-soft/35 md:items-center md:gap-y-0 md:px-6 md:py-4"
+                  <div key={run.id}
+                    className="cf-run-history-grid group relative grid gap-x-4 gap-y-4 border-b border-border px-5 py-5 transition-colors last:border-b-0 hover:bg-accent-soft/35 md:items-center md:gap-y-0 md:px-6 md:py-4"
                   >
+                    <Link href={`/runs/${run.id}`} aria-label={`Open run: ${run.prompt}`} className="absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent" />
                     <div className="cf-run-history-prompt min-w-0 md:pr-4">
                       <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
                         Prompt
@@ -293,6 +294,12 @@ export function ProjectDetail({
                       <span className="line-clamp-2 text-[13.5px] leading-[1.5] text-fg md:truncate">
                         {run.prompt}
                       </span>
+                      <div className="relative mt-2 flex w-fit flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" className="gap-1.5 text-[11px] text-fg-muted hover:text-accent" onClick={() => { setPrompt(run.prompt); setParentRunId(run.parent_run_id ?? null); }}>
+                          <RotateCcw className="size-3" aria-hidden /> Reuse prompt
+                        </Button>
+                        {run.parent_run_id && <Link href={`/runs/${run.parent_run_id}`} className="rounded px-1 py-1 text-xs text-accent">View source version</Link>}
+                      </div>
                     </div>
                     <div>
                       <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
@@ -322,7 +329,7 @@ export function ProjectDetail({
                       {formatWhen(run.created_at)}
                     </RunDatum>
                     <ArrowRight className="hidden h-4 w-4 text-fg-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent md:block" aria-hidden />
-                  </Link><div className="flex items-center justify-between border-b border-border px-5 pb-3">{run.parent_run_id && <Link href={`/runs/${run.parent_run_id}`} className="text-xs text-accent">View source version</Link>}<Button variant="ghost" size="sm" onClick={() => { setPrompt(run.prompt); setParentRunId(run.parent_run_id ?? null); }}>Reuse prompt</Button></div></div>
+                  </div>
                 );
               })
             )}
