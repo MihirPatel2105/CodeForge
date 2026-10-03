@@ -383,3 +383,9 @@ not permit an unreserved run.
 Local test MongoDB is bound to `127.0.0.1:27017`. It is an offline test service; use authenticated
 MongoDB for shared environments. The Atlas application identity needs `readWrite` only on the
 configured application database and `codeforge_checkpoints`; operational accounts are separate.
+
+Recovery also increments the user's `passkey_version`. Credentials carry the version at
+registration, and sign-in checks it against the current user. A late credential insert from a
+request started before recovery is therefore unusable even if deletion missed it. Passkey
+sign-count updates never upsert deleted credentials. Version zero preserves existing credentials
+until recovery; ordinary password changes keep registered passkeys working.

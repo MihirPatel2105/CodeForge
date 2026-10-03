@@ -155,7 +155,9 @@ class PasskeyInfo(BaseModel):
 
 @router.get("", response_model=list[PasskeyInfo])
 async def list_passkeys(user: CurrentUser) -> list[PasskeyInfo]:
-    credentials = await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).to_list()
+    credentials = await PasskeyCredential.find(
+        PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
+    ).to_list()
     return [
         PasskeyInfo(
             id=str(credential.id),
@@ -173,7 +175,9 @@ async def registration_options(
 ) -> PasskeyOptions:
     await check_reauthentication_limit(request, str(user.id))
     _reauth(user, payload.current_password, payload.totp_code)
-    existing = await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).to_list()
+    existing = await PasskeyCredential.find(
+        PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
+    ).to_list()
     if len(existing) >= 10:
         raise RateLimitError(
             "This account already has 10 passkeys. Remove one before adding another."
@@ -214,6 +218,7 @@ async def register_passkey(
         raise AuthError("Passkey verification failed. Try adding it again.") from exc
     credential = PasskeyCredential(
         user_id=str(user.id),
+        passkey_version=user.passkey_version,
         credential_id=_b64(verified.credential_id),
         public_key=_b64(verified.credential_public_key),
         sign_count=verified.sign_count,
@@ -225,6 +230,14 @@ async def register_passkey(
         await credential.insert()
     except DuplicateKeyError as exc:
         raise ConflictError("This passkey is already registered") from exc
+    current = await User.get(user.id)
+    if (
+        current is None
+        or current.token_version != user.token_version
+        or current.passkey_version != user.passkey_version
+    ):
+        await credential.delete()
+        raise AuthError("Account security changed. Sign in again.")
     if user.email_verified and settings.email_verification_enabled:
         background.add_task(
             _send_quietly,
@@ -292,7 +305,9 @@ async def login_passkey(
 @router.post("/mfa/options", response_model=PasskeyOptions)
 async def password_mfa_options(payload: PasswordMfaOptions) -> PasskeyOptions:
     user = await password_mfa_user(payload.ticket)
-    credentials = await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).to_list()
+    credentials = await PasskeyCredential.find(
+        PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
+    ).to_list()
     if not credentials:
         raise AuthError("No passkey is available for this account. Sign in again.")
     options = generate_authentication_options(
@@ -331,7 +346,11 @@ async def _verify_login_assertion(
     if credential is None or (user_id is not None and credential.user_id != user_id):
         raise AuthError("Passkey verification failed")
     user = await User.get(credential.user_id)
-    if user is None or (challenge.user_id is not None and challenge.user_id != str(user.id)):
+    if (
+        user is None
+        or credential.passkey_version != user.passkey_version
+        or (challenge.user_id is not None and challenge.user_id != str(user.id))
+    ):
         raise AuthError("Passkey verification failed")
     try:
         verified = verify_authentication_response(
@@ -357,7 +376,11 @@ async def _verify_login_assertion(
             raise RateLimitError(
                 "Too many failed attempts. Try again after the account lock expires."
             )
-    credential.sign_count = verified.new_sign_count
-    credential.last_used_at = _now()
-    await credential.save()
+    # Never upsert a stale credential after recovery or device removal deleted it.
+    result = await PasskeyCredential.get_pymongo_collection().update_one(
+        {"_id": credential.id, "sign_count": credential.sign_count},
+        {"$set": {"sign_count": verified.new_sign_count, "last_used_at": _now()}},
+    )
+    if result.matched_count != 1:
+        raise AuthError("Passkey verification failed")
     return user

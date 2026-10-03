@@ -19,6 +19,9 @@ class User(Document):
     # token's full 24-hour life. Defaults to 0, and a token minted before this existed
     # carries no `tv` claim and is read as 0, so nobody is signed out by the upgrade.
     token_version: int = 0
+    passkey_version: int = (
+        0  # recovery revokes credentials even if an in-flight insert arrives late
+    )
     password_reset_required: bool = False
     email_verified: bool = True
     is_suspended: bool = False

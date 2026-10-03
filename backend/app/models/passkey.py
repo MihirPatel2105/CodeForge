@@ -11,10 +11,18 @@ class PasskeyCredential(Document):
     user_id: str
     credential_id: str
     public_key: str
+    passkey_version: int = 0
     sign_count: int = 0
     label: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_used_at: datetime | None = None
+
+    @staticmethod
+    def owner_filter(user_id: str, passkey_version: int) -> dict:
+        return {
+            "user_id": user_id,
+            "$expr": {"$eq": [{"$ifNull": ["$passkey_version", 0]}, passkey_version]},
+        }
 
     class Settings:
         name = "passkey_credentials"

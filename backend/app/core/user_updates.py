@@ -9,7 +9,12 @@ from app.models import User
 
 
 async def update_user(
-    user: User, fields: dict[str, Any], *, revoke: bool = False, guarded: bool = True
+    user: User,
+    fields: dict[str, Any],
+    *,
+    revoke: bool = False,
+    revoke_passkeys: bool = False,
+    guarded: bool = True,
 ) -> User:
     query: dict[str, Any] = {"_id": user.id}
     if guarded:
@@ -18,6 +23,7 @@ async def update_user(
         # rather than accidentally refusing every security update on such accounts.
         defaults = {
             "token_version": 0,
+            "passkey_version": 0,
             "is_suspended": False,
             "password_reset_required": False,
             "totp_enabled": False,
@@ -30,8 +36,13 @@ async def update_user(
             ]
         }
     update: dict[str, Any] = {"$set": fields} if fields else {}
+    increments = {}
     if revoke:
-        update["$inc"] = {"token_version": 1}
+        increments["token_version"] = 1
+    if revoke_passkeys:
+        increments["passkey_version"] = 1
+    if increments:
+        update["$inc"] = increments
     document = await User.get_pymongo_collection().find_one_and_update(
         query, update, return_document=ReturnDocument.AFTER
     )

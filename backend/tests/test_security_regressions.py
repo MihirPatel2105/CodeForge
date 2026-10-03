@@ -340,3 +340,151 @@ def test_login_metadata_preserves_concurrent_admin_limits(client, registered_use
         == 200
     )
     assert _database().users.find_one({"_id": ObjectId(uid)})["project_limit"] == 1
+
+
+def test_inflight_passkey_registration_cannot_survive_reset(client, registered_user, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.models import PasskeyCredential
+
+    options = client.post(
+        "/auth/passkeys/register/options",
+        headers=registered_user["headers"],
+        json={"current_password": registered_user["password"]},
+    ).json()
+    monkeypatch.setattr(
+        "app.api.passkeys.verify_registration_response",
+        lambda **kwargs: SimpleNamespace(
+            credential_id=b"racing-key", credential_public_key=b"key", sign_count=0
+        ),
+    )
+    token = _reset_link(registered_user)
+    entered, release = threading.Event(), threading.Event()
+    original = PasskeyCredential.insert
+
+    async def gated_insert(self, *args, **kwargs):
+        entered.set()
+        await asyncio.to_thread(release.wait, 5)
+        return await original(self, *args, **kwargs)
+
+    monkeypatch.setattr(PasskeyCredential, "insert", gated_insert)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        pending = pool.submit(
+            client.post,
+            "/auth/passkeys/register/verify",
+            headers=registered_user["headers"],
+            json={
+                "challenge_id": options["challenge_id"],
+                "credential": {},
+                "label": "Racing key",
+            },
+        )
+        try:
+            assert entered.wait(5)
+            assert (
+                client.post(
+                    "/auth/reset-password",
+                    json={
+                        "token": token,
+                        "new_password": "Replacement12345!",
+                    },
+                ).status_code
+                == 200
+            )
+        finally:
+            release.set()
+        assert pending.result(5).status_code == 401
+    assert _database().passkey_credentials.count_documents({}) == 0
+
+
+def test_recovery_rejects_late_old_passkey_and_accepts_new_one(
+    client, registered_user, monkeypatch
+):
+    import base64
+    from types import SimpleNamespace
+
+    uid = decode_access_token(registered_user["token"])["sub"]
+    reset = client.post(
+        "/auth/reset-password",
+        json={
+            "token": _reset_link(registered_user),
+            "new_password": "Replacement12345!",
+        },
+    )
+    assert reset.status_code == 200
+    headers = {"Authorization": f"Bearer {reset.json()['access_token']}"}
+    assert _database().users.find_one({"_id": ObjectId(uid)})["passkey_version"] == 1
+    # Even if a crashed old registration leaves its record, its generation is revoked.
+    stale_id = base64.urlsafe_b64encode(b"stale-key").rstrip(b"=").decode()
+    _database().passkey_credentials.insert_one(
+        {
+            "user_id": uid,
+            "credential_id": stale_id,
+            "public_key": "a2V5",
+            "passkey_version": 0,
+            "sign_count": 0,
+            "label": "Stale",
+            "created_at": datetime.now(UTC),
+        }
+    )
+    options = client.post("/auth/passkeys/login/options").json()
+    assert (
+        client.post(
+            "/auth/passkeys/login/verify",
+            json={
+                "challenge_id": options["challenge_id"],
+                "credential": {"id": stale_id},
+            },
+        ).status_code
+        == 401
+    )
+    assert client.get("/auth/passkeys", headers=headers).json() == []
+    assert (
+        client.post(
+            "/auth/login",
+            json={
+                "email": registered_user["email"],
+                "password": "Replacement12345!",
+            },
+        ).json()["mfa_required"]
+        is False
+    )
+    options = client.post(
+        "/auth/passkeys/register/options",
+        headers=headers,
+        json={
+            "current_password": "Replacement12345!",
+        },
+    ).json()
+    monkeypatch.setattr(
+        "app.api.passkeys.verify_registration_response",
+        lambda **kwargs: SimpleNamespace(
+            credential_id=b"new-key", credential_public_key=b"key", sign_count=0
+        ),
+    )
+    added = client.post(
+        "/auth/passkeys/register/verify",
+        headers=headers,
+        json={
+            "challenge_id": options["challenge_id"],
+            "credential": {},
+            "label": "New key",
+        },
+    )
+    assert added.status_code == 201
+    monkeypatch.setattr(
+        "app.api.passkeys.verify_authentication_response",
+        lambda **kwargs: SimpleNamespace(credential_id=b"new-key", new_sign_count=1),
+    )
+    options = client.post("/auth/passkeys/login/options").json()
+    new_id = base64.urlsafe_b64encode(b"new-key").rstrip(b"=").decode()
+    assert (
+        client.post(
+            "/auth/passkeys/login/verify",
+            json={
+                "challenge_id": options["challenge_id"],
+                "credential": {"id": new_id},
+            },
+        ).status_code
+        == 200
+    )

@@ -351,7 +351,9 @@ async def login(
             if user.password_reset_required:
                 raise AuthError("Reset your password before signing in again.")
 
-    passkey = await PasskeyCredential.find_one(PasskeyCredential.user_id == str(user.id))
+    passkey = await PasskeyCredential.find_one(
+        PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
+    )
     methods: list[str] = []
     if user.totp_enabled:
         methods.append("totp")
@@ -675,6 +677,7 @@ async def reset_password(
         user,
         {"hashed_password": hash_password(payload.new_password), "password_reset_required": False},
         revoke=True,
+        revoke_passkeys=True,
     )
     await SignInAlert.find(SignInAlert.user_id == str(user.id)).delete()
     # A reset link is the recovery path after credential compromise. A passkey added
@@ -829,7 +832,11 @@ async def respond_to_sign_in_alert(payload: SignInAlertResponseRequest) -> SignI
 
     if payload.response == "not_me":
         user = await update_user(
-            user, {"password_reset_required": True}, revoke=True, guarded=False
+            user,
+            {"password_reset_required": True},
+            revoke=True,
+            revoke_passkeys=True,
+            guarded=False,
         )
         await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).delete()
         await PasskeyChallenge.find(PasskeyChallenge.user_id == str(user.id)).delete()

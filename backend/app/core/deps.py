@@ -92,7 +92,10 @@ async def admin_access_until(user: User, claims: dict) -> datetime | None:
         return None
     if (
         not user.totp_enabled
-        and await PasskeyCredential.find_one(PasskeyCredential.user_id == str(user.id)) is None
+        and await PasskeyCredential.find_one(
+            PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
+        )
+        is None
     ):
         return None
     verified = session.strong_auth_at
