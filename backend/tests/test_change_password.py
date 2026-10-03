@@ -102,7 +102,7 @@ def test_a_token_without_the_generation_claim_still_works(client, registered_use
     invalidated by deploying it — that would sign out everyone at once."""
     from datetime import UTC, datetime, timedelta
 
-    from jose import jwt
+    import jwt
 
     from app.config import settings
 

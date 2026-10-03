@@ -10,12 +10,13 @@ uses authenticated fetch and implements reconnect/replay itself.
 
 import asyncio
 import contextlib
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 
 from fastapi import APIRouter, Header, Request
 from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPAuthorizationCredentials
 
-from app.core.deps import CurrentUser, get_owned
+from app.core.deps import CurrentUser, get_current_user, get_owned
 from app.events import HEARTBEAT, bus
 from app.models import Run
 
@@ -38,14 +39,23 @@ def _terminal(envelope) -> bool:
     return envelope.to_dict()["event"] in {"run.completed", "run.failed"}
 
 
-async def _event_stream(request: Request, run_id: str, last_event_id: int) -> AsyncIterator[str]:
+async def _event_stream(
+    request: Request,
+    run_id: str,
+    last_event_id: int,
+    authorize: Callable[[], Awaitable[bool]] | None = None,
+) -> AsyncIterator[str]:
     # Subscribe before replaying, so an event emitted during the replay is queued rather
     # than lost between the two.
     queue = bus.subscribe(run_id)
     sent = last_event_id
 
     try:
+        if authorize is not None and not await authorize():
+            return
         for envelope in await bus.replay(run_id, after_id=sent):
+            if authorize is not None and not await authorize():
+                return
             sent = max(sent, envelope.id)
             yield _frame(envelope)
             if _terminal(envelope):
@@ -57,8 +67,13 @@ async def _event_stream(request: Request, run_id: str, last_event_id: int) -> As
             try:
                 envelope = await asyncio.wait_for(queue.get(), timeout=HEARTBEAT_SECONDS)
             except TimeoutError:
+                if authorize is not None and not await authorize():
+                    return
                 yield HEARTBEAT
                 continue
+
+            if authorize is not None and not await authorize():
+                return
 
             # Fill any gap before delivering. An event emitted just before this client
             # subscribed can be persisted just after the replay read its snapshot, so it
@@ -68,6 +83,8 @@ async def _event_stream(request: Request, run_id: str, last_event_id: int) -> As
                 for missed in await bus.replay(run_id, after_id=sent):
                     if missed.id >= envelope.id:
                         break
+                    if authorize is not None and not await authorize():
+                        return
                     sent = max(sent, missed.id)
                     yield _frame(missed)
                     if _terminal(missed):
@@ -102,8 +119,21 @@ async def stream_run(
     """Live events for a run, resumable from `Last-Event-ID`."""
     run = await get_owned(Run, run_id, str(user.id), "Run")
 
+    token = request.headers.get("authorization", "").partition(" ")[2]
+
+    async def authorize() -> bool:
+        try:
+            current = await get_current_user(
+                HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+            )
+            await get_owned(Run, run_id, str(current.id), "Run")
+            return True
+        except Exception:
+            # Close on revocation, expiry, deleted ownership or unavailable storage.
+            return False
+
     return StreamingResponse(
-        _event_stream(request, str(run.id), _parse_last_event_id(last_event_id)),
+        _event_stream(request, str(run.id), _parse_last_event_id(last_event_id), authorize),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -124,6 +124,15 @@ Google Account → Security → 2-Step Verification → **App passwords** → ge
 
 ### 2. Start the stack
 
+Sandbox execution now requires a separate Docker daemon with mutual TLS. Set
+`SANDBOX_DOCKER_HOST=tcp://<sandbox-host>:2376` and `SANDBOX_DOCKER_CERTS_DIR`
+to the directory containing `ca.pem`, `cert.pem`, and `key.pem` before starting
+the backend. Build `codeforge-sandbox:latest` on that daemon. Neither Compose
+configuration mounts the host Docker socket. Without daemon configuration,
+sandbox execution is unavailable; use `docker compose up -d mongo redis` for
+database-only development. See [deployment setup](docs/DEPLOYMENT.md).
+
+
 ```bash
 docker compose up -d
 ```

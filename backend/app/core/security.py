@@ -15,8 +15,9 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import jwt
 from cryptography.fernet import Fernet, InvalidToken
-from jose import JWTError, jwt
+from jwt import PyJWTError
 from passlib.context import CryptContext
 
 from app.config import settings
@@ -181,7 +182,7 @@ def create_access_token(
 def decode_access_token(token: str) -> dict[str, Any]:
     try:
         return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-    except JWTError as exc:
+    except PyJWTError as exc:
         # Expired, wrong signature and malformed all collapse to one client-facing
         # message: distinguishing them tells an attacker which part they got right.
         raise AuthError("Invalid or expired token") from exc

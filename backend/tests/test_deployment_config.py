@@ -91,3 +91,19 @@ def test_production_rejects_host_socket_or_unverified_remote_daemon(tmp_path) ->
             tmp_path, docker_cert_path="/missing/certs"
         ).production_security_errors()
     )
+
+
+def test_compose_stacks_do_not_mount_host_docker_socket():
+    from pathlib import Path
+
+    import yaml
+
+    root = Path(__file__).resolve().parents[2]
+    for filename in ("docker-compose.yml", "compose.deploy.yml"):
+        services = yaml.safe_load((root / filename).read_text())["services"]
+        for service in services.values():
+            assert not any("docker.sock" in str(value) for value in service.get("volumes", []))
+        backend = services["backend"]
+        assert backend["environment"]["DOCKER_TLS_VERIFY"] == "1"
+        assert "SANDBOX_DOCKER_HOST" in backend["environment"]["DOCKER_HOST"]
+        assert all(port.startswith("127.0.0.1:") for port in backend.get("ports", []))

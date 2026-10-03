@@ -8,6 +8,7 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from app.sandbox.policy import is_hardened
 from app.sandbox.preview import RESULT_PREFIX, validate_request
 from app.sandbox.runner import (
     MEM_LIMIT,
@@ -74,12 +75,22 @@ def _ensure_blocking(deployment_id: str, files: list[GeneratedFile]) -> None:
             if not _owned(container, deployment_id):
                 raise SandboxUnavailableError("Deployment container name is unavailable.")
             container.reload()
+            if not is_hardened(container):
+                # Named database volumes survive removal; only disposable volumes go.
+                container.remove(force=True, v=True)
+                container = None
         except NotFound:
+            container = None
+        if container is None:
             container = client.containers.create(
                 SANDBOX_IMAGE,
                 name=_name(deployment_id),
                 labels={"codeforge.deployment_id": deployment_id},
                 entrypoint="/usr/local/bin/deployment_entrypoint.sh",
+                cap_drop=["ALL"],
+                security_opt=["no-new-privileges:true"],
+                read_only=True,
+                tmpfs={"/tmp": "rw,noexec,nosuid,nodev,size=64m,mode=1777"},
                 network_mode="none",
                 mem_limit=MEM_LIMIT,
                 nano_cpus=NANO_CPUS,
@@ -159,7 +170,7 @@ def _destroy_blocking(deployment_id: str) -> None:
             container = client.containers.get(_name(deployment_id))
             if not _owned(container, deployment_id):
                 raise SandboxUnavailableError("Deployment container name is unavailable.")
-            container.remove(force=True)
+            container.remove(force=True, v=True)
         except NotFound:
             pass
         try:

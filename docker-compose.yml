@@ -34,19 +34,19 @@ services:
     environment:
       LANGFUSE_HOST: http://langfuse:3000
       REDIS_URL: redis://redis:6379/0
+      DOCKER_HOST: ${SANDBOX_DOCKER_HOST:-tcp://sandbox.invalid:2376}
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /run/codeforge/docker-client
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./backend/app:/app/app
       # Operational scripts (preflight, smoke tests) are run with `compose exec` and
       # need the in-container view of the world — Ollama in particular is only at
       # `host.docker.internal` from in here.
       - ./backend/scripts:/app/scripts
-      # Docker-outside-of-Docker: the backend launches sandbox containers as
-      # siblings on the host's daemon (CLAUDE.md locked stack — "Docker SDK for
-      # Python, network_mode=none"). Grants the backend container root-equivalent
-      # access to the host Docker daemon.
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Sandboxes require a separate TLS daemon; never expose the host socket.
+      - ${SANDBOX_DOCKER_CERTS_DIR:-./docker-client}:/run/codeforge/docker-client:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -79,7 +79,7 @@ services:
       SALT: dev-salt-change-me
       TELEMETRY_ENABLED: "false"
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       langfuse-db:
         condition: service_healthy

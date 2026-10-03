@@ -206,6 +206,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    from app.core.body_limit import BodyLimitMiddleware
+
+    app.add_middleware(BodyLimitMiddleware)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(passkeys_router)

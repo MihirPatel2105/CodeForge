@@ -190,3 +190,42 @@ def test_mongod_is_available_inside_the_container():
         ]
     )
     assert result.exit_code == 0, result.stdout[-500:]
+
+
+def test_container_privileges_and_root_filesystem_are_restricted():
+    result = _run(
+        [
+            GeneratedFile(
+                path="test_security.py",
+                content="""
+import os
+from pathlib import Path
+import pytest
+
+def test_restrictions():
+    assert os.getuid() != 0
+    lines = Path('/proc/self/status').read_text().splitlines()
+    status = dict(line.split(':', 1) for line in lines if ':' in line)
+    assert int(status['CapEff'].strip(), 16) == 0
+    assert status['NoNewPrivs'].strip() == '1'
+    with pytest.raises(OSError):
+        Path('/usr/security-probe').write_text('blocked')
+    Path('/tmp/security-probe').write_text('allowed')
+""",
+            )
+        ]
+    )
+    assert result.exit_code == 0, result.stdout + result.stderr
+
+
+def test_disposable_volumes_do_not_leak():
+    import docker
+
+    client = docker.from_env()
+    try:
+        before = {volume.name for volume in client.volumes.list()}
+        result = _run([GeneratedFile(path="test_main.py", content="def test_ok(): assert True\n")])
+        assert result.exit_code == 0
+        assert {volume.name for volume in client.volumes.list()} == before
+    finally:
+        client.close()

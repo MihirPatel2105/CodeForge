@@ -32,7 +32,7 @@ at the sandbox host firewall to the API host's private address. Never expose the
 to the public internet or share the sandbox host with other workloads or secrets.
 The backend can still control this *separate* sandbox host; a compromised backend
 therefore remains a risk to that host. This split protects the API host from direct
-Docker socket access. Local `docker-compose.yml` keeps its socket for development.
+Docker socket access. Local `docker-compose.yml` also uses a separate TLS daemon and has no host socket mount. Set `SANDBOX_DOCKER_HOST` and `SANDBOX_DOCKER_CERTS_DIR` before starting its backend. Without them, sandbox execution fails closed; database-only development remains available.
 
 Place `ca.pem`, `cert.pem`, and `key.pem` in a private client-certificate directory on
 the API host. Set `SANDBOX_DOCKER_HOST` and `SANDBOX_DOCKER_CERTS_DIR` in `deployment.env`.

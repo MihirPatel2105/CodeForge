@@ -56,7 +56,19 @@ def large():
                 container = client.containers.get(deployment._name(deployment_id))
                 assert container.attrs["HostConfig"]["NetworkMode"] == "none"
                 assert not container.attrs["HostConfig"]["PortBindings"]
-                container.remove(force=True)
+                assert container.attrs["HostConfig"]["ReadonlyRootfs"] is True
+                assert container.attrs["HostConfig"]["CapDrop"] == ["ALL"]
+                assert "no-new-privileges:true" in container.attrs["HostConfig"]["SecurityOpt"]
+                container.remove(force=True, v=True)
+                # Recreate a pre-hardening container without touching its named data volume.
+                legacy = client.containers.create(
+                    deployment.SANDBOX_IMAGE,
+                    name=deployment._name(deployment_id),
+                    labels={"codeforge.deployment_id": deployment_id},
+                    network_mode="none",
+                    volumes={deployment._name(deployment_id): {"bind": "/data/db", "mode": "rw"}},
+                )
+                assert not legacy.attrs["HostConfig"]["ReadonlyRootfs"]
             finally:
                 client.close()
             restored = await deployment.execute_deployment(

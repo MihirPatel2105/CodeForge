@@ -223,7 +223,7 @@ def test_me_rejects_a_malformed_token(client):
 def test_me_rejects_a_token_signed_with_another_secret(client, registered_user):
     from datetime import UTC, datetime, timedelta
 
-    from jose import jwt
+    import jwt
 
     forged = jwt.encode(
         {"sub": "someone", "exp": datetime.now(UTC) + timedelta(minutes=5)},

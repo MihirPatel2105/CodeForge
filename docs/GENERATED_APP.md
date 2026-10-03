@@ -221,6 +221,14 @@ def test_get_missing_book_returns_404():
 
 ## 6. Sandbox image contents
 
+Containers run as `mongodb` with all Linux capabilities dropped,
+`no-new-privileges`, a read-only root filesystem and no network. Writable storage
+is limited to disposable application/database volumes and a 64 MiB `/tmp` tmpfs.
+Published database volumes persist across container recreation; disposable
+volumes are removed with their container. Sandbox dependencies are pinned in
+`sandbox/Dockerfile` and updated with live generated-app regression checks.
+
+
 The image is pre-built with everything below, because `network_mode="none"` means nothing can
 be installed at run time.
 

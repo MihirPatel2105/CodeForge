@@ -37,7 +37,12 @@ def _collection():
     except ImportError as exc:  # pragma: no cover - dependency is declared
         raise RetrievalUnavailableError("chromadb is not installed") from exc
 
-    client = chromadb.EphemeralClient()
+    from chromadb.config import Settings
+
+    # Never expose Chroma HTTP APIs or accept client-supplied embedding configuration.
+    client = chromadb.EphemeralClient(
+        settings=Settings(anonymized_telemetry=False, allow_reset=False)
+    )
     collection = client.get_or_create_collection(name=COLLECTION_NAME)
 
     collection.add(

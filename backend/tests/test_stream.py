@@ -263,3 +263,110 @@ def test_stream_requires_ownership(client, registered_user):
 
     response = client.get(f"/runs/{run_id}/stream", headers=other_headers)
     assert response.status_code == 404
+
+
+def test_revoked_stream_cannot_replay_stored_events():
+    async def scenario(run_id):
+        await bus.emit(run_id, ev.RunStarted(run_id=run_id, prompt="secret"))
+
+        async def revoked():
+            return False
+
+        frames = [frame async for frame in _event_stream(FakeRequest(), run_id, 0, revoked)]
+        assert not frames
+        assert bus.subscriber_count(run_id) == 0
+
+    asyncio.run(_with_run(scenario))
+
+
+def test_idle_stream_rechecks_authorization_on_heartbeat(monkeypatch):
+    monkeypatch.setattr("app.api.stream.HEARTBEAT_SECONDS", 0.01)
+
+    async def scenario(run_id):
+        checks = 0
+
+        async def authorize():
+            nonlocal checks
+            checks += 1
+            return checks == 1
+
+        frames = [frame async for frame in _event_stream(FakeRequest(), run_id, 0, authorize)]
+        assert not frames
+        assert checks == 2
+        assert bus.subscriber_count(run_id) == 0
+
+    asyncio.run(_with_run(scenario))
+
+
+def test_revocation_during_replay_stops_next_event():
+    async def scenario(run_id):
+        await bus.emit(run_id, ev.RunStarted(run_id=run_id, prompt="x"))
+        await bus.emit(run_id, ev.AgentStarted(agent="pm"))
+        checks = 0
+
+        async def authorize():
+            nonlocal checks
+            checks += 1
+            return checks < 3
+
+        frames = [frame async for frame in _event_stream(FakeRequest(), run_id, 0, authorize)]
+        assert len(frames) == 1
+        assert "run.started" in frames[0]
+        assert bus.subscriber_count(run_id) == 0
+
+    asyncio.run(_with_run(scenario))
+
+
+@pytest.mark.parametrize("mode", ["sign_out", "password_reset", "suspended"])
+def test_open_endpoint_stream_stops_after_real_account_revocation(mode):
+    from datetime import UTC, datetime
+    from uuid import uuid4
+
+    from app.api.stream import stream_run
+    from app.core.security import create_access_token, decode_access_token
+    from app.db import connect, disconnect
+    from app.models import RevokedToken, Run, User
+
+    async def scenario():
+        await connect()
+        user = User(email=f"stream-{uuid4().hex}@example.com", hashed_password="unused")
+        await user.insert()
+        run = Run(project_id="p", user_id=str(user.id), prompt="x")
+        await run.insert()
+        revoked = None
+        gen = None
+        try:
+            token = create_access_token(str(user.id))
+            request = FakeRequest()
+            request.headers = {"authorization": f"Bearer {token}"}
+            await bus.emit(str(run.id), ev.RunStarted(run_id=str(run.id), prompt="x"))
+            response = await stream_run(str(run.id), request, user, None)
+            gen = response.body_iterator
+            assert "run.started" in await gen.__anext__()
+            if mode == "sign_out":
+                claims = decode_access_token(token)
+                revoked = RevokedToken(
+                    jti=claims["jti"],
+                    expires_at=datetime.fromtimestamp(claims["exp"], UTC),
+                    revoked_at=datetime.now(UTC),
+                )
+                await revoked.insert()
+            else:
+                change = (
+                    {"token_version": 1} if mode == "password_reset" else {"is_suspended": True}
+                )
+                await User.get_pymongo_collection().update_one({"_id": user.id}, {"$set": change})
+            await bus.emit(str(run.id), ev.AgentStarted(agent="pm"))
+            with pytest.raises(StopAsyncIteration):
+                await gen.__anext__()
+            assert bus.subscriber_count(str(run.id)) == 0
+        finally:
+            if gen is not None:
+                await gen.aclose()
+            if revoked is not None:
+                await revoked.delete()
+            await run.delete()
+            await user.delete()
+            await disconnect()
+
+    asyncio.run(scenario())

@@ -86,3 +86,29 @@ def test_path_traversal_is_flattened():
         names = archive.getnames()
     assert names == ["passwd"]
     assert not any(".." in n or n.startswith("/") for n in names)
+
+
+def test_reuse_requires_all_sandbox_restrictions():
+    from copy import deepcopy
+    from types import SimpleNamespace
+
+    from app.sandbox.policy import is_hardened
+
+    attrs = {
+        "Config": {"User": "mongodb"},
+        "HostConfig": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": True,
+            "CapDrop": ["ALL"],
+            "SecurityOpt": ["no-new-privileges:true"],
+        },
+    }
+    assert is_hardened(SimpleNamespace(attrs=attrs))
+    for key in attrs["HostConfig"]:
+        unsafe = deepcopy(attrs)
+        del unsafe["HostConfig"][key]
+        assert not is_hardened(SimpleNamespace(attrs=unsafe))
+    for user in ("", "0", "root", "0:0", "root:mongodb"):
+        unsafe = deepcopy(attrs)
+        unsafe["Config"]["User"] = user
+        assert not is_hardened(SimpleNamespace(attrs=unsafe))

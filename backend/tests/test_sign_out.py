@@ -83,7 +83,7 @@ def test_a_token_with_no_jti_can_still_sign_out(client, registered_user):
     revoke anything, but it must not error on the way out either."""
     from datetime import UTC, datetime, timedelta
 
-    from jose import jwt
+    import jwt
 
     from app.config import settings
 

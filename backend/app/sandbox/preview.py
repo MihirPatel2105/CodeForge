@@ -6,6 +6,7 @@ import json
 import time
 from typing import Any
 
+from app.sandbox.policy import is_hardened
 from app.sandbox.runner import (
     MEM_LIMIT,
     NANO_CPUS,
@@ -61,8 +62,8 @@ def _request_blocking(
             if container.labels.get("codeforge.preview") != "true":
                 container = None
                 raise SandboxUnavailableError("Preview container name is unavailable.")
-            if container.status != "running":
-                container.remove(force=True)
+            if container.status != "running" or not is_hardened(container):
+                container.remove(force=True, v=True)
                 container = None
         except NotFound:
             pass
@@ -76,6 +77,10 @@ def _request_blocking(
                 name=_preview_name(run_id),
                 labels={"codeforge.preview": "true", "codeforge.run_id": run_id},
                 entrypoint="/usr/local/bin/preview_entrypoint.sh",
+                cap_drop=["ALL"],
+                security_opt=["no-new-privileges:true"],
+                read_only=True,
+                tmpfs={"/tmp": "rw,noexec,nosuid,nodev,size=64m,mode=1777"},
                 network_mode="none",
                 mem_limit=MEM_LIMIT,
                 nano_cpus=NANO_CPUS,
@@ -118,7 +123,7 @@ def _request_blocking(
     except Exception:
         if container is not None:
             try:
-                container.remove(force=True)
+                container.remove(force=True, v=True)
             except Exception:
                 pass
         raise
@@ -147,7 +152,7 @@ def _stop_blocking(run_id: str) -> None:
             return
         if container.labels.get("codeforge.preview") != "true":
             raise SandboxUnavailableError("Preview container name is unavailable.")
-        container.remove(force=True)
+        container.remove(force=True, v=True)
     finally:
         client.close()
 

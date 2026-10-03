@@ -13,7 +13,15 @@ from app.sandbox.runner import SandboxUnavailableError
 def test_startup_requires_a_working_application():
     client = MagicMock()
     container = client.containers.get.return_value
-    container.attrs = {"Config": {"Labels": {"codeforge.deployment_id": "startup"}}}
+    container.attrs = {
+        "Config": {"Labels": {"codeforge.deployment_id": "startup"}, "User": "mongodb"},
+        "HostConfig": {
+            "NetworkMode": "none",
+            "ReadonlyRootfs": True,
+            "CapDrop": ["ALL"],
+            "SecurityOpt": ["no-new-privileges:true"],
+        },
+    }
     container.status = "running"
     client.volumes.get.return_value.attrs = {"Labels": {"codeforge.deployment_id": "startup"}}
     container.exec_run.side_effect = [MagicMock(exit_code=0), MagicMock(exit_code=1)]

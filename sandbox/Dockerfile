@@ -32,13 +32,14 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # deliberately absent: generated tests are synchronous (docs/GENERATED_APP.md §5), and
 # leaving it out makes an async test fail loudly at collection instead of silently
 # appearing to pass.
-RUN pip install --no-cache-dir \
-    fastapi==0.115.6 \
+RUN pip install --no-cache-dir --upgrade pip setuptools && pip install --no-cache-dir \
+    fastapi==0.141.1 \
+    starlette==1.6.0 \
     email-validator==2.2.0 \
-    uvicorn==0.34.0 \
+    uvicorn==0.52.1 \
     beanie==2.2.0 \
     pymongo==4.16.0 \
-    pytest==8.3.4 \
+    pytest==9.1.1 \
     httpx==0.28.1
 # email-validator is required by pydantic's EmailStr. Generated contact and attendee
 # apps reach for it naturally, and without it they fail at import — a sandbox defect
@@ -54,6 +55,8 @@ COPY preview_entrypoint.sh /usr/local/bin/preview_entrypoint.sh
 COPY preview_request.py /usr/local/bin/preview_request.py
 COPY deployment_entrypoint.sh /usr/local/bin/deployment_entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/preview_entrypoint.sh /usr/local/bin/deployment_entrypoint.sh
+
+VOLUME ["/app"]
 
 USER mongodb
 WORKDIR /app

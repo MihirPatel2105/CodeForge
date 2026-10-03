@@ -76,6 +76,10 @@ def _run_blocking(request: SandboxRequest) -> SandboxResult:
     try:
         container = client.containers.create(
             SANDBOX_IMAGE,
+            cap_drop=["ALL"],
+            security_opt=["no-new-privileges:true"],
+            read_only=True,
+            tmpfs={"/tmp": "rw,noexec,nosuid,nodev,size=64m,mode=1777"},
             network_mode="none",  # never relax this
             environment={
                 "CODEFORGE_PROBE_METHOD": request.probe_method or "",
@@ -118,7 +122,7 @@ def _run_blocking(request: SandboxRequest) -> SandboxResult:
     finally:
         if container is not None:
             try:
-                container.remove(force=True)
+                container.remove(force=True, v=True)
             except Exception:
                 # Never let cleanup mask the real result; a leak here is logged by the
                 # caller's own checks rather than raised.

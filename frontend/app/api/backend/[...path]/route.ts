@@ -152,9 +152,38 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
   if (reportedLength > MAX_REQUEST_BYTES) {
     return proxyError(413, "too_large");
   }
-  const body = ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
-  if (body && body.byteLength > MAX_REQUEST_BYTES) {
-    return proxyError(413, "too_large");
+  let body: ArrayBuffer | undefined;
+  if (!["GET", "HEAD"].includes(request.method) && request.body) {
+    const reader = request.body.getReader();
+    const bounded = new Uint8Array(MAX_REQUEST_BYTES);
+    let size = 0;
+    const deadline = Date.now() + 30_000;
+    try {
+      while (true) {
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        const { done, value } = await Promise.race([
+          reader.read(),
+          new Promise<ReadableStreamReadResult<Uint8Array>>((_, reject) => {
+            timeout = setTimeout(() => reject(new Error("upload_timeout")), Math.max(0, deadline - Date.now()));
+          }),
+        ]).finally(() => clearTimeout(timeout));
+        if (done) break;
+        size += value.byteLength;
+        if (size > MAX_REQUEST_BYTES) {
+          await reader.cancel();
+          return proxyError(413, "too_large");
+        }
+        bounded.set(value, size - value.byteLength);
+      }
+    } catch (error) {
+      await reader.cancel().catch(() => undefined);
+      return error instanceof Error && error.message === "upload_timeout"
+        ? proxyError(408, "timeout")
+        : proxyError(400, "bad_request");
+    } finally {
+      reader.releaseLock();
+    }
+    body = bounded.buffer.slice(0, size);
   }
 
   let upstream: Response;
