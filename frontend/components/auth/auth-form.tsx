@@ -232,6 +232,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                     </>
                   )}
 
+                  {registering && <p className="mt-5 text-center text-[12px] leading-5 text-fg-muted">By creating an account, you agree to our <Link href="/terms" className="text-accent underline">Terms of Use</Link>. Read our <Link href="/privacy" className="text-accent underline">Privacy Policy</Link> to understand how your information is handled.</p>}
                   <p className="cf-auth-footer mt-7 text-center text-[13px] text-fg-muted">
                     {copy.altPrompt}{" "}
                     <Link href={copy.altHref} className="font-[700] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{copy.altLabel}</Link>
