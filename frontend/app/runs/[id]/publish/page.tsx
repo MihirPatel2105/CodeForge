@@ -231,7 +231,7 @@ export default function PublishApiPage() {
           <section className="mt-6 rounded-3xl border border-border bg-surface p-6 sm:p-8" aria-labelledby="publish-status-heading">
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
-              <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. One API can be published per account.</p>
+              <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
               <Button className="mt-5" onClick={publish} disabled={busy}>{busy ? "Publishing…" : "Publish API"}</Button>
             </div>
           </section>

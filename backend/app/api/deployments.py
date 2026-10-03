@@ -22,10 +22,11 @@ from app.core.exceptions import (
     NotFoundError,
     PreviewRequestError,
     PreviewUnavailableError,
+    PublishedAccountLimitError,
+    PublishedCapacityError,
     PublishedResponseInvalidError,
     PublishedResponseTooLargeError,
     RateLimitError,
-    UsageLimitError,
 )
 from app.db.mongo import get_database
 from app.models import Deployment, Run, User
@@ -104,7 +105,7 @@ async def publish_run(run_id: str, user: CurrentUser) -> DeploymentCreated:
     if await Deployment.find_one(Deployment.run_id == run_id):
         raise ConflictError("This run is already published.")
     if await Deployment.find(Deployment.user_id == str(user.id)).count():
-        raise UsageLimitError("Unpublish your current API before publishing another.")
+        raise PublishedAccountLimitError("Unpublish your current API before publishing another.")
     api_key = _api_key()
     deployment = None
     for slot in range(MAX_ACTIVE_DEPLOYMENTS):
@@ -125,11 +126,11 @@ async def publish_run(run_id: str, user: CurrentUser) -> DeploymentCreated:
             if await Deployment.find_one(Deployment.run_id == run_id):
                 raise ConflictError("This run is already published.") from None
             if await Deployment.find_one(Deployment.user_id == str(user.id)):
-                raise UsageLimitError(
+                raise PublishedAccountLimitError(
                     "Unpublish your current API before publishing another."
                 ) from None
     if deployment is None:
-        raise UsageLimitError("Hosting capacity is full. Try again later.")
+        raise PublishedCapacityError("Hosting capacity is full. Try again later.")
     try:
         await ensure_deployment(str(deployment.id), files)
     except Exception as exc:

@@ -25,3 +25,19 @@ def test_typed_error_does_not_expose_internal_exception_message():
     body = json.loads(response.body)
     assert body["error"]["code"] == "preview_unavailable"
     assert secret not in response.body.decode()
+
+
+def test_publish_limits_return_distinct_actionable_safe_messages():
+    from app.core.exceptions import PublishedAccountLimitError, PublishedCapacityError
+
+    request = Request({"type": "http", "method": "POST", "path": "/"})
+    for error, code, action in (
+        (PublishedAccountLimitError, "published_account_limit", "Unpublish your current API"),
+        (PublishedCapacityError, "published_capacity_full", "All 2 hosting slots are occupied"),
+    ):
+        response = asyncio.run(codeforge_error_handler(request, error("private internal detail")))
+        body = json.loads(response.body)
+        assert response.status_code == 409
+        assert body["error"]["code"] == code
+        assert action in body["error"]["message"]
+        assert "private internal detail" not in response.body.decode()

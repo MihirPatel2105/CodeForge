@@ -76,6 +76,14 @@ class UsageLimitError(CodeForgeError):
     code = "usage_limit_reached"
 
 
+class PublishedAccountLimitError(UsageLimitError):
+    code = "published_account_limit"
+
+
+class PublishedCapacityError(UsageLimitError):
+    code = "published_capacity_full"
+
+
 class PreviewRequestError(CodeForgeError):
     status_code = 400
     code = "invalid_preview_request"

@@ -121,6 +121,16 @@ def _public_error_message(status: int, code: str) -> str:
         return "Too many attempts. Please wait a moment and try again."
     if code == "account_suspended":
         return "This account is unavailable. Contact support if you need help."
+    if code == "published_account_limit":
+        return (
+            "You already have a published API. Each account can publish 1 API at a time. "
+            "Unpublish your current API before publishing another."
+        )
+    if code == "published_capacity_full":
+        return (
+            "All 2 hosting slots are occupied. This server supports 2 published APIs in total. "
+            "Try again after a slot becomes available."
+        )
     if code == "usage_limit_reached":
         return "You've reached the current limit. Please try again later."
     if status == 401:
