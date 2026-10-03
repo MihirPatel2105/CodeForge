@@ -15,6 +15,7 @@ from fastapi import APIRouter, BackgroundTasks, Request, Response, status
 from pymongo import ReturnDocument
 
 from app.config import settings
+from app.core.abuse_limits import check_reauthentication_limit
 from app.core.account_deletion import delete_user_account
 from app.core.deps import CurrentUser, TokenClaims, admin_access_until, is_admin_user
 from app.core.email import (
@@ -52,6 +53,7 @@ from app.core.security import (
     verify_password,
     verify_totp,
 )
+from app.core.user_updates import update_user
 from app.models import (
     Device,
     LoginSession,
@@ -375,10 +377,32 @@ async def login(
 
 
 async def _record_failed_login(user: User, background: BackgroundTasks) -> None:
-    user.failed_login_attempts += 1
-    if user.failed_login_attempts >= settings.login_max_attempts:
-        user.locked_until = _now() + timedelta(minutes=settings.login_lockout_minutes)
-        user.failed_login_attempts = 0
+    # Increment and lock in one write; overlapping failed attempts cannot lose counts.
+    attempts = {"$add": [{"$ifNull": ["$failed_login_attempts", 0]}, 1]}
+    exceeded = {"$gte": [attempts, settings.login_max_attempts]}
+    document = await User.get_pymongo_collection().find_one_and_update(
+        {
+            "_id": user.id,
+            "hashed_password": user.hashed_password,
+            "token_version": user.token_version,
+        },
+        [
+            {
+                "$set": {
+                    "failed_login_attempts": {"$cond": [exceeded, 0, attempts]},
+                    "locked_until": {
+                        "$cond": [
+                            exceeded,
+                            _now() + timedelta(minutes=settings.login_lockout_minutes),
+                            "$locked_until",
+                        ]
+                    },
+                }
+            }
+        ],
+        return_document=ReturnDocument.AFTER,
+    )
+    if document and document.get("locked_until"):
         background.add_task(
             _send_quietly,
             "Security alert",
@@ -390,7 +414,6 @@ async def _record_failed_login(user: User, background: BackgroundTasks) -> None:
                 "after repeated failed attempts."
             ),
         )
-    await user.save()
 
 
 async def password_mfa_user(ticket: str) -> User:
@@ -475,10 +498,9 @@ async def finish_login(
 ) -> str:
     """Apply the same session and new-device alert rules to every sign-in method."""
     now = _now()
-    user.failed_login_attempts = 0
-    user.locked_until = None
-    user.last_login_at = now
-    await user.save()
+    user = await update_user(
+        user, {"failed_login_attempts": 0, "locked_until": None, "last_login_at": now}
+    )
     token, device, is_new = await issue_session(user, request, strong_auth=strong_auth)
     if is_new and user.email_verified and settings.email_verification_enabled:
         alert_token = generate_reset_token()
@@ -502,40 +524,44 @@ async def finish_login(
 
 
 @router.post("/totp/setup", response_model=TotpSetupResponse)
-async def setup_totp(payload: TotpSetupRequest, user: CurrentUser) -> TotpSetupResponse:
+async def setup_totp(
+    payload: TotpSetupRequest, user: CurrentUser, request: Request
+) -> TotpSetupResponse:
+    await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     if user.totp_enabled:
         raise ConflictError("Disable two-factor authentication before setting it up again")
     secret = generate_totp_secret()
-    user.totp_secret_encrypted = encrypt_totp_secret(secret)
-    user.totp_enabled = False
+    user = await update_user(
+        user, {"totp_secret_encrypted": encrypt_totp_secret(secret), "totp_enabled": False}
+    )
     await RecoveryCode.find(RecoveryCode.user_id == str(user.id)).delete()
-    await user.save()
     return TotpSetupResponse(secret=secret, provisioning_uri=totp_uri(secret, user.email))
 
 
 @router.post("/totp/verify", response_model=RecoveryCodesResponse)
 async def enable_totp(
-    payload: TotpVerifyRequest, user: CurrentUser, response: Response
+    payload: TotpVerifyRequest, user: CurrentUser, response: Response, request: Request
 ) -> RecoveryCodesResponse:
+    await check_reauthentication_limit(request, str(user.id))
     if not user.totp_secret_encrypted:
         raise ConflictError("Start two-factor setup before verifying a code")
     if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
         raise AuthError("The two-factor code is not correct")
-    user.totp_enabled = True
+    user = await update_user(user, {"totp_enabled": True})
     codes = await _replace_recovery_codes(str(user.id))
-    await user.save()
     response.headers["Cache-Control"] = "no-store"
     return RecoveryCodesResponse(codes=codes)
 
 
 @router.post("/recovery-codes/regenerate", response_model=RecoveryCodesResponse)
 async def regenerate_recovery_codes(
-    payload: RecoveryCodesRegenerateRequest, user: CurrentUser, response: Response
+    payload: RecoveryCodesRegenerateRequest, user: CurrentUser, response: Response, request: Request
 ) -> RecoveryCodesResponse:
     if not user.totp_enabled or not user.totp_secret_encrypted:
         raise ConflictError("Authenticator codes are not enabled")
+    await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
@@ -549,6 +575,7 @@ async def regenerate_recovery_codes(
 async def disable_totp(
     payload: TotpDisableRequest, user: CurrentUser, request: Request
 ) -> TokenResponse:
+    await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     if not user.totp_enabled or not user.totp_secret_encrypted:
@@ -568,11 +595,10 @@ async def disable_totp(
             raise AuthError("The recovery code is not correct")
     elif not verify_totp(payload.code or "", decrypt_totp_secret(user.totp_secret_encrypted)):
         raise AuthError("The two-factor code is not correct")
-    user.totp_enabled = False
-    user.totp_secret_encrypted = None
+    user = await update_user(
+        user, {"totp_enabled": False, "totp_secret_encrypted": None}, revoke=True
+    )
     await RecoveryCode.find(RecoveryCode.user_id == str(user.id)).delete()
-    user.token_version += 1
-    await user.save()
     token, _, _ = await issue_session(user, request)
     return TokenResponse(access_token=token)
 
@@ -637,29 +663,19 @@ async def reset_password(
     never existed, one already used, and one that expired: which of those it was is not
     the caller's business, the same reasoning `/verify-email` applies to a bad code.
     """
-    reset = await PasswordResetToken.find_one(
-        PasswordResetToken.token_hash == hash_reset_token(payload.token)
+    reset = await PasswordResetToken.get_pymongo_collection().find_one_and_delete(
+        {"token_hash": hash_reset_token(payload.token)}
     )
-    if reset is None or _as_utc(reset.expires_at) <= _now():
-        if reset is not None:
-            await reset.delete()
+    if reset is None or _as_utc(reset["expires_at"]) <= _now():
         raise AuthError("This link is invalid or has expired. Request a new one.")
-
-    user = await User.get(reset.user_id)
+    user = await User.get(reset["user_id"])
     if user is None:
-        # The account was deleted after the link was sent.
-        await reset.delete()
         raise AuthError("This link is invalid or has expired. Request a new one.")
-
-    user.hashed_password = hash_password(payload.new_password)
-    user.password_reset_required = False
-    # Same as an explicit password change: every session this token might have been
-    # phished alongside, or any that predate the reset, stops working at once.
-    user.token_version += 1
-    await user.save()
-
-    # Single-use: gone whether it succeeded or not, so the same link cannot be replayed.
-    await reset.delete()
+    user = await update_user(
+        user,
+        {"hashed_password": hash_password(payload.new_password), "password_reset_required": False},
+        revoke=True,
+    )
     await SignInAlert.find(SignInAlert.user_id == str(user.id)).delete()
     # A reset link is the recovery path after credential compromise. A passkey added
     # by the attacker must not survive the reset and reopen the account.
@@ -721,8 +737,7 @@ async def sign_out_everywhere(user: CurrentUser) -> None:
     token whose `tv` is behind the account's, so every issued token dies at once. No
     replacement is handed back — the point is to be signed out.
     """
-    user.token_version += 1
-    await user.save()
+    await update_user(user, {}, revoke=True, guarded=False)
 
 
 @router.post("/change-password", response_model=TokenResponse)
@@ -735,6 +750,7 @@ async def change_password(
     the token is what an attacker who walked up to an unlocked laptop would have, and it
     should not be enough to lock the owner out of their own account.
     """
+    await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
 
@@ -743,11 +759,9 @@ async def change_password(
         # succeeding would look identical to a change that worked.
         raise ConflictError("The new password is the same as your current one")
 
-    user.hashed_password = hash_password(payload.new_password)
-    # Every token issued before this moment stops working, which is the point: if the
-    # old password leaked, the sessions it opened have to die with it.
-    user.token_version += 1
-    await user.save()
+    user = await update_user(
+        user, {"hashed_password": hash_password(payload.new_password)}, revoke=True
+    )
 
     # Whoever owns this address hears about it, whether or not they are the one who did
     # it — that is the entire value of the message.
@@ -814,9 +828,9 @@ async def respond_to_sign_in_alert(payload: SignInAlertResponseRequest) -> SignI
         raise AuthError("This sign-in link is invalid or has expired.")
 
     if payload.response == "not_me":
-        user.token_version += 1
-        user.password_reset_required = True
-        await user.save()
+        user = await update_user(
+            user, {"password_reset_required": True}, revoke=True, guarded=False
+        )
         await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).delete()
         await PasskeyChallenge.find(PasskeyChallenge.user_id == str(user.id)).delete()
         device = await Device.find_one(
@@ -849,7 +863,7 @@ async def me(user: CurrentUser) -> UserResponse:
 
 @router.post("/delete-account", response_model=DeleteAccountResponse)
 async def delete_account(
-    payload: DeleteAccountRequest, user: CurrentUser, background: BackgroundTasks
+    payload: DeleteAccountRequest, user: CurrentUser, background: BackgroundTasks, request: Request
 ) -> DeleteAccountResponse:
     """Close an account and remove everything it owns.
 
@@ -866,6 +880,7 @@ async def delete_account(
             "The configured administrator account cannot delete itself. Change ADMIN_EMAIL first."
         )
 
+    await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.password, user.hashed_password):
         # Same wording as a failed login. Confirming that the token's owner exists but
         # the password was wrong is fine — the caller already proved they hold a session

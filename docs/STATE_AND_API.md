@@ -349,3 +349,37 @@ See `WORKSPACE_EXPERIENCE.md` for lifecycle, device storage, and notification li
 - `admin_incidents` persists group status, observed timestamp and the latest 30 notes.
 
 See `ADMIN_OPERATIONS.md` for thresholds, freshness and destructive stop semantics.
+
+## Security concurrency and usage admission
+
+Credential and login metadata changes use narrow atomic user updates. Credential changes
+increment `token_version` atomically, and password/MFA-dependent writes compare the verified
+security state before succeeding. Reset tokens are consumed with `find_one_and_delete` before
+changing the password; two overlapping uses have one winner. A failed reset after consumption
+requires a new link.
+
+When Redis is configured, sensitive password/MFA rechecks share a limit of 10 attempts per
+10 minutes per account and client across password change, account deletion, TOTP setup/verify/
+disable, recovery-code regeneration and passkey management. Run submissions share a limit of
+5 attempts per minute. Redis failures reject these actions with 503. Production requires Redis.
+
+`usage_buckets` atomically reserves project and monthly run usage. Existing usage is counted
+when a bucket is first created. Null per-account overrides mean the configured platform default:
+20 projects and 50 runs per UTC month. The environment can set `DEFAULT_PROJECT_LIMIT` and
+`DEFAULT_MONTHLY_RUN_LIMIT`; explicit admin overrides still take precedence. Monthly usage is
+consumed when a run record is created, including cancelled or failed runs, and is not refunded
+by deleting history. Pre-insert failures release the reservation. Project deletion releases one
+project reservation. An interrupted reservation can conservatively consume quota; it must not
+be automatically refunded without verifying that no work was admitted.
+
+`run_admissions` uses unique global and per-account slot indexes to reserve active capacity
+before run creation: defaults are 3 active runs per account and 12 globally, configurable through
+`MAX_ACTIVE_RUNS_PER_USER` and `MAX_ACTIVE_RUNS_GLOBAL`. Queued/running/approval-paused runs occupy
+slots. Completed/rejected/cancelled runs free slots on the next admission; an executing graph
+keeps its slot even if a node temporarily records a failure. Existing runs are included, and
+abandoned reservations without a run are reclaimed after five minutes. Database failures do
+not permit an unreserved run.
+
+Local test MongoDB is bound to `127.0.0.1:27017`. It is an offline test service; use authenticated
+MongoDB for shared environments. The Atlas application identity needs `readWrite` only on the
+configured application database and `codeforge_checkpoints`; operational accounts are separate.

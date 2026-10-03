@@ -13,15 +13,17 @@ from typing import Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import APIRouter, BackgroundTasks, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Query, Request, Response
 
 from app.config import settings
+from app.core.abuse_limits import check_reauthentication_limit
 from app.core.account_deletion import delete_user_account
 from app.core.admin_guidance import failure_guidance
 from app.core.deps import AdminUser, is_admin_user
 from app.core.email import send_account_deleted_email
 from app.core.exceptions import AuthError, ConflictError, NotFoundError
 from app.core.security import verify_password
+from app.core.user_updates import update_user
 from app.db.artifacts import list_artifacts, read_artifact
 from app.db.mongo import get_database
 from app.events import events
@@ -627,11 +629,13 @@ async def delete_user(
     payload: AdminDeleteUserRequest,
     admin: AdminUser,
     background: BackgroundTasks,
+    request: Request,
 ) -> DeleteAccountResponse:
     """Permanently delete a non-admin account after re-authenticating the operator."""
     user = await _get_user(user_id)
     if str(user.id) == str(admin.id) or is_admin_user(user):
         raise ConflictError("The administrator account cannot be deleted")
+    await check_reauthentication_limit(request, str(admin.id))
     if not verify_password(payload.current_password, admin.hashed_password):
         raise AuthError("Incorrect password")
 
@@ -672,11 +676,16 @@ async def suspend_user(
         raise ConflictError("The administrator account cannot be suspended")
     if user.is_suspended:
         raise ConflictError("This account is already suspended")
-    user.is_suspended = True
-    user.suspended_at = datetime.now(UTC)
-    user.suspended_reason = payload.reason
-    user.token_version += 1
-    await user.save()
+    await update_user(
+        user,
+        {
+            "is_suspended": True,
+            "suspended_at": datetime.now(UTC),
+            "suspended_reason": payload.reason,
+        },
+        revoke=True,
+        guarded=False,
+    )
     await _audit(
         admin, action="user.suspended", target_type="user", target_id=user_id, reason=payload.reason
     )
@@ -690,10 +699,9 @@ async def restore_user(
     user = await _get_user(user_id)
     if not user.is_suspended:
         raise ConflictError("This account is not suspended")
-    user.is_suspended = False
-    user.suspended_at = None
-    user.suspended_reason = None
-    await user.save()
+    await update_user(
+        user, {"is_suspended": False, "suspended_at": None, "suspended_reason": None}, guarded=False
+    )
     await _audit(
         admin, action="user.restored", target_type="user", target_id=user_id, reason=payload.reason
     )
@@ -707,8 +715,7 @@ async def verify_user_email(
     user = await _get_user(user_id)
     if user.email_verified:
         raise ConflictError("This email is already verified")
-    user.email_verified = True
-    await user.save()
+    await update_user(user, {"email_verified": True}, guarded=False)
     await _audit(
         admin,
         action="user.email_verified",
@@ -725,9 +732,11 @@ async def set_user_limits(
 ) -> AdminActionResponse:
     user = await _get_user(user_id)
     before = {"project_limit": user.project_limit, "monthly_run_limit": user.monthly_run_limit}
-    user.project_limit = payload.project_limit
-    user.monthly_run_limit = payload.monthly_run_limit
-    await user.save()
+    await update_user(
+        user,
+        {"project_limit": payload.project_limit, "monthly_run_limit": payload.monthly_run_limit},
+        guarded=False,
+    )
     await _audit(
         admin,
         action="user.limits_updated",
@@ -753,8 +762,7 @@ async def revoke_user_sessions(
     if str(user.id) == str(admin.id):
         raise ConflictError("Use account settings to sign out your own sessions")
     previous_version = user.token_version
-    user.token_version += 1
-    await user.save()
+    await update_user(user, {}, revoke=True, guarded=False)
     await _audit(
         admin,
         action="user.sessions_revoked",

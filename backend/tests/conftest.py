@@ -23,6 +23,8 @@ from app.core import email as email_module  # noqa: E402
 from app.main import app  # noqa: E402
 
 COLLECTIONS = (
+    "usage_buckets",
+    "run_admissions",
     "users",
     "pending_signups",
     "password_reset_tokens",

@@ -32,6 +32,7 @@ from app.api.auth import (
     password_mfa_user,
 )
 from app.config import settings
+from app.core.abuse_limits import check_reauthentication_limit
 from app.core.deps import CurrentUser
 from app.core.email import send_security_alert_email
 from app.core.exceptions import (
@@ -167,7 +168,10 @@ async def list_passkeys(user: CurrentUser) -> list[PasskeyInfo]:
 
 
 @router.post("/register/options", response_model=PasskeyOptions)
-async def registration_options(payload: PasskeyReauth, user: CurrentUser) -> PasskeyOptions:
+async def registration_options(
+    payload: PasskeyReauth, user: CurrentUser, request: Request
+) -> PasskeyOptions:
+    await check_reauthentication_limit(request, str(user.id))
     _reauth(user, payload.current_password, payload.totp_code)
     existing = await PasskeyCredential.find(PasskeyCredential.user_id == str(user.id)).to_list()
     if len(existing) >= 10:
@@ -240,8 +244,13 @@ async def register_passkey(
 
 @router.post("/{passkey_id}/delete", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_passkey(
-    passkey_id: str, payload: PasskeyReauth, user: CurrentUser, background: BackgroundTasks
+    passkey_id: str,
+    payload: PasskeyReauth,
+    user: CurrentUser,
+    background: BackgroundTasks,
+    request: Request,
 ) -> None:
+    await check_reauthentication_limit(request, str(user.id))
     _reauth(user, payload.current_password, payload.totp_code)
     try:
         credential = await PasskeyCredential.get(passkey_id)

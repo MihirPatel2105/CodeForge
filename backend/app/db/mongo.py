@@ -29,6 +29,8 @@ async def connect() -> None:
     _client = AsyncMongoClient(settings.mongo_uri)
     _database = _client[settings.mongo_db]
     await init_beanie(database=_database, document_models=DOCUMENT_MODELS)
+    await _database.run_admissions.create_index("global_slot", unique=True)
+    await _database.run_admissions.create_index([("user_id", 1), ("account_slot", 1)], unique=True)
     await _database.deployment_rate_limits.create_index("expires_at", expireAfterSeconds=0)
 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -69,6 +70,10 @@ class Settings(BaseSettings):
     reset_resend_cooldown_seconds: int = 60
     login_max_attempts: int = 5
     login_lockout_minutes: int = 15
+    default_monthly_run_limit: int = Field(default=50, ge=1, le=100000)
+    default_project_limit: int = Field(default=20, ge=1, le=10000)
+    max_active_runs_per_user: int = Field(default=3, ge=1, le=100)
+    max_active_runs_global: int = Field(default=12, ge=1, le=1000)
     admin_failure_alert_percent: float = 25.0
     admin_failure_alert_min_runs: int = 5
 

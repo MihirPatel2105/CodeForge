@@ -7,7 +7,7 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.core.deps import CurrentUser, get_owned
-from app.core.exceptions import UsageLimitError
+from app.core.usage_limits import release_count, reserve_project
 from app.db import aggregate_rows
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
@@ -41,12 +41,13 @@ def _to_response(project: Project) -> ProjectResponse:
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(payload: ProjectCreate, user: CurrentUser) -> ProjectResponse:
-    if user.project_limit is not None:
-        count = await Project.find(Project.user_id == str(user.id)).count()
-        if count >= user.project_limit:
-            raise UsageLimitError(f"Project limit reached ({user.project_limit}).")
+    reservation = await reserve_project(user)
     project = Project(user_id=str(user.id), name=payload.name, description=payload.description)
-    await project.insert()
+    try:
+        await project.insert()
+    except BaseException:
+        await release_count(reservation)
+        raise
     return _to_response(project)
 
 
@@ -261,7 +262,9 @@ async def delete_project(project_id: str, user: CurrentUser) -> ProjectDeleteRes
     runs_deleted = (
         await Run.find(Run.project_id == project_id, Run.user_id == str(user.id)).delete()
     ).deleted_count
-    await project.delete()
+    deleted = await Project.get_pymongo_collection().delete_one({"_id": project.id})
+    if deleted.deleted_count:
+        await release_count(f"projects:{user.id}")
 
     logger.info(
         "Project %s deleted: %d runs, %d artifacts", project_id, runs_deleted, artifacts_deleted

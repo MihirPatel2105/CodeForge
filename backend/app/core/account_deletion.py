@@ -3,6 +3,7 @@
 import logging
 from dataclasses import dataclass
 
+from app.db import get_database
 from app.db.artifacts import delete_run_artifacts
 from app.graph import executor
 from app.models import (
@@ -60,6 +61,8 @@ async def delete_user_account(user: User) -> AccountDeletionResult:
     await RecoveryCode.find(RecoveryCode.user_id == user_id).delete()
     await Device.find(Device.user_id == user_id).delete()
     await PendingSignup.find(PendingSignup.email == user.email).delete()
+    await get_database().usage_buckets.delete_many({"user_id": user_id})
+    await get_database().run_admissions.delete_many({"user_id": user_id})
     await user.delete()
 
     logger.info(

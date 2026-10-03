@@ -184,6 +184,7 @@ def test_revision_rewinds_only_requested_stage_and_pauses_again(monkeypatch):
         checkpointer=MemorySaver(), interrupt_before=["architect", "coder_gate"]
     )
     monkeypatch.setattr(executor, "compile_graph", lambda **kwargs: graph)
+    monkeypatch.setattr(executor, "mark_execution", AsyncMock())
     monkeypatch.setattr(executor.events, "approval_resolved", AsyncMock())
     after = AsyncMock()
     monkeypatch.setattr(executor, "_after_invoke", after)
@@ -296,6 +297,7 @@ def test_real_executor_persists_revisions_and_reapproval(client, registered_user
         checkpointer=MemorySaver(), interrupt_before=["architect", "coder_gate"]
     )
     monkeypatch.setattr(executor, "compile_graph", lambda **kwargs: graph)
+    monkeypatch.setattr(executor, "mark_execution", AsyncMock())
     monkeypatch.setattr(executor, "start_run", real_start_run)
     monkeypatch.setattr(executor, "resume_run", real_resume_run)
     headers = registered_user["headers"]

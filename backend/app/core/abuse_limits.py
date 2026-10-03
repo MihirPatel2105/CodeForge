@@ -143,3 +143,35 @@ async def check_abuse_limit(request: Request) -> JSONResponse | None:
             }
         },
     )
+
+
+async def _account_limit(
+    request: Request, user_id: str, bucket: str, limit: int, window: int
+) -> None:
+    if not settings.redis_url:
+        return
+    # One bucket spans all reauthentication routes, sessions and IP addresses.
+    identities = (user_id, _client_ip(request))
+    for scope, value in zip(("account", "client"), identities, strict=True):
+        identity = hmac.new(
+            settings.jwt_secret.encode(), value.encode(), hashlib.sha256
+        ).hexdigest()
+        try:
+            count, _ttl = await request.app.state.redis.eval(
+                _INCREMENT, 1, f"codeforge:{bucket}:{scope}:{identity}", window
+            )
+        except RedisError:
+            logger.exception("Account limiter is unavailable")
+            raise SecurityServiceError(
+                "Security checks are unavailable. Try again shortly."
+            ) from None
+        if count > limit:
+            raise RateLimitError("Too many requests. Try again shortly.")
+
+
+async def check_reauthentication_limit(request: Request, user_id: str) -> None:
+    await _account_limit(request, user_id, "reauth", 10, 600)
+
+
+async def check_run_submission_limit(request: Request, user_id: str) -> None:
+    await _account_limit(request, user_id, "run-submit", 5, 60)

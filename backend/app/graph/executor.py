@@ -15,6 +15,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.core.usage_limits import mark_execution
 from app.events import events
 from app.graph.build import compile_graph, thread_config
 from app.graph.metrics import score_run
@@ -177,6 +178,7 @@ async def reconcile_interrupted_runs() -> int:
             "failed_llm",
             "interrupted before it finished — the server restarted mid-run",
         )
+        await mark_execution(str(run.id), False)
     if stranded:
         logger.warning("marked %d interrupted run(s) as failed on startup", len(stranded))
     return len(stranded)
@@ -197,7 +199,10 @@ async def _execute(run_id: str, state: dict[str, Any], with_approvals: bool) -> 
         # NFR-5: every terminal state carries a machine-readable status and a reason.
         await _finish(run_id, "failed_llm", f"{type(exc).__name__}: {exc}"[:400])
     finally:
-        _running.pop(run_id, None)
+        try:
+            await mark_execution(run_id, False)
+        finally:
+            _running.pop(run_id, None)
 
 
 async def start_run(run: Run, *, with_approvals: bool = True) -> None:
@@ -219,6 +224,7 @@ async def start_run(run: Run, *, with_approvals: bool = True) -> None:
 
     await events.run_started(run_id, run.prompt)
 
+    await mark_execution(run_id, True)
     task = asyncio.create_task(_execute(run_id, state, with_approvals))
     _running[run_id] = task
 
@@ -250,8 +256,12 @@ async def resume_run(run_id: str) -> None:
         except Exception as exc:  # noqa: BLE001
             await _finish(run_id, "failed_llm", f"{type(exc).__name__}: {exc}"[:400])
         finally:
-            _running.pop(run_id, None)
+            try:
+                await mark_execution(run_id, False)
+            finally:
+                _running.pop(run_id, None)
 
+    await mark_execution(run_id, True)
     task = asyncio.create_task(_continue())
     _running[run_id] = task
 
@@ -289,8 +299,12 @@ async def revise_run(run_id: str, phase: str, note: str) -> None:
         except Exception as exc:
             await _finish(run_id, "failed_llm", f"{type(exc).__name__}: {exc}"[:400])
         finally:
-            _running.pop(run_id, None)
+            try:
+                await mark_execution(run_id, False)
+            finally:
+                _running.pop(run_id, None)
 
+    await mark_execution(run_id, True)
     _running[run_id] = asyncio.create_task(revise())
 
 

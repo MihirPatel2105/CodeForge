@@ -8,11 +8,13 @@ import re
 from datetime import UTC, datetime
 
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
+from app.core.abuse_limits import check_run_submission_limit
 from app.core.deps import CurrentUser, get_owned
-from app.core.exceptions import ConflictError, NotFoundError, UsageLimitError
-from app.db import aggregate_rows
+from app.core.exceptions import ConflictError, NotFoundError
+from app.core.usage_limits import confirm_run_admission, release_count, reserve_run
+from app.db import aggregate_rows, get_database
 from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
 from app.graph import executor
@@ -76,18 +78,11 @@ def _to_summary(run: Run) -> RunSummary:
 
 
 @router.post("/runs", response_model=RunCreateResponse, status_code=status.HTTP_202_ACCEPTED)
-async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse:
+async def create_run(payload: RunCreate, user: CurrentUser, request: Request) -> RunCreateResponse:
     # Ownership of the project is what authorises the run.
     await get_owned(Project, payload.project_id, str(user.id), "Project")
 
-    if user.monthly_run_limit is not None:
-        now = datetime.now(UTC)
-        month_start = datetime(now.year, now.month, 1, tzinfo=UTC)
-        count = await Run.find(
-            {"user_id": str(user.id), "created_at": {"$gte": month_start}}
-        ).count()
-        if count >= user.monthly_run_limit:
-            raise UsageLimitError(f"Monthly run limit reached ({user.monthly_run_limit}).")
+    await check_run_submission_limit(request, str(user.id))
 
     parent = None
     if payload.parent_run_id:
@@ -107,32 +102,50 @@ async def create_run(payload: RunCreate, user: CurrentUser) -> RunCreateResponse
         prompt=prompt,
         status="queued",
     )
-    await run.insert()
+    run.id = ObjectId()
+    reservation = await reserve_run(run, user)
+    try:
+        await run.insert()
+        await confirm_run_admission(str(run.id))
+    except BaseException:
+        await release_count(reservation)
+        await get_database().run_admissions.delete_one({"_id": str(run.id)})
+        await run.delete()
+        raise
 
     run_id = str(run.id)
-    state = new_run_state(
-        run_id=run_id,
-        project_id=payload.project_id,
-        user_id=str(user.id),
-        thread_id=run_id,  # one checkpointer thread per run
-        user_prompt=payload.prompt,
-        rag_enabled=payload.rag_enabled,
-    )
-    run.state = {k: v for k, v in state.items() if k not in {"started_at", "finished_at"}}
-    run.state["started_at"] = state["started_at"].isoformat()
-    run.state["rag_enabled"] = payload.rag_enabled
-    if parent:
-        run.state["revision_context"] = {
-            "requirements": parent.state.get("requirements"),
-            "design": parent.state.get("design"),
-            "files": parent.state.get("files") or [],
-            "change_request": prompt,
-        }
-    await run.save()
+    try:
+        state = new_run_state(
+            run_id=run_id,
+            project_id=payload.project_id,
+            user_id=str(user.id),
+            thread_id=run_id,  # one checkpointer thread per run
+            user_prompt=payload.prompt,
+            rag_enabled=payload.rag_enabled,
+        )
+        run.state = {k: v for k, v in state.items() if k not in {"started_at", "finished_at"}}
+        run.state["started_at"] = state["started_at"].isoformat()
+        run.state["rag_enabled"] = payload.rag_enabled
+        if parent:
+            run.state["revision_context"] = {
+                "requirements": parent.state.get("requirements"),
+                "design": parent.state.get("design"),
+                "files": parent.state.get("files") or [],
+                "change_request": prompt,
+            }
+        await run.save()
 
-    # Returns immediately; the pipeline continues in the background and the client
-    # attaches to GET /runs/{id}/stream to watch it (FR-7).
-    await executor.start_run(run)
+        # Returns immediately; the pipeline continues in the background and the client
+        # attaches to GET /runs/{id}/stream to watch it (FR-7).
+        await executor.start_run(run)
+
+    except BaseException:
+        if not executor.is_running(run_id):
+            await Run.get_pymongo_collection().update_one(
+                {"_id": run.id}, {"$set": {"status": "failed_llm", "updated_at": datetime.now(UTC)}}
+            )
+            await get_database().run_admissions.delete_one({"_id": run_id})
+        raise
 
     return RunCreateResponse(run_id=run_id, status="running")
 
