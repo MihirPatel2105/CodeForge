@@ -158,9 +158,11 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 /* One shared example stays in place while visitors explore the agents. */
 .lp-agent-showcase { border: 1px solid var(--lp-rule); border-radius: var(--lp-radius); background: var(--lp-paper); padding: 36px; box-shadow: 0 20px 48px -36px rgba(23,32,51,.18); }
 .lp-agent-nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; margin-bottom: 36px; background: var(--lp-paper-secondary); border-radius: 16px; }
-.lp-agent-nav button { flex: 1; min-height: 48px; padding: 12px; border: 0; border-radius: 11px; background: transparent; color: var(--lp-muted); font: 600 14px var(--lp-font); }
+.lp-agent-nav button { position: relative; isolation: isolate; flex: 1; min-height: 48px; padding: 12px; border: 0; border-radius: 11px; background: transparent; color: var(--lp-muted); font: 600 14px var(--lp-font); }
 .lp-agent-nav button:hover { color: var(--lp-accent); }
-.lp-agent-nav button[aria-pressed=true] { color: var(--lp-accent); background: var(--lp-paper); box-shadow: 0 2px 8px rgba(23,32,51,.06); }
+.lp-agent-nav button[aria-pressed=true] { color: var(--lp-accent); }
+.lp-agent-selection { position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--lp-paper); box-shadow: 0 2px 8px rgba(23,32,51,.06); pointer-events: none; }
+.lp-agent-label { position: relative; }
 .lp-agent-content { display: grid; grid-template-columns: .85fr 1.15fr; gap: 48px; align-items: start; min-height: 340px; }
 .lp-agent-copy { min-width: 0; }
 .lp-agent-phase { color: var(--lp-accent); font-size: 13px; font-weight: 600; margin: 4px 0 18px; }

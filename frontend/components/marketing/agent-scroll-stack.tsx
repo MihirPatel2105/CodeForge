@@ -2,6 +2,9 @@
 
 import { useId, useState } from "react";
 import { CircleCheck, type LucideIcon } from "lucide-react";
+import { LayoutGroup, motion } from "motion/react";
+import { motionSpring } from "@/lib/motion-tokens";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 
 type Agent = {
   name: string;
@@ -18,13 +21,14 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
   const [selected, setSelected] = useState(0);
   const [hasSwitched, setHasSwitched] = useState(false);
   const id = useId();
+  const reducedMotion = useMotionPreference();
   const agent = agents[selected];
   if (!agent) return null;
   const Icon = agent.icon;
 
   return (
     <div className="lp-agent-showcase">
-      <nav className="lp-agent-nav" aria-label="Explore the five agents">
+      <LayoutGroup id={id}><nav className="lp-agent-nav" aria-label="Explore the five agents">
         {agents.map((item, index) => (
           <button
             key={item.name}
@@ -38,10 +42,13 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
               }
             }}
           >
-            {item.name}
+            {index === selected && (reducedMotion
+              ? <span className="lp-agent-selection" aria-hidden />
+              : <motion.span className="lp-agent-selection" layoutId="agent-selection" transition={motionSpring} aria-hidden />)}
+            <span className="lp-agent-label">{item.name}</span>
           </button>
         ))}
-      </nav>
+      </nav></LayoutGroup>
       <div id={`${id}-content`} aria-live="polite" aria-atomic="true">
         <div key={agent.name} className={`lp-agent-content${hasSwitched ? " lp-agent-switched" : ""}`}>
           <div className="lp-agent-copy">
