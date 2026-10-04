@@ -17,7 +17,7 @@ import { HowRunRoute } from "@/components/marketing/how-run-route";
 export const metadata: Metadata = {
   title: "How it works · CodeForge",
   description:
-    "Follow a CodeForge request through six specialized stages, two human approvals, review and test feedback loops, and real sandbox execution.",
+    "Follow a CodeForge request through five specialized agents and an isolated sandbox, two human approvals, review and test feedback loops, and real sandbox execution.",
 };
 
 const STAGES = [
@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
         <section id="stages" className="border-b border-rule bg-surface">
           <div className="mx-auto w-full max-w-[1536px] px-6 py-20 md:px-10 md:py-24 lg:px-14">
             <div className="grid gap-12 ">
-              <SectionLabel index="01" label="The six stages" />
+              <SectionLabel index="01" label="Five agents + a sandbox" />
               <div>
                 <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                   <h2 className="font-display max-w-[18ch] text-[30px] font-[650] leading-[1.18] tracking-[-0.05em] text-fg md:text-[40px]">Each agent owns one decision.</h2>

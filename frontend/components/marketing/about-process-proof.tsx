@@ -1,237 +1,37 @@
-"use client";
+import Link from "next/link";
+import { ArrowRight, Check, FileCode2, Terminal } from "lucide-react";
+import { DEMO_RUNS } from "@/lib/demo-runs";
+import { tokenizePythonLine } from "@/lib/python-highlight";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  Check,
-  Clock3,
-  GitBranch,
-  LoaderCircle,
-  Pause,
-  Play,
-  RotateCcw,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-
-type AgentState = "queued" | "working" | "done" | "returned";
-
-const AGENTS = [
-  { name: "PM", output: "scope mapped" },
-  { name: "Architect", output: "5 endpoints" },
-  { name: "Coder", output: "4 files" },
-  { name: "Reviewer", output: "checklist passed" },
-  { name: "Tester", output: "8 tests" },
-  { name: "Sandbox", output: "8 passed" },
-] as const;
-
-const STEPS = [
-  { id: "pm", activeAgent: 0, message: "PM is structuring the request", approvals: "00", repairs: "00", tests: "00/08" },
-  { id: "architect", activeAgent: 1, message: "Requirements approved · Architect is designing endpoints", approvals: "01", repairs: "00", tests: "00/08" },
-  { id: "coder", activeAgent: 2, message: "Architecture approved · Coder is writing four files", approvals: "02", repairs: "00", tests: "00/08" },
-  { id: "reviewer", activeAgent: 3, message: "Reviewer is checking the generated tree", approvals: "02", repairs: "00", tests: "00/08" },
-  { id: "loop", activeAgent: 2, message: "2 blocking findings returned to Coder · pass 2", approvals: "02", repairs: "01", tests: "00/08" },
-  { id: "review-again", activeAgent: 3, message: "Coder repaired main.py · Reviewer is checking pass 2", approvals: "02", repairs: "01", tests: "00/08" },
-  { id: "tester", activeAgent: 4, message: "Review passed · Tester is writing endpoint tests", approvals: "02", repairs: "01", tests: "00/08" },
-  { id: "sandbox", activeAgent: 5, message: "Sandbox is running the API and test suite", approvals: "02", repairs: "01", tests: "06/08" },
-  { id: "complete", activeAgent: null, message: "Run succeeded · source, tests and runtime output kept", approvals: "02", repairs: "01", tests: "08/08" },
-] as const;
-
-function subscribeToReducedMotion(onStoreChange: () => void) {
-  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  mediaQuery.addEventListener("change", onStoreChange);
-  return () => mediaQuery.removeEventListener("change", onStoreChange);
-}
-
-function getReducedMotionSnapshot() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getAgentState(agentIndex: number, stepIndex: number): AgentState {
-  const step = STEPS[stepIndex];
-
-  if (step.id === "complete") return "done";
-  if (step.id === "loop") {
-    if (agentIndex < 2) return "done";
-    if (agentIndex === 2) return "working";
-    if (agentIndex === 3) return "returned";
-    return "queued";
-  }
-
-  if (step.activeAgent === null) return "done";
-  if (agentIndex < step.activeAgent) return "done";
-  if (agentIndex === step.activeAgent) return "working";
-  return "queued";
-}
-
-const STATE_LABEL: Record<AgentState, string> = {
-  queued: "queued",
-  working: "running",
-  done: "done",
-  returned: "returned",
+const TOKEN_CLASS = {
+  kw: "text-code-kw",
+  str: "text-code-str",
+  com: "text-code-com",
+  fn: "text-code-fn",
+  num: "text-code-num",
 };
 
-function AgentCard({
-  agent,
-  index,
-  state,
-  pass,
-}: {
-  agent: (typeof AGENTS)[number];
-  index: number;
-  state: AgentState;
-  pass: number;
-}) {
-  return (
-    <li
-      className={cn(
-        "relative min-h-[94px] overflow-hidden rounded-lg border px-3 py-3.5 transition-[border-color,background-color,opacity,transform] duration-500",
-        state === "working" && "border-accent-bd bg-accent-soft/60 shadow-[0_10px_24px_rgba(67,56,202,0.07)]",
-        state === "done" && "border-ok-bd bg-surface",
-        state === "returned" && "border-loop-bd bg-loop-soft/60",
-        state === "queued" && "border-border bg-surface opacity-70",
-      )}
-    >
-      {state === "working" && (
-        <span className="absolute inset-x-0 top-0 h-[2px] overflow-hidden bg-accent-bd" aria-hidden>
-          <span className="block h-full w-1/3 bg-accent motion-safe:animate-[cfBar_1.2s_ease-in-out_infinite]" />
-        </span>
-      )}
-
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className={cn(
-            "grid h-5 w-5 place-items-center rounded-lg font-sans text-[11px] font-[700]",
-            state === "working" && "bg-accent-soft text-accent",
-            state === "done" && "bg-ok-soft text-ok",
-            state === "returned" && "bg-loop-soft text-loop",
-            state === "queued" && "bg-surface-2 text-fg-faint",
-          )}
-        >
-          {index + 1}
-        </span>
-        {state === "done" ? (
-          <Check className="h-3.5 w-3.5 text-ok" strokeWidth={2.5} aria-hidden />
-        ) : state === "working" ? (
-          <LoaderCircle className="h-3.5 w-3.5 text-accent motion-safe:animate-spin" aria-hidden />
-        ) : state === "returned" ? (
-          <RotateCcw className="h-3.5 w-3.5 text-loop" aria-hidden />
-        ) : (
-          <Clock3 className="h-3.5 w-3.5 text-fg-faint" aria-hidden />
-        )}
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate font-display text-[11px] font-[650] tracking-[-0.02em] text-fg sm:text-[12px]">{agent.name}</p>
-          <p className={cn("mt-1 font-sans text-[11px] font-[700] tracking-[0.01em]", state === "working" ? "text-accent" : state === "done" ? "text-ok" : state === "returned" ? "text-loop" : "text-fg-faint")}>{state === "done" ? agent.output : STATE_LABEL[state]}</p>
-        </div>
-        {agent.name === "Coder" && pass === 2 && (
-          <span className="shrink-0 rounded-full bg-loop-soft px-1.5 py-0.5 font-sans text-[11px] font-[700] text-loop">pass 2</span>
-        )}
-      </div>
-    </li>
-  );
-}
-
 export function AboutProcessProof() {
-  const [activeStep, setActiveStep] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const prefersReducedMotion = useSyncExternalStore(
-    subscribeToReducedMotion,
-    getReducedMotionSnapshot,
-    () => false,
-  );
-  const visibleStep = prefersReducedMotion ? STEPS.length - 1 : activeStep;
-  const step = STEPS[visibleStep];
-  const complete = step.id === "complete";
-  const looping = step.id === "loop";
-  const pass = visibleStep >= 4 ? 2 : 1;
-
-  useEffect(() => {
-    if (isPaused || prefersReducedMotion) return;
-    const delay = activeStep === STEPS.length - 1 ? 2600 : activeStep === 4 ? 1900 : 1350;
-    const timer = window.setTimeout(() => {
-      setActiveStep((current) => (current + 1) % STEPS.length);
-    }, delay);
-    return () => window.clearTimeout(timer);
-  }, [activeStep, isPaused, prefersReducedMotion]);
+  const demo = DEMO_RUNS.find((item) => item.slug === "library")!;
+  const lines = demo.finalFiles["main.py"].trimEnd().split("\n");
 
   return (
-    <div className="cf-about-proof relative mx-auto w-full max-w-[680px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_20px_50px_-30px_rgba(22,24,28,0.18)]">
-      <div className="relative border-b border-border bg-surface text-fg">
-        <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className={cn("h-2 w-2 shrink-0 rounded-full", complete ? "bg-ok" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]")} aria-hidden />
-            <span className="truncate font-sans text-[11px] font-[700] tracking-[0.01em] sm:text-[11px]">Example walkthrough</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className={cn("font-sans text-[11px] font-[700] tracking-[0.01em]", complete ? "text-ok" : looping ? "text-loop" : "text-fg-faint")}>{complete ? "succeeded" : looping ? "repair loop" : prefersReducedMotion ? "complete" : isPaused ? "paused" : "replaying"}</span>
-            {!prefersReducedMotion && (
-              <button
-                type="button"
-                onClick={() => setIsPaused((current) => !current)}
-                className="grid h-11 w-11 place-items-center rounded-full border border-rule text-fg-muted transition-colors hover:border-accent hover:bg-accent-soft"
-                aria-label={isPaused ? "Resume recorded run" : "Pause recorded run"}
-              >
-                {isPaused ? <Play className="h-3 w-3" fill="currentColor" aria-hidden /> : <Pause className="h-3 w-3" fill="currentColor" aria-hidden />}
-              </button>
-            )}
-          </div>
-        </div>
-        <span className="absolute inset-x-0 bottom-0 h-px bg-rule" aria-hidden>
-          <span className="block h-full bg-accent transition-[width] duration-500" style={{ width: `${((visibleStep + 1) / STEPS.length) * 100}%` }} />
-        </span>
+    <section aria-label="Library demo source and test result" className="cf-about-proof mx-auto w-full min-w-0 max-w-[680px] overflow-hidden rounded-xl border border-border bg-surface shadow-[0_20px_50px_-30px_rgba(22,24,28,0.18)]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-5 py-4">
+        <span className="text-[13px] font-[650] text-fg">An API you can inspect.</span>
+        <span className="text-[12px] text-fg-muted">Library demo · Example output</span>
       </div>
-
-      <div className="grid">
-        <div className="p-4 sm:p-6">
-          <div className="rounded-lg border border-border bg-bg px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-sans text-[11px] font-[700] tracking-[0.01em] text-fg-faint">Your idea</span>
-              <span className="font-sans text-[11px] tracking-[0.01em] text-fg-faint">Library example</span>
-            </div>
-            <p className="mt-2 font-display text-[13px] font-[600] leading-[1.5] tracking-[-0.02em] text-fg sm:text-[14px]">Build an API for a library with books, authors and ratings.</p>
-          </div>
-
-          <ol className="relative mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {AGENTS.map((agent, index) => (
-              <AgentCard key={agent.name} agent={agent} index={index} state={getAgentState(index, visibleStep)} pass={pass} />
-            ))}
-          </ol>
-
-          <div
-            key={step.id}
-            className={cn(
-              "mt-3 flex min-h-[48px] items-center gap-3 rounded-lg border px-3.5 py-3 motion-safe:animate-[cfFade_.28s_ease-out] sm:px-4",
-              looping ? "border-loop-bd bg-loop-soft text-loop" : complete ? "border-ok-bd bg-ok-soft text-ok" : "border-accent-bd bg-accent-soft text-accent",
-            )}
-            aria-live="polite"
-          >
-            {looping ? <GitBranch className="h-4 w-4 shrink-0" aria-hidden /> : complete ? <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden /> : <LoaderCircle className="h-4 w-4 shrink-0 motion-safe:animate-spin" aria-hidden />}
-            <p className="font-sans text-[11px] font-[700] leading-[1.45] tracking-[0.01em] sm:text-[11px]">{step.message}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 border-t border-border bg-bg">
-          {[
-            [step.approvals, "approvals"],
-            [step.repairs, "repairs"],
-            [step.tests, "tests"],
-          ].map(([value, label]) => (
-            <div key={label} className="flex min-h-[72px] flex-col justify-center border-r border-border px-3 py-4 text-center last:border-r-0">
-              <span className={cn("font-display text-[14px] font-[650] tracking-[-0.03em] transition-colors duration-300", label === "tests" && complete ? "text-ok" : "text-fg")}>{value}</span>
-              <span className="mt-1 font-sans text-[11px] font-[700] tracking-[0.01em] text-fg-faint">{label}</span>
-            </div>
-          ))}
-        </div>
+      <div className="flex items-center justify-between gap-3 bg-bg px-5 py-3 text-[12px] text-fg-muted">
+        <span className="inline-flex items-center gap-2"><FileCode2 size={16} aria-hidden /><span className="font-mono">main.py</span></span>
+        <span>Source excerpt</span>
       </div>
-
-      <div className="flex items-center justify-between gap-4 border-t border-border px-4 py-3.5 sm:px-5 sm:py-4">
-        <span className="font-sans text-[11px] font-[700] tracking-[0.01em] text-fg-faint">outcome</span>
-        <span className={cn("inline-flex items-center gap-2 text-right font-sans text-[11px] font-[700] tracking-[0.01em] sm:text-[11px]", complete ? "text-ok" : looping ? "text-loop" : "text-accent")}>
-          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", complete ? "bg-ok" : looping ? "bg-loop" : "bg-accent motion-safe:animate-[cfDot_1s_ease-in-out_infinite]")} aria-hidden />
-          {complete ? "Tested API ready" : looping ? "repair in progress" : "agents working"}
-        </span>
+      <pre className="m-0 whitespace-pre-wrap break-words bg-code-bg px-5 py-6 font-mono text-[12px] leading-[1.9] text-code-fg"><code>{lines.map((line, index) => <span key={index} className="block">{tokenizePythonLine(line).map((token, tokenIndex) => <span key={tokenIndex} className={token.cls ? TOKEN_CLASS[token.cls] : undefined}>{token.text}</span>)}{line.length === 0 && " "}</span>)}</code></pre>
+      <div className="border-t border-rule px-5 py-5">
+        <p className="flex items-center gap-2 text-[12px] font-[600] text-fg-muted"><Terminal size={16} aria-hidden />Example test result</p>
+        <p className="mt-3 flex items-center gap-2 font-mono text-[14px] font-[600] text-ok"><Check size={16} aria-hidden />{demo.preview.result}</p>
+        <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">Source, review feedback, and test output stay available together.</p>
       </div>
-    </div>
+      <Link href={`/demo/${demo.slug}`} className="flex min-h-12 items-center justify-between gap-3 border-t border-rule px-5 py-4 text-[13px] font-[600] text-accent hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-accent">Inspect the library demo<ArrowRight size={16} aria-hidden /></Link>
+    </section>
   );
 }

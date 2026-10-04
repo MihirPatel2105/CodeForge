@@ -665,3 +665,15 @@ Frontend lint, TypeScript, the isolated production build, and all six motion
 browser tests pass. All five stages were checked at six widths from 320px to
 1440px with no horizontal overflow or browser errors. This UI verification does
 not close the Phase 7 first-time human observer criterion.
+
+
+### 2026-10-04 authorized About and process hero refinement
+
+About now presents the library demo's source excerpt and example test result,
+with a link to inspect the demo. How it works retains the vertical process view,
+labels five agents plus a sandbox, shows the two approvals and return-to-Coder
+path, and gives active stages greater emphasis than completed stages. Its example
+plays once, stops at the result, and supports explicit replay and pause/resume;
+reduced motion shows the completed example without autoplay. The motion browser
+suite now covers these behaviors and runs in frontend CI. Build, lint, TypeScript,
+and all seven motion tests pass; both pages fit five widths from 320px to 1440px.

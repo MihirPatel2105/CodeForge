@@ -108,7 +108,7 @@ export default function AboutPage() {
               </div>
               <dl className="mt-12 grid max-w-[610px] grid-cols-3 border-y border-rule">
                 {[
-                  ["06", "stages"],
+                  ["05", "agents"],
                   ["02", "approvals"],
                   ["01", "shared result"],
                 ].map(([value, label]) => (

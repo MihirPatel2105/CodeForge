@@ -124,3 +124,38 @@ test("mobile evidence tabs retain arrow-key navigation and active panel semantic
   await expect(page.getByRole("tab", { name: "Tests", exact: true })).toHaveAttribute("aria-selected", "true");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+
+test("process example plays once, supports replay, and About shows its output", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/how-it-works");
+  const process = page.locator(".cf-frame");
+  await expect(process.getByText("Five agents + a sandbox", { exact: true })).toBeVisible();
+  await expect(process.getByText("Findings or failed tests → Coder", { exact: true })).toBeVisible();
+  const replay = process.getByRole("button", { name: "Replay example pipeline" });
+  // Let React commit each timed stage before advancing the next timer.
+  await expect.poll(async () => {
+    await page.clock.runFor(2_000);
+    return replay.isVisible();
+  }, { intervals: [50], timeout: 15_000 }).toBe(true);
+  await page.clock.runFor(5_000);
+  await expect(replay).toBeVisible();
+  await replay.click();
+  const pause = process.getByRole("button", { name: "Pause example pipeline" });
+  await expect(pause).toBeVisible();
+  await pause.click();
+  await page.clock.runFor(5_000);
+  await expect(process.getByRole("button", { name: "Resume example pipeline" })).toBeVisible();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(process.getByText("Example complete", { exact: true })).toBeVisible();
+  await expect(process.getByRole("button")).toHaveCount(0);
+  await page.setViewportSize({ width: 320, height: 720 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.goto("/about");
+  const output = page.getByRole("region", { name: "Library demo source and test result" });
+  await expect(output.getByText("main.py", { exact: true })).toBeVisible();
+  await expect(output.getByText("8 passed in 1.42s", { exact: true })).toBeVisible();
+  await expect(output.getByRole("link", { name: "Inspect the library demo" })).toHaveAttribute("href", "/demo/library");
+  await expect(output.getByRole("button")).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
