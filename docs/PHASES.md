@@ -644,3 +644,12 @@ requests/recent responses, returned-ID reuse, an optional CRUD walkthrough, and
 mobile/action-control polish. Contracts and limitations are in
 `docs/WORKSPACE_EXPERIENCE.md`. This authorized product work does not close the
 Phase 7 first-time human observer criterion or the Phase 8 live benchmark.
+
+### 2026-10-04 authorized API compatibility extension
+
+Successful revisions now offer explicit OpenAPI compatibility checks in the API
+version panel and Publish page. Owner/project-matched runtime schemas are compared
+for removed routes, incompatible inputs, changed response guarantees, and supported
+type/enum/bound changes. Unsupported or unavailable contracts require review.
+This adds evidence before publication without changing publishing, generation,
+or human approvals. Limits are recorded in `docs/WORKSPACE_EXPERIENCE.md`.

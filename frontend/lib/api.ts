@@ -38,6 +38,7 @@ import type {
   PreviewCall,
   PreviewInfo,
   PreviewResult,
+  CompatibilityReport,
   DeploymentInfo,
   DeploymentCreated,
   DeploymentHealth,
@@ -337,6 +338,7 @@ export const api = {
   sendPreviewRequest: (id: string, payload: PreviewCall) =>
     request<PreviewResult>(`/runs/${id}/preview/request`, { method: "POST", body: JSON.stringify(payload) }),
   resetPreview: (id: string) => request<void>(`/runs/${id}/preview`, { method: "DELETE" }),
+  checkCompatibility: (id: string) => request<CompatibilityReport>(`/runs/${id}/compatibility`, { method: "POST" }),
   getDeployment: (id: string) => request<DeploymentInfo>(`/runs/${id}/deployment`),
   checkDeployment: (id: string) => request<DeploymentHealth>(`/runs/${id}/deployment/check`, { method: "POST" }),
   publishRun: (id: string) => request<DeploymentCreated>(`/runs/${id}/deployment`, { method: "POST" }),

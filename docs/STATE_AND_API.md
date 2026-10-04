@@ -121,6 +121,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | GET | `/runs/{id}/preview` | Start or reuse a private temporary sandbox and list generated API endpoints |
 | POST | `/runs/{id}/preview/request` | Send `{method, path, body?}` to the generated API inside that sandbox; return its HTTP status and body |
 | DELETE | `/runs/{id}/preview` | Remove the preview and its temporary data |
+| POST | `/runs/{id}/compatibility` | Compare actual OpenAPI schemas of a passed revision and its owner/project-matched parent; return `status`, `checked_operations`, typed `changes`, `source_run_id`, and UTC `checked_at`; unavailable schemas yield `needs_review` |
 | POST | `/runs/{id}/deployment` | Publish a passed run; return stable URL and API key once |
 | GET | `/runs/{id}/deployment` | Read publication status and URL without revealing the key |
 | POST | `/runs/{id}/deployment/check` | Owner-only hosted application check; return readiness, timestamp, response time and current-minute usage |

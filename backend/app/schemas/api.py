@@ -677,6 +677,22 @@ class PreviewResult(BaseModel):
     session_started: bool
 
 
+class CompatibilityChange(BaseModel):
+    severity: Literal["breaking", "compatible", "needs_review"]
+    code: str
+    operation: str
+    location: str
+    message: str
+
+
+class CompatibilityReport(BaseModel):
+    status: Literal["breaking", "compatible", "needs_review"]
+    checked_operations: int = 0
+    changes: list[CompatibilityChange] = Field(default_factory=list)
+    source_run_id: str | None = None
+    checked_at: datetime | None = None
+
+
 class DeploymentInfo(BaseModel):
     id: str
     run_id: str

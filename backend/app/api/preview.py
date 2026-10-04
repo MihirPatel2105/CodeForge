@@ -2,17 +2,26 @@
 
 import json
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter
 
+from app.core.api_compatibility import compare_openapi
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import ConflictError, PreviewRequestError, PreviewUnavailableError
 from app.models import Run
 from app.sandbox.preview import PREVIEW_TTL_SECONDS, preview_request, stop_preview
 from app.sandbox.runner import SandboxUnavailableError
 from app.schemas.agents import GeneratedFile
-from app.schemas.api import PreviewCall, PreviewInfo, PreviewOperation, PreviewResult
+from app.schemas.api import (
+    CompatibilityChange,
+    CompatibilityReport,
+    PreviewCall,
+    PreviewInfo,
+    PreviewOperation,
+    PreviewResult,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["preview"])
@@ -177,3 +186,49 @@ async def reset_preview(run_id: str, user: CurrentUser) -> None:
     except Exception as exc:
         logger.exception("Could not reset preview for run %s", run_id)
         raise PreviewUnavailableError("Preview could not be reset. Try again.") from exc
+
+
+@router.post("/runs/{run_id}/compatibility", response_model=CompatibilityReport)
+async def check_compatibility(run_id: str, user: CurrentUser) -> CompatibilityReport:
+    run = await get_owned(Run, run_id, str(user.id), "Run")
+    if not run.parent_run_id or run.parent_run_id == run_id:
+        raise ConflictError("Compatibility checks require a version with a previous run.")
+    source = await get_owned(Run, run.parent_run_id, str(user.id), "Run")
+    if source.project_id != run.project_id:
+        raise ConflictError("Both API versions must belong to the same project.")
+    # Validate both before starting either preview, including the parent's ownership.
+    source_files = await _files_for_user(str(source.id), user)
+    current_files = await _files_for_user(run_id, user)
+    try:
+        documents = []
+        for target, files in ((str(source.id), source_files), (run_id, current_files)):
+            result = await _call(target, files, "GET", "/openapi.json")
+            body = result.get("body")
+            if (
+                result.get("status") != 200
+                or result.get("truncated")
+                or not isinstance(body, str)
+                or len(body.encode()) > 65_536
+            ):
+                raise ValueError("Incomplete OpenAPI document")
+            documents.append(json.loads(body))
+        report = compare_openapi(*documents)
+    except (PreviewRequestError, PreviewUnavailableError, ValueError, RecursionError):
+        report = CompatibilityReport(
+            status="needs_review",
+            changes=[
+                CompatibilityChange(
+                    severity="needs_review",
+                    code="schema_unavailable",
+                    operation="API",
+                    location="API contract",
+                    message=(
+                        "Both API schemas could not be read. Retry when temporary previews are "
+                        "available, or review both versions manually."
+                    ),
+                )
+            ],
+        )
+    report.source_run_id = str(source.id)
+    report.checked_at = datetime.now(UTC)
+    return report

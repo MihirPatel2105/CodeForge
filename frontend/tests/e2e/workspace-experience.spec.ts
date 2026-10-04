@@ -134,3 +134,82 @@ test("version comparison shows changed files and source test evidence", async ({
   await expect(page.getByText("+ year = 2026", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "the previous version" })).toHaveAttribute("href", "/runs/source-run");
 });
+
+async function revisedRun(page: Page) {
+  await session(page);
+  await page.route(`**/api/backend/runs/${run.id}`, route => route.fulfill({ json: { ...run, parent_run_id: "source-run", change_request: "Add a due date" } }));
+  await page.route("**/api/backend/runs/source-run", route => route.fulfill({ json: { ...run, id: "source-run" } }));
+  for (const id of [run.id, "source-run"]) {
+    await page.route(`**/api/backend/runs/${id}/files`, route => route.fulfill({ json: { run_id: id, files: [] } }));
+  }
+  await page.route(`**/api/backend/runs/${run.id}/stream`, route => route.fulfill({ contentType: "text/event-stream", body: [
+    { event: "run.started", run_id: run.id, prompt: run.prompt, at },
+    { event: "run.completed", status: "succeeded", iterations: 0, at },
+  ].map((event, i) => `id: ${i + 1}\ndata: ${JSON.stringify(event)}\n\n`).join("") }));
+}
+
+for (const status of ["breaking", "compatible", "needs_review"] as const) {
+  test(`revision compatibility reports ${status} after an explicit check`, async ({ page }) => {
+    await revisedRun(page);
+    let checks = 0;
+    await page.route(`**/api/backend/runs/${run.id}/compatibility`, route => {
+      expect(route.request().method()).toBe("POST");
+      checks += 1;
+      return route.fulfill({ json: { status, checked_operations: 1, source_run_id: "source-run", checked_at: at, changes: status === "compatible" ? [] : [{ severity: status === "breaking" ? "breaking" : "needs_review", code: "required_added", operation: "POST /books", location: "Request body.due_date", message: "Review existing requests for this field." }] } });
+    });
+    await page.goto(`/runs/${run.id}`);
+    const panel = page.getByRole("region", { name: "API compatibility", exact: true });
+    await expect(panel.getByRole("button", { name: "Check compatibility", exact: true })).toBeVisible();
+    expect(checks).toBe(0);
+    await panel.getByRole("button", { name: "Check compatibility", exact: true }).click();
+    const verdict = status === "breaking" ? "Breaking changes detected" : status === "compatible" ? "No breaking changes detected" : "Needs review";
+    await expect(panel.getByRole("status")).toContainText(verdict);
+    if (status !== "compatible") {
+      await expect(panel.getByText("POST /books", { exact: true })).toBeVisible();
+      await expect(panel.getByText("Request body.due_date", { exact: true })).toBeVisible();
+    }
+    await expect(panel.getByText(/Runtime behavior and data migrations/)).toBeVisible();
+    await page.setViewportSize({ width: 375, height: 812 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  });
+}
+
+test("compatibility shows loading, hides failed report and supports retry", async ({ page }) => {
+  await revisedRun(page);
+  let attempts = 0;
+  let release: () => void = () => {};
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route(`**/api/backend/runs/${run.id}/compatibility`, async route => {
+    attempts += 1;
+    if (attempts === 1) {
+      await pending;
+      return route.fulfill({ status: 503, json: { error: { code: "service_unavailable", message: "private socket details" } } });
+    }
+    return route.fulfill({ json: { status: "compatible", checked_operations: 1, changes: [], source_run_id: "source-run", checked_at: at } });
+  });
+  await page.goto(`/runs/${run.id}`);
+  const panel = page.getByRole("region", { name: "API compatibility", exact: true });
+  await panel.getByRole("button", { name: "Check compatibility", exact: true }).click();
+  await expect(panel.getByRole("button", { name: "Checking compatibility…", exact: true })).toBeDisabled();
+  release();
+  await expect(panel.getByText(/Could not check compatibility/)).toBeVisible();
+  await expect(panel.getByText("private socket details")).toHaveCount(0);
+  await panel.getByRole("button", { name: "Check compatibility", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("No breaking changes detected");
+});
+
+test("publish shows compatibility for a revision without starting checks or publication", async ({ page }) => {
+  await revisedRun(page);
+  await page.route(`**/api/backend/runs/${run.id}/deployment`, route => {
+    expect(route.request().method()).toBe("GET");
+    return route.fulfill({ status: 404, json: { error: { code: "not_found" } } });
+  });
+  await page.route(`**/api/backend/runs/${run.id}/preview`, route => route.fulfill({ json: { operations: [], expires_after_seconds: 900, session_started: false } }));
+  await page.goto(`/runs/${run.id}/publish`);
+  await expect(page.getByRole("region", { name: "API compatibility", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Publish API", exact: true })).toBeEnabled();
+  await page.route(`**/api/backend/runs/${run.id}`, route => route.fulfill({ json: run }));
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Publish API", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "API compatibility", exact: true })).toHaveCount(0);
+});

@@ -5,13 +5,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { ApiCompatibility } from "@/components/dashboard/api-compatibility";
 import { PublishGuide } from "@/components/dashboard/publish-guide";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { Button } from "@/components/ui/button";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, ApiError } from "@/lib/api";
-import type { DeploymentHealth, DeploymentInfo, PreviewOperation } from "@/lib/types";
+import type { DeploymentHealth, DeploymentInfo, PreviewOperation, RunResponse } from "@/lib/types";
 import { useSession } from "@/lib/use-current-user";
 
 export default function PublishApiPage() {
@@ -21,6 +22,8 @@ export default function PublishApiPage() {
   const [deployment, setDeployment] = useState<DeploymentInfo | null>(null);
   const [operations, setOperations] = useState<PreviewOperation[]>([]);
   const [operationsError, setOperationsError] = useState(false);
+  const [run, setRun] = useState<RunResponse | null>(null);
+  const [versionError, setVersionError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [publicationError, setPublicationError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,9 +39,10 @@ export default function PublishApiPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [published, preview] = await Promise.allSettled([
+    const [published, preview, version] = await Promise.allSettled([
       api.getDeployment(id),
       api.getPreview(id),
+      api.getRun(id),
     ]);
     if (published.status === "fulfilled") {
       setDeployment(published.value);
@@ -58,6 +62,8 @@ export default function PublishApiPage() {
     } else {
       setOperationsError(true);
     }
+    setRun(version.status === "fulfilled" ? version.value : null);
+    setVersionError(version.status === "rejected");
     setLoading(false);
   }, [id]);
 
@@ -171,6 +177,9 @@ export default function PublishApiPage() {
         </header>
 
         {error && <Notice className="mt-5">{error}</Notice>}
+
+        {!loading && run?.parent_run_id && run.status === "succeeded" && run.metrics?.tests_passed && <div className="mt-6 rounded-3xl border border-border bg-surface p-5 sm:p-6"><ApiCompatibility id={id} sourceId={run.parent_run_id} /></div>}
+        {!loading && versionError && <Notice className="mt-5" variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Version history could not load. Review the run before publishing an update.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry version history</Button></div></Notice>}
 
         {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : publicationError ? (
           <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">

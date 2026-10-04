@@ -483,6 +483,24 @@ export interface PreviewResult {
   session_started: boolean;
 }
 
+export type CompatibilitySeverity = "breaking" | "compatible" | "needs_review";
+
+export interface CompatibilityChange {
+  severity: CompatibilitySeverity;
+  code: string;
+  operation: string;
+  location: string;
+  message: string;
+}
+
+export interface CompatibilityReport {
+  status: CompatibilitySeverity;
+  checked_operations: number;
+  changes: CompatibilityChange[];
+  source_run_id: string | null;
+  checked_at: string | null;
+}
+
 export interface DeploymentInfo {
   id: string;
   run_id: string;

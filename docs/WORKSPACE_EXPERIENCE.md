@@ -49,6 +49,50 @@ test outcomes are compared in the new run's version panel. Publishing the new AP
 is explicit and uses its own existing Publish flow. This feature does not migrate
 published data or replace a previous API's URL/key.
 
+## Check API compatibility
+
+Successful, tested revisions show **Check compatibility** in the version panel
+and on Publish. Clicking it reads the source and new API's actual OpenAPI documents
+through owner-only temporary previews, then compares them without an LLM call.
+Both runs must belong to the same owner and project and have passing sandbox tests.
+The check starts or reuses previews; existing preview data and published APIs are
+not changed. Preview capacity and the existing 15-minute lifetime still apply.
+
+Findings identify the affected endpoint and field, with three possible verdicts:
+
+- **Breaking changes detected:** a removed endpoint/response status, newly required
+  request input/body/parameter, incompatible value type or enum, tighter request
+  limits, or a removed/weakened response field guarantee.
+- **No breaking changes detected:** the supported checks found no incompatibility.
+  Requests are checked for continued acceptance of old inputs; responses for
+  preservation of values and guarantees old clients expect. Added optional fields
+  and endpoints are normally compatible for clients that ignore extra fields.
+- **Needs review:** the check is incomplete, including unavailable/truncated schemas,
+  removed request fields/parameters, missing or recursive references, general schema
+  compositions, formats/patterns, additional properties, non-JSON media, response
+  headers, authentication, and changed server addresses. Known breaking findings
+  take precedence in the headline; review findings remain visible alongside them.
+
+Local schema references, nested objects/arrays, simple nullable schemas and plain
+scalar `anyOf` unions (including FastAPI's validation-error location items)
+are supported for OpenAPI 3.0/3.1. Each document is bounded to 64 KiB, 100 operations,
+and 16 schema/reference levels; reports are capped at 200 findings plus a review
+notice. The endpoint count covers shared operation comparisons. Reports are fresh
+and are not persisted; reload or navigate to another page to check again. A retry
+clears the previous result so a failed check cannot leave a clean verdict visible.
+
+Warnings do not block publishing or change the approval pipeline. This checks
+contract compatibility, not runtime behavior, actual response conformance, client
+assumptions about extra fields, or database migrations. Those need separate tests.
+
+Compatibility verification (2026-10-04): full backend suite **502 passed / 25
+opt-in tests skipped**; production-browser workspace/tester/security checks **18
+passed**; the live sandbox/route suite **25 passed**, followed by a final real-Docker
+compatibility recheck **1 passed** after scalar-union support. Backend Ruff/format,
+frontend ESLint/TypeScript, production build, and whitespace checks passed. Real
+schema extraction used isolated fixture apps; this is not a live-provider generation
+benchmark or the first-time human observer study.
+
 ## Updates and progress
 
 The header inbox polls owner-scoped pending approvals and recent terminal runs.
