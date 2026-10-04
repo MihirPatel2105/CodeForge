@@ -33,13 +33,20 @@ test("project cards and run history use the viewer's local time", async ({ page 
     items: projects.map((project) => ({ ...project, recent_runs: runs.filter((run) => run.project_id === project.id), stats: { total: 1, succeeded: 1, failed: 0, active: 0, avg_loops: 1, last: runs.find((run) => run.project_id === project.id) } })),
     next_cursor: null, total_projects: 2, matching_projects: 2, total_runs: 2, total_succeeded: 2,
   }) }));
+  let pendingFirstPages = 0;
   for (const project of projects) {
     await page.route(`**/api/backend/projects/${project.id}`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(project) }));
     await page.route(`**/api/backend/projects/${project.id}/runs`, (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(runs.filter((run) => run.project_id === project.id)) }));
-    await page.route(`**/api/backend/projects/${project.id}/runs/page*`, (route) => {
+    await page.route(`**/api/backend/projects/${project.id}/runs/page*`, async (route) => {
       const projectRuns = runs.filter((run) => run.project_id === project.id);
       const olderPage = new URL(route.request().url()).searchParams.has("cursor");
-      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: project.id === "project-2" ? [projectRuns[olderPage ? 1 : 0]] : projectRuns, next_cursor: project.id === "project-2" && !olderPage ? "run-2" : null, stats: { total: projectRuns.length, succeeded: 1, failed: projectRuns.length - 1, active: 0, avg_loops: 1, last: projectRuns[0] } }) });
+      // Slow first-page responses expose a late refresh overwriting appended history.
+      if (project.id === "project-2" && !olderPage) {
+        pendingFirstPages += 1;
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: project.id === "project-2" ? [projectRuns[olderPage ? 1 : 0]] : projectRuns, next_cursor: project.id === "project-2" && !olderPage ? "run-2" : null, stats: { total: projectRuns.length, succeeded: 1, failed: projectRuns.length - 1, active: 0, avg_loops: 1, last: projectRuns[0] } }) });
+      if (project.id === "project-2" && !olderPage) pendingFirstPages -= 1;
     });
   }
 
@@ -52,4 +59,7 @@ test("project cards and run history use the viewer's local time", async ({ page 
   await expect(page.getByText("1 of 2 runs")).toBeVisible();
   await page.getByRole("button", { name: "Load more runs" }).click();
   await expect(page.getByText("More history")).toBeVisible();
+  await expect.poll(() => pendingFirstPages).toBe(0);
+  await expect(page.getByText("More history")).toBeVisible();
+  await expect(page.getByText("2 of 2 runs")).toBeVisible();
 });

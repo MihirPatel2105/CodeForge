@@ -16,6 +16,7 @@ export default function ProjectDetailPage() {
   const [outcome, setOutcome] = useState("");
   const [filtering, setFiltering] = useState(false);
   const generation = useRef(0);
+  const previousFilters = useRef({ id, query, outcome });
   const [project, setProject] = useState<ProjectResponse | null>(null);
   const [history, setHistory] = useState<RunSummary[]>([]);
   const [stats, setStats] = useState<ProjectOverviewItem["stats"] | null>(null);
@@ -46,6 +47,10 @@ export default function ProjectDetailPage() {
   }, [id, router]);
 
   useEffect(() => {
+    const previous = previousFilters.current;
+    previousFilters.current = { id, query, outcome };
+    // load() owns the initial page; only changed filters need a debounced refresh.
+    if (previous.id === id && previous.query === query && previous.outcome === outcome) return;
     const current = ++generation.current;
     const timer = setTimeout(async () => {
       setFiltering(true); setMoreError(null);
