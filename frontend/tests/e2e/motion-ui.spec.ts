@@ -9,12 +9,27 @@ test("all sections are available before scrolling and reduced motion stays still
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("smooth");
 
   await stack.scrollIntoViewIfNeeded();
-  await expect(stack.getByRole("heading", { name: "A team behind every build." })).toBeVisible();
+  await expect(stack.getByRole("heading", { name: "Five specialists. One continuous workflow." })).toBeVisible();
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator(".lp-stack-card")).toHaveCount(5);
+  await expect(page.getByRole("navigation", { name: "Explore the five agents" }).getByRole("button")).toHaveCount(5);
+  const agents = page.getByRole("navigation", { name: "Explore the five agents" });
+  const architect = agents.getByRole("button", { name: "Architect", exact: true });
+  await architect.focus();
+  await page.keyboard.press("Enter");
+  await expect(architect).toHaveAttribute("aria-pressed", "true");
+  await expect(stack.getByRole("heading", { name: "A clear plan. Before the code." })).toBeVisible();
+  await expect(stack.getByText("/books/{id}", { exact: true })).toHaveCount(3);
+  await expect(stack.getByText("Example output", { exact: true })).toBeVisible();
+  await expect(stack.locator(".lp-agent-content")).toHaveCSS("animation-name", "none");
+  await agents.getByRole("button", { name: "Reviewer", exact: true }).click();
+  await expect(stack.getByText("Requested change → Coder", { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 720 });
+  await agents.getByRole("button", { name: "Tester", exact: true }).click();
+  await expect(stack.getByText("Failures can trigger another repair", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");

@@ -155,30 +155,37 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   .lp-pipeline-feedback { gap: 5px; margin: 16px 0; }.lp-pipeline-feedback>span:last-child { width: 100%; margin-left: 19px; }.lp-pipeline-outcome { flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; }.lp-walkthrough-controls { justify-content: space-between; flex-wrap: wrap; }.lp-walkthrough-controls :is(a,button) { font-size: 11px; }
 }
 
-/* Each agent joins the deck as the next card reaches the sticky position. */
-.lp-agent-stack { list-style: none; margin: 0; padding: 0; }
-.lp-stack-card { position: relative; margin: 0 0 24px; border: 1px solid var(--lp-rule); border-radius: var(--lp-radius); background: var(--lp-paper-secondary); box-shadow: 0 20px 48px -36px rgba(23,32,51,.25); transform-origin: top center; }
-.lp-stack-card:nth-child(even) { background: var(--lp-paper); }
-.lp-stack-card:last-child { margin-bottom: 0; }
-.lp-stack-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 20px 36px; border-bottom: 1px solid var(--lp-rule); color: var(--lp-accent); font-size: 18px; font-weight: 600; }
-.lp-stack-head>span { display: flex; align-items: center; gap: 18px; }
-.lp-stack-number { color: var(--lp-muted); font: 12px var(--lp-mono); }
-.lp-stack-body { display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 48px; min-height: 330px; padding: 40px 36px; }
-.lp-stack-copy h3 { margin: 0; font-size: clamp(26px,3vw,36px); line-height: 1.15; font-weight: 600; letter-spacing: -.04em; }
-.lp-stack-copy p { margin: 18px 0 24px; color: var(--lp-muted); font-size: 16px; line-height: 1.7; }
-.lp-stack-step { color: var(--lp-muted); font-size: 12px; }
-.lp-stack-body .lp-artifact { margin: 0; min-width: 0; }
-@media (min-width: 701px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
-  /* Keep the deck pinned long enough for the final card to settle over Reviewer. */
-  .lp-agent-stack { display: flex; flex-direction: column; gap: 24vh; }
-  .lp-agent-stack::after { content: ""; display: block; height: 36vh; flex-shrink: 0; }
-  /* Margins affect sticky's bottom boundary; gap keeps every card's release aligned. */
-  .lp-stack-card { position: sticky; flex-shrink: 0; top: calc(104px + var(--stack-index) * 16px); z-index: calc(1 + var(--stack-index)); margin-bottom: 0; transform: scale(var(--stack-scale,1)); }
-  .lp-stack-card:last-child { margin-bottom: 0; }
-}
-@media (max-width: 850px) { .lp-stack-body { gap: 24px; padding: 28px; }.lp-stack-head { padding: 18px 28px; } }
+/* One shared example stays in place while visitors explore the agents. */
+.lp-agent-showcase { border: 1px solid var(--lp-rule); border-radius: var(--lp-radius); background: var(--lp-paper); padding: 36px; box-shadow: 0 20px 48px -36px rgba(23,32,51,.18); }
+.lp-agent-nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; margin-bottom: 36px; background: var(--lp-paper-secondary); border-radius: 16px; }
+.lp-agent-nav button { flex: 1; min-height: 48px; padding: 12px; border: 0; border-radius: 11px; background: transparent; color: var(--lp-muted); font: 600 14px var(--lp-font); }
+.lp-agent-nav button:hover { color: var(--lp-accent); }
+.lp-agent-nav button[aria-pressed=true] { color: var(--lp-accent); background: var(--lp-paper); box-shadow: 0 2px 8px rgba(23,32,51,.06); }
+.lp-agent-content { display: grid; grid-template-columns: .85fr 1.15fr; gap: 48px; align-items: start; min-height: 340px; }
+.lp-agent-copy { min-width: 0; }
+.lp-agent-phase { color: var(--lp-accent); font-size: 13px; font-weight: 600; margin: 4px 0 18px; }
+.lp-agent-copy h3 { max-width: 390px; margin: 0; font-size: clamp(26px,3vw,36px); line-height: 1.15; font-weight: 600; letter-spacing: -.04em; }
+.lp-agent-detail { margin: 18px 0 24px; max-width: 420px; color: var(--lp-muted); font-size: 16px; line-height: 1.7; }
+.lp-agent-note { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--lp-muted); font-size: 13px; line-height: 1.5; }
+.lp-agent-note svg { flex-shrink: 0; }
+.lp-agent-output { min-width: 0; padding: 24px; background: var(--lp-paper-secondary); border-radius: 18px; }
+.lp-agent-output-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--lp-rule); font-size: 14px; font-weight: 600; }
+.lp-agent-output-head>span:first-child { display: flex; align-items: center; gap: 8px; }
+.lp-agent-output-head>span:last-child { color: var(--lp-muted); font-size: 12px; font-weight: 400; }
+.lp-agent-output ul { list-style: none; margin: 0; padding: 0; }
+.lp-agent-output li { display: flex; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--lp-rule); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.lp-agent-output li svg { flex-shrink: 0; margin-top: 3px; color: var(--lp-muted); }
+.lp-agent-output .lp-agent-route { align-items: center; }
+.lp-agent-method { width: 56px; flex-shrink: 0; color: var(--lp-accent); font: 600 11px var(--lp-mono); }
+.lp-agent-route code { font: 13px var(--lp-mono); overflow-wrap: anywhere; }
+.lp-agent-model { margin: 16px 0 0; color: var(--lp-muted); font-size: 13px; line-height: 1.6; }
+.lp-agent-model strong { color: var(--lp-ink); font-weight: 600; }
+.lp-agent-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--lp-rule); color: var(--lp-muted); font-size: 12px; line-height: 1.5; }
+@keyframes lp-agent-switch { from { opacity: .7; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) { .lp-agent-switched { animation: lp-agent-switch 180ms ease-out; } }
+@media (max-width: 850px) { .lp-agent-showcase { padding: 28px; }.lp-agent-content { gap: 28px; }.lp-agent-output { padding: 20px; } }
 @media (max-width: 700px) {
-  .lp-stack-head { min-height: 64px; padding: 18px 22px; font-size: 16px; }.lp-stack-body { grid-template-columns: 1fr; min-height: 0; gap: 24px; padding: 24px 22px; }.lp-stack-copy h3 { font-size: 26px; }.lp-stack-copy p { font-size: 15px; margin-bottom: 16px; }.lp-stack-card { margin-bottom: 20px; }
+  .lp-agent-showcase { padding: 22px 18px; }.lp-agent-nav { gap: 3px; margin-bottom: 26px; }.lp-agent-nav button { flex-basis: 28%; font-size: 13px; padding: 10px 8px; }.lp-agent-content { grid-template-columns: 1fr; min-height: 0; gap: 26px; }.lp-agent-copy h3 { font-size: 28px; }.lp-agent-detail { font-size: 15px; margin: 14px 0 20px; }.lp-agent-output { padding: 18px; }.lp-agent-output li { font-size: 13px; }.lp-agent-footer { margin-top: 24px; padding-top: 16px; }
 }
 
 /* One entrance sequence per landing mount; preview scale remains scroll-controlled. */

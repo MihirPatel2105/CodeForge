@@ -653,3 +653,15 @@ for removed routes, incompatible inputs, changed response guarantees, and suppor
 type/enum/bound changes. Unsupported or unavailable contracts require review.
 This adds evidence before publication without changing publishing, generation,
 or human approvals. Limits are recorded in `docs/WORKSPACE_EXPERIENCE.md`.
+
+### 2026-10-04 authorized marketing agent showcase
+
+Replaced the landing page's five sticky agent cards with one shared library
+preview and five selectable stages. Route methods and paths are structured,
+example output is labeled, and approval checkpoints and conditional repair
+feedback remain visible. Native buttons support keyboard selection; the layout
+reflows on mobile and stage transitions respect live reduced-motion changes.
+Frontend lint, TypeScript, the isolated production build, and all six motion
+browser tests pass. All five stages were checked at six widths from 320px to
+1440px with no horizontal overflow or browser errors. This UI verification does
+not close the Phase 7 first-time human observer criterion.

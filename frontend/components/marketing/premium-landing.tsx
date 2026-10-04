@@ -16,11 +16,11 @@ import { DEMO_RUNS } from "@/lib/demo-runs";
 import { useCurrentUser } from "@/lib/use-current-user";
 
 const agents = [
-  { name: "PM", verb: "Understands the idea.", detail: "Turns your request into a clear scope: the data you need, the operations to support, and what success looks like.", icon: Layers3, artifact: "Requirements", lines: ["Entity: Book", "Fields: title, author, ISBN, genre, read", "Operations: create, read, update, delete", "Checkpoint: your approval"] },
-  { name: "Architect", verb: "Makes a plan.", detail: "Maps the endpoints, data models, and application structure. You approve the design before the code takes shape.", icon: Layers3, artifact: "API design", lines: ["POST    /books", "GET     /books", "GET     /books/{id}", "PATCH   /books/{id}", "DELETE  /books/{id}"] },
-  { name: "Coder", verb: "Builds the API.", detail: "Writes the application and its data contracts. The generated files are visible as the work happens.", icon: Code2, artifact: "Generated files", lines: ["main.py", "models.py", "schemas.py", "database.py", "requirements.txt"] },
-  { name: "Reviewer", verb: "Looks closer.", detail: "Checks the code against the plan. Blocking findings go back to the Coder for another pass.", icon: ShieldCheck, artifact: "Review feedback", lines: ["main.py · update route", "Add an explicit response model.", "Return a validated BookOut response.", "Send finding back to Coder."] },
-  { name: "Tester", verb: "Puts it to the test.", detail: "Writes tests for the API. An isolated sandbox runs them, and failures can send the code back for repair.", icon: Terminal, artifact: "Test coverage", lines: ["Create a book", "Read the collection", "Update the book", "Delete the book", "Validate invalid input"] },
+  { name: "PM", verb: "Your idea. Made specific.", detail: "Turn a prompt into a focused set of requirements, so every agent builds toward the same goal.", icon: Layers3, artifact: "Library requirements", lines: ["Entity: Book", "Fields: title, author, ISBN, genre, read", "Create, list, update, and delete books", "Checkpoint: your approval"], note: "You approve the requirements" },
+  { name: "Architect", verb: "A clear plan. Before the code.", detail: "See the routes, data models, and structure. Approve the design before your API takes shape.", icon: Layers3, artifact: "Library API", lines: ["POST /books", "GET /books", "GET /books/{id}", "PATCH /books/{id}", "DELETE /books/{id}"], note: "You approve the design", model: "title, author, ISBN, genre, read" },
+  { name: "Coder", verb: "The plan becomes working code.", detail: "Generate the routes, models, and application files from your approved design. Inspect the files as the work happens.", icon: Code2, artifact: "Generated files", lines: ["main.py — application routes", "models.py — stored data", "schemas.py — validation", "database.py — database connection", "requirements.txt — dependencies"], note: "Built from the approved plan" },
+  { name: "Reviewer", verb: "A second look. A stronger API.", detail: "Review the implementation against the plan. When blocking changes are needed, the feedback goes back to the Coder.", icon: ShieldCheck, artifact: "Example review", lines: ["Check the update route", "Add an explicit response model", "Return a validated BookOut response", "Requested change → Coder"], note: "Feedback can trigger a repair" },
+  { name: "Tester", verb: "Run it. See what holds up.", detail: "Run the generated tests in an isolated sandbox. Inspect the actual results before using your API.", icon: Terminal, artifact: "Example test coverage", lines: ["Create a book", "Read the collection", "Update the book", "Delete the book", "Reject invalid input"], note: "Failures can trigger another repair" },
 ];
 const questions = [
   { title: "What can I build?", answer: "CodeForge focuses on CRUD REST APIs: applications that create, read, update, and delete data. Start with a library, inventory, support ticket system, or a similar data-driven API." },
@@ -57,7 +57,7 @@ export function PremiumLanding() {
         </section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
-          <div className="lp-section-intro"><h2 id="team-title">A team behind<br />every build.</h2><p>Each agent has a job. Every decision has a trail.<br />You see the work, from the first plan to the final test.</p></div>
+          <div className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One continuous workflow.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></div>
           <AgentScrollStack agents={agents} />
         </section>
 
