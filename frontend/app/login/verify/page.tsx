@@ -140,7 +140,7 @@ export default function VerifyLoginPage() {
                   value={code}
                   onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="000000"
-                  className="mt-2 h-12 rounded-xl border-border-strong bg-white px-4 font-mono text-[16px] tracking-[0.2em] focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15"
+                  className="mt-2 h-12 rounded-xl border-border-strong bg-surface px-4 font-mono text-[16px] tracking-[0.2em] focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15"
                 />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>

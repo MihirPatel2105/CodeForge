@@ -79,7 +79,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
   return (
     <motion.div
       initial={false}
-      animate={{ y: reducedMotion ? 0 : working || loopHighlight ? -3 : 0, opacity: dimmed ? 0.32 : state === "idle" ? 0.86 : state === "stopped" ? 0.82 : 1 }}
+      animate={{ y: reducedMotion ? 0 : working || loopHighlight ? -3 : 0, opacity: dimmed ? 0.72 : state === "idle" ? 0.86 : state === "stopped" ? 0.82 : 1 }}
       transition={reducedMotion ? { duration: 0 } : motionSpring}
       className={cn(
         "relative flex flex-1 snap-center flex-col gap-3 overflow-hidden rounded-3xl border bg-surface px-5 py-6",

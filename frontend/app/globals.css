@@ -2,11 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Kept deliberately even though the product is light-only. This redefines `dark:` to
-   mean "inside a .dark ancestor" — a class nothing sets any more — which neutralises
-   the `dark:` utilities baked into the shadcn primitives. Delete this line and `dark:`
-   reverts to its built-in `prefers-color-scheme` meaning, and every visitor whose OS is
-   in dark mode would get half-dark controls on a light page. */
+/* Theme follows the explicit class set by the appearance provider. */
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -185,7 +181,7 @@
  * `--warn` for a pause, `--ok` for a pass and `--loop` for the loop moment, and the
  * light-ground versions of those are unreadable here.
  */
-.cf-invert {
+:root.dark, .cf-invert {
   --bg: #0d0f12;
   --surface: #15181d;
   --surface-2: #1c2027;
@@ -301,7 +297,7 @@
 
 .cf-home > header {
   border-color: var(--border);
-  background: rgba(247, 248, 251, 0.88);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
 }
 
 .cf-home-hero {
@@ -309,7 +305,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 86% 42%, rgba(63, 71, 201, 0.09), transparent 34rem),
-    linear-gradient(180deg, #ffffff, #f8f8f8);
+    linear-gradient(180deg, var(--surface), var(--bg));
 }
 
 .cf-home-hero::after {
@@ -346,7 +342,7 @@
 
 .cf-closing-banner {
   border-color: var(--accent-bd);
-  background: rgba(255, 255, 255, 0.7);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
   box-shadow: 0 24px 70px rgba(67, 56, 202, 0.08);
   backdrop-filter: blur(10px);
 }
@@ -371,7 +367,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 77% 30%, rgba(67, 56, 202, 0.1), transparent 28rem),
-    linear-gradient(115deg, rgba(255, 255, 255, 0.74), rgba(250, 249, 247, 0.36)),
+    linear-gradient(115deg, color-mix(in srgb, var(--surface) 74%, transparent), var(--bg)),
     var(--bg);
 }
 
@@ -448,7 +444,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 82% 18%, rgba(67, 56, 202, 0.1), transparent 27rem),
-    linear-gradient(112deg, rgba(255, 255, 255, 0.78), rgba(250, 249, 247, 0.38)),
+    linear-gradient(112deg, color-mix(in srgb, var(--surface) 78%, transparent), var(--bg)),
     var(--bg);
 }
 
@@ -471,7 +467,7 @@
 .cf-contact-hero {
   background:
     radial-gradient(circle at 88% 12%, rgba(67, 56, 202, 0.105), transparent 26rem),
-    linear-gradient(118deg, rgba(255, 255, 255, 0.76), rgba(247, 246, 243, 0.5)),
+    linear-gradient(118deg, color-mix(in srgb, var(--surface) 76%, transparent), var(--bg)),
     var(--bg);
 }
 
@@ -655,7 +651,7 @@
   isolation: isolate;
   background:
     radial-gradient(circle at 78% 14%, rgba(67, 56, 202, 0.09), transparent 22rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 246, 243, 0.76)),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, transparent), var(--bg)),
     var(--bg);
 }
 
@@ -720,7 +716,7 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(247, 248, 251, 0.9);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
@@ -746,7 +742,7 @@
 }
 
 .cf-project-new {
-  background: rgba(255, 255, 255, 0.65);
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
 }
 
 .cf-project-new::after {
@@ -773,7 +769,7 @@
   isolation: isolate;
   background:
     radial-gradient(circle at center, rgba(237, 239, 255, 0.8), transparent 18rem),
-    rgba(255, 255, 255, 0.75);
+    color-mix(in srgb, var(--surface) 75%, transparent);
 }
 
 .cf-project-empty::before {
@@ -800,7 +796,7 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(247, 248, 251, 0.9);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
@@ -885,7 +881,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(247, 248, 251, 0.9);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
   backdrop-filter: blur(14px) saturate(130%);
 }
 
@@ -1449,3 +1445,13 @@ a.cf-marketing-action:active svg { transform: none; }
 
 /* Native checkboxes and radios follow the product action palette. */
 input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+
+:root { color-scheme: light; }
+:root.dark {
+ color-scheme: dark;
+ --code-bg: #171717; --code-fg: #e5e5e5; --code-kw: #c4a5ff; --code-str: #7bdab0; --code-com: #a3a3a3; --code-fn: #a8c7fa; --code-num: #f0b978; --ink-accent: #f5f5f5;
+}
+.dark .cf-logo-lockup[data-logo-variant="light"] .cf-logo-symbol, .dark .cf-logo-lockup[data-logo-variant="light"] .cf-logo-word { filter: invert(1); }
+.dark :is(.cf-projects,.cf-account,.cf-project,.cf-run) > header { background: var(--surface); }
+.dark :is(.cf-home-hero,.cf-home-output,.cf-auth-stage,.cf-projects-intro,.cf-project-hero) { background: var(--surface); }
+.dark .cf-home-output { --code-bg: #171717; --code-fg: #e5e5e5; --code-kw: #c4a5ff; --code-str: #7bdab0; --code-fn: #a8c7fa; }

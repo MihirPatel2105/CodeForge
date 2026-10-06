@@ -42,7 +42,7 @@ const COPY = {
 } as const;
 
 const FIELD =
-  "h-12 rounded-xl border-border-strong bg-white px-4 text-[16px] text-fg shadow-none " +
+  "h-12 rounded-xl border-border-strong bg-surface px-4 text-[16px] text-fg shadow-none " +
   "placeholder:text-fg-faint focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15 focus-visible:ring-offset-0";
 
 const LABEL = "text-[13px] font-[650] text-fg";
@@ -204,7 +204,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                             const met = rule.test(password);
                             return (
                               <li key={rule.id} className="flex items-start gap-2">
-                                <span className={cn("mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border transition-colors", met ? "border-ok bg-ok text-white" : "border-border-strong bg-white")} aria-hidden>
+                                <span className={cn("mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border transition-colors", met ? "border-ok bg-ok text-surface" : "border-border-strong bg-surface")} aria-hidden>
                                   {met && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
                                 </span>
                                 <span className={cn("text-[12px] leading-[18px]", met ? "text-ok" : touchedPassword ? "text-fg-muted" : "text-fg-faint")}>{rule.label}</span>
@@ -226,7 +226,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                   {!registering && (
                     <>
                       <div className="my-5 flex items-center gap-3 text-[12px] text-fg-faint"><span className="h-px flex-1 bg-border" /><span>or</span><span className="h-px flex-1 bg-border" /></div>
-                      <Link href="/login/passkey" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-white text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                      <Link href="/login/passkey" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                         <KeyRound className="h-4 w-4" aria-hidden /> Sign in with a passkey
                       </Link>
                     </>

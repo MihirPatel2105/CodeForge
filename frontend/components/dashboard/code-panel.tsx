@@ -126,9 +126,9 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
         </div>
         {files.length === 0 ? (
           <div className="space-y-2 px-4 py-4" aria-hidden>
-            <div className="h-7 rounded-lg border border-dashed border-border bg-white/60" />
-            <div className="h-7 rounded-lg border border-dashed border-border bg-white/60" />
-            <div className="hidden h-7 rounded-lg border border-dashed border-border bg-white/60 sm:block" />
+            <div className="h-7 rounded-lg border border-dashed border-border bg-surface/60" />
+            <div className="h-7 rounded-lg border border-dashed border-border bg-surface/60" />
+            <div className="hidden h-7 rounded-lg border border-dashed border-border bg-surface/60 sm:block" />
           </div>
         ) : (
           <ScrollArea className="flex-1">
@@ -147,11 +147,11 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                       }}
                       className={cn(
                         "relative isolate flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-2.5 py-2 text-left",
-                        "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-white hover:text-fg",
+                        "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-surface hover:text-fg",
                         isSelected && "border-accent-bd font-bold text-accent",
                       )}
                     >
-                      {isSelected && <motion.span layoutId="file-selection" transition={reducedMotion ? { duration: 0 } : motionSpring} className="absolute inset-0 -z-10 rounded-2xl bg-white shadow-[0_2px_9px_rgba(35,50,81,0.07)]" aria-hidden />}
+                      {isSelected && <motion.span layoutId="file-selection" transition={reducedMotion ? { duration: 0 } : motionSpring} className="absolute inset-0 -z-10 rounded-2xl bg-surface shadow-[0_2px_9px_rgba(35,50,81,0.07)]" aria-hidden />}
                       <span className="truncate">{f.path}</span>
                       <span
                         className={cn(
@@ -174,7 +174,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
       <div className="flex min-w-0 flex-1 flex-col bg-code-bg">
         {selected && version ? (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-white px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                 <span className="min-w-0 truncate font-mono text-[13px] font-[650] text-fg">{selected.path}</span>

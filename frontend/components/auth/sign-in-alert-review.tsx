@@ -35,7 +35,7 @@ export function SignInAlertReview({ token }: { token: string }) {
             <span className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-danger"><span className="h-1.5 w-1.5 rounded-full bg-danger" aria-hidden /> Account security</span>
             <h1 className="mt-4 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">All sessions ended</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">Your account has been signed out on every device. Reset your password before signing in again.</p>
-            <Link href="/forgot-password" className="mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-fg px-5 text-[14px] font-[650] text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            <Link href="/forgot-password" className="mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-fg px-5 text-[14px] font-[650] text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></Link>
           </>
         ) : result === "me" ? (
           <>

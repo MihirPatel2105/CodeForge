@@ -88,11 +88,11 @@ export function FindingEntry({ time, agent, file, line, issue, fixHint }: Findin
       )}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="rounded-full bg-danger px-2 py-0.5 text-[10px] font-[700] text-white">Blocking</span>
+        <span className="rounded-full bg-danger px-2 py-0.5 text-[10px] font-[700] text-surface">Blocking</span>
         <span className={cn(typeScale.metaMono, "text-[11px] text-fg-faint")}>{time}</span>
         <span className={cn(typeScale.label, "text-[11px] text-fg-muted")}>{agent}</span>
         {file && (
-          <span className="min-w-0 truncate rounded-md bg-white/80 px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">
+          <span className="min-w-0 truncate rounded-md bg-surface/80 px-1.5 py-0.5 font-mono text-[11px] text-fg-muted">
             {file}{line != null ? `:${line}` : ""}
           </span>
         )}
@@ -122,7 +122,7 @@ export function LoopEntry({ time, text }: LoopEntryProps) {
       )}
     >
       <div className="flex items-center gap-2.5">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-loop text-white">
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-loop text-surface">
           <RefreshCw className="h-3.5 w-3.5" aria-hidden />
         </span>
         <span className="text-[12px] font-[700] text-loop">Review loop</span>

@@ -73,7 +73,7 @@ export function HeroOutput({
   }, [shown, done, demo.lines.length, reduceMotion]);
 
   return (
-    <div className="cf-home-output relative w-full overflow-hidden rounded-3xl border border-border bg-white p-4 shadow-[0_28px_70px_rgba(34,48,78,0.12),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
+    <div className="cf-home-output relative w-full overflow-hidden rounded-3xl border border-border bg-surface p-4 shadow-[0_28px_70px_rgba(34,48,78,0.12),0_3px_12px_rgba(34,48,78,0.04)] sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-3 px-1">
         <span className={label}>Generated output</span>
         <span
@@ -87,7 +87,7 @@ export function HeroOutput({
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-[0_2px_8px_rgba(35,50,81,0.035)]">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_2px_8px_rgba(35,50,81,0.035)]">
         <div className="flex items-center justify-between gap-3 border-b border-rule bg-surface-2/70 px-4 py-3">
           <span className="inline-flex min-w-0 items-center gap-2.5 text-[12px] font-[650] text-fg">
             <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />

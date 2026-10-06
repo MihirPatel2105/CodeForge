@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 
 /** Render a small fluid field and let the browser smoothly scale it to the hero. */
 export function FluidBackground() {
+  const { resolvedTheme } = useTheme();
   const canvas = useRef<HTMLCanvasElement>(null);
   const reducedMotion = useMotionPreference();
 
@@ -79,7 +81,7 @@ export function FluidBackground() {
       window.removeEventListener("scroll", resume);
       document.removeEventListener("visibilitychange", resume);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, resolvedTheme]);
 
   return <canvas ref={canvas} className="hero-fluid-canvas" />;
 }

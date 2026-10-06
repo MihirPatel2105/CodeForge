@@ -14,7 +14,7 @@ import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 
 const FIELD =
-  "h-12 rounded-xl border-border-strong bg-white px-4 text-[16px] text-fg " +
+  "h-12 rounded-xl border-border-strong bg-surface px-4 text-[16px] text-fg " +
   "focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15 focus-visible:ring-offset-0";
 
 const LABEL = "text-[13px] font-[650] text-fg";
@@ -116,7 +116,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                     <span
                       className={cn(
                         "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border transition-colors",
-                        met ? "border-ok bg-ok text-white" : "border-border-strong bg-white",
+                        met ? "border-ok bg-ok text-surface" : "border-border-strong bg-surface",
                       )}
                     >
                       {met && <Check className="h-2.5 w-2.5" strokeWidth={3} />}

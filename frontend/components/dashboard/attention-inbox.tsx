@@ -56,7 +56,7 @@ export function AttentionInbox({ userId }: { userId: string }) {
       setNotice(permission === "granted" ? "Browser notifications are on while CodeForge is open." : "Browser notifications are blocked. You can change this in browser settings.");
     } catch { setNotice("Browser notifications are unavailable. Use the in-app inbox."); }
   }
-  return <><Button variant="ghost" size="icon" aria-label={`Run updates${visible.length ? `, ${visible.length} need attention` : ""}`} className="relative size-10 rounded-full" onClick={() => setOpen(true)}><Bell className="size-4" />{visible.length > 0 && <span className="absolute right-0 top-0 rounded-full bg-accent px-1 text-[10px] text-white">{visible.length}</span>}</Button>
+  return <><Button variant="ghost" size="icon" aria-label={`Run updates${visible.length ? `, ${visible.length} need attention` : ""}`} className="relative size-10 rounded-full" onClick={() => setOpen(true)}><Bell className="size-4" />{visible.length > 0 && <span className="absolute right-0 top-0 rounded-full bg-accent px-1 text-[10px] text-surface">{visible.length}</span>}</Button>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0 p-0 sm:max-w-md">
         <DialogHeader className="border-b border-border px-6 py-5 pr-12">

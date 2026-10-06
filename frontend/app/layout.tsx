@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import type { Metadata } from "next";
 import { MotionProvider } from "@/components/layout/motion-provider";
 import { PageMotion } from "@/components/layout/page-motion";
@@ -12,17 +14,16 @@ export const metadata: Metadata = {
   description: "A prompt turns into a running, tested API — watch the agents work.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html suppressHydrationWarning lang="en" data-scroll-behavior="smooth">
       <body className="antialiased">
-        {/* Light only. A dark theme's black levels are unreliable on an unknown
-            projector, so the product ships the one appearance it can vouch for. */}
-        <MotionProvider><PageMotion>{children}</PageMotion></MotionProvider>
+        <ThemeProvider nonce={nonce}><MotionProvider><PageMotion>{children}</PageMotion></MotionProvider></ThemeProvider>
       </body>
     </html>
   );

@@ -11,7 +11,7 @@ import { api, ApiError } from "@/lib/api";
 import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 
 const FIELD =
-  "h-12 rounded-xl border-border-strong bg-white px-4 text-[16px] text-fg " +
+  "h-12 rounded-xl border-border-strong bg-surface px-4 text-[16px] text-fg " +
   "focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15 focus-visible:ring-offset-0";
 
 const LABEL = "text-[13px] font-[650] text-fg";

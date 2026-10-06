@@ -16,6 +16,7 @@ export function LogoLockup({
 
   return (
     <span
+      data-logo-variant={variant}
       className={cn("cf-logo-lockup pointer-events-none inline-flex select-none", className)}
       style={{ aspectRatio: "1824 / 447", "--cf-logo-mask": `url("${source}")` } as CSSProperties}
     >

@@ -151,7 +151,7 @@ export function OutcomeShowcase() {
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
-          <div className="overflow-hidden rounded-3xl border border-border bg-white shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)]">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_28px_70px_rgba(34,48,78,0.11),0_3px_12px_rgba(34,48,78,0.04)]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-4">
               <div className="flex items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-ok-bd bg-ok-soft px-2.5 py-1 text-[11px] font-[650] text-ok">
@@ -178,8 +178,8 @@ export function OutcomeShowcase() {
                           className={cn(
                             "flex w-full min-w-0 items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left font-mono text-[11px] transition-[border-color,background-color,color,box-shadow]",
                             selected
-                              ? "border-accent-bd bg-white font-[700] text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]"
-                              : "border-transparent text-fg-muted hover:border-border hover:bg-white/70 hover:text-fg",
+                              ? "border-accent-bd bg-surface font-[700] text-accent shadow-[0_2px_9px_rgba(35,50,81,0.07)]"
+                              : "border-transparent text-fg-muted hover:border-border hover:bg-surface/70 hover:text-fg",
                           )}
                         >
                           <span className="truncate">{file.name}</span>
@@ -196,7 +196,7 @@ export function OutcomeShowcase() {
               </div>
 
               <div className="flex min-w-0 flex-col bg-code-bg">
-                <div className="flex items-center justify-between gap-3 border-b border-rule bg-white px-4 py-3">
+                <div className="flex items-center justify-between gap-3 border-b border-rule bg-surface px-4 py-3">
                   <span className="inline-flex min-w-0 items-center gap-2 font-mono text-[12px] font-[650] text-fg">
                     <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                     <span className="truncate">{activeFile.name}</span>

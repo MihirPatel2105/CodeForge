@@ -194,7 +194,7 @@ export function VerifyStep({
               aria-label={`Digit ${i + 1}`}
               maxLength={LENGTH}
               className={cn(
-                "h-14 w-full min-w-0 rounded-xl border bg-white text-center",
+                "h-14 w-full min-w-0 rounded-xl border bg-surface text-center",
                 "font-mono text-[20px] font-[600] text-fg outline-none transition-colors",
                 "focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60",
                 error ? "border-danger-bd" : "border-border-strong",

@@ -176,7 +176,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
         <ApprovalPresence show={snapshot.approval != null}>
           {snapshot.approval && (
             <div className="mt-5 flex items-start gap-3 rounded-3xl border border-warn-bd bg-warn-soft px-5 py-4 " role="status">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-white text-warn">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
                 <ShieldCheck className="h-5 w-5" aria-hidden />
               </span>
               <div>

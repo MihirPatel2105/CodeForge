@@ -169,9 +169,9 @@ function AgentCard({ agent, index, state, iteration }: { agent: (typeof AGENTS)[
         "relative min-h-[150px] overflow-hidden rounded-2xl border bg-surface p-4 shadow-[0_2px_9px_rgba(35,50,81,0.035)] transition-[border-color,background-color,box-shadow] duration-300",
         agent.position,
         state === "working" && "border-accent-bd bg-accent-soft/65 shadow-[0_10px_28px_rgba(63,71,201,0.1)]",
-        state === "done" && "border-ok-bd bg-white",
+        state === "done" && "border-ok-bd bg-surface",
         state === "returned" && "border-danger-bd bg-danger-soft/65",
-        state === "queued" && "border-border bg-white/80",
+        state === "queued" && "border-border bg-surface/80",
       )}
     >
       {state === "working" && (
@@ -264,11 +264,11 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
         </ol>
 
         <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block" aria-hidden>
-          <span className="absolute left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
-          <span className="absolute left-2/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
-          <span className="absolute left-[83.33%] top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">↓</span>
-          <span className="absolute left-2/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
-          <span className="absolute left-1/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
+          <span className="absolute left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
+          <span className="absolute left-2/3 top-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">→</span>
+          <span className="absolute left-[83.33%] top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">↓</span>
+          <span className="absolute left-2/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
+          <span className="absolute left-1/3 top-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted">←</span>
         </div>
 
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 z-20 hidden h-full w-full overflow-visible sm:block" aria-hidden>
@@ -291,7 +291,7 @@ function AgentWorkspace({ activeStep }: { activeStep: number }) {
 
         <span className={cn(
           "absolute -right-2 top-1/2 z-30 hidden -translate-y-1/2 rounded-full border px-2.5 py-1 text-[10px] font-[650] sm:block",
-          loopFiring ? "border-loop-bd bg-loop-soft text-loop motion-safe:animate-[cfPop_.34s_ease-out]" : "border-border bg-white text-fg-muted",
+          loopFiring ? "border-loop-bd bg-loop-soft text-loop motion-safe:animate-[cfPop_.34s_ease-out]" : "border-border bg-surface text-fg-muted",
         )}>
           Back to Coder
         </span>

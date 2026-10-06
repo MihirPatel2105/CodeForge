@@ -45,7 +45,7 @@
   overflow: clip;
   pointer-events: none;
   opacity: var(--relief-opacity, 1);
-  mask-image: linear-gradient(to bottom, var(--relief-white) 65%, transparent);
+  mask-image: linear-gradient(to bottom, white 65%, transparent);
 }
 .cf-landing-atmosphere .hero-pointer-background canvas {
   position: absolute;
@@ -68,4 +68,9 @@
   .cf-landing-atmosphere .lp-hero > .lp-lead { font-size: 17px; margin-top: 22px; }
   .cf-landing-atmosphere .lp-hero > .lp-actions { gap: 10px; margin-top: 24px; }
   .cf-landing-atmosphere .lp-hero > .lp-product-scroll { margin-top: 36px; }
+}
+
+.dark .cf-landing-atmosphere {
+ --flow-blue: 24 24 24; --flow-ice: 42 42 42; --flow-lilac: 32 32 32; --flow-white: 48 48 48;
+ --relief-white: var(--surface); --relief-code: #a3a3a3; --relief-note-rule: var(--border);
 }
