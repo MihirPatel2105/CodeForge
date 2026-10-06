@@ -22,10 +22,10 @@ export function FluidBackground() {
     const image = context.createImageData(fieldWidth, fieldHeight);
     const styles = getComputedStyle(element);
     const palette = [
-      { token: "--flow-blue", fallback: [150, 150, 150] },
-      { token: "--flow-ice", fallback: [226, 226, 226] },
-      { token: "--flow-lilac", fallback: [248, 248, 248] },
-      { token: "--flow-white", fallback: [252, 252, 252] },
+      { token: "--flow-blue", fallback: [128, 128, 128] },
+      { token: "--flow-ice", fallback: [218, 218, 218] },
+      { token: "--flow-lilac", fallback: [240, 240, 240] },
+      { token: "--flow-white", fallback: [248, 248, 248] },
     ];
     const colors = palette.map(({ token, fallback }) => {
       const channels = styles.getPropertyValue(token).trim().split(/\s+/).map(Number);
@@ -42,10 +42,10 @@ export function FluidBackground() {
           const v = y / fieldHeight;
           const warpX = u + .2 * Math.sin(v * 4.8 + time);
           const warpY = v + .18 * Math.cos(u * 5.2 - time * .8);
-          const wave = (Math.sin(warpX * 5.4 + time) + Math.cos(warpY * 4.3 - time * 1.2) + 2) / 4;
+          const wave = (Math.sin(warpX * 3.2 + time) + Math.cos(warpY * 2.8 - time * 1.2) + 2) / 4;
           const flow = warpX * .8 + warpY + .12 * Math.sin(warpX * 8 - time);
-          const fold = Math.pow((Math.sin(flow * 9 - time * .7) + 1) / 2, 4);
-          const shimmer = Math.sin(flow * 54 - time * 1.4) * .025 * fold;
+          const fold = Math.pow((Math.sin(flow * 4.5 - time * .7) + 1) / 2, 4);
+          const shimmer = Math.sin(flow * 30 - time * 1.4) * .025 * fold;
           const blue = colors[0];
           const ice = colors[1];
           const lilac = colors[2];

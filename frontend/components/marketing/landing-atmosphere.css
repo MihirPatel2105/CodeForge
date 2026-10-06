@@ -1,9 +1,9 @@
 .cf-landing-atmosphere {
   --relief-code: oklch(35% 0 0);
-  --flow-blue: 150 150 150;
-  --flow-ice: 226 226 226;
-  --flow-lilac: 248 248 248;
-  --flow-white: 252 252 252;
+  --flow-blue: 128 128 128;
+  --flow-ice: 218 218 218;
+  --flow-lilac: 240 240 240;
+  --flow-white: 248 248 248;
   --relief-white: oklch(100% 0 0);
   --relief-code-rule: oklch(91% 0 0);
   --relief-note-shadow: oklch(20% .01 255 / .06);
@@ -45,7 +45,7 @@
   overflow: clip;
   pointer-events: none;
   opacity: var(--relief-opacity, 1);
-  mask-image: linear-gradient(to bottom, white 65%, transparent);
+  mask-image: linear-gradient(to bottom, white 70%, transparent);
 }
 .cf-landing-atmosphere .hero-pointer-background canvas {
   position: absolute;
