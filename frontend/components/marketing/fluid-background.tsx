@@ -15,12 +15,14 @@ export function FluidBackground() {
     if (!element) return;
     const context = element.getContext("2d", { alpha: false });
     if (!context) return;
-    element.width = 160;
-    element.height = 90;
-    const image = context.createImageData(160, 90);
+    const fieldWidth = 240;
+    const fieldHeight = 135;
+    element.width = fieldWidth;
+    element.height = fieldHeight;
+    const image = context.createImageData(fieldWidth, fieldHeight);
     const styles = getComputedStyle(element);
     const palette = [
-      { token: "--flow-blue", fallback: [225, 225, 225] },
+      { token: "--flow-blue", fallback: [200, 200, 200] },
       { token: "--flow-ice", fallback: [246, 246, 246] },
       { token: "--flow-lilac", fallback: [239, 239, 239] },
       { token: "--flow-white", fallback: [252, 252, 252] },
@@ -34,23 +36,24 @@ export function FluidBackground() {
     let lastDraw = 0;
     const draw = (now: number) => {
       const time = reducedMotion ? 0 : now * .00014;
-      for (let y = 0; y < 90; y++) {
-        for (let x = 0; x < 160; x++) {
-          const u = x / 160;
-          const v = y / 90;
+      for (let y = 0; y < fieldHeight; y++) {
+        for (let x = 0; x < fieldWidth; x++) {
+          const u = x / fieldWidth;
+          const v = y / fieldHeight;
           const warpX = u + .2 * Math.sin(v * 4.8 + time);
           const warpY = v + .18 * Math.cos(u * 5.2 - time * .8);
           const wave = (Math.sin(warpX * 5.4 + time) + Math.cos(warpY * 4.3 - time * 1.2) + 2) / 4;
-          const fold = Math.pow((Math.sin((warpX + warpY) * 7 - time * 1.7) + 1) / 2, 3);
-          const shimmer = Math.sin((warpX * .8 + warpY) * 38 + time * 2) * .018;
+          const flow = warpX * .8 + warpY + .12 * Math.sin(warpX * 8 - time);
+          const fold = Math.pow((Math.sin(flow * 9 - time * .7) + 1) / 2, 4);
+          const shimmer = Math.sin(flow * 54 - time * 1.4) * .025 * fold;
           const blue = colors[0];
           const ice = colors[1];
           const lilac = colors[2];
           const white = colors[3];
-          // Keep motion at the edges so it never competes with the hero copy.
+          // Broad silver folds frame a brighter centre beneath the hero copy.
           const edge = Math.pow(Math.min(1, Math.abs(u - .5) * 2), 1.6);
-          const visibility = .12 + edge * .65;
-          const index = (y * 160 + x) * 4;
+          const visibility = .35 + edge * .65;
+          const index = (y * fieldWidth + x) * 4;
           for (let channel = 0; channel < 3; channel++) {
             const base = blue[channel] * (1 - wave) + ice[channel] * wave;
             const folded = base * (1 - fold * .5) + lilac[channel] * fold * .5;

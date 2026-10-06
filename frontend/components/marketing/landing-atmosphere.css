@@ -1,6 +1,6 @@
 .cf-landing-atmosphere {
   --relief-code: oklch(35% 0 0);
-  --flow-blue: 225 225 225;
+  --flow-blue: 200 200 200;
   --flow-ice: 246 246 246;
   --flow-lilac: 239 239 239;
   --flow-white: 252 252 252;
@@ -58,7 +58,7 @@
   inset: -12px;
   width: calc(100% + 24px);
   height: calc(100% + 24px);
-  filter: blur(9px);
+  filter: blur(4px);
 }
 @media (max-width: 600px) {
 
