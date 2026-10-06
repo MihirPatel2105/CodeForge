@@ -67,7 +67,7 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
 
   return (
     <section className="mt-5 overflow-hidden rounded-3xl border border-warn-bd bg-surface shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
-      <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-[#fffaf3] px-5 py-4 sm:px-6">
+      <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-warn-soft px-5 py-4 sm:px-6">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
           <ShieldCheck className="h-5 w-5" aria-hidden />
         </span>

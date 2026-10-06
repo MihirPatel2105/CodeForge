@@ -71,6 +71,6 @@
 }
 
 .dark .cf-landing-atmosphere {
- --flow-blue: 24 24 24; --flow-ice: 42 42 42; --flow-lilac: 32 32 32; --flow-white: 48 48 48;
+ --flow-blue: 0 0 0; --flow-ice: 12 12 12; --flow-lilac: 5 5 5; --flow-white: 16 16 16;
  --relief-white: var(--surface); --relief-code: #a3a3a3; --relief-note-rule: var(--border);
 }

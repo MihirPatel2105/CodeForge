@@ -75,7 +75,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         </div>
       )}
 
-      <div className="relative min-h-0 flex-1 bg-[#fbfcff]">
+      <div className="relative min-h-0 flex-1 bg-surface">
         <div
           ref={viewportRef}
           onScroll={handleScroll}

@@ -119,7 +119,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface sm:flex-row">
       {/* File rail */}
-      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-[#f7f9fd] sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
+      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-bg sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <span className="text-[12px] font-[650] text-fg-muted">Generated files</span>
           <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-[650] text-fg-faint" aria-label={`${files.length} ${files.length === 1 ? "file" : "files"}`}>{files.length}</span>

@@ -164,7 +164,7 @@ export function OutcomeShowcase() {
             </div>
 
             <div className="grid min-h-[350px] sm:grid-cols-[10.5rem_minmax(0,1fr)]">
-              <div className="min-w-0 border-b border-rule bg-[#f7f9fd] px-3 py-4 sm:border-b-0 sm:border-r">
+              <div className="min-w-0 border-b border-rule bg-bg px-3 py-4 sm:border-b-0 sm:border-r">
                 <span className="px-2 text-[11px] font-[650] text-fg-muted">Generated files</span>
                 <ul className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-1">
                   {FILES.map((file) => {
