@@ -48,3 +48,24 @@
   .account-main .cf-identity-metrics dd { font-size: 24px; }
   .account-main .cf-settings-nav a { padding: 8px 10px; font-size: 11px; }
 }
+
+.profile-summary { padding: 8px 0 0; }
+.profile-identity { display: flex; gap: 22px; align-items: center; padding: 16px 0 28px; }
+.profile-avatar { width: 64px; height: 64px; flex-shrink: 0; display: grid; place-items: center; background: var(--accent-soft); border: 1px solid var(--border); border-radius: 14px; font-size: 22px; font-weight: 650; }
+.profile-name { margin: 0; font-size: 30px; font-weight: 650; letter-spacing: -.04em; line-height: 1.2; overflow-wrap: anywhere; }
+.profile-email { margin-top: 6px; font-size: 14px; color: var(--fg-muted); overflow-wrap: anywhere; }
+.profile-membership { margin-top: 8px; font-size: 12px; color: var(--fg-faint); }
+.account-main .profile-summary .cf-identity-metrics { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.account-main .profile-summary .cf-identity-metrics > div { padding: 18px 24px; gap: 10px; }
+.account-main .profile-summary .cf-identity-metrics > div > div > span { display: none; }
+.account-main .profile-summary .cf-identity-metrics dd { font-size: 26px; }
+.profile-details > section { border: 0; border-radius: 0; background: var(--surface); }
+.profile-details > section > div { padding: 0 0 16px; }
+.profile-details h2 { margin-top: 0; font-size: 20px; }
+.profile-details dl { padding: 0; }
+@media (max-width: 760px) {
+ .profile-identity { gap: 16px; align-items: flex-start; }
+ .profile-name { font-size: 25px; }
+ .account-main .profile-summary .cf-identity-metrics > div { padding: 16px 12px; }
+ .profile-membership { line-height: 1.5; }
+}

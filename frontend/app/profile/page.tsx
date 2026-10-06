@@ -3,17 +3,10 @@
 import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
-  ArrowRight,
-  ClipboardList,
   FolderKanban,
-  LayoutDashboard,
   PlayCircle,
-  ServerCog,
-  Settings,
   ShieldCheck,
-  ShieldOff,
   Users,
 } from "lucide-react";
 import { AccountShell } from "@/components/account/account-shell";
@@ -95,51 +88,15 @@ export default function ProfilePage() {
 
   return (
     <AccountShell page="profile">
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <span className="text-[13px] font-[650] text-accent">Your account</span>
-          <Link
-            href="/profile/settings"
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3.5 text-[13px] font-[650] text-fg transition-colors hover:border-border-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            Account settings
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
-
-        <section className="cf-account-hero relative overflow-hidden rounded-3xl border border-border bg-surface">
-          <div className="cf-identity-stage grid">
-            <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-[12px] font-[650] text-fg-muted">
-                  <ShieldCheck className="h-3 w-3" aria-hidden />
-                  {isAdmin ? "Platform administrator" : "Account overview"}
-                </span>
-
-                <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-7">
-                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-[21px] font-[700] text-accent sm:h-20 sm:w-20 sm:text-[25px]">
-                    {user?.initials ?? "—"}
-                  </span>
-                  <div className="min-w-0">
-                    <p className={LABEL}>{isAdmin ? "Operator profile" : "Profile"}</p>
-                    <h1 className="font-display mt-1 break-words text-[29px] font-[700] leading-tight tracking-[-0.05em] text-fg sm:text-[34px] md:text-[38px]">
-                      {user?.displayName ?? "Loading…"}
-                    </h1>
-                    {user && user.displayName !== user.email && (
-                      <p className="mt-2 break-all text-[13px] text-fg-muted">
-                        {user.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <p className="mt-7 max-w-[52ch] text-[14px] leading-[1.6] text-fg-muted">
-                {isAdmin
-                  ? "Your operator identity, platform activity, and protected account controls in one place."
-                  : "A clear view of your account and workspace activity."}
-              </p>
+        <section className="profile-summary">
+          <div className="profile-identity">
+            <span className="profile-avatar" aria-hidden>{user?.initials ?? "—"}</span>
+            <div className="min-w-0">
+              <h1 className="profile-name">{user?.displayName ?? "Loading…"}</h1>
+              {user && user.displayName !== user.email && <p className="profile-email">{user.email}</p>}
+              <p className="profile-membership">{isAdmin ? "Platform administrator · " : ""}Member since {user ? formatWhen(user.created_at) : "—"}</p>
             </div>
-
+          </div>
             <dl aria-label="Activity summary" aria-busy={activityLoading} className="cf-identity-metrics grid border-t border-border sm:grid-cols-3">
               <ProfileMetric
                 icon={isAdmin ? Users : FolderKanban}
@@ -159,7 +116,6 @@ export default function ProfilePage() {
                 bordered
               />
             </dl>
-          </div>
         </section>
 
         {error && (
@@ -171,10 +127,9 @@ export default function ProfilePage() {
           </div></Notice>
         )}
 
-        <div className="cf-account-content mt-6 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
+        <div className="profile-details mt-8">
           <section className="rounded-3xl border border-border bg-surface">
             <div className="border-b border-rule px-6 py-5">
-              <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
               <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                 {isAdmin ? "Administrator identity" : "Personal details"}
               </h2>
@@ -184,47 +139,12 @@ export default function ProfilePage() {
               <DetailRow label="Last name" value={user?.last_name || "—"} />
               <DetailRow label="Email address" value={user?.email ?? "—"} mono />
               {isAdmin ? <DetailRow label="Role" value="Platform administrator" /> : null}
-              <DetailRow label="Two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} />
-              <DetailRow
-                label="Member since"
-                value={user ? formatWhen(user.created_at) : "—"}
-                mono
-                last
-              />
+              <DetailRow label="Two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} last />
+
             </dl>
           </section>
 
-          <section className="rounded-3xl border border-border bg-surface">
-            <div className="border-b border-rule px-6 py-5">
-              <span className={LABEL}>Quick access</span>
-              <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
-                {isAdmin ? "Operate CodeForge" : "Manage your workspace"}
-              </h2>
-            </div>
-            <div className="p-3">
-              {isAdmin ? (
-                <>
-                  <AccountLink href="/admin" icon={LayoutDashboard} title="Admin control centre" description="Open the platform overview and operator attention queue." />
-                  <AccountLink href="/admin/system" icon={ServerCog} title="System health" description="Check services and recent model-provider observations." />
-                  <AccountLink href="/admin/audit" icon={ClipboardList} title="Audit log" description="Review sensitive administrator actions and their reasons." />
-                </>
-              ) : (
-                <AccountLink href="/projects" icon={FolderKanban} title="Projects" description="Open your APIs, previous runs, and generated files." />
-              )}
-              <AccountLink
-                href="/profile/settings"
-                icon={Settings}
-                title="Security settings"
-                description="Change your password and manage active sessions."
-              />
-              <AccountLink
-                href="/profile/settings/2fa"
-                icon={user?.totp_enabled ? ShieldCheck : ShieldOff}
-                title="Two-factor authentication"
-                description={user?.totp_enabled ? "Authenticator codes are on. Manage your setup." : "Add authenticator codes to protect your account."}
-              />
-            </div>
-          </section>
+
         </div>
 
     </AccountShell>
@@ -287,38 +207,5 @@ function ProfileMetric({
         {value}
       </dd>
     </div>
-  );
-}
-
-function AccountLink({
-  href,
-  icon: Icon,
-  title,
-  description,
-}: {
-  href: string;
-  icon: typeof FolderKanban;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-4 rounded-xl border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
-        <Icon className="h-4 w-4 text-accent" aria-hidden />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-[650] text-fg">{title}</span>
-        <span className="mt-1 block text-[12.5px] leading-[1.45] text-fg-muted">
-          {description}
-        </span>
-      </span>
-      <ArrowRight
-        className="h-4 w-4 shrink-0 text-fg-faint transition-transform group-hover:translate-x-0.5 group-hover:text-fg"
-        aria-hidden
-      />
-    </Link>
   );
 }
