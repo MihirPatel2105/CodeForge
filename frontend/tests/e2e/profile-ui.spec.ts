@@ -32,12 +32,20 @@ test("profile recovers activity and exposes two-factor settings", async ({ page 
   await page.getByRole("button", { name: "Retry activity" }).click();
   await expect(page.getByText("Couldn't load your activity.")).toHaveCount(0);
   await expect(page.locator('dl[aria-label="Activity summary"]')).toHaveAttribute("aria-busy", "false");
-  await expect(page.getByRole("link", { name: /two-factor authentication/i })).toHaveAttribute("href", "/profile/settings/2fa");
+  await expect(page.getByRole("link", { name: "Settings", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: /two-factor authentication/i })).toHaveCount(0);
   await expect(page.getByText("Off", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole("heading", { level: 1, name: "Regular User" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
   expect(requests).toBe(2);
+
+  await page.route("**/api/backend/auth/devices", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
+  await expect(page).toHaveURL(/\/profile\/settings$/);
+  await expect(page.getByRole("link", { name: "Set up 2FA", exact: true })).toHaveAttribute("href", "/profile/settings/2fa");
+  await page.getByRole("link", { name: "Set up 2FA", exact: true }).click();
+  await expect(page).toHaveURL(/\/profile\/settings\/2fa$/);
 });
 
 test("sign out finishes on the first click when the server revoked the session but the response failed", async ({ page }) => {
