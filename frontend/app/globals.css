@@ -32,7 +32,7 @@
   --color-card-foreground: var(--fg);
   --color-popover: var(--surface);
   --color-popover-foreground: var(--fg);
-  /* Approved premium UI: blue primary actions; state colors remain semantic. */
+  /* Approved premium UI: monochrome primary actions; state colors remain semantic. */
   --color-primary: var(--accent);
   --color-primary-foreground: var(--surface);
   --color-secondary: var(--surface-2);
@@ -104,18 +104,18 @@
   --font-mono-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-display-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 
-  --bg: #f7f8fb;
+  --bg: #f8f8f8;
   --surface: #ffffff;
-  --surface-2: #f3f5f9;
-  --fg: #172033;
-  --fg-muted: #526073;
-  --fg-faint: #657285;
-  --border: #e2e7ef;
-  --border-strong: #cbd4e1;
+  --surface-2: #f4f4f4;
+  --fg: #171717;
+  --fg-muted: #575757;
+  --fg-faint: #6b6b6b;
+  --border: #e5e5e5;
+  --border-strong: #cccccc;
 
-  --accent: #2457d6;
-  --accent-soft: #edf3ff;
-  --accent-bd: #b8ccff;
+  --accent: #171717;
+  --accent-soft: #f1f1f1;
+  --accent-bd: #c9c9c9;
 
   --ok: #0f7a55;
   --ok-soft: #e7f5ee;
@@ -134,7 +134,7 @@
   --loop-soft: #f3edff;
   --loop-bd: #d6c4fa;
 
-  --code-bg: #fbfcff;
+  --code-bg: #fcfcfc;
   --code-fg: #24272c;
   --code-kw: #7c3aed;
   --code-str: #0f7a55;
@@ -150,8 +150,8 @@
   --term-dim: #6b727c;
   --term-bg: #14161a;
 
-  --ink-accent: #172033;
-  --rule: #e2e7ef;
+  --ink-accent: #171717;
+  --rule: #e5e5e5;
 
   --radius: 12px;
 }
@@ -196,9 +196,9 @@
   --border-strong: #3a414b;
   --rule: #2a2f37;
 
-  --accent: #85a7ff;
-  --accent-soft: #142b4d;
-  --accent-bd: #315d91;
+  --accent: #f5f5f5;
+  --accent-soft: #262626;
+  --accent-bd: #525252;
 
   --ok: #4fd1a0;
   --ok-soft: #0f2a20;
@@ -309,7 +309,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 86% 42%, rgba(63, 71, 201, 0.09), transparent 34rem),
-    linear-gradient(180deg, #ffffff, #f7f8fb);
+    linear-gradient(180deg, #ffffff, #f8f8f8);
 }
 
 .cf-home-hero::after {
@@ -327,7 +327,7 @@
 }
 
 .cf-home-output {
-  --code-bg: #fbfcff;
+  --code-bg: #fcfcfc;
   --code-fg: #273244;
   --code-kw: #6943ad;
   --code-str: #147a62;
@@ -1495,3 +1495,6 @@ a.cf-marketing-action:active svg { transform: none; }
     animation: cfFade var(--cf-motion-fast) var(--cf-motion-ease);
   }
 }
+
+/* Native checkboxes and radios follow the product action palette. */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }

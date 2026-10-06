@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LandingAtmosphere } from "@/components/marketing/landing-atmosphere";
 import { PremiumLanding } from "@/components/marketing/premium-landing";
 
 export const metadata: Metadata = {
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  return <PremiumLanding />;
+  return <LandingAtmosphere><PremiumLanding /></LandingAtmosphere>;
 }
