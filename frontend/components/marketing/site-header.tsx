@@ -5,7 +5,6 @@ import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motionSpring } from "@/lib/motion-tokens";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { AttentionInbox } from "@/components/dashboard/attention-inbox";
@@ -18,26 +17,9 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
-  const isLandingPage = pathname === "/";
   const { user, loading } = useSession();
-  const [floating, setFloating] = useState(false);
-
-  useEffect(() => {
-    if (!isLandingPage) return;
-
-    let frame = 0;
-    const update = () => { frame = 0; setFloating(window.scrollY > 48); };
-    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.cancelAnimationFrame(frame);
-    };
-  }, [isLandingPage]);
-
   return (
-    <header className="cf-site-header sticky top-0 z-20 h-16" data-floating={isLandingPage && floating}>
+    <header className="cf-site-header sticky top-0 z-20 h-16">
       <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
         <MotionLink {...pressMotion}

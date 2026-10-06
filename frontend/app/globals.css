@@ -1236,7 +1236,7 @@
   background-image: none;
 }
 
-/* Keep the header's flow height fixed while its surface becomes a floating bar. */
+/* Keep the full-width header at a fixed height. */
 .cf-site-header-bar {
   position: absolute;
   top: 0;
@@ -1245,22 +1245,13 @@
   border-radius: 0;
   transition: top 420ms cubic-bezier(.22,1,.36,1), left 420ms cubic-bezier(.22,1,.36,1), right 420ms cubic-bezier(.22,1,.36,1), border-radius 420ms cubic-bezier(.22,1,.36,1), box-shadow 420ms cubic-bezier(.22,1,.36,1), border-color 420ms;
 }
-.cf-site-header[data-floating=true] .cf-site-header-bar {
-  top: 12px;
-  left: max(16px, calc((100% - 1200px) / 2));
-  right: max(16px, calc((100% - 1200px) / 2));
-  border-radius: 24px;
-  border-color: var(--rule);
-  box-shadow: 0 12px 36px -18px rgba(20,22,26,.25), 0 2px 8px rgba(20,22,26,.04);
-}
 @media (max-width: 600px) {
-  .cf-site-header[data-floating=true] .cf-site-header-bar { top: 8px; left: 8px; right: 8px; border-radius: 20px; }
   .cf-site-header-bar .h-16 { padding-left: 12px; padding-right: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .cf-site-header-bar { transition: none; } }
 
-/* Only the inner navigation surface is painted, leaving floating gutters clear. */
-header.cf-site-header[data-floating] {
+/* Only the inner navigation surface is painted. */
+header.cf-site-header {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
