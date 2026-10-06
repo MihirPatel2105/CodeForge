@@ -20,7 +20,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AppHeader } from "@/components/dashboard/app-header";
+import { AccountShell } from "@/components/account/account-shell";
 import { DeleteAccountDialog } from "@/components/auth/delete-account-dialog";
 import { DeviceList } from "@/components/auth/device-list";
 import { useSession } from "@/lib/use-current-user";
@@ -91,10 +91,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="cf-account min-h-screen bg-bg">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
+    <AccountShell page="settings">
         <Link
           href="/profile"
           className="inline-flex min-h-10 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -129,11 +126,11 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <div className="cf-settings-layout mt-12">
+        <div className="cf-settings-layout mt-6">
         <nav aria-label="Settings sections" className="cf-settings-nav flex flex-wrap gap-2">
           {[
-            { href: "#sessions", label: "Sessions and devices" },
             { href: "#sign-in-methods", label: "Sign-in methods" },
+            { href: "#sessions", label: "Sessions and devices" },
             { href: "#account", label: "Account" },
           ].map(({ href, label }) => (
             <a key={href} href={href} className="inline-flex min-h-10 items-center rounded-3xl border border-border bg-surface px-4 text-[13px] font-[600] text-fg-muted transition-colors hover:border-accent-bd hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
@@ -158,9 +155,7 @@ export default function SettingsPage() {
                     Platform administrator
                   </h2>
                   <p className="mt-2 max-w-[66ch] text-[13px] leading-[1.6] text-fg-muted">
-                    This account is authorized by the server&apos;s admin email
-                    allowlist. Admin API access still requires a valid signed-in
-                    session.
+                    Manage platform operations through your protected administrator account.
                   </p>
                 </div>
               </div>
@@ -186,13 +181,64 @@ export default function SettingsPage() {
         ) : null}
 
         <SectionHeading
+          id="sign-in-methods"
+          eyebrow="Authentication"
+          title="Sign-in methods"
+          description="Choose how you access CodeForge and add another layer of protection."
+        />
+
+        {user ? (
+          <section
+            aria-label="Sign-in methods"
+            className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface"
+          >
+            <ul className="divide-y divide-rule">
+              <SecurityMethodRow
+                icon={KeyRound}
+                label="Password"
+                title="Change your password"
+                description="Update your password. Your other sessions will be signed out."
+                href="/profile/settings/password"
+                action="Change password"
+              />
+              <SecurityMethodRow
+                icon={Fingerprint}
+                label="Passkeys"
+                title="Sign in without typing a password"
+                description="Add or remove passkeys for direct sign-in and password verification."
+                href="/profile/settings/passkeys"
+                action="Manage passkeys"
+              />
+              <SecurityMethodRow
+                icon={ShieldCheck}
+                label="Authenticator code"
+                title={
+                  user.totp_enabled
+                    ? "Authenticator codes are on"
+                    : "Add authenticator codes"
+                }
+                description={
+                  user.totp_enabled
+                    ? "Use a code after password sign-in, or choose a saved passkey instead."
+                    : "Add a time-based code as another verification method."
+                }
+                href="/profile/settings/2fa"
+                action={user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}
+                status={user.totp_enabled ? "On" : "Off"}
+                highlighted
+              />
+            </ul>
+          </section>
+        ) : null}
+
+        <SectionHeading
           id="sessions"
           eyebrow="Active access"
           title="Sessions and devices"
           description="See where your account is signed in and end sessions you no longer need."
         />
 
-        <div className="mt-4 grid items-start gap-5 lg:grid-cols-2">
+        <div className="mt-4 grid items-start gap-5 xl:grid-cols-2">
           <section className="rounded-3xl border border-border bg-surface">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
@@ -260,57 +306,6 @@ export default function SettingsPage() {
             <DeviceList />
           </section>
         </div>
-
-        <SectionHeading
-          id="sign-in-methods"
-          eyebrow="Authentication"
-          title="Sign-in methods"
-          description="Choose how you access CodeForge and add another layer of protection."
-        />
-
-        {user ? (
-          <section
-            aria-label="Sign-in methods"
-            className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface"
-          >
-            <ul className="divide-y divide-rule">
-              <SecurityMethodRow
-                icon={KeyRound}
-                label="Password"
-                title="Change your password"
-                description="Update your password. Your other sessions will be signed out."
-                href="/profile/settings/password"
-                action="Change password"
-              />
-              <SecurityMethodRow
-                icon={Fingerprint}
-                label="Passkeys"
-                title="Sign in without typing a password"
-                description="Add or remove passkeys for direct sign-in and password verification."
-                href="/profile/settings/passkeys"
-                action="Manage passkeys"
-              />
-              <SecurityMethodRow
-                icon={ShieldCheck}
-                label="Authenticator code"
-                title={
-                  user.totp_enabled
-                    ? "Authenticator codes are on"
-                    : "Add authenticator codes"
-                }
-                description={
-                  user.totp_enabled
-                    ? "Use a code after password sign-in, or choose a saved passkey instead."
-                    : "Add a time-based code as another verification method."
-                }
-                href="/profile/settings/2fa"
-                action={user.totp_enabled ? "Manage 2FA" : "Set up 2FA"}
-                status={user.totp_enabled ? "On" : "Off"}
-                highlighted
-              />
-            </ul>
-          </section>
-        ) : null}
 
         <SectionHeading
           id="account"
@@ -389,7 +384,7 @@ export default function SettingsPage() {
         </section>
         </div>
         </div>
-      </main>
+
 
       {confirming && user && !user.is_admin && (
         <DeleteAccountDialog
@@ -397,7 +392,7 @@ export default function SettingsPage() {
           onClose={() => setConfirming(false)}
         />
       )}
-    </div>
+    </AccountShell>
   );
 }
 

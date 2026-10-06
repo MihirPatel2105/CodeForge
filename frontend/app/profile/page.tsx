@@ -16,7 +16,7 @@ import {
   ShieldOff,
   Users,
 } from "lucide-react";
-import { AppHeader } from "@/components/dashboard/app-header";
+import { AccountShell } from "@/components/account/account-shell";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/use-current-user";
 import { api, getToken, ApiError } from "@/lib/api";
@@ -94,10 +94,7 @@ export default function ProfilePage() {
     activityLoading ? "…" : value === undefined ? "—" : String(value);
 
   return (
-    <div className="cf-account min-h-screen bg-bg">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-6 md:px-10 md:py-12 lg:px-14">
+    <AccountShell page="profile">
         <div className="mb-5 flex items-center justify-between gap-4">
           <span className="text-[13px] font-[650] text-accent">Your account</span>
           <Link
@@ -113,9 +110,9 @@ export default function ProfilePage() {
           <div className="cf-identity-stage grid">
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 md:p-10">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok">
+                <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-[12px] font-[650] text-fg-muted">
                   <ShieldCheck className="h-3 w-3" aria-hidden />
-                  {isAdmin ? "Platform administrator" : "Account protected"}
+                  {isAdmin ? "Platform administrator" : "Account overview"}
                 </span>
 
                 <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-7">
@@ -139,7 +136,7 @@ export default function ProfilePage() {
               <p className="mt-7 max-w-[52ch] text-[14px] leading-[1.6] text-fg-muted">
                 {isAdmin
                   ? "Your operator identity, platform activity, and protected account controls in one place."
-                  : "Your identity, workspace activity, and account controls in one place."}
+                  : "A clear view of your account and workspace activity."}
               </p>
             </div>
 
@@ -174,7 +171,7 @@ export default function ProfilePage() {
           </div></Notice>
         )}
 
-        <div className="cf-account-content mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
+        <div className="cf-account-content mt-6 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)]">
           <section className="rounded-3xl border border-border bg-surface">
             <div className="border-b border-rule px-6 py-5">
               <span className={LABEL}>{isAdmin ? "Operator record" : "Account record"}</span>
@@ -229,8 +226,8 @@ export default function ProfilePage() {
             </div>
           </section>
         </div>
-      </main>
-    </div>
+
+    </AccountShell>
   );
 }
 

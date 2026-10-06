@@ -709,46 +709,6 @@
   pointer-events: none;
 }
 
-/* Profile and settings share one calm account surface. The subtle grid keeps them
-   connected to the product without competing with forms and security controls. */
-.cf-account {
-  position: relative;
-  overflow-x: clip;
-  background:
-    radial-gradient(circle at 88% 6%, rgba(63, 71, 201, 0.065), transparent 30rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 32rem),
-    var(--bg);
-}
-
-.cf-account > header {
-  z-index: 40;
-  background: rgba(247, 248, 251, 0.88);
-  backdrop-filter: blur(14px) saturate(130%);
-}
-
-.cf-account-hero {
-  isolation: isolate;
-  background:
-    linear-gradient(112deg, rgba(255, 255, 255, 0.98) 0 58%, rgba(238, 240, 255, 0.74)),
-    var(--surface);
-}
-
-.cf-account-hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 25rem;
-  height: 25rem;
-  right: -6rem;
-  top: -12rem;
-  border: 1px solid rgba(67, 56, 202, 0.1);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 4rem rgba(67, 56, 202, 0.022),
-    0 0 0 8rem rgba(67, 56, 202, 0.016);
-  pointer-events: none;
-}
-
 /* Projects-only visual system. It shares the homepage's warm paper and indigo signal,
    while keeping the denser, operational character expected after sign-in. */
 .cf-projects {
