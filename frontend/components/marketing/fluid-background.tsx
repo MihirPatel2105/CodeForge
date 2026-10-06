@@ -20,9 +20,9 @@ export function FluidBackground() {
     const image = context.createImageData(160, 90);
     const styles = getComputedStyle(element);
     const palette = [
-      { token: "--flow-blue", fallback: [195, 195, 195] },
+      { token: "--flow-blue", fallback: [225, 225, 225] },
       { token: "--flow-ice", fallback: [246, 246, 246] },
-      { token: "--flow-lilac", fallback: [225, 225, 225] },
+      { token: "--flow-lilac", fallback: [239, 239, 239] },
       { token: "--flow-white", fallback: [252, 252, 252] },
     ];
     const colors = palette.map(({ token, fallback }) => {
@@ -33,7 +33,7 @@ export function FluidBackground() {
     let frame = 0;
     let lastDraw = 0;
     const draw = (now: number) => {
-      const time = reducedMotion ? 0 : now * .00035;
+      const time = reducedMotion ? 0 : now * .00014;
       for (let y = 0; y < 90; y++) {
         for (let x = 0; x < 160; x++) {
           const u = x / 160;
@@ -47,11 +47,15 @@ export function FluidBackground() {
           const ice = colors[1];
           const lilac = colors[2];
           const white = colors[3];
+          // Keep motion at the edges so it never competes with the hero copy.
+          const edge = Math.pow(Math.min(1, Math.abs(u - .5) * 2), 1.6);
+          const visibility = .12 + edge * .65;
           const index = (y * 160 + x) * 4;
           for (let channel = 0; channel < 3; channel++) {
             const base = blue[channel] * (1 - wave) + ice[channel] * wave;
             const folded = base * (1 - fold * .5) + lilac[channel] * fold * .5;
-            image.data[index + channel] = folded * .85 + white[channel] * .15 + shimmer * 255;
+            const silver = folded * .85 + white[channel] * .15 + shimmer * 100;
+            image.data[index + channel] = white[channel] * (1 - visibility) + silver * visibility;
           }
           image.data[index + 3] = 255;
         }
