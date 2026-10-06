@@ -1,5 +1,7 @@
 "use client";
 
+import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "lucide-react";
@@ -93,6 +95,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
+      <div className="mx-auto flex w-full max-w-[1600px] justify-end px-5 pt-4 sm:px-6"><DashboardThemeToggle /></div>
       <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
         <Link
           href="/"

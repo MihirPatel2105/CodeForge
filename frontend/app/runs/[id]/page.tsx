@@ -1,5 +1,7 @@
 "use client";
 
+import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
+
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -224,6 +226,7 @@ export default function LiveRunPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
+      <div className="mx-auto flex w-full max-w-[1600px] justify-end px-5 pt-4 sm:px-6"><DashboardThemeToggle /></div>
       <main data-run-flow-page className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
         <Link
           href="/projects"

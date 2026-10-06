@@ -1,6 +1,5 @@
 "use client";
 
-import { AppearanceControl } from "@/components/account/appearance-control";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -126,8 +125,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </section>
-
-        <AppearanceControl />
 
         <div className="cf-settings-layout mt-6">
         <nav aria-label="Settings sections" className="cf-settings-nav flex flex-wrap gap-2">
