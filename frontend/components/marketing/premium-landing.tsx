@@ -41,8 +41,8 @@ export function PremiumLanding() {
       <SiteHeader />
       <main id="landing-content">
         <section className="lp-hero" aria-labelledby="landing-title">
-          <p className="lp-intro">Your idea. Five agents. One API.</p>
-          <h1 id="landing-title">Good ideas deserve<br />to be built.</h1>
+          <p className="lp-intro">Five agents. One API. You in control.</p>
+          <h1 id="landing-title">Your idea.<br />A working API.</h1>
           <p className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</p>
           <div className="lp-actions">
             <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
