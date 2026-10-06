@@ -1,19 +1,11 @@
 .account-workspace { background: var(--surface); }
-.account-frame { display: grid; grid-template-columns: 232px minmax(0, 1fr); max-width: 1440px; margin: 0 auto; min-height: calc(100vh - 64px); }
-.account-sidebar { position: sticky; top: 64px; height: calc(100vh - 64px); display: flex; flex-direction: column; padding: 36px 20px; border-right: 1px solid var(--border); }
-.account-sidebar-identity { display: flex; gap: 12px; align-items: center; padding: 0 8px 30px; }
-.account-avatar { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: var(--accent); color: var(--surface); font-size: 13px; font-weight: 650; }
-.account-sidebar-identity strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
-.account-sidebar-identity div > span { display: block; margin-top: 4px; color: var(--fg-muted); font-size: 11px; }
-.account-nav-label { padding: 0 12px; margin-bottom: 12px; color: var(--fg-faint); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-.account-sidebar nav { display: grid; gap: 5px; }
-.account-sidebar a { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; color: var(--fg-muted); font-size: 12px; font-weight: 600; transition: background-color 180ms, color 180ms; }
-.account-sidebar a:hover { background: var(--surface-2); color: var(--fg); }
-.account-sidebar a[aria-current=page] { background: var(--accent-soft); color: var(--fg); }
-.account-sidebar a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.account-sidebar-footer { margin-top: auto; padding-top: 32px; }
-.account-sidebar-footer p { margin: 12px; color: var(--fg-faint); font-size: 11px; }
-.account-main { min-width: 0; padding: 40px 48px 72px; }
+.account-frame { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+.account-tabs { display: flex; gap: 28px; border-bottom: 1px solid var(--border); margin-top: 24px; }
+.account-tabs a { position: relative; padding: 16px 2px; color: var(--fg-muted); font-size: 14px; font-weight: 600; }
+.account-tabs a[aria-current=page] { color: var(--fg); }
+.account-tabs a[aria-current=page]::after { content: ""; position: absolute; bottom: -1px; height: 2px; background: var(--accent); left: 0; right: 0; }
+.account-tabs a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.account-main { min-width: 0; padding: 32px 0 64px; }
 .account-main > div:first-child { margin-bottom: 24px; }
 .account-main .cf-account-hero { background: var(--surface); border-radius: 16px; border-color: var(--border); }
 .account-main .cf-account-hero::before { display: none; }
@@ -35,20 +27,20 @@
 .account-main .cf-settings-layout h3 { font-size: 18px; }
 .account-main .cf-settings-layout section[aria-label="Sign-in methods"] li { padding: 24px; }
 .account-main .cf-settings-layout section[aria-label="Sign-in methods"] a { border-radius: 8px; font-size: 12px; }
-@media (max-width: 1100px) {
-  .account-frame { grid-template-columns: 210px minmax(0, 1fr); }
-  .account-main { padding: 32px 28px 56px; }
-  .account-main .cf-account-content { grid-template-columns: 1fr; }
-}
+
+.account-main .cf-settings-layout { display: block; }
+.account-main .cf-settings-nav { position: static; display: flex; flex-direction: row; flex-wrap: wrap; width: auto; margin-bottom: 24px; }
+.account-main .cf-settings-nav a { min-height: 36px; }
+.account-main--profile .cf-account-hero { border: 1px solid var(--border); }
+.account-main--profile .cf-account-content > section { border: 1px solid var(--border); }
+.account-main--settings .cf-account-hero { padding: 8px 0 28px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.account-main .cf-identity-stage > div { padding: 28px 32px; }
 @media (max-width: 760px) {
-  .account-frame { display: block; }
-  .account-sidebar { position: static; height: auto; padding: 14px 20px; border-right: 0; border-bottom: 1px solid var(--border); }
-  .account-sidebar-identity, .account-nav-label, .account-sidebar-footer { display: none; }
-  .account-sidebar nav { display: flex; overflow-x: auto; }
-  .account-sidebar a { white-space: nowrap; padding: 10px; font-size: 11px; }
-  .account-sidebar nav a:last-child { display: none; }
-  .account-main { padding: 24px 20px 48px; }
-  .account-main .cf-identity-stage > div, .account-main--settings .cf-account-hero { padding: 22px; }
+  .account-frame { padding: 0 20px; }
+  .account-tabs { margin-top: 12px; }
+  .account-main { padding: 24px 0 48px; }
+  .account-main .cf-account-content { grid-template-columns: 1fr; }
+  .account-main .cf-identity-stage > div { padding: 22px; }
   .account-main .cf-identity-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .account-main .cf-identity-metrics > div { padding: 16px 12px; border-top: 0; }
   .account-main .cf-identity-metrics > div + div { border-left: 1px solid var(--border); }
@@ -56,4 +48,3 @@
   .account-main .cf-identity-metrics dd { font-size: 24px; }
   .account-main .cf-settings-nav a { padding: 8px 10px; font-size: 11px; }
 }
-@media (prefers-reduced-motion: reduce) { .account-sidebar a { transition: none; } }
