@@ -22,9 +22,9 @@ export function FluidBackground() {
     const image = context.createImageData(fieldWidth, fieldHeight);
     const styles = getComputedStyle(element);
     const palette = [
-      { token: "--flow-blue", fallback: [200, 200, 200] },
-      { token: "--flow-ice", fallback: [246, 246, 246] },
-      { token: "--flow-lilac", fallback: [239, 239, 239] },
+      { token: "--flow-blue", fallback: [150, 150, 150] },
+      { token: "--flow-ice", fallback: [226, 226, 226] },
+      { token: "--flow-lilac", fallback: [248, 248, 248] },
       { token: "--flow-white", fallback: [252, 252, 252] },
     ];
     const colors = palette.map(({ token, fallback }) => {
@@ -35,7 +35,7 @@ export function FluidBackground() {
     let frame = 0;
     let lastDraw = 0;
     const draw = (now: number) => {
-      const time = reducedMotion ? 0 : now * .00014;
+      const time = reducedMotion ? 0 : now * .00028;
       for (let y = 0; y < fieldHeight; y++) {
         for (let x = 0; x < fieldWidth; x++) {
           const u = x / fieldWidth;
@@ -52,12 +52,12 @@ export function FluidBackground() {
           const white = colors[3];
           // Broad silver folds frame a brighter centre beneath the hero copy.
           const edge = Math.pow(Math.min(1, Math.abs(u - .5) * 2), 1.6);
-          const visibility = .35 + edge * .65;
+          const visibility = .65 + edge * .35;
           const index = (y * fieldWidth + x) * 4;
           for (let channel = 0; channel < 3; channel++) {
             const base = blue[channel] * (1 - wave) + ice[channel] * wave;
-            const folded = base * (1 - fold * .5) + lilac[channel] * fold * .5;
-            const silver = folded * .85 + white[channel] * .15 + shimmer * 100;
+            const folded = base * (1 - fold * .8) + lilac[channel] * fold * .8;
+            const silver = folded * .95 + white[channel] * .05 + shimmer * 180;
             image.data[index + channel] = white[channel] * (1 - visibility) + silver * visibility;
           }
           image.data[index + 3] = 255;

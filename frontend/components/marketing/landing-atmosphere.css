@@ -1,8 +1,8 @@
 .cf-landing-atmosphere {
   --relief-code: oklch(35% 0 0);
-  --flow-blue: 200 200 200;
-  --flow-ice: 246 246 246;
-  --flow-lilac: 239 239 239;
+  --flow-blue: 150 150 150;
+  --flow-ice: 226 226 226;
+  --flow-lilac: 248 248 248;
   --flow-white: 252 252 252;
   --relief-white: oklch(100% 0 0);
   --relief-code-rule: oklch(91% 0 0);
