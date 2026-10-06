@@ -1381,7 +1381,7 @@ a.cf-marketing-action:active svg { transform: none; }
 .cf-logo-word { right: 0; width: 76%; background-size: 131.578947% 100%; background-position: right center; }
 .cf-logo-symbol::after, .cf-logo-word::after {
   content: ""; position: absolute; inset: 0; opacity: 0;
-  background: linear-gradient(110deg, transparent 35%, #3972ef 46%, #9bc2ff 50%, #3972ef 54%, transparent 65%);
+  background: linear-gradient(110deg, transparent 35%, #737373 46%, #e5e5e5 50%, #737373 54%, transparent 65%);
   background-size: 300% 100%; background-position: 100% 0;
   mask-image: var(--cf-logo-mask); -webkit-mask-image: var(--cf-logo-mask);
   mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
@@ -1390,7 +1390,7 @@ a.cf-marketing-action:active svg { transform: none; }
 .cf-logo-word::after { mask-size: 131.578947% 100%; -webkit-mask-size: 131.578947% 100%; mask-position: right center; -webkit-mask-position: right center; }
 @keyframes cfLogoPulse {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
-  40% { transform: scale(1.055); filter: drop-shadow(0 0 7px #3972ef40); }
+  40% { transform: scale(1.055); filter: drop-shadow(0 0 7px #17171726); }
 }
 @keyframes cfLogoSweep {
   0% { opacity: 0; background-position: 100% 0; }
