@@ -181,6 +181,20 @@
  * `--warn` for a pause, `--ok` for a pass and `--loop` for the loop moment, and the
  * light-ground versions of those are unreadable here.
  */
+::selection {
+  background: #000;
+  color: #fff;
+  text-shadow: none;
+}
+
+:root.dark ::selection,
+.cf-invert::selection,
+.cf-invert ::selection {
+  background: #fff;
+  color: #000;
+  text-shadow: none;
+}
+
 :root.dark, .cf-invert {
   --bg: #0d0f12;
   --surface: #15181d;
