@@ -51,7 +51,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <AuthEntryShell label={sent ? "Reset link requested" : "Request a password reset"} proof="recovery">
+    <AuthEntryShell label={sent ? "Reset link requested" : "Request a password reset"} proof="recovery" compact>
           {sent ? (
             <>
               <span className="grid h-12 w-12 place-items-center rounded-2xl border border-ok-bd bg-ok-soft text-ok">

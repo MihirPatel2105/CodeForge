@@ -3,12 +3,14 @@
 import { useEffect, useRef } from "react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { FluidBackground } from "./fluid-background";
+import { useTheme } from "next-themes";
 
 type TrailPoint = { x: number; y: number; time: number };
 
 export function PointerBackground({ hero }: { hero: HTMLElement }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const reducedMotion = useMotionPreference();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const element = canvas.current;
@@ -18,7 +20,8 @@ export function PointerBackground({ hero }: { hero: HTMLElement }) {
     let width = 0;
     let height = 0;
     let frame = 0;
-    let trail: TrailPoint[] = [];
+    const trail: TrailPoint[] = [];
+    let color = "";
     const symbols = ["GET", "{}", "POST", "200", "API", "</>", "JSON"];
     const columnSpacing = 42;
     const rowSpacing = 26;
@@ -30,15 +33,16 @@ export function PointerBackground({ hero }: { hero: HTMLElement }) {
       element.width = Math.round(width * ratio);
       element.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      color = getComputedStyle(element).color;
     };
     const draw = (now: number) => {
       frame = 0;
       context.clearRect(0, 0, width, height);
-      trail = trail.filter(point => now - point.time < 1000);
+      while (trail.length && now - trail[0].time >= 1000) trail.shift();
       if (!trail.length || document.hidden || window.scrollY > 340) return;
       context.font = "11px monospace";
       context.textAlign = "center";
-      context.fillStyle = getComputedStyle(element).color;
+      context.fillStyle = color;
       const latest = trail[trail.length - 1];
       const age = Math.min(1, (now - latest.time) / 1000);
       const radius = 24 + age * 40;
@@ -47,11 +51,22 @@ export function PointerBackground({ hero }: { hero: HTMLElement }) {
       ripple.addColorStop(1, "rgba(100, 100, 100, 0)");
       context.fillStyle = ripple;
       context.fillRect(latest.x - radius, latest.y - radius, radius * 2, radius * 2);
-      context.fillStyle = getComputedStyle(element).color;
-      for (let y = 13; y < height; y += rowSpacing) {
-        for (let x = 21; x < width; x += columnSpacing) {
+      context.fillStyle = color;
+      let left = width, right = 0, top = height, bottom = 0;
+      for (let index = 0; index < trail.length; index++) {
+        const point = trail[index];
+        left = Math.min(left, point.x - 64);
+        right = Math.max(right, point.x + 64);
+        top = Math.min(top, point.y - 64);
+        bottom = Math.max(bottom, point.y + 64);
+      }
+      const firstColumn = Math.max(0, Math.ceil((left - 21) / columnSpacing));
+      const firstRow = Math.max(0, Math.ceil((top - 13) / rowSpacing));
+      for (let y = 13 + firstRow * rowSpacing; y < Math.min(height, bottom); y += rowSpacing) {
+        for (let x = 21 + firstColumn * columnSpacing; x < Math.min(width, right); x += columnSpacing) {
           let strength = 0;
-          for (const point of trail) {
+          for (let index = 0; index < trail.length; index++) {
+            const point = trail[index];
             const distance = Math.hypot(x - point.x, y - point.y);
             if (distance < 64) {
               const age = 1 - (now - point.time) / 1000;
@@ -86,7 +101,7 @@ export function PointerBackground({ hero }: { hero: HTMLElement }) {
       cancelAnimationFrame(frame);
       context.clearRect(0, 0, width, height);
     };
-  }, [hero, reducedMotion]);
+  }, [hero, reducedMotion, resolvedTheme]);
 
   return <div className="hero-pointer-background" aria-hidden="true">
     <FluidBackground />

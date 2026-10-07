@@ -31,9 +31,15 @@ const questions = [
 
 export function PremiumLanding() {
   const user = useCurrentUser();
+  const reducedMotion = useMotionPreference();
   const [example, setExample] = useState(0);
   const demo = DEMO_RUNS[example];
   const start = user ? "/projects" : "/signup";
+  const entrance = (delay: number) => ({
+    initial: { opacity: 0, transform: "translateY(16px)" },
+    animate: { opacity: 1, transform: "none" },
+    transition: reducedMotion ? { duration: 0, delay: 0 } : { duration: 0.9, delay, ease: [0.22, 0.68, 0.25, 1] as const },
+  });
 
   return (
     <div className="cf-premium">
@@ -41,13 +47,13 @@ export function PremiumLanding() {
       <SiteHeader />
       <main id="landing-content">
         <section className="lp-hero" aria-labelledby="landing-title">
-          <p className="lp-intro">Five agents. One API. You in control.</p>
-          <h1 id="landing-title">Your idea.<br />A working API.</h1>
-          <p className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</p>
-          <div className="lp-actions">
+          <motion.p {...entrance(0)} className="lp-intro">Five agents. One API. You in control.</motion.p>
+          <motion.h1 {...entrance(0.08)} id="landing-title">Your idea.<br />A working API.</motion.h1>
+          <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
+          <motion.div {...entrance(0.24)} className="lp-actions">
             <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
-          </div>
+          </motion.div>
           <ProductScrollPreview>
             <div className="lp-product lp-pipeline">
               <PipelineWalkthrough key={demo.slug} demo={demo} example={example} onExampleChange={setExample} />

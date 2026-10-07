@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, ClipboardList, Code2, FlaskConical, Layers3, Pause, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { DEMO_RUNS, type DemoRun } from "@/lib/demo-runs";
+import { motion } from "motion/react";
+import { motionTransition } from "@/lib/motion-tokens";
 
 const stages = [
   { name: "PM", detail: "Defines the requirements", icon: ClipboardList },
@@ -49,13 +51,15 @@ export function PipelineWalkthrough({ demo, example, onExampleChange }: {
 
   useEffect(() => {
     if (!playing || !visible || reducedMotion || step === 8) return;
-    const timer = window.setTimeout(() => setStep(value => value + 1), step === 3 || step === 4 ? 2400 : 1800);
+    const timer = window.setTimeout(() => setStep(value => value + 1), step === 3 || step === 4 ? 2200 : 1200);
     return () => window.clearTimeout(timer);
   }, [playing, visible, reducedMotion, step]);
 
   const active = sequence[step];
   const finished = step === 8;
   const repair = step === 3 || step === 4;
+  const transition = reducedMotion ? { duration: 0 } : motionTransition;
+  const repairPhase = step < 3 ? 0 : step === 3 ? 1 : step === 4 ? 2 : 3;
 
   return (
     <div ref={root} className="lp-pipeline-content" aria-label="Example prompt to tested API walkthrough">
@@ -70,17 +74,25 @@ export function PipelineWalkthrough({ demo, example, onExampleChange }: {
           {stages.map((stage, index) => {
             const Icon = stage.icon;
             const state = finished || index < active ? "done" : index === active ? "active" : "waiting";
-            return <li key={stage.name} data-state={state} data-repair={repair && (index === 2 || index === 3)} aria-current={state === "active" ? "step" : undefined}>
+            return <motion.li key={stage.name} initial={false} animate={{ transform: !reducedMotion && state === "active" ? "translateY(-2px)" : "none" }} transition={transition} data-state={state} data-repair={repair && (index === 2 || index === 3)} aria-current={state === "active" ? "step" : undefined}>
               <div className="lp-stage-top"><span className="lp-stage-icon"><Icon size={21} strokeWidth={1.6} aria-hidden /></span><span className="lp-stage-number">0{index + 1}</span></div>
               <h3>{stage.name}</h3><p>{stage.detail}</p>
               <span className="lp-stage-state">{state === "done" ? <Check size={12} aria-hidden /> : <span className="lp-stage-dot" />}{state === "done" ? "Complete" : state === "active" ? repair && index === 2 ? "Repairing" : "Working" : "Up next"}</span>
               {index < 5 && <ArrowRight className="lp-stage-arrow" size={14} aria-hidden />}
-            </li>;
+            </motion.li>;
           })}
         </ol>
-        <div className="lp-pipeline-feedback" data-repair={repair}><RotateCcw size={14} aria-hidden /><span>Reviewer → Coder → Reviewer</span><span>{step < 3 ? "Feedback keeps the build moving." : repair ? "Missing response model → returned for repair" : "Response model fixed. Review passed."}</span></div>
+        <div className="lp-pipeline-feedback" data-repair={repair}>
+          <motion.span className="lp-feedback-icon" initial={false} animate={{ rotate: reducedMotion ? 0 : repairPhase * -120 }} transition={transition} aria-hidden><RotateCcw size={14} /></motion.span>
+          <span className="lp-feedback-route" aria-label="Reviewer → Coder → Reviewer">
+            <span data-current={repairPhase === 1}>Reviewer</span><ArrowRight size={11} aria-hidden />
+            <span data-current={repairPhase === 2}>Coder</span><ArrowRight size={11} aria-hidden />
+            <span data-current={repairPhase === 3}>Reviewer</span>
+          </span>
+          <motion.span key={repairPhase} initial={{ opacity: reducedMotion ? 1 : 0, transform: reducedMotion ? "none" : "translateY(4px)" }} animate={{ opacity: 1, transform: "none" }} transition={transition}>{step < 3 ? "Feedback keeps the build moving." : repair ? "Missing response model → returned for repair" : "Response model fixed. Review passed."}</motion.span>
+        </div>
         <div className="lp-pipeline-outcome" data-complete={finished}>
-          <div><span className="lp-outcome-icon">{finished ? <Check size={18} aria-hidden /> : <ArrowRight size={18} aria-hidden />}</span><div><strong>{finished ? `Tests passed · ${demo.tests}/${demo.tests}` : `${stages[active].name} · ${repair ? "review & repair" : "in progress"}`}</strong><p>{messages[step]}</p></div></div>
+          <div><span className="lp-outcome-icon">{finished ? <Check size={18} aria-hidden /> : <ArrowRight size={18} aria-hidden />}</span><motion.div key={step} initial={{ opacity: reducedMotion ? 1 : 0, transform: reducedMotion ? "none" : "translateY(4px)" }} animate={{ opacity: 1, transform: "none" }} transition={transition}><strong>{finished ? `Tests passed · ${demo.tests}/${demo.tests}` : `${stages[active].name} · ${repair ? "review & repair" : "in progress"}`}</strong><p>{messages[step]}</p></motion.div></div>
           <div className="lp-walkthrough-controls">{finished ? <Link href={`/demo/${demo.slug}`}>Inspect generated code<ArrowRight size={14} aria-hidden /></Link> : null}<MotionButton type="button" onClick={() => { if (finished) { setStep(0); setPlaying(true); } else setPlaying(value => !value); }} disabled={reducedMotion} aria-label={finished ? "Replay walkthrough" : playing ? "Pause walkthrough" : "Play walkthrough"}>{finished ? <RotateCcw size={15} aria-hidden /> : playing ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}{finished ? "Replay" : playing ? "Pause" : "Play"}</MotionButton></div>
         </div>
       </div>

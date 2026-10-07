@@ -677,3 +677,113 @@ plays once, stops at the result, and supports explicit replay and pause/resume;
 reduced motion shows the completed example without autoplay. The motion browser
 suite now covers these behaviors and runs in frontend CI. Build, lint, TypeScript,
 and all seven motion tests pass; both pages fit five widths from 320px to 1440px.
+
+### 2026-10-07 authorized homepage Motion refinement
+
+The hero copy and actions enter over 900ms with 80ms stagger gaps. Following visual
+feedback, the product preview also fades and rises over 900ms when it first enters
+the viewport. It grows through a Motion scroll transform inside a stable layout footprint;
+mobile and reduced-motion views keep it at full size. The example pipeline moves
+through routine stages faster and highlights Reviewer → Coder → Reviewer, while
+retaining play-once, pause, replay, and reduced-motion completion. Agent content
+now exits and enters sequentially with the existing spring selection indicator.
+The silver background draws fewer frames, uses a smaller mobile field, and backs
+off when drawing exceeds its frame budget; pointer glyphs scan only the trail area.
+
+Frontend lint, TypeScript, an isolated production build, and all ten motion browser
+tests pass. All five agent selections fit 1440px, 375px, and 320px without overflow
+or browser errors. In a three-second local Chrome check with 4x CPU throttling,
+scripting time fell from 708ms to 266ms at 1440px and from 690ms to 165ms at 375px.
+These synthetic development measurements are not real-device benchmarks or a
+MotionScore grade. This refinement does not close Phase 7's observer criterion.
+
+### 2026-10-07 authorized auth form transition
+
+Sign in and signup now share a persistent entry shell: the brand, story, and
+workspace preview remain mounted and stationary between the two URLs. The form
+card exits with a small 3D turn and fade, then enters from the other direction;
+its height adjusts without shifting the story. Mobile uses a short sideways fade,
+and reduced motion completes navigation immediately, including preference changes
+mid-transition. Native link destinations, modified clicks, browser Back, focus,
+registration verification, passkey, recovery, and MFA routes remain available.
+
+Lint, TypeScript, and the isolated production build pass. Twelve auth/recovery/MFA
+browser tests and the ten existing motion tests pass. Sign in and signup were
+visually checked at 1440px, 375px, and 320px with no overflow or browser errors.
+An isolated dev server resolved interference from two servers sharing `.next`;
+the reset test now mocks the destination's project requests to avoid a real
+backend 401 after its mocked password-reset response.
+
+Follow-up: a recording exposed severe intermediate-frame distortion despite
+correct endpoints. Interpolating `perspective(1200px)` against `none` reduced the
+perspective distance toward zero; the card reached 4076px wide at a 1440px
+viewport. Matching explicit transform functions now keeps perspective constant.
+The same runtime sample peaks at 519px (the normal card width). A regression
+samples every animation frame in both directions and bounds projected width and
+height within 10% of layout size. All four focused auth tests pass, including
+mobile and reduced-motion switching.
+
+Laptop-height auth layouts now use tighter desktop spacing, a smaller story
+headline, and 46px form controls. All content remains available with natural
+scrolling on mobile, short windows, and expanded error states. Both entry pages
+fit 1440x720, 1366x768, and 1024x768 without vertical or horizontal scrolling;
+viewport tests cover the submit controls and page footer.
+
+Spacing follow-up: the equal-width desktop grid made the sign-in card too wide
+and its padding too shallow. The shared stage now has a focused 500px form column,
+a responsive 40–80px column gap, and content that fills the card's padded area.
+Windows above 800px tall restore 28px vertical card padding and 14px field gaps;
+shorter laptops keep the compact spacing. Both forms also fit 1470x802, and the
+story position remains independent of the active form's height.
+
+Sign in now shares registration's desktop minimum card height, with its shorter
+content vertically centered. Minimum heights adapt to viewport height (600px on
+short laptops, 650px on medium-height windows). The transition measures the CSS
+minimum height alongside content height to avoid a jump at completion. Mobile
+retains natural content sizing. Both routes still fit the four tested desktop
+viewport sizes without scrolling.
+
+Further spacing correction removes vertical centering's blank header area.
+Sign in uses a slightly smaller minimum height than signup (590px versus 650px
+on medium-height desktops), a top-aligned heading, and 20px field spacing. The
+account switch sits near the bottom while the form no longer adds an automatic
+blank gap before the passkey section. Both routes retain laptop viewport fit.
+
+Auth headers now match the public navigation's 36px logo size, vertical position,
+container width, and responsive horizontal insets. Measured homepage/auth logo
+coordinates agree on desktop and mobile; content spacing remains independent of
+the header brand placement.
+
+Passkey sign in now participates in the persistent auth entry shell. Password →
+passkey and passkey → password use the same bounded 3D turn/fade as registration;
+modified link clicks retain native navigation. The left story, logo, and card
+remain mounted across all three entry routes. Focus goes to the passkey action
+after entry, while WebAuthn still starts only on an explicit action click. Page
+motion skips the shared passkey route to avoid fading the stationary story.
+Regression coverage includes both directions, browser Back, and intermediate
+animation geometry for the passkey card.
+
+Passkey sizing correction: the shared desktop minimum height now applies only
+to the account forms. The passkey card uses its natural content height, so the
+existing height animation shrinks into passkey and expands back into password
+sign in. Regression checks compare both heights and preserve the story geometry.
+
+Card resizing now uses a reserved desktop grid row with the card centered within
+it. Passkey contraction and password expansion move the top and bottom edges
+symmetrically; the left story remains top-aligned and stationary. Regression
+checks compare the password and passkey vertical centers alongside their heights.
+
+The left story now has wider gaps before the description and workspace preview,
+more vertical preview padding, and roomier workflow rows. Short laptop windows
+use a smaller spacing increase so the page continues to fit without scrolling.
+
+Forgot-password now opts into a compact recovery layout for desktop windows up
+to 900px tall. The centered card and recovery story use tighter padding and
+smaller headings while retaining the shared logo coordinates. Measured page
+bounds fit 1470x802, 1440x720, 1366x768, and 1024x768 without scrolling; mobile
+keeps the natural stacked layout.
+
+Final publication checks for the combined homepage and auth refinement: full
+frontend lint, TypeScript, isolated production build, and all 25 selected
+homepage/auth/recovery/MFA browser regressions pass. GitHub main was fetched and
+matched the local base before the explicitly authorized main commit and push.

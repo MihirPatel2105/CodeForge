@@ -15,8 +15,9 @@ export function FluidBackground() {
     if (!element) return;
     const context = element.getContext("2d", { alpha: false });
     if (!context) return;
-    const fieldWidth = 240;
-    const fieldHeight = 135;
+    const compact = window.matchMedia("(max-width: 600px), (pointer: coarse)").matches;
+    const fieldWidth = compact ? 160 : 240;
+    const fieldHeight = compact ? 90 : 135;
     element.width = fieldWidth;
     element.height = fieldHeight;
     const image = context.createImageData(fieldWidth, fieldHeight);
@@ -34,11 +35,19 @@ export function FluidBackground() {
     });
     let frame = 0;
     let lastDraw = 0;
+    let drawInterval = compact ? 80 : 50;
+    const horizontal = new Float32Array(fieldWidth);
+    const visibility = new Float32Array(fieldWidth);
+    for (let x = 0; x < fieldWidth; x++) {
+      horizontal[x] = x / fieldWidth;
+      visibility[x] = .65 + Math.pow(Math.abs(horizontal[x] - .5) * 2, 1.6) * .35;
+    }
+    const [blue, ice, lilac, white] = colors;
     const draw = (now: number) => {
       const time = reducedMotion ? 0 : now * .00028;
       for (let y = 0; y < fieldHeight; y++) {
         for (let x = 0; x < fieldWidth; x++) {
-          const u = x / fieldWidth;
+          const u = horizontal[x];
           const v = y / fieldHeight;
           const warpX = u + .2 * Math.sin(v * 4.8 + time);
           const warpY = v + .18 * Math.cos(u * 5.2 - time * .8);
@@ -46,19 +55,13 @@ export function FluidBackground() {
           const flow = warpX * .8 + warpY + .12 * Math.sin(warpX * 8 - time);
           const fold = Math.pow((Math.sin(flow * 4.5 - time * .7) + 1) / 2, 4);
           const shimmer = Math.sin(flow * 30 - time * 1.4) * .025 * fold;
-          const blue = colors[0];
-          const ice = colors[1];
-          const lilac = colors[2];
-          const white = colors[3];
           // Broad silver folds frame a brighter centre beneath the hero copy.
-          const edge = Math.pow(Math.min(1, Math.abs(u - .5) * 2), 1.6);
-          const visibility = .65 + edge * .35;
           const index = (y * fieldWidth + x) * 4;
           for (let channel = 0; channel < 3; channel++) {
             const base = blue[channel] * (1 - wave) + ice[channel] * wave;
             const folded = base * (1 - fold * .8) + lilac[channel] * fold * .8;
             const silver = folded * .95 + white[channel] * .05 + shimmer * 180;
-            image.data[index + channel] = white[channel] * (1 - visibility) + silver * visibility;
+            image.data[index + channel] = white[channel] * (1 - visibility[x]) + silver * visibility[x];
           }
           image.data[index + 3] = 255;
         }
@@ -68,8 +71,11 @@ export function FluidBackground() {
     const tick = (now: number) => {
       frame = 0;
       if (document.hidden || window.scrollY >= 340 || reducedMotion) return;
-      if (now - lastDraw >= 33) {
+      if (now - lastDraw >= drawInterval) {
+        const started = performance.now();
         draw(now);
+        // Back off when a frame consumes too much of the main-thread budget.
+        if (performance.now() - started > 6) drawInterval = 100;
         lastDraw = now;
       }
       frame = requestAnimationFrame(tick);

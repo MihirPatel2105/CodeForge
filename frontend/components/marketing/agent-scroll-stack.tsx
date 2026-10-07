@@ -2,8 +2,8 @@
 
 import { useId, useState } from "react";
 import { CircleCheck, type LucideIcon } from "lucide-react";
-import { LayoutGroup, motion } from "motion/react";
-import { motionSpring } from "@/lib/motion-tokens";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { motionSpring, motionEase } from "@/lib/motion-tokens";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 
 type Agent = {
@@ -19,7 +19,6 @@ type Agent = {
 
 export function AgentScrollStack({ agents }: { agents: Agent[] }) {
   const [selected, setSelected] = useState(0);
-  const [hasSwitched, setHasSwitched] = useState(false);
   const id = useId();
   const reducedMotion = useMotionPreference();
   const agent = agents[selected];
@@ -38,7 +37,6 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
             onClick={() => {
               if (index !== selected) {
                 setSelected(index);
-                setHasSwitched(true);
               }
             }}
           >
@@ -50,7 +48,15 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
         ))}
       </nav></LayoutGroup>
       <div id={`${id}-content`} aria-live="polite" aria-atomic="true">
-        <div key={agent.name} className={`lp-agent-content${hasSwitched ? " lp-agent-switched" : ""}`}>
+        <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          key={agent.name}
+          className="lp-agent-content"
+          initial={{ opacity: reducedMotion ? 1 : 0, transform: reducedMotion ? "none" : "translateY(6px)" }}
+          animate={{ opacity: 1, transform: "none" }}
+          exit={{ opacity: 0, transform: reducedMotion ? "none" : "translateY(-4px)", transition: { duration: reducedMotion ? 0 : 0.08 } }}
+          transition={{ duration: reducedMotion ? 0 : 0.2, ease: motionEase }}
+        >
           <div className="lp-agent-copy">
             <p className="lp-agent-phase">{String(selected + 1).padStart(2, "0")} / {agent.name}</p>
             <h3>{agent.verb}</h3>
@@ -71,7 +77,8 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
             </ul>
             {agent.model && <p className="lp-agent-model"><strong>Book</strong> · {agent.model}</p>}
           </div>
-        </div>
+        </motion.div>
+        </AnimatePresence>
       </div>
       <div className="lp-agent-footer"><span>One library example, from start to finish.</span><span>Review and test feedback can return to the Coder.</span></div>
     </div>

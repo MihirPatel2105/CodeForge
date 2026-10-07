@@ -47,6 +47,77 @@ test("changing motion preference cancels scrolling reveals on the current page",
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
 });
 
+test("homepage preview grows without moving subsequent sections and resets for reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const preview = page.locator(".lp-product-scale");
+  const pause = page.getByRole("button", { name: "Pause walkthrough" });
+  await expect(preview).toBeVisible();
+  await expect.poll(() => page.locator(".lp-hero > .lp-actions").evaluate(element => getComputedStyle(element).opacity)).toBe("1");
+  if (await pause.isVisible()) await pause.click();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeLessThan(1090);
+  const before = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
+  const initialWidth = await preview.evaluate(element => element.getBoundingClientRect().width);
+  await page.evaluate(() => window.scrollTo({ top: 400, behavior: "instant" }));
+  await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(initialWidth);
+  const after = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
+  expect(Math.abs(after - before)).toBeLessThan(1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(preview).toHaveCSS("transform", "none");
+  await expect(page.locator(".lp-product-scroll")).toHaveCSS("transform", "none");
+  await expect(page.locator(".lp-product-scroll")).toHaveCSS("opacity", "1");
+  await expect(page.locator(".lp-hero > .lp-actions")).toHaveCSS("transform", "none");
+  await expect(page.getByRole("button", { name: "Replay walkthrough" })).toBeDisabled();
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(preview).toHaveCSS("transform", "none");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+test("homepage repair sequence plays once and supports pause, replay, and reduced motion", async ({ page }) => {
+  await page.clock.install();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const pipeline = page.locator(".lp-pipeline-content");
+  await pipeline.scrollIntoViewIfNeeded();
+  const active = pipeline.locator(".lp-pipeline-stages > li[aria-current=step]");
+  await expect.poll(async () => {
+    await page.clock.runFor(1200);
+    return pipeline.locator(".lp-feedback-route > span[data-current=true]").first().textContent().catch(() => "");
+  }, { intervals: [50], timeout: 15000 }).toBe("Reviewer");
+  await page.clock.runFor(2200);
+  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
+  await expect(pipeline.locator(".lp-feedback-route > span[data-current=true]")).toHaveText("Coder");
+  await pipeline.getByRole("button", { name: "Pause walkthrough" }).click();
+  await page.clock.runFor(5000);
+  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
+  await pipeline.getByRole("button", { name: "Play walkthrough" }).click();
+  await expect.poll(async () => {
+    await page.clock.runFor(2200);
+    return pipeline.getByRole("button", { name: "Replay walkthrough" }).isVisible();
+  }, { intervals: [50], timeout: 15000 }).toBe(true);
+  await page.clock.runFor(5000);
+  await expect(pipeline.getByRole("button", { name: "Replay walkthrough" })).toBeVisible();
+  await pipeline.getByRole("button", { name: "Replay walkthrough" }).click();
+  await expect(active.getByRole("heading", { name: "PM", exact: true })).toBeVisible();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(pipeline.getByText(/Tests passed/)).toBeVisible();
+});
+
+test("rapid agent selection settles on the latest choice and stays still with reduced motion", async ({ page }) => {
+  await page.goto("/");
+  const agents = page.getByRole("navigation", { name: "Explore the five agents" });
+  await agents.scrollIntoViewIfNeeded();
+  for (const name of ["Architect", "Reviewer", "Coder", "Tester"]) {
+    await agents.getByRole("button", { name, exact: true }).click();
+  }
+  await expect(page.getByRole("heading", { name: "Run it. See what holds up." })).toBeVisible();
+  await expect(page.locator(".lp-agent-content")).toHaveCount(1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".lp-agent-content")).toHaveCSS("transform", "none");
+});
+
 test("API cards animate, respect preference changes, and preserve keyboard navigation", async ({ page }) => {
   await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
   await page.route("**/api/backend/auth/me", (route) => route.fulfill({

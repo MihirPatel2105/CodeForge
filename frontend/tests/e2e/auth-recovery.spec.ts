@@ -17,6 +17,11 @@ test("forgot-password request keeps the account-neutral confirmation", async ({ 
 });
 
 test("reset link submits the token and matching new password", async ({ page }) => {
+  await page.route("**/api/backend/projects", route => route.fulfill({ json: [] }));
+  await page.route("**/api/backend/projects/overview*", route => route.fulfill({ json: {
+    items: [], next_cursor: null, total_projects: 0, matching_projects: 0,
+    total_runs: 0, total_succeeded: 0,
+  } }));
   let resetBody: { token: string; new_password: string } | null = null;
   await page.route("**/auth/reset-password", async (route) => {
     resetBody = route.request().postDataJSON();

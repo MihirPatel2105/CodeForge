@@ -1,7 +1,7 @@
 "use client";
 
 import { Notice } from "@/components/ui/notice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,6 +9,7 @@ import {
   startAuthentication,
 } from "@simplewebauthn/browser";
 import { ArrowLeft, Fingerprint, LoaderCircle } from "lucide-react";
+import { useAuthTransition } from "@/components/auth/auth-entry-transition";
 import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, setToken } from "@/lib/api";
@@ -17,6 +18,9 @@ import { PASSKEY_NOT_COMPLETED, passkeyWasNotCompleted } from "@/lib/user-errors
 
 export default function PasskeyLoginPage() {
   const router = useRouter();
+  const transition = useAuthTransition();
+  const setLabel = transition?.setLabel;
+  useEffect(() => { setLabel?.("Passkey sign in"); }, [setLabel]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -55,9 +59,9 @@ export default function PasskeyLoginPage() {
     }
   }
 
-  return (
-    <AuthEntryShell label="Passkey sign in">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+  const content = (
+    <>
+          <span className="pa-passkey-icon grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
             <Fingerprint className="h-5 w-5" aria-hidden />
           </span>
           <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Your workspace</div>
@@ -89,12 +93,18 @@ export default function PasskeyLoginPage() {
           <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">
             <Link
               href="/login"
+              onClick={(event) => {
+                if (!transition || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                event.preventDefault();
+                transition.navigate("/login");
+              }}
               className="inline-flex min-h-11 items-center gap-1.5 rounded-lg font-[650] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Sign in with password
             </Link>
           </p>
-    </AuthEntryShell>
+    </>
   );
+  return transition ? content : <AuthEntryShell label="Passkey sign in">{content}</AuthEntryShell>;
 }

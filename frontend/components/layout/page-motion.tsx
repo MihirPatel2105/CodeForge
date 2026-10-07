@@ -11,7 +11,7 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
 
   useLayoutEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (preference.matches) return;
+    if (preference.matches || pathname === "/login" || pathname === "/signup" || pathname === "/login/passkey") return;
 
     const animations: Array<{ stop: () => void }> = [];
     const main = document.querySelector("main");

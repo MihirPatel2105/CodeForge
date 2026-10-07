@@ -1,54 +1,27 @@
 "use client";
 
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 
-/** Scroll progress controls both the preview's scale and its occupied space. */
+/** Grow the preview inside its normal layout footprint so scrolling cannot move later sections. */
 export function ProductScrollPreview({ children }: { children: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
+  const reducedMotion = useMotionPreference();
+  const { scrollYProgress } = useScroll({ target: container, offset: ["start 0.9", "start 0.15"] });
+  const transform = useTransform(scrollYProgress, [0, 1], ["scale(0.94)", "scale(1)"]);
 
-  useLayoutEffect(() => {
-    const frame = container.current;
-    const preview = frame?.firstElementChild as HTMLElement | null;
-    if (!frame || !preview) return;
-
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let scheduled = 0;
-    const update = () => {
-      scheduled = 0;
-      const viewport = window.innerHeight;
-      const top = frame.getBoundingClientRect().top;
-      // Reach full size near the top of the viewport; reverse along the same path.
-      const position = top + window.scrollY;
-      const start = Math.max(0, position - viewport * 0.9);
-      const end = Math.max(start + viewport * 0.35, position - viewport * 0.15);
-      const progress = Math.max(0, Math.min(1, (window.scrollY - start) / (end - start)));
-      const compactScale = window.innerWidth <= 600 ? 0.96 : 0.8;
-      const scale = motion.matches ? 1 : compactScale + (1 - compactScale) * progress;
-      frame.style.setProperty("--preview-scale", String(scale));
-      frame.style.height = `${preview.offsetHeight * scale}px`;
-      frame.dataset.scrollReady = "true";
-    };
-    const schedule = () => {
-      if (!scheduled) scheduled = window.requestAnimationFrame(update);
-    };
-    const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
-    resize?.observe(preview);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    motion.addEventListener("change", schedule);
-    update();
-
-    return () => {
-      window.cancelAnimationFrame(scheduled);
-      resize?.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      motion.removeEventListener("change", schedule);
-      frame.style.removeProperty("--preview-scale");
-      frame.style.removeProperty("height");
-      delete frame.dataset.scrollReady;
-    };
-  }, []);
-
-  return <div ref={container} className="lp-product-scroll">{children}</div>;
+  return <motion.div
+    ref={container}
+    className="lp-product-scroll"
+    initial={{ opacity: reducedMotion ? 1 : 0, transform: reducedMotion ? "none" : "translateY(24px)" }}
+    animate={reducedMotion ? { opacity: 1, transform: "none" } : undefined}
+    whileInView={{ opacity: 1, transform: "none" }}
+    viewport={{ once: true, amount: 0.08 }}
+    transition={reducedMotion ? { duration: 0, delay: 0 } : { duration: 0.9, delay: 0.32, ease: [0.22, 0.68, 0.25, 1] }}
+  >
+    <motion.div className="lp-product-scale" style={{ transform: reducedMotion ? "none" : transform }}>
+      {children}
+    </motion.div>
+  </motion.div>;
 }

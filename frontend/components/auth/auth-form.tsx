@@ -3,7 +3,7 @@
 import { Notice } from "@/components/ui/notice";
 import { MotionButton } from "@/components/ui/motion-button";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Eye, EyeOff, KeyRound, LoaderCircle } from "lucide-react";
@@ -17,6 +17,7 @@ import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { VerifyStep } from "@/components/auth/verify-step";
 import { clearPendingPasswordMfa, savePendingPasswordMfa } from "@/lib/password-mfa";
+import { useAuthTransition } from "./auth-entry-transition";
 
 type Mode = "signin" | "register";
 
@@ -51,6 +52,7 @@ const LABEL = "text-[13px] font-[650] text-fg";
  * only the copy, the endpoint and the extra registration fields differ. */
 export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
+  const transition = useAuthTransition();
   const copy = COPY[mode];
   const registering = mode === "register";
 
@@ -65,6 +67,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
   // Null keeps this screen on the details step, so a server without email verification
   // needs no special case here — it simply never sets it.
   const [pending, setPending] = useState<{ email: string; expiresAt: string | null } | null>(null);
+  const setLabel = transition?.setLabel;
+  useEffect(() => {
+    setLabel?.(pending ? "Verify your email" : copy.title);
+  }, [setLabel, pending, copy.title]);
 
   // Only after the field has been touched, so the list reads as guidance on arrival
   // rather than as four things already gone wrong.
@@ -141,8 +147,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
     }
   }
 
-  return (
-    <AuthEntryShell entrance label={pending ? "Verify your email" : copy.title}>
+  const content = (
+    <>
               {pending ? (
                 <VerifyStep
                   email={pending.email}
@@ -168,7 +174,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="flex flex-col gap-2">
                           <Label htmlFor="first_name" className={LABEL}>First name</Label>
-                          <Input id="first_name" autoComplete="given-name" autoFocus required value={firstName} onChange={(e) => setFirstName(filterName(e.target.value))} className={FIELD} />
+                          <Input id="first_name" autoComplete="given-name" autoFocus={!transition} required value={firstName} onChange={(e) => setFirstName(filterName(e.target.value))} className={FIELD} />
                         </div>
                         <div className="flex flex-col gap-2">
                           <Label htmlFor="last_name" className={LABEL}>Last name <span className="font-normal text-fg-faint">(optional)</span></Label>
@@ -179,7 +185,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="email" className={LABEL}>Email</Label>
-                      <Input id="email" type="email" autoComplete="email" autoFocus={!registering} required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={FIELD} />
+                      <Input id="email" type="email" autoComplete="email" autoFocus={!registering && !transition} required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={FIELD} />
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -226,7 +232,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
                   {!registering && (
                     <>
                       <div className="my-5 flex items-center gap-3 text-[12px] text-fg-faint"><span className="h-px flex-1 bg-border" /><span>or</span><span className="h-px flex-1 bg-border" /></div>
-                      <Link href="/login/passkey" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                      <Link href="/login/passkey" onClick={(event) => {
+                        if (!transition || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                        event.preventDefault();
+                        transition.navigate("/login/passkey");
+                      }} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                         <KeyRound className="h-4 w-4" aria-hidden /> Sign in with a passkey
                       </Link>
                     </>
@@ -235,12 +245,17 @@ export function AuthForm({ mode }: { mode: Mode }) {
                   {registering && <p className="mt-5 text-center text-[12px] leading-5 text-fg-muted">By creating an account, you agree to our <Link href="/terms" className="text-accent underline">Terms of Use</Link>. Read our <Link href="/privacy" className="text-accent underline">Privacy Policy</Link> to understand how your information is handled.</p>}
                   <p className="cf-auth-footer mt-7 text-center text-[13px] text-fg-muted">
                     {copy.altPrompt}{" "}
-                    <Link href={copy.altHref} className="font-[700] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{copy.altLabel}</Link>
+                    <Link href={copy.altHref} onClick={(event) => {
+                      if (!transition || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                      event.preventDefault();
+                      transition.navigate(copy.altHref);
+                    }} className="font-[700] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{copy.altLabel}</Link>
                   </p>
                 </>
               )}
-    </AuthEntryShell>
+    </>
   );
+  return transition ? content : <AuthEntryShell entrance label={pending ? "Verify your email" : copy.title}>{content}</AuthEntryShell>;
 }
 
 /** Turns a failed call into something a human can act on. */
