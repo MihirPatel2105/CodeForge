@@ -5,6 +5,7 @@ import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-tog
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "lucide-react";
+import { motion } from "motion/react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
@@ -17,6 +18,7 @@ import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import type { DemoRun } from "@/lib/demo-runs";
 import { preferredScrollBehavior } from "@/lib/motion";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 import { reduceRun } from "@/lib/run-reducer";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,7 @@ const EVENT_INTERVAL_MS = 980;
 
 export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const user = useCurrentUser();
+  const reducedMotion = useMotionPreference();
   const [eventIndex, setEventIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
@@ -136,10 +139,23 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                     type="button"
                     onClick={() => setPlaying((current) => !current)}
                     disabled={isComplete}
-                    className="inline-flex min-h-9 items-center gap-2 rounded-full bg-accent px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
+                    aria-label={playing ? "Pause" : "Continue"}
+                    className="inline-flex min-h-9 items-center rounded-full bg-accent px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
                   >
-                    {playing ? <Pause className="h-3.5 w-3.5" aria-hidden /> : <Play className="h-3.5 w-3.5" aria-hidden />}
-                    {playing ? "Pause" : "Continue"}
+                    <span className="inline-grid items-center" aria-hidden="true">
+                      <motion.span
+                        initial={false}
+                        animate={{ opacity: playing ? 1 : 0, y: reducedMotion ? 0 : playing ? 0 : -4 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                        className="col-start-1 row-start-1 inline-flex items-center gap-2"
+                      ><Pause className="h-3.5 w-3.5" />Pause</motion.span>
+                      <motion.span
+                        initial={false}
+                        animate={{ opacity: playing ? 0 : 1, y: reducedMotion ? 0 : playing ? 4 : 0 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.18 }}
+                        className="col-start-1 row-start-1 inline-flex items-center gap-2"
+                      ><Play className="h-3.5 w-3.5" />Continue</motion.span>
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -165,11 +181,23 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   <span>{isComplete ? "replay complete" : "agents are working"}</span>
                   <span>{Math.round(((eventIndex + 1) / demo.events.length) * 100)}%</span>
                 </div>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-border">
+                <div className="mt-2 h-1 rounded-full bg-border">
                   <div
-                    className="h-full bg-accent transition-[width] duration-300"
+                    className="relative h-full rounded-full bg-accent motion-safe:transition-[width] motion-safe:duration-300"
                     style={{ width: `${((eventIndex + 1) / demo.events.length) * 100}%` }}
-                  />
+                  >
+                    {snapshot.currentAgent && !reducedMotion && (
+                      <span className="absolute -right-1 top-1/2 -translate-y-1/2" aria-hidden>
+                        <motion.span
+                          key={snapshot.currentAgent}
+                          initial={{ opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: [0, 0.7, 0], scale: [0.7, 1.5, 1.8] }}
+                          transition={{ duration: 0.55 }}
+                          className="block h-2 w-2 rounded-full bg-accent"
+                        />
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

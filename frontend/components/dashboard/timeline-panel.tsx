@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, Clock3 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { preferredScrollBehavior } from "@/lib/motion";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 import { typeScale } from "@/lib/type-scale";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";
 
@@ -18,6 +20,7 @@ export interface TimelinePanelProps {
  * bottom, auto-scrolled on every update — `scrollTop = scrollHeight`, not `scrollIntoView`,
  * so it never fights a user who has scrolled up to re-read an earlier finding. */
 export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
+  const reducedMotion = useMotionPreference();
   const viewportRef = useRef<HTMLDivElement>(null);
   const previousLength = useRef(0);
   const [following, setFollowing] = useState(true);
@@ -95,17 +98,25 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           entries.map((entry, i) => <TimelineEntry key={i} entry={entry} i={i} />)
         )}
         </div>
-        {unread > 0 && (
-          <button
-            type="button"
-            onClick={resumeFollowing}
-            className="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-accent-bd bg-surface px-3 py-2 font-mono text-[12px] font-[700] uppercase tracking-[0.1em] text-accent shadow-[0_10px_28px_rgba(22,24,28,0.16)]"
-            aria-live="polite"
-          >
-            <ArrowDown className="h-3.5 w-3.5" aria-hidden />
-            {unread} new {unread === 1 ? "event" : "events"}
-          </button>
-        )}
+        <AnimatePresence initial={false}>
+          {unread > 0 && (
+            <div className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2">
+              <motion.button
+                type="button"
+                onClick={resumeFollowing}
+                initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : 8 }}
+                transition={{ duration: reducedMotion ? 0 : 0.2 }}
+                className="inline-flex items-center gap-2 rounded-full border border-accent-bd bg-surface px-3 py-2 font-mono text-[12px] font-[700] uppercase tracking-[0.1em] text-accent shadow-[0_10px_28px_rgba(22,24,28,0.16)]"
+                aria-live="polite"
+              >
+                <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+                {unread} new {unread === 1 ? "event" : "events"}
+              </motion.button>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

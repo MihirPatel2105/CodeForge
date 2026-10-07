@@ -1,21 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Bell, CheckCheck } from "lucide-react";
+import { motion } from "motion/react";
 import { api } from "@/lib/api";
 import { readLocal, writeLocal } from "@/lib/workspace-storage";
 import { RUN_STATUS_META, tone } from "@/lib/tone";
 import type { RunSummary } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 
 const fingerprint = (run: RunSummary) => `${run.id}:${run.status}:${run.updated_at}`;
 export function AttentionInbox({ userId }: { userId: string }) {
+  const reducedMotion = useMotionPreference();
   const [open, setOpen] = useState(false);
   const [runs, setRuns] = useState<RunSummary[]>([]);
   const [seen, setSeen] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [enabled, setEnabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [badgePulse, setBadgePulse] = useState(0);
+  const previousVisible = useRef<number | null>(null);
   const key = `codeforge:attention:${userId}`;
   useEffect(() => {
     setSeen(readLocal<string[]>(key, []));
@@ -27,7 +33,7 @@ export function AttentionInbox({ userId }: { userId: string }) {
       try {
         const next = await api.attentionRuns();
         if (cancelled) return;
-        setRuns(next); setNotice("");
+        setRuns(next); setLoaded(true); setNotice("");
         if (known && document.hidden && "Notification" in window && Notification.permission === "granted" && readLocal(`${key}:notifications`, false)) {
           for (const run of next) {
             const eventKey = fingerprint(run);
@@ -46,6 +52,13 @@ export function AttentionInbox({ userId }: { userId: string }) {
   }, [key]);
   const visible = runs.filter(run => run.status === "awaiting_approval" || !seen.includes(fingerprint(run)));
   const unreadCompleted = visible.filter(run => run.status !== "awaiting_approval");
+  useEffect(() => {
+    if (!loaded) return;
+    if (previousVisible.current !== null && visible.length > previousVisible.current) {
+      setBadgePulse((pulse) => pulse + 1);
+    }
+    previousVisible.current = visible.length;
+  }, [loaded, visible.length]);
   function markRead(run: RunSummary) { const next = [...seen, fingerprint(run)].slice(-200); setSeen(next); writeLocal(key, next); }
   async function toggleNotifications() {
     if (enabled) { setEnabled(false); writeLocal(`${key}:notifications`, false); return; }
@@ -56,7 +69,19 @@ export function AttentionInbox({ userId }: { userId: string }) {
       setNotice(permission === "granted" ? "Browser notifications are on while CodeForge is open." : "Browser notifications are blocked. You can change this in browser settings.");
     } catch { setNotice("Browser notifications are unavailable. Use the in-app inbox."); }
   }
-  return <><Button variant="ghost" size="icon" aria-label={`Run updates${visible.length ? `, ${visible.length} need attention` : ""}`} className="relative size-10 rounded-full" onClick={() => setOpen(true)}><Bell className="size-4" />{visible.length > 0 && <span className="absolute right-0 top-0 rounded-full bg-accent px-1 text-[10px] text-surface">{visible.length}</span>}</Button>
+  return <><Button variant="ghost" size="icon" aria-label={`Run updates${visible.length ? `, ${visible.length} need attention` : ""}`} className="relative size-10 rounded-full" onClick={() => setOpen(true)}>
+    <Bell className="size-4" />
+    {visible.length > 0 && (
+      <motion.span
+        key={badgePulse}
+        initial={{ scale: 1 }}
+        animate={{ scale: badgePulse > 0 && !reducedMotion ? [1, 1.18, 1] : 1 }}
+        transition={{ duration: reducedMotion ? 0 : 0.34 }}
+        className="absolute right-0 top-0 rounded-full bg-accent px-1 text-[10px] text-surface"
+        aria-hidden
+      >{visible.length}</motion.span>
+    )}
+  </Button>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0 p-0 sm:max-w-md">
         <DialogHeader className="border-b border-border px-6 py-5 pr-12">
