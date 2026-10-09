@@ -227,6 +227,11 @@
   --loop-bd: #4a2e80;
 }
 
+/* Lenis owns easing while active; avoid a second browser scroll animation. */
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -6,7 +6,8 @@ test("all sections are available before scrolling and reduced motion stays still
   const stack = page.locator("#how");
   await expect(stack).toBeAttached();
   await expect(stack).toHaveCSS("opacity", "1");
-  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("smooth");
+  await expect(page.locator("html")).toHaveClass(/lenis/);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
 
   await stack.scrollIntoViewIfNeeded();
   await expect(stack.getByRole("heading", { name: "Five specialists. One continuous workflow." })).toBeVisible();
