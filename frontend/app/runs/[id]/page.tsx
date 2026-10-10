@@ -298,7 +298,7 @@ export default function LiveRunPage() {
           </div>
         </header>
 
-        <AgentCityInvite key={id} runId={id} snapshot={snapshot} connected={!connectionLost} />
+        <AgentCityInvite key={`agent-city:${id}`} runId={id} snapshot={snapshot} connected={!connectionLost} />
         {snapshot.approval && <a href="#approval-heading" className="sticky top-16 z-10 mt-3 block rounded-xl border border-warn-bd bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">Your decision is needed · Review checkpoint ↑</a>}
         {snapshot.endedAt && <a href={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : "#run-workbench-heading"} className="sticky top-16 z-10 mt-3 block rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-accent">{snapshot.status === "succeeded" && snapshot.tests?.ok ? "Use your API →" : "Inspect run evidence ↓"}</a>}
         {actionError && (
@@ -352,7 +352,7 @@ export default function LiveRunPage() {
           </section>
         )}
 
-        {(snapshot.endedAt || sourceRunId) && <RunVersions key={id} id={id} completed={Boolean(snapshot.endedAt)} />}
+        {(snapshot.endedAt || sourceRunId) && <RunVersions key={`run-versions:${id}`} id={id} completed={Boolean(snapshot.endedAt)} />}
 
         {downloadError && (
           <Notice className="mt-3">

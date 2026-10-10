@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 for (const scenario of ["first-approval", "revised", "building", "finished"]) {
   test(`Agent City invite: ${scenario}`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
     const id = `invite-${scenario}`;
     await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
     await page.route("**/api/backend/**", route => route.fulfill({ status: 404, json: { error: { code: "not_found", message: "Unavailable" } } }));
@@ -41,5 +43,6 @@ for (const scenario of ["first-approval", "revised", "building", "finished"]) {
       await page.waitForTimeout(2000);
       await expect(invite).not.toBeVisible();
     }
+    expect(errors.filter(message => message.includes("same key"))).toEqual([]);
   });
 }
