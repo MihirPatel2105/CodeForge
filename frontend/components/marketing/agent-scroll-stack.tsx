@@ -1,8 +1,8 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CircleCheck, type LucideIcon } from "lucide-react";
-import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion, useScroll, useMotionValueEvent } from "motion/react";
 import { motionSpring, motionEase } from "@/lib/motion-tokens";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 
@@ -19,15 +19,30 @@ type Agent = {
 
 export function AgentScrollStack({ agents }: { agents: Agent[] }) {
   const [selected, setSelected] = useState(0);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
+  const track = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start 0.18", "end 0.82"] });
   const id = useId();
   const reducedMotion = useMotionPreference();
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1000px) and (min-height: 760px)");
+    const update = () => setScrollEnabled(desktop.matches && !reducedMotion);
+    update();
+    desktop.addEventListener("change", update);
+    return () => desktop.removeEventListener("change", update);
+  }, [reducedMotion]);
+  useMotionValueEvent(scrollYProgress, "change", value => {
+    if (scrollEnabled) setSelected(Math.min(agents.length - 1, Math.floor(value * agents.length)));
+  });
   const agent = agents[selected];
   if (!agent) return null;
   const Icon = agent.icon;
 
   return (
+    <div ref={track} className="lp-agent-track" data-scroll-enabled={scrollEnabled}>
     <div className="lp-agent-showcase">
-      <LayoutGroup id={id}><nav className="lp-agent-nav" aria-label="Explore the five agents">
+      <p className="lp-agent-scroll-hint">{scrollEnabled ? "Scroll through the build, or choose a stage." : "Choose a stage to explore the build."}</p>
+      <LayoutGroup id={id}><nav className="lp-agent-nav" aria-label="Explore the agents and sandbox">
         {agents.map((item, index) => (
           <button
             key={item.name}
@@ -37,6 +52,11 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
             onClick={() => {
               if (index !== selected) {
                 setSelected(index);
+                if (scrollEnabled && track.current) {
+                  const start = track.current.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
+                  const distance = track.current.offsetHeight - window.innerHeight * 0.64;
+                  window.scrollTo({ top: start + distance * ((index + 0.5) / agents.length), behavior: "smooth" });
+                }
               }
             }}
           >
@@ -47,7 +67,7 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
           </button>
         ))}
       </nav></LayoutGroup>
-      <div id={`${id}-content`} aria-live="polite" aria-atomic="true">
+      <div id={`${id}-content`} aria-live={scrollEnabled ? "off" : "polite"} aria-atomic="true">
         <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={agent.name}
@@ -66,12 +86,12 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
           <div className="lp-agent-output">
             <div className="lp-agent-output-head"><span><Icon size={16} aria-hidden />{agent.artifact}</span><span>Example output</span></div>
             <ul>
-              {agent.lines.map((line) => {
+              {agent.lines.map((line, index) => {
                 const route = /^(POST|GET|PATCH|DELETE)\s+(\/\S+)$/.exec(line);
                 return (
-                  <li key={line} className={route ? "lp-agent-route" : "lp-agent-item"}>
+                  <motion.li initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: reducedMotion ? 0 : 0.3, delay: reducedMotion ? 0 : index * 0.07 }} key={line} className={route ? "lp-agent-route" : "lp-agent-item"}>
                     {route ? <><span className="lp-agent-method">{route[1]}</span><code>{route[2]}</code></> : <><CircleCheck size={15} aria-hidden /><span>{line}</span></>}
-                  </li>
+                  </motion.li>
                 );
               })}
             </ul>
@@ -81,6 +101,7 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
         </AnimatePresence>
       </div>
       <div className="lp-agent-footer"><span>One library example, from start to finish.</span><span>Review and test feedback can return to the Coder.</span></div>
+    </div>
     </div>
   );
 }

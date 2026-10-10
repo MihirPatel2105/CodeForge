@@ -74,3 +74,6 @@
  --flow-blue: 0 0 0; --flow-ice: 12 12 12; --flow-lilac: 5 5 5; --flow-white: 16 16 16;
  --relief-white: var(--surface); --relief-code: #a3a3a3; --relief-note-rule: var(--border);
 }
+
+.cf-landing-atmosphere .lp-depth-layer { position: absolute; z-index: -1; inset: 0 0 auto; height: 720px; pointer-events: none; }
+@media (max-width: 600px), (prefers-reduced-motion: reduce) { .cf-landing-atmosphere .lp-depth-layer { transform: none !important; } }

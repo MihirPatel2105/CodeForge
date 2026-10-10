@@ -233,3 +233,18 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   .cf-premium :is(.lp-actions, .lp-closing) > a:active,
   .cf-premium :is(.lp-actions, .lp-closing) > a:hover svg { transform: none; }
 }
+
+/* Scroll storytelling keeps short screens and touch layouts in normal document flow. */
+.lp-reading-progress { position: fixed; inset: 0 0 auto; height: 2px; background: var(--lp-accent); transform-origin: left; z-index: 60; pointer-events: none; }
+.lp-scroll-nav { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 25; }
+.lp-scroll-nav a { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--lp-accent); }
+.lp-scroll-nav a > span:first-child { width: 5px; height: 5px; border-radius: 50%; background: var(--lp-muted); }
+.lp-scroll-nav a[aria-current] > span:first-child { background: var(--lp-accent); outline: 1px solid var(--lp-accent); outline-offset: 4px; }
+.lp-scroll-label { position: absolute; right: 34px; white-space: nowrap; background: var(--lp-paper); border: 1px solid var(--lp-rule); border-radius: 6px; padding: 4px 8px; font-size: 12px; opacity: 0; pointer-events: none; }
+.lp-scroll-nav a:hover .lp-scroll-label,.lp-scroll-nav a:focus-visible .lp-scroll-label { opacity: 1; }
+.cf-premium section[id] { scroll-margin-top: 88px; }
+.lp-agent-scroll-hint { margin: 0 0 18px; font-size: 12px; color: var(--lp-muted); }
+.lp-agent-track[data-scroll-enabled=true] { height: 260vh; }
+.lp-agent-track[data-scroll-enabled=true] .lp-agent-showcase { position: sticky; top: 18vh; }
+@media (max-width: 1250px) { .lp-scroll-nav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-agent-track[data-scroll-enabled=true] { height: auto; } .lp-agent-track .lp-agent-showcase { position: static; } }
