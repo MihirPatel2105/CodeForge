@@ -10,7 +10,7 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.domElement.setAttribute("aria-label", "Agent City. Use arrow keys or WASD to walk, E to talk, or click a building.");
+  renderer.domElement.setAttribute("aria-label", "Agent City. Use arrow keys or WASD to walk, E to talk, click a building, or drag to orbit the camera.");
   renderer.domElement.setAttribute("role", "application");
   renderer.domElement.tabIndex = 0;
   host.appendChild(renderer.domElement);
@@ -31,6 +31,47 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
   camera.position.set(22, 24, 27);
   camera.lookAt(0, 0, 0);
   let zoom = 1;
+  const defaultOrbit = new THREE.Spherical().setFromVector3(camera.position);
+  const orbit = defaultOrbit.clone();
+  let gesture: { id: number; x: number; y: number; theta: number; phi: number; dragged: boolean } | null = null;
+  function updateCamera() {
+    camera.position.setFromSpherical(orbit);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld();
+    requestDraw();
+  }
+  function cancelGesture() {
+    const id = gesture?.id;
+    gesture = null;
+    delete renderer.domElement.dataset.dragging;
+    if (id !== undefined && renderer.domElement.hasPointerCapture(id)) renderer.domElement.releasePointerCapture(id);
+  }
+  function pointerDown(event: PointerEvent) {
+    if (snapshot.paused || event.button !== 0 || gesture) return;
+    renderer.domElement.focus({ preventScroll: true });
+    gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, theta: orbit.theta, phi: orbit.phi, dragged: false };
+    renderer.domElement.setPointerCapture(event.pointerId);
+  }
+  function pointerMove(event: PointerEvent) {
+    if (!gesture || gesture.id !== event.pointerId) return;
+    const dx = event.clientX - gesture.x, dy = event.clientY - gesture.y;
+    if (!gesture.dragged && Math.hypot(dx, dy) < 6) return;
+    gesture.dragged = true;
+    renderer.domElement.dataset.dragging = "true";
+    orbit.theta = gesture.theta - dx * 0.006;
+    orbit.phi = THREE.MathUtils.clamp(gesture.phi - dy * 0.006, 0.35, 1.25);
+    updateCamera();
+  }
+  function pointerUp(event: PointerEvent) {
+    if (!gesture || gesture.id !== event.pointerId) return;
+    pointerMove(event);
+    const clicked = !gesture.dragged;
+    cancelGesture();
+    if (clicked) onPointer(event);
+  }
+  function pointerCancel(event: PointerEvent) {
+    if (gesture?.id === event.pointerId) cancelGesture();
+  }
   const ambient = new THREE.HemisphereLight(0xfff6df, 0x6d8068, 2.4);
   scene.add(ambient);
   const sun = new THREE.DirectionalLight(0xffefce, 3.4);
@@ -301,7 +342,7 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
     }
     if (key === "e" && !event.repeat) interact();
   }
-  function clearKeys() { keys.clear(); lastTime = 0; }
+  function clearKeys() { keys.clear(); lastTime = 0; cancelGesture(); }
   function onKeyUp(event: KeyboardEvent) { keys.delete(event.key.toLowerCase()); }
 
   function draw(now: number) {
@@ -314,7 +355,7 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
     if (!snapshot.paused) {
       const horizontal = Number(keys.has("d") || keys.has("arrowright")) - Number(keys.has("a") || keys.has("arrowleft"));
       const vertical = Number(keys.has("s") || keys.has("arrowdown")) - Number(keys.has("w") || keys.has("arrowup"));
-      movement.set(horizontal*0.775 + vertical*0.632,0,-horizontal*0.632 + vertical*0.775);
+      movement.set(horizontal*Math.cos(orbit.theta) + vertical*Math.sin(orbit.theta),0,-horizontal*Math.sin(orbit.theta) + vertical*Math.cos(orbit.theta));
       if (movement.lengthSq()) movement.normalize().multiplyScalar(4.8*dt);
       else if (waypoints.length) {
         movement.copy(waypoints[0]).sub(player.position).setY(0);
@@ -376,7 +417,11 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
   const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (!visible) { cancelAnimationFrame(frame); frame = 0; clearKeys(); } else requestDraw(); }); observer.observe(host);
   const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(host);
   const onVisibility = () => { clearKeys(); requestDraw(); };
-  renderer.domElement.addEventListener("pointerdown",onPointer);
+  renderer.domElement.addEventListener("pointerdown",pointerDown);
+  renderer.domElement.addEventListener("pointermove",pointerMove);
+  renderer.domElement.addEventListener("pointerup",pointerUp);
+  renderer.domElement.addEventListener("pointercancel",pointerCancel);
+  renderer.domElement.addEventListener("lostpointercapture",pointerCancel);
   renderer.domElement.addEventListener("keydown",onKey);
   renderer.domElement.addEventListener("keyup",onKeyUp);
   renderer.domElement.addEventListener("blur",clearKeys);
@@ -388,11 +433,16 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
     interact,
     direction(key: string, pressed: boolean) { if (pressed) { keys.add(key); waypoints.length = 0; } else keys.delete(key); requestDraw(); },
     zoom(delta: number) { zoom = THREE.MathUtils.clamp(zoom+delta,0.8,1.5); resize(); },
+    resetView() { cancelGesture(); orbit.copy(defaultOrbit); zoom = 1; camera.position.set(22,24,27); camera.lookAt(0,0,0); camera.updateMatrixWorld(); resize(); },
     update(next: CitySnapshot) { snapshot = next; if (snapshot.paused) clearKeys(); applyLighting(); requestDraw(); },
     reset() { player.position.set(0,0.1,2.2); waypoints.length = 0; pendingVisit = null; pendingBug = null; pendingSecret = false; keys.clear(); destination.visible = false; requestDraw(); },
     dispose() {
-      disposed = true; cancelAnimationFrame(frame); observer.disconnect(); resizeObserver.disconnect();
-      renderer.domElement.removeEventListener("pointerdown",onPointer); renderer.domElement.removeEventListener("keydown",onKey); renderer.domElement.removeEventListener("keyup",onKeyUp); renderer.domElement.removeEventListener("blur",clearKeys);
+      disposed = true; cancelGesture(); cancelAnimationFrame(frame); observer.disconnect(); resizeObserver.disconnect();
+      renderer.domElement.removeEventListener("pointerdown",pointerDown);
+      renderer.domElement.removeEventListener("pointermove",pointerMove);
+      renderer.domElement.removeEventListener("pointerup",pointerUp);
+      renderer.domElement.removeEventListener("pointercancel",pointerCancel);
+      renderer.domElement.removeEventListener("lostpointercapture",pointerCancel); renderer.domElement.removeEventListener("keydown",onKey); renderer.domElement.removeEventListener("keyup",onKeyUp); renderer.domElement.removeEventListener("blur",clearKeys);
       document.removeEventListener("visibilitychange",onVisibility);
       geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); textures.forEach(t => t.dispose());
       renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove();

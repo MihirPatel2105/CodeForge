@@ -110,3 +110,22 @@ test("click-to-walk discovers the bugs and the hidden coffee nook", async ({ pag
     await expect(page.locator(".city-collectibles")).toContainText(`${i+1}/3 bugs`);
   }
 });
+
+test("camera drag preserves clicks and reset restores the view", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/playground/agent-city");
+  await expect(page.locator(".city-world")).toHaveAttribute("data-status", "ready");
+  const canvas = page.locator(".city-world canvas");
+  await page.getByRole("button", { name: "Reset camera view" }).click();
+  const original = await canvas.screenshot();
+  const bounds = (await canvas.boundingBox())!;
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2 + 140, bounds.y + bounds.height / 2 + 35, { steps: 12 });
+  await page.mouse.up();
+  expect((await canvas.screenshot()).equals(original)).toBe(false);
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await page.getByRole("button", { name: "Reset camera view" }).click();
+  expect((await canvas.screenshot()).equals(original)).toBe(true);
+});
