@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoLockup } from "@/components/brand/logo-lockup";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Bug, Check, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Coffee, Moon, Sun, Pause, Play, RotateCcw, MapPin, Plus, Minus, X, Box } from "lucide-react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -104,7 +105,7 @@ export function AgentCity() {
   return (
     <main className="agent-city" data-night={night}>
       <header className="city-header">
-        <Link href="/" className="city-back"><ArrowLeft size={16} /><span>CodeForge</span></Link>
+        <Link href="/" className="city-back"><ArrowLeft size={16} /><LogoLockup /></Link>
         <div className="city-heading"><h1>Agent City<span>Playground</span></h1><p>A small island. Some big ideas.</p></div>
         <button className="city-help" onClick={() => setDialog("help")}>How to play <span>?</span></button>
       </header>
