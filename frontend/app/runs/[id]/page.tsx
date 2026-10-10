@@ -20,6 +20,7 @@ import { buildHunks } from "@/lib/diff";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { ApprovalBar } from "@/components/dashboard/approval-bar";
+import { AgentCityInvite } from "@/components/dashboard/agent-city-invite";
 import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { ResultSummary } from "@/components/dashboard/result-summary";
 import { displayStatus, tone } from "@/lib/tone";
@@ -297,6 +298,7 @@ export default function LiveRunPage() {
           </div>
         </header>
 
+        <AgentCityInvite key={id} runId={id} snapshot={snapshot} connected={!connectionLost} />
         {snapshot.approval && <a href="#approval-heading" className="sticky top-16 z-10 mt-3 block rounded-xl border border-warn-bd bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">Your decision is needed · Review checkpoint ↑</a>}
         {snapshot.endedAt && <a href={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : "#run-workbench-heading"} className="sticky top-16 z-10 mt-3 block rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-accent">{snapshot.status === "succeeded" && snapshot.tests?.ok ? "Use your API →" : "Inspect run evidence ↓"}</a>}
         {actionError && (

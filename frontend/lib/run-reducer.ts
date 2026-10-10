@@ -64,6 +64,7 @@ export interface RunSnapshot {
   terminalLines: { text: string; stream: "stdout" | "stderr" }[];
   tests: TestsSnapshot | null;
   approval: ApprovalSnapshot | null;
+  approvedPhases: string[];
   lastLoop: LoopSnapshot | null;
   startedAt: string | null;
   endedAt: string | null;
@@ -92,6 +93,7 @@ export function initialSnapshot(): RunSnapshot {
     terminalLines: [],
     tests: null,
     approval: null,
+    approvedPhases: [],
     lastLoop: null,
     startedAt: null,
     endedAt: null,
@@ -348,6 +350,9 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         // A rejection ends the run; that terminal status arrives on run.failed, so this
         // only clears the paused state on approval — never assume "running" on reject.
         status: event.approved || event.revision_requested ? "running" : prev.status,
+        approvedPhases: event.approved && !event.revision_requested
+          ? [...new Set([...(prev.approvedPhases ?? []), event.phase])]
+          : prev.approvedPhases,
         approval: null,
         timeline: [...prev.timeline, entry],
       };
