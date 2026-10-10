@@ -31,7 +31,7 @@ export function AgentCityInvite({ runId, snapshot, connected }: { runId: string;
         <h2 className="text-base font-semibold tracking-tight">Your agents are on it.</h2>
         <p className="mt-2 text-sm leading-6 text-fg-muted">Both approvals are complete. Explore Agent City while your API builds.</p>
       </div>
-      <a href="/playground/agent-city" target="_blank" rel="noopener noreferrer" onClick={() => setVisible(false)} className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Play Agent City <ArrowUpRight size={16} aria-hidden /></a>
+      <a href={`/playground/agent-city?run=${encodeURIComponent(runId)}`} target="_blank" rel="noopener noreferrer" onClick={() => setVisible(false)} className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Play Agent City <ArrowUpRight size={16} aria-hidden /></a>
       <p className="mt-2 text-xs leading-5 text-fg-muted">Opens in a new tab. Keep this tab open to follow your build.</p>
     </aside>
   );
