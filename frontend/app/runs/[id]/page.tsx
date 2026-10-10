@@ -41,7 +41,7 @@ import { preferredScrollBehavior } from "@/lib/motion";
 export default function LiveRunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { snapshot, connectionLost } = useRunStream(id);
+  const { snapshot, connectionLost, refresh: refreshRun } = useRunStream(id);
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
   const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -144,6 +144,7 @@ export default function LiveRunPage() {
         approved: true,
         note: note || null,
       });
+      refreshRun();
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't approve the run.");
     } finally { setDeciding(false); }
@@ -160,6 +161,7 @@ export default function LiveRunPage() {
         approved: false,
         note: note || null,
       });
+      refreshRun();
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't reject the run.");
     } finally { setDeciding(false); }
@@ -168,7 +170,7 @@ export default function LiveRunPage() {
   async function handleRevise(note: string) {
     if (!snapshot.approval || deciding) return;
     setDeciding(true); setActionError(null);
-    try { await api.reviseRun(id, snapshot.approval.phase, note, Number(snapshot.approval.payload.revisions_used || 0)); }
+    try { await api.reviseRun(id, snapshot.approval.phase, note, Number(snapshot.approval.payload.revisions_used || 0)); refreshRun(); }
     catch (err) { setActionError(err instanceof ApiError ? err.message : "Could not request changes."); }
     finally { setDeciding(false); }
   }

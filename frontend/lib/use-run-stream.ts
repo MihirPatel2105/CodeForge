@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { API_BASE_URL } from "./api";
 import { applyEvent, initialSnapshot, type RunSnapshot } from "./run-reducer";
 import type { CodeForgeEvent } from "./types";
@@ -26,12 +26,17 @@ export function useRunStream(runId: string) {
   const [snapshot, setSnapshot] = useState<RunSnapshot>(initialSnapshot);
   const [connectionLost, setConnectionLost] = useState<ConnectionLostInfo | null>(null);
 
+  const refreshRef = useRef<(() => void) | null>(null);
+  const refresh = useCallback(() => refreshRef.current?.(), []);
+
   useEffect(() => {
     let cancelled = false;
     let attempt = 0;
     let lastEventId = 0;
     let terminalSeen = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let staleTimer: ReturnType<typeof setTimeout> | null = null;
+    let resyncRequested = false;
     let abortController: AbortController | null = null;
 
     function handleFrame(frame: string) {
@@ -45,7 +50,10 @@ export function useRunStream(runId: string) {
       if (dataLines.length === 0) return;
       try {
         const event = JSON.parse(dataLines.join("\n")) as CodeForgeEvent;
-        if (id != null && Number.isFinite(id)) lastEventId = id;
+        if (id != null && Number.isFinite(id)) {
+          if (id <= lastEventId) return;
+          lastEventId = id;
+        }
         setSnapshot((prev) => ({ ...applyEvent(prev, event), lastEventAt: event.at }));
         if (event.event === "run.completed" || event.event === "run.failed") {
           terminalSeen = true;
@@ -58,6 +66,7 @@ export function useRunStream(runId: string) {
     }
 
     async function connect() {
+      retryTimer = null;
       if (cancelled || terminalSeen) return;
       abortController = new AbortController();
 
@@ -78,7 +87,11 @@ export function useRunStream(runId: string) {
         let buffer = "";
 
         while (!cancelled) {
+          // Heartbeats arrive every 15s. An open but silent connection must recover too.
+          staleTimer = setTimeout(() => abortController?.abort(), 45000);
           const { value, done } = await reader.read();
+          clearTimeout(staleTimer);
+          staleTimer = null;
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
 
@@ -88,26 +101,41 @@ export function useRunStream(runId: string) {
             buffer = buffer.slice(sep + 2);
           }
         }
-      } catch (err) {
-        if (cancelled || (err instanceof DOMException && err.name === "AbortError")) return;
+      } catch {
+        if (cancelled || terminalSeen) return;
+      } finally {
+        if (staleTimer) clearTimeout(staleTimer);
       }
 
       if (cancelled || terminalSeen) return;
       // The stream ended (server closed it, network dropped, proxy timed out) —
       // reconnect with backoff; the server replays everything after `lastEventId`.
       attempt += 1;
-      const delayMs = Math.min(BASE_RETRY_MS * 2 ** (attempt - 1), MAX_RETRY_MS);
-      setConnectionLost({ attempt, retryInSeconds: Math.round(delayMs / 1000) });
+      const delayMs = resyncRequested ? 0 : Math.min(BASE_RETRY_MS * 2 ** (attempt - 1), MAX_RETRY_MS);
+      resyncRequested = false;
+      setConnectionLost(delayMs === 0 ? null : { attempt, retryInSeconds: Math.round(delayMs / 1000) });
       retryTimer = setTimeout(connect, delayMs);
     }
 
-    connect();
+    refreshRef.current = () => {
+      if (cancelled || terminalSeen) return;
+      resyncRequested = true;
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        retryTimer = null;
+        resyncRequested = false;
+        void connect();
+      } else abortController?.abort();
+    };
+    void connect();
     return () => {
+      refreshRef.current = null;
       cancelled = true;
       abortController?.abort();
       if (retryTimer) clearTimeout(retryTimer);
+      if (staleTimer) clearTimeout(staleTimer);
     };
   }, [runId]);
 
-  return { snapshot, connectionLost };
+  return { snapshot, connectionLost, refresh };
 }
