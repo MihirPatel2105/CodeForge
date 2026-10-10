@@ -602,7 +602,9 @@ async def finalise_node(state: State) -> State:
     )
     still_failing = tests is None or not tests.passed
 
-    if complete and tests is not None and tests.passed:
+    if state.get("status") == "failed_sandbox":
+        status = "failed_sandbox"
+    elif complete and tests is not None and tests.passed:
         status = "succeeded"
     elif exhausted and still_failing:
         status = "failed_max_loops"

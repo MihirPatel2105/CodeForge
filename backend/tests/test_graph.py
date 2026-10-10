@@ -213,3 +213,22 @@ def test_complete_run_succeeds(design_with_four_files):
     result = asyncio.run(_finalise(state))
     assert result["status"] == "succeeded"
     assert "errors" not in result
+
+
+def test_finalise_preserves_sandbox_infrastructure_failure(design_with_four_files):
+    import asyncio
+
+    from app.schemas.agents import GeneratedFile
+
+    state = _state(
+        design_with_four_files,
+        ["database.py", "models.py", "schemas.py", "main.py"],
+        test_files=[GeneratedFile(path="test_main.py", content="x")],
+        status="failed_sandbox",
+        errors=[
+            {"agent": "sandbox", "code": "SandboxUnavailableError", "message": "TLS unavailable"}
+        ],
+    )
+    result = asyncio.run(_finalise(state))
+    assert result["status"] == "failed_sandbox"
+    assert result["errors"][0]["code"] == "SandboxUnavailableError"

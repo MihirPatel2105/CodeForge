@@ -298,7 +298,9 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
     case "agent.failed": {
       if (!isPipelineStage(event.agent)) return prev;
       const label = stageName(event.agent);
-      const safeFailure = "This step couldn't finish. Please try again.";
+      const safeFailure = event.agent === "sandbox" && event.code === "sandbox_unavailable"
+        ? "The execution environment is unavailable. Contact the operator to restore it, then retry."
+        : "This step couldn't finish. Please try again.";
       const entry: TimelineEntryData = {
         kind: "message",
         time,
