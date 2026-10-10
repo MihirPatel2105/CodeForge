@@ -77,3 +77,36 @@
 
 .cf-landing-atmosphere .lp-depth-layer { position: absolute; z-index: -1; inset: 0 0 auto; height: 720px; pointer-events: none; }
 @media (max-width: 600px), (prefers-reduced-motion: reduce) { .cf-landing-atmosphere .lp-depth-layer { transform: none !important; } }
+
+/* Agent constellation hero background. */
+.cf-constellation .lp-hero { background: #fcfcfb; }
+.constellation-layer { position: absolute; z-index: -1; inset: 0 0 auto; height: 760px; pointer-events: none; mask-image: linear-gradient(black 65%, transparent); }
+.constellation-canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 700px) { .constellation-layer { height: 640px; opacity: .65; } }
+.constellation-layer::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 0% 35%, #e8edf0, transparent 35%), radial-gradient(ellipse at 100% 40%, #e9edef, transparent 35%); opacity: .65; }
+.constellation-canvas { position: relative; }
+
+/* Independent transforms preserve the existing entrance animations. */
+.cf-constellation .lp-hero > :is(.lp-intro, h1) {
+  translate: 0 calc(var(--hero-y, 0) * 1px);
+  scale: var(--hero-scale, 1);
+}
+.cf-constellation .lp-hero > :is(.lp-lead, .lp-actions) {
+  translate: 0 calc(var(--hero-y, 0) * .65px);
+  filter: opacity(var(--hero-copy-opacity, 1));
+}
+.cf-constellation .lp-hero > .lp-actions:focus-within { filter: none; }
+.cf-constellation .lp-hero > .lp-product-scroll {
+  translate: 0 calc(var(--preview-y, 0) * 1px);
+}
+@media (max-width: 700px) {
+  .cf-constellation .lp-hero > :is(.lp-intro, h1, .lp-lead, .lp-actions) {
+    translate: 0 calc(var(--hero-y, 0) * .35px);
+    scale: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-constellation .lp-hero > :is(.lp-intro, h1, .lp-lead, .lp-actions, .lp-product-scroll) {
+    translate: none; scale: none; filter: none;
+  }
+}

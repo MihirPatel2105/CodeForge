@@ -10,13 +10,13 @@ test("all sections are available before scrolling and reduced motion stays still
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
 
   await stack.scrollIntoViewIfNeeded();
-  await expect(stack.getByRole("heading", { name: "Five specialists. One continuous workflow." })).toBeVisible();
+  await expect(stack.getByRole("heading", { name: "Five specialists. One real sandbox." })).toBeVisible();
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Explore the five agents" }).getByRole("button")).toHaveCount(5);
-  const agents = page.getByRole("navigation", { name: "Explore the five agents" });
+  await expect(page.getByRole("navigation", { name: "Explore the agents and sandbox" }).getByRole("button")).toHaveCount(6);
+  const agents = page.getByRole("navigation", { name: "Explore the agents and sandbox" });
   const architect = agents.getByRole("button", { name: "Architect", exact: true });
   await architect.focus();
   await page.keyboard.press("Enter");
@@ -107,10 +107,11 @@ test("homepage repair sequence plays once and supports pause, replay, and reduce
 });
 
 test("rapid agent selection settles on the latest choice and stays still with reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const agents = page.getByRole("navigation", { name: "Explore the five agents" });
+  const agents = page.getByRole("navigation", { name: "Explore the agents and sandbox" });
   await agents.scrollIntoViewIfNeeded();
-  for (const name of ["Architect", "Reviewer", "Coder", "Tester"]) {
+  for (const name of ["Architect", "Reviewer", "Coder", "Tester", "Sandbox"]) {
     await agents.getByRole("button", { name, exact: true }).click();
   }
   await expect(page.getByRole("heading", { name: "Run it. See what holds up." })).toBeVisible();
