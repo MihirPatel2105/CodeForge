@@ -66,6 +66,7 @@ export function SiteFooter() {
             heading="Product"
             links={[
               { href: "/how-it-works", label: "How it works" },
+              { href: "/playground/agent-city", label: "Agent City playground" },
               { href: "/demo/library", label: "Watch a run" },
               { href: "/how-it-works#technology", label: "Technology" },
               { href: "/about", label: "About" },
