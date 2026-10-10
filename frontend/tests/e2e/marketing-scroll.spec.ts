@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("marketing wheel scrolling eases and reacts to motion preferences", async ({ page }) => {
+test("app wheel scrolling eases and reacts to motion preferences", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");
   await expect(html).toHaveClass(/lenis/);
@@ -16,15 +16,15 @@ test("marketing wheel scrolling eases and reacts to motion preferences", async (
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(html).toHaveClass(/lenis/);
 
-  // Client navigation must destroy the shared window scroll controller.
+  // Client navigation must recreate one controller on every route.
   await page.getByRole("link", { name: "Sign in", exact: true }).first().click();
   await expect(page).toHaveURL(/\/login/);
-  await expect(html).not.toHaveClass(/lenis/);
+  await expect(html).toHaveClass(/lenis/);
   await page.goBack();
   await expect(html).toHaveClass(/lenis/);
 });
 
-for (const route of ["/about", "/how-it-works"]) {
+for (const route of ["/about", "/how-it-works", "/faq", "/login", "/playground/agent-city"]) {
   test(`${route} enables momentum and respects reduced motion on load`, async ({ page }) => {
     await page.goto(route);
     await expect(page.locator("html")).toHaveClass(/lenis/);

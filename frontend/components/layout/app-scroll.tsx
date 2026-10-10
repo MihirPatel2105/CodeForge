@@ -4,14 +4,10 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type Lenis from "lenis";
 
-const marketingRoutes = new Set(["/", "/about", "/how-it-works"]);
-
-export function MarketingScroll() {
+export function AppScroll() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!marketingRoutes.has(pathname)) return;
-
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     let disposed = false;
     let revision = 0;
@@ -36,11 +32,12 @@ export function MarketingScroll() {
 
       lenis = new Lenis({
         autoRaf: true,
-        lerp: 0.14,
+        lerp: 0.09,
         smoothWheel: true,
         syncTouch: false,
         anchors: { offset: -72 },
         allowNestedScroll: true,
+        prevent: node => node.tagName === "DIALOG" || node.tagName === "CANVAS",
       });
     };
 
