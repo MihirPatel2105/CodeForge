@@ -1,0 +1,46 @@
+# Local development only: a separate Docker daemon inside Docker Desktop.
+# This shares Docker Desktop's VM kernel; production requires a dedicated sandbox host.
+# Start with: docker compose -f docker-compose.yml -f compose.local-sandbox.yml up -d
+services:
+  sandbox-docker:
+    image: docker:29-dind@sha256:0b6d18a4a222e71c88be6034926b4f6cde2fc33c2218643d03ccfddc65995470
+    privileged: true
+    restart: unless-stopped
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
+      DOCKER_TLS_SAN: DNS:sandbox-docker
+    volumes:
+      - sandbox_docker_data:/var/lib/docker
+      - sandbox_docker_certs:/certs
+      - sandbox_docker_client:/certs/client
+    networks:
+      - sandbox-control
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  backend:
+    environment:
+      DOCKER_HOST: tcp://sandbox-docker:2376
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /run/codeforge/docker-client
+    volumes:
+      - sandbox_docker_client:/run/codeforge/docker-client:ro
+    networks:
+      - default
+      - sandbox-control
+    depends_on:
+      sandbox-docker:
+        condition: service_healthy
+
+networks:
+  sandbox-control:
+    internal: true
+
+volumes:
+  sandbox_docker_data:
+  sandbox_docker_certs:
+  sandbox_docker_client:

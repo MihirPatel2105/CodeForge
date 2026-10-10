@@ -124,6 +124,9 @@ Google Account → Security → 2-Step Verification → **App passwords** → ge
 
 ### 2. Start the stack
 
+For local Docker Desktop development, follow [local sandbox setup](docs/LOCAL_SANDBOX.md)
+to run a separate TLS daemon using the optional Compose override.
+
 Sandbox execution now requires a separate Docker daemon with mutual TLS. Set
 `SANDBOX_DOCKER_HOST=tcp://<sandbox-host>:2376` and `SANDBOX_DOCKER_CERTS_DIR`
 to the directory containing `ca.pem`, `cert.pem`, and `key.pem` before starting
