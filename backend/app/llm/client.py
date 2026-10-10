@@ -77,8 +77,19 @@ def configure() -> None:
         os.environ["LANGFUSE_PUBLIC_KEY"] = settings.langfuse_public_key
         os.environ["LANGFUSE_SECRET_KEY"] = settings.langfuse_secret_key
         os.environ["LANGFUSE_HOST"] = settings.langfuse_host
-        litellm.success_callback = ["langfuse"]
-        litellm.failure_callback = ["langfuse"]
+        from langfuse import Langfuse
+
+        from app.llm.tracing import LangfuseV2Logger
+
+        callback = LangfuseV2Logger(
+            Langfuse(
+                public_key=settings.langfuse_public_key,
+                secret_key=settings.langfuse_secret_key,
+                host=settings.langfuse_host,
+            )
+        )
+        litellm.success_callback = [callback]
+        litellm.failure_callback = [callback]
 
     _configured = True
 

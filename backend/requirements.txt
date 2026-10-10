@@ -16,7 +16,7 @@ urllib3>=2.8      # patched Docker HTTP transport
 oauthlib>=4       # patched transitive telemetry authentication dependency
 
 litellm
-langfuse<3  # v2 SDK: matches the langfuse:2 server and LiteLLM's callback
+langfuse<3  # v2 SDK: matches the langfuse:2 server; custom LiteLLM bridge in app/llm/tracing.py
 instructor  # structured output; every agent handoff goes through it
 
 langgraph
