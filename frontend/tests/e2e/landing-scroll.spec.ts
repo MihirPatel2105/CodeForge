@@ -16,6 +16,20 @@ test("desktop scroll advances the pipeline and section navigation", async ({ pag
     await expect(page.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator(".lp-agent-output li").first()).toHaveCSS("opacity", "1");
   }
+  // Moving backward restores the earlier stage and its partial output, without a click.
+  await track.evaluate(el => {
+    const start = el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
+    window.scrollTo({ top: start + (el.clientHeight - window.innerHeight * 0.64) * (2.03 / 6), behavior: "instant" });
+  });
+  await expect(page.locator(".lp-agent-phase")).toContainText("Coder");
+  await expect.poll(() => page.locator(".lp-agent-output li").last().evaluate(el => Number(getComputedStyle(el).opacity))).toBeLessThan(0.4);
+  await track.evaluate(el => {
+    const start = el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
+    window.scrollTo({ top: start + (el.clientHeight - window.innerHeight * 0.64) * (2.8 / 6), behavior: "instant" });
+  });
+  await expect(page.locator(".lp-agent-output li").last()).toHaveCSS("opacity", "1");
+  await expect(page.locator(".lp-agent-next")).toContainText("Reviewer");
+  await page.screenshot({ path: "/tmp/codeforge-agent-scroll-panel.png" });
   await page.getByRole("navigation", { name: "Landing page sections" }).getByRole("link", { name: "FAQ", exact: true }).click();
   await expect(page.locator("#faq-title")).toBeInViewport();
   await expect(page.locator('.lp-scroll-nav a[href="#questions"]')).toHaveAttribute("aria-current", "location");

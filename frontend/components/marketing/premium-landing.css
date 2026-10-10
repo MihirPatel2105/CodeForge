@@ -244,7 +244,7 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-scroll-nav a:hover .lp-scroll-label,.lp-scroll-nav a:focus-visible .lp-scroll-label { opacity: 1; }
 .cf-premium section[id] { scroll-margin-top: 88px; }
 .lp-agent-scroll-hint { margin: 0 0 18px; font-size: 12px; color: var(--lp-muted); }
-.lp-agent-track[data-scroll-enabled=true] { height: 260vh; }
+.lp-agent-track[data-scroll-enabled=true] { height: 320vh; }
 .lp-agent-track[data-scroll-enabled=true] .lp-agent-showcase { position: sticky; top: 18vh; }
 @media (max-width: 1250px) { .lp-scroll-nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .lp-agent-track[data-scroll-enabled=true] { height: auto; } .lp-agent-track .lp-agent-showcase { position: static; } }
@@ -252,3 +252,15 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-agent-nav button:disabled { cursor: default; opacity: 1; }
 .lp-agent-nav button:disabled:hover { color: var(--lp-muted); }
 .lp-agent-nav button:disabled[aria-pressed=true] { color: var(--lp-accent); }
+
+.lp-agent-scroll-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.lp-agent-scroll-heading .lp-agent-scroll-hint { display: flex; align-items: center; gap: 8px; margin: 0; }
+.lp-agent-counter { flex-shrink: 0; font: 500 12px var(--lp-mono); color: var(--lp-ink); font-variant-numeric: tabular-nums; }
+.lp-agent-counter > span { color: var(--lp-muted); }
+.lp-agent-label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.lp-agent-stage-rail { position: absolute; height: 2px; bottom: 0; left: 12px; right: 12px; background: var(--lp-rule); overflow: hidden; }
+.lp-agent-stage-rail > span { display: block; height: 100%; background: var(--lp-accent); transform-origin: left; }
+.lp-agent-nav button[data-complete=true] { color: var(--lp-ink); }
+.lp-agent-next { display: flex; align-items: center; gap: 8px; }
+.lp-agent-track[data-scroll-enabled=true] .lp-agent-content { min-height: 310px; }
+@media (max-width: 700px) { .lp-agent-scroll-heading { align-items: flex-start; } .lp-agent-scroll-hint { line-height: 1.6; } }
