@@ -41,23 +41,17 @@ export function AgentScrollStack({ agents }: { agents: Agent[] }) {
   return (
     <div ref={track} className="lp-agent-track" data-scroll-enabled={scrollEnabled}>
     <div className="lp-agent-showcase">
-      <p className="lp-agent-scroll-hint">{scrollEnabled ? "Scroll through the build, or choose a stage." : "Choose a stage to explore the build."}</p>
+      <p className="lp-agent-scroll-hint">{scrollEnabled ? "Scroll to follow each stage of the build." : "Choose a stage to explore the build."}</p>
       <LayoutGroup id={id}><nav className="lp-agent-nav" aria-label="Explore the agents and sandbox">
         {agents.map((item, index) => (
           <button
             key={item.name}
             type="button"
+            disabled={scrollEnabled}
             aria-pressed={index === selected}
             aria-controls={`${id}-content`}
             onClick={() => {
-              if (index !== selected) {
-                setSelected(index);
-                if (scrollEnabled && track.current) {
-                  const start = track.current.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
-                  const distance = track.current.offsetHeight - window.innerHeight * 0.64;
-                  window.scrollTo({ top: start + distance * ((index + 0.5) / agents.length), behavior: "smooth" });
-                }
-              }
+              if (!scrollEnabled) setSelected(index);
             }}
           >
             {index === selected && (reducedMotion

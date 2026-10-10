@@ -248,3 +248,7 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-agent-track[data-scroll-enabled=true] .lp-agent-showcase { position: sticky; top: 18vh; }
 @media (max-width: 1250px) { .lp-scroll-nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .lp-agent-track[data-scroll-enabled=true] { height: auto; } .lp-agent-track .lp-agent-showcase { position: static; } }
+
+.lp-agent-nav button:disabled { cursor: default; opacity: 1; }
+.lp-agent-nav button:disabled:hover { color: var(--lp-muted); }
+.lp-agent-nav button:disabled[aria-pressed=true] { color: var(--lp-accent); }
