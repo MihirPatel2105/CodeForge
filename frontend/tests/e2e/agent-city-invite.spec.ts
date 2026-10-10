@@ -31,7 +31,8 @@ for (const scenario of ["first-approval", "revised", "building", "finished"]) {
     const invite = page.getByRole("complementary", { name: "Agent City invitation" });
     if (scenario === "building") {
       await expect(invite).toBeVisible();
-      await expect(invite.getByRole("link", { name: "Play Agent City" })).toHaveAttribute("target", "_blank");
+      await expect(invite.getByRole("link", { name: "Play Agent City" })).not.toHaveAttribute("target", "_blank");
+      await expect(invite.getByRole("link", { name: "Play Agent City" })).toHaveAttribute("href", `/playground/agent-city?run=${id}`);
       await page.setViewportSize({ width: 375, height: 812 });
       expect(await invite.evaluate(el => el.getBoundingClientRect().right)).toBeLessThanOrEqual(375);
       await page.getByRole("button", { name: "Dismiss Agent City invitation" }).click();
