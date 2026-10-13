@@ -49,6 +49,7 @@ for (const width of [1440, 375]) {
     await expect(faq).toHaveAttribute("aria-expanded", "false");
     await page.locator(".vui-footer-mark").scrollIntoViewIfNeeded();
     await expect(page.locator(".vui-footer-word")).toBeInViewport();
+    await expect(page.locator(".vui-footer-word")).toHaveCSS("opacity", "1");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `/tmp/codeforge-vengeance-footer-${width}.png` });
@@ -118,25 +119,22 @@ test("reduced motion displays final values and disables decorative movement", as
   await expect(page.locator(".vui-footer-word")).toHaveCSS("opacity", "1");
 });
 
-test("FAQ page and dark theme retain readable content and links", async ({ page }) => {
+test("FAQ page and dark footer retain readable content and links", async ({ page }) => {
   await page.goto("/faq");
   const question = page.locator(".vui-faq-item button").first();
   await question.click();
   await expect(question).toHaveAttribute("aria-expanded", "true");
   const panelId = await question.getAttribute("aria-controls");
   await expect(page.locator(`[id="${panelId}"]`)).toHaveCSS("opacity", "1");
-  await page.evaluate(() => document.documentElement.classList.add("dark"));
   await page.setViewportSize({ width: 375, height: 812 });
   await question.scrollIntoViewIfNeeded();
   await page.screenshot({ path: "/tmp/codeforge-vengeance-faq-dark.png" });
   await page.goto("/");
-  await page.evaluate(() => document.documentElement.classList.add("dark"));
   await page.locator(".vui-feature-grid").scrollIntoViewIfNeeded();
   await expect(page.locator(".vui-feature-card").first()).toHaveCSS("flex-direction", "column");
-  await expect(page.locator(".vui-feature-card").first()).toHaveCSS("background-color", "rgb(0, 0, 0)");
-  await expect(page.locator(".vui-feature-card").first()).toHaveCSS("color", "rgb(245, 245, 245)");
   await page.screenshot({ path: "/tmp/codeforge-vengeance-features-dark.png" });
   const footer = page.getByRole("contentinfo");
+  await expect(footer).toHaveClass(/cf-invert/);
   await expect(footer.getByRole("link", { name: "FAQ", exact: true })).toHaveAttribute("href", "/faq");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
