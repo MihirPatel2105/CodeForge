@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { MotionProvider } from "@/components/layout/motion-provider";
 import { PageMotion } from "@/components/layout/page-motion";
 import { AuthEntryTransition } from "@/components/auth/auth-entry-transition";
+import { DesktopRecommendation } from "@/components/layout/desktop-recommendation";
 import { AppScroll } from "@/components/layout/app-scroll";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -27,7 +28,7 @@ export default async function RootLayout({
     <html suppressHydrationWarning lang="en" data-scroll-behavior="smooth">
       <body className="antialiased">
         <AppScroll />
-        <ThemeProvider nonce={nonce}><MotionProvider><PageMotion><AuthEntryTransition>{children}</AuthEntryTransition></PageMotion></MotionProvider></ThemeProvider>
+        <ThemeProvider nonce={nonce}><DesktopRecommendation /><MotionProvider><PageMotion><AuthEntryTransition>{children}</AuthEntryTransition></PageMotion></MotionProvider></ThemeProvider>
       </body>
     </html>
   );
