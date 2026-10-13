@@ -1,5 +1,7 @@
 "use client";
 
+import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
+import { FolderPreview } from "@/components/ui/vengeance/folder-preview";
 import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -277,7 +279,7 @@ function Figure({
       <dt className={LABEL}>{label}</dt>
       <dd className="mt-1 flex items-baseline gap-3">
         <span className="font-display text-[30px] font-[700] tracking-[-0.055em] text-fg">
-          {value}
+          <AnimatedNumber value={Number(value)} />
         </span>
         {hint && <span className="text-[12px] font-[600] text-ok">{hint}</span>}
       </dd>
@@ -321,6 +323,8 @@ function ProjectCard({ project }: { project: ProjectRow }) {
           />
         </span>
       </div>
+
+      <FolderPreview label="Project workspace" detail={stats.total ? `${stats.total} ${stats.total === 1 ? "run" : "runs"} · code and test results` : "Ready for your first run"} />
 
       {/* Outcome strip — one tick per run, newest at the right. Gives the shape of a
           project's history at a glance without adding another number to read.

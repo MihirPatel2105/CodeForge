@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { LineHoverLink } from "@/components/ui/vengeance/line-hover-link";
+import { AnimatedFooter } from "@/components/ui/vengeance/animated-footer";
 import { ArrowUpRight } from "lucide-react";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { LogoLockup } from "@/components/brand/logo-lockup";
@@ -103,7 +105,8 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <AnimatedFooter />
+        <div className="mt-8 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>
             © {new Date().getFullYear()} CodeForge
           </p>
@@ -131,12 +134,12 @@ function FooterColumn({
       <ul className="mt-3 flex flex-col gap-0.5">
         {links.map((link) => (
           <li key={link.href}>
-            <Link
+            <LineHoverLink
               href={link.href}
               className="inline-flex min-h-11 items-center rounded-sm text-[14px] leading-6 text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {link.label}
-            </Link>
+            </LineHoverLink>
           </li>
         ))}
       </ul>

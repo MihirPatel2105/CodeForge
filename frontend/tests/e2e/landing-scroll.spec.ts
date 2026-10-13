@@ -1,39 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-test("desktop scroll advances the pipeline and section navigation", async ({ page }) => {
+test("desktop agent grid preserves complete examples and section navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
-  const track = page.locator(".lp-agent-track");
-  await expect(track).toHaveAttribute("data-scroll-enabled", "true");
-  for (const [index, name] of ["PM", "Architect", "Coder", "Reviewer", "Tester", "Sandbox"].entries()) {
-    await track.evaluate((el, index) => {
-      const start = el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
-      window.scrollTo({ top: start + (el.clientHeight - window.innerHeight * 0.64) * ((index + 0.5) / 6), behavior: "instant" });
-    }, index);
-    await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
-    await expect(page.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator(".lp-agent-output li").first()).toHaveCSS("opacity", "1");
+  const cards = page.locator(".vui-agent-card");
+  await expect(cards).toHaveCount(6);
+  for (const card of await cards.all()) {
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toBeVisible();
+    await expect(card.locator(".vui-agent-artifact li").first()).toBeVisible();
   }
-  // Moving backward restores the earlier stage and its partial output, without a click.
-  await track.evaluate(el => {
-    const start = el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
-    window.scrollTo({ top: start + (el.clientHeight - window.innerHeight * 0.64) * (2.03 / 6), behavior: "instant" });
-  });
-  await expect(page.locator(".lp-agent-phase")).toContainText("Coder");
-  await expect.poll(() => page.locator(".lp-agent-output li").last().evaluate(el => Number(getComputedStyle(el).opacity))).toBeLessThan(0.4);
-  await track.evaluate(el => {
-    const start = el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18;
-    window.scrollTo({ top: start + (el.clientHeight - window.innerHeight * 0.64) * (2.8 / 6), behavior: "instant" });
-  });
-  await expect(page.locator(".lp-agent-output li").last()).toHaveCSS("opacity", "1");
-  await expect(page.locator(".lp-agent-next")).toContainText("Reviewer");
-  await page.screenshot({ path: "/tmp/codeforge-agent-scroll-panel.png" });
   await page.getByRole("navigation", { name: "Landing page sections" }).getByRole("link", { name: "FAQ", exact: true }).click();
   await expect(page.locator("#faq-title")).toBeInViewport();
   await expect(page.locator('.lp-scroll-nav a[href="#questions"]')).toHaveAttribute("aria-current", "location");
-  await page.screenshot({ path: "/tmp/codeforge-landing-desktop.png" });
   expect(errors).toEqual([]);
 });
 
@@ -42,11 +23,11 @@ for (const mode of ["mobile", "reduced"] as const) {
     await page.setViewportSize(mode === "mobile" ? { width: 390, height: 844 } : { width: 1440, height: 1000 });
     if (mode === "reduced") await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    await expect(page.locator(".lp-agent-track")).toHaveAttribute("data-scroll-enabled", "false");
-    await expect(page.getByRole("button", { name: "Sandbox", exact: true })).toBeEnabled();
-    await page.getByRole("button", { name: "Sandbox", exact: true }).click();
-    await expect(page.locator(".lp-agent-phase")).toContainText("Sandbox");
+    const cards = page.locator(".vui-agent-card");
+    await expect(cards).toHaveCount(6);
+    await cards.last().scrollIntoViewIfNeeded();
+    await expect(cards.last()).toContainText("Sandbox");
+    await expect(cards.last().getByRole("heading", { name: "Run it. See what holds up." })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.screenshot({ path: `/tmp/codeforge-landing-${mode}.png` });
   });
 }

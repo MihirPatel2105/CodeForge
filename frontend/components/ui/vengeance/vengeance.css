@@ -1,0 +1,64 @@
+/* Vengeance UI adaptations; see docs/vendor/vengeance-ui.md for MIT attribution. */
+.vui-number { display: inline-block; font-variant-numeric: tabular-nums; }
+.vui-number-digits { display: inline-flex; vertical-align: bottom; }
+.vui-digit { display: inline-block; height: 1.2em; line-height: 1.2; width: .64em; overflow: hidden; }
+.vui-digit-strip { display: flex; flex-direction: column; }
+.vui-digit-strip>span { flex: none; height: 1.2em; text-align: center; }
+.vui-generate { position: relative; isolation: isolate; overflow: hidden; }
+.vui-generate-sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg,transparent 25%,color-mix(in srgb,currentColor 13%,transparent),transparent 75%); transform: translateX(-110%); }
+.vui-generate:not(:disabled):hover .vui-generate-sheen,.vui-generate:not(:disabled):focus-visible .vui-generate-sheen { transform: translateX(110%); transition: transform .65s ease; }
+.vui-generate[data-generating=true] .vui-generate-sheen { animation: vui-sheen 1.5s ease-in-out infinite; }
+.vui-generate-spinner { animation: vui-spin 1s linear infinite; }
+@keyframes vui-sheen { to { transform: translateX(110%); } }
+@keyframes vui-spin { to { transform: rotate(360deg); } }
+.vui-line-link { text-decoration: none; }
+.vui-line-link>span { position: relative; display: inline-flex; align-items: center; gap: inherit; }
+.vui-line-link>span::after { content: ""; position: absolute; inset: auto 0 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .22s ease; }
+.vui-line-link:hover>span::after,.vui-line-link:focus-visible>span::after { transform: scaleX(1); transform-origin: left; }
+.vui-folder-preview { display: flex; align-items: center; gap: 14px; padding-block: 18px 22px; }
+.vui-folder { position: relative; width: 58px; height: 44px; flex: none; perspective: 240px; }
+.vui-folder-back { position: absolute; inset: 5px 0 0; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-radius: 5px; }
+.vui-folder-back::before { content: ""; position: absolute; top: -6px; left: -1px; width: 26px; height: 8px; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-bottom: 0; border-radius: 5px 5px 0 0; }
+.vui-folder-paper { position: absolute; inset: 5px 7px 4px; display: flex; justify-content: center; padding-top: 4px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 3px; color: var(--fg-muted); transition: transform .25s ease; }
+.vui-folder-cover { position: absolute; inset: 15px -2px -1px; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-radius: 5px; transform-origin: bottom; transition: transform .25s ease; }
+.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper { transform: translateY(-7px) rotate(-5deg); }
+.cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: rotateX(-25deg); }
+.vui-faq { width: 100%; }
+.vui-faq-item { border-bottom: 1px solid var(--rule); }
+.vui-faq-item h3 { margin: 0; }
+.vui-faq-item button { display: flex; align-items: center; gap: 18px; width: 100%; min-height: 80px; padding: 20px 18px; border-left: 3px solid transparent; color: var(--fg); background: transparent; text-align: left; font-size: 17px; line-height: 1.5; font-weight: 550; cursor: pointer; transition: background-color .2s,border-color .2s; }
+.vui-faq-item button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.vui-faq-item button:hover,.vui-faq-item[data-open=true] button { border-left-color: var(--accent); background: var(--accent-soft); }
+.vui-faq-symbol { width: 20px; flex: none; font-size: 26px; font-weight: 400; color: var(--fg-muted); }
+.vui-faq-category { display: block; margin-bottom: 6px; font-size: 12px; color: var(--fg-muted); }
+.vui-faq-item p { padding: 18px 24px 26px 59px; margin: 0; color: var(--fg-muted); font-size: 14px; line-height: 1.8; }
+.vui-help { display: inline-grid; place-items: center; width: 28px; height: 28px; vertical-align: middle; border-radius: 50%; color: var(--fg-faint); cursor: pointer; }
+.vui-help:hover,.vui-help:focus-visible { background: var(--accent-soft); color: var(--fg); }
+.vui-help:focus-visible { outline: 2px solid var(--accent); }
+.vui-tooltip { max-width: min(260px,calc(100vw - 32px)); padding: 12px 16px; border-radius: 14px; background: var(--fg); color: var(--surface); font-size: 12px; line-height: 1.6; box-shadow: 0 8px 24px color-mix(in srgb,var(--fg) 12%,transparent); transform-origin: var(--transform-origin); transition: opacity .15s,transform .22s cubic-bezier(.22,1,.36,1); }
+.vui-tooltip[data-starting-style],.vui-tooltip[data-ending-style] { opacity: 0; transform: translateY(4px) scale(.96); }
+.vui-agent-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.vui-agent-card { display: flex; flex-direction: column; min-width: 0; padding: 28px; border: 1px solid var(--rule); border-radius: 24px; background: var(--surface); }
+.vui-agent-card:nth-child(2),.vui-agent-card:nth-child(5) { background: var(--bg); }
+.vui-agent-top { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--fg-muted); }
+.vui-agent-icon { display: grid; place-items: center; width: 42px; height: 42px; background: var(--accent-soft); color: var(--fg); border-radius: 12px; }
+.vui-agent-card h3 { margin: 22px 0 12px; color: var(--fg); font-size: 23px; line-height: 1.2; letter-spacing: -.035em; font-weight: 600; }
+.vui-agent-card>p { margin: 0 0 24px; color: var(--fg-muted); font-size: 14px; line-height: 1.75; }
+.vui-agent-artifact { margin-top: auto; padding: 16px; background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; }
+.vui-agent-artifact>span { display: block; padding-bottom: 12px; border-bottom: 1px solid var(--rule); font-size: 12px; font-weight: 600; color: var(--fg); }
+.vui-agent-artifact ul { list-style: none; padding: 0; margin: 12px 0 0; color: var(--fg-muted); font-family: var(--font-mono),monospace; font-size: 11px; line-height: 1.9; overflow-wrap: anywhere; }
+.vui-agent-note { margin-top: 18px; color: var(--fg-muted); font-size: 11px; }
+.vui-feature-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.vui-feature-card { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0; height: auto; min-height: 250px; padding: 28px; border: 1px solid var(--rule); border-radius: 24px; background: var(--surface); text-align: left; white-space: normal; color: var(--fg); }
+.vui-feature-card:hover { background: var(--accent-soft); }
+.vui-feature-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+.vui-feature-top>svg:first-child { width: 26px; height: 26px; }
+.vui-feature-title { font-size: 21px; font-weight: 600; line-height: 1.3; letter-spacing: -.03em; }
+.vui-feature-description { margin-top: 12px; color: var(--fg-muted); font-size: 14px; font-weight: 400; line-height: 1.7; }
+.vui-feature-more { margin-top: auto; padding-top: 24px; color: var(--fg-muted); font-size: 12px; font-weight: 550; }
+.vui-feature-dialog-icon { display: inline-flex; align-self: flex-start; padding: 16px; border-radius: 16px; background: var(--accent-soft); color: var(--fg); margin-bottom: 12px; }
+.vui-footer-mark { overflow: hidden; padding-top: 40px; border-bottom: 1px solid var(--rule); }
+.vui-footer-word { display: block; font-family: var(--font-display),sans-serif; font-size: clamp(48px,14vw,175px); letter-spacing: -.075em; font-weight: 700; line-height: 1.05; color: var(--fg); }
+@media(max-width: 1000px) { .vui-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.vui-agent-card { padding: 24px; } }
+@media(max-width: 650px) { .vui-agent-grid,.vui-feature-grid { grid-template-columns: minmax(0,1fr); }.vui-feature-card { min-height: 220px; }.vui-faq-item button { padding: 18px 12px; font-size: 16px; gap: 12px; }.vui-faq-item p { padding: 16px 16px 24px 47px; } }
+@media(prefers-reduced-motion: reduce) { .vui-generate-sheen,.vui-generate-spinner { animation: none !important; }.vui-generate-sheen,.vui-folder-paper,.vui-folder-cover,.vui-line-link>span::after,.vui-tooltip,.vui-faq-item button { transition: none !important; }.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper,.cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: none; } }

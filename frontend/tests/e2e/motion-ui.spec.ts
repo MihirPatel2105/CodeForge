@@ -15,20 +15,10 @@ test("all sections are available before scrolling and reduced motion stays still
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Explore the agents and sandbox" }).getByRole("button")).toHaveCount(6);
-  const agents = page.getByRole("navigation", { name: "Explore the agents and sandbox" });
-  const architect = agents.getByRole("button", { name: "Architect", exact: true });
-  await architect.focus();
-  await page.keyboard.press("Enter");
-  await expect(architect).toHaveAttribute("aria-pressed", "true");
+  await expect(stack.locator(".vui-agent-card")).toHaveCount(6);
   await expect(stack.getByRole("heading", { name: "A clear plan. Before the code." })).toBeVisible();
-  await expect(stack.getByText("/books/{id}", { exact: true })).toHaveCount(3);
-  await expect(stack.getByText("Example output", { exact: true })).toBeVisible();
-  await expect(stack.locator(".lp-agent-content")).toHaveCSS("animation-name", "none");
-  await agents.getByRole("button", { name: "Reviewer", exact: true }).click();
   await expect(stack.getByText("Requested change → Coder", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 720 });
-  await agents.getByRole("button", { name: "Tester", exact: true }).click();
   await expect(stack.getByText("Failures can trigger another repair", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/about");
@@ -106,18 +96,17 @@ test("homepage repair sequence plays once and supports pause, replay, and reduce
   await expect(pipeline.getByText(/Tests passed/)).toBeVisible();
 });
 
-test("rapid agent selection settles on the latest choice and stays still with reduced motion", async ({ page }) => {
+test("all agent cards remain readable when motion preference changes", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const agents = page.getByRole("navigation", { name: "Explore the agents and sandbox" });
-  await agents.scrollIntoViewIfNeeded();
-  for (const name of ["Architect", "Reviewer", "Coder", "Tester", "Sandbox"]) {
-    await agents.getByRole("button", { name, exact: true }).click();
-  }
-  await expect(page.getByRole("heading", { name: "Run it. See what holds up." })).toBeVisible();
-  await expect(page.locator(".lp-agent-content")).toHaveCount(1);
+  const cards = page.locator(".vui-agent-card");
+  await expect(cards).toHaveCount(6);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".lp-agent-content")).toHaveCSS("transform", "none");
+  for (const card of await cards.all()) {
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toHaveCSS("opacity", "1");
+    await expect(card).toHaveCSS("transform", "none");
+  }
 });
 
 test("API cards animate, respect preference changes, and preserve keyboard navigation", async ({ page }) => {

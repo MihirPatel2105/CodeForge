@@ -1,5 +1,8 @@
 "use client";
 
+import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
+import { GenerateButton } from "@/components/ui/vengeance/generate-button";
+import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -213,20 +216,7 @@ export function ProjectDetail({
                 </Notice>
               )}
 
-              <Button
-                onClick={startRun}
-                disabled={!prompt.trim() || starting}
-                className="h-12 w-full gap-2 rounded-xl text-[14px]"
-              >
-                {starting ? (
-                  "Starting…"
-                ) : (
-                  <>
-                    Start run
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </>
-                )}
-              </Button>
+              <GenerateButton onClick={startRun} disabled={!prompt.trim()} isGenerating={starting} />
 
               <p className="flex gap-2 text-[11.5px] leading-[1.5] text-fg-faint">
                 <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -504,9 +494,9 @@ function Figure({
         label === "Average loops" && "border-t border-rule sm:border-t-0",
       )}
     >
-      <dt className={cn(LABEL, "text-[12px]")}>{label}</dt>
+      <dt className={cn(LABEL, "text-[12px]")}>{label}{label === "Average loops" && <AnimatedTooltip label="average loops" content="Average repair iterations across this project's runs. A lower value means fewer repair passes, not necessarily a better API." />}</dt>
       <dd className="font-display mt-1 text-[26px] font-[700] tracking-[-0.05em] text-fg">
-        {value}
+        {Number.isFinite(Number(value)) ? <AnimatedNumber value={Number(value)} formatter={() => value} /> : value}
       </dd>
     </div>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
+
 import { motion } from "motion/react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motionSpring } from "@/lib/motion-tokens";
@@ -110,6 +112,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
       {/* Role and repeat pass remain readable independently of the state color. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className={cn(typeScale.cardTitle, "text-fg")}>{name}</span>
+        <AnimatedTooltip label={name} content={job} />
         {iteration > 0 && (
           <span
             key={`pass-${iteration}`}

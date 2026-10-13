@@ -1,15 +1,16 @@
 "use client";
 
 import { motion } from "motion/react";
-import { MotionCollapse } from "@/components/ui/motion-collapse";
+import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
+import { AgentBentoGrid } from "@/components/ui/vengeance/agent-bento-grid";
+import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-grid";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, Check, ChevronDown, Code2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { LandingScrollNav } from "./landing-scroll-nav";
 import { SiteHeader } from "./site-header";
-import { AgentScrollStack } from "./agent-scroll-stack";
 import { ProductScrollPreview } from "./product-scroll-preview";
 import { PipelineWalkthrough } from "./pipeline-walkthrough";
 import { SiteFooter } from "./marketing-actions";
@@ -74,7 +75,7 @@ export function PremiumLanding() {
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <motion.div {...reveal} className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One real sandbox.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>
-          <AgentScrollStack agents={agents} />
+          <AgentBentoGrid agents={agents} />
         </section>
 
         <section id="repair-loop" className="lp-loop-section" aria-labelledby="loop-title">
@@ -88,45 +89,16 @@ export function PremiumLanding() {
           </div>
         </section>
 
-        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><motion.div {...reveal} className="lp-section-intro"><h2 id="control-title">AI does the work.<br />You call the shots.</h2><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><div className="lp-control-grid"><motion.article {...reveal}><ShieldCheck size={28} strokeWidth={1.5} aria-hidden /><h3>Approve before it builds.</h3><p>Review the requirements and architecture before the agents move forward.</p></motion.article><motion.article {...reveal}><Code2 size={28} strokeWidth={1.5} aria-hidden /><h3>See inside the process.</h3><p>Follow agent decisions, inspect generated files, and read the review feedback.</p></motion.article><motion.article {...reveal}><Terminal size={28} strokeWidth={1.5} aria-hidden /><h3>Get the actual outcome.</h3><p>Tests run in an isolated sandbox. See the output and download the artifacts.</p></motion.article></div></section>
+        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><motion.div {...reveal} className="lp-section-intro"><h2 id="control-title">AI does the work.<br />You call the shots.</h2><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
+          { title: "Approve before it builds.", description: "Review the requirements and architecture before the agents move forward.", icon: ShieldCheck, content: "Your run pauses at two checkpoints. Read the requirements first, then inspect the system design. Approve or request changes before implementation continues. These are decisions you make during the real run." },
+          { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
+          { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
+        ]} /></section>
 
-        <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><div>{questions.map(question => <LandingFaqItem key={question.title} title={question.title} answer={question.answer} />)}</div></motion.section>
+        <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
         <motion.section {...reveal} id="start-building" className="lp-closing"><h2>What will you build?</h2><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
       </main>
       <SiteFooter />
-    </div>
-  );
-}
-
-function LandingFaqItem({ title, answer }: { title: string; answer: string }) {
-  const reducedMotion = useMotionPreference();
-  const [open, setOpen] = useState(false);
-  const id = useId();
-
-  return (
-    <div className="lp-faq-item" data-open={open}>
-      <h3>
-        <button
-          type="button"
-          id={`${id}-question`}
-          aria-expanded={open}
-          aria-controls={`${id}-answer`}
-          onClick={() => setOpen((value) => !value)}
-        >
-          {title}
-          <motion.span animate={{ rotate: open ? 180 : 0 }} transition={reducedMotion ? { duration: 0 } : undefined} className="inline-flex" aria-hidden><ChevronDown size={20} /></motion.span>
-        </button>
-      </h3>
-      <MotionCollapse
-        className="lp-faq-answer"
-        open={open}
-        id={`${id}-answer`}
-        aria-labelledby={`${id}-question`}
-        aria-hidden={!open}
-        inert={!open}
-      >
-        <div className="lp-faq-answer-inner"><p>{answer}</p></div>
-      </MotionCollapse>
     </div>
   );
 }
