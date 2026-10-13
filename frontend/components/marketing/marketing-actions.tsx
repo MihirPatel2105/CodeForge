@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { LineHoverLink } from "@/components/ui/vengeance/line-hover-link";
-import { AnimatedFooter } from "@/components/ui/vengeance/animated-footer";
 import { ArrowUpRight } from "lucide-react";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { LogoLockup } from "@/components/brand/logo-lockup";
@@ -105,7 +104,6 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <AnimatedFooter />
         <div className="mt-8 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>
             © {new Date().getFullYear()} CodeForge

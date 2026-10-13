@@ -57,8 +57,6 @@
 .vui-feature-description { margin-top: 12px; color: var(--fg-muted); font-size: 14px; font-weight: 400; line-height: 1.7; }
 .vui-feature-more { margin-top: auto; padding-top: 24px; color: var(--fg-muted); font-size: 12px; font-weight: 550; }
 .vui-feature-dialog-icon { display: inline-flex; align-self: flex-start; padding: 16px; border-radius: 16px; background: var(--accent-soft); color: var(--fg); margin-bottom: 12px; }
-.vui-footer-mark { overflow: hidden; padding-block: clamp(40px,5vw,64px) 12px; }
-.vui-footer-word { display: block; width: fit-content; font-family: var(--font-display-stack),sans-serif; font-size: clamp(52px,10vw,136px); letter-spacing: -.045em; font-weight: 600; line-height: 1.2; color: var(--fg); }
 @media(max-width: 1000px) { .vui-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.vui-agent-card { padding: 24px; } }
 @media(max-width: 650px) { .vui-agent-grid,.vui-feature-grid { grid-template-columns: minmax(0,1fr); }.vui-feature-card { min-height: 220px; }.vui-faq-item button { padding: 18px 12px; font-size: 16px; gap: 12px; }.vui-faq-item p { padding: 16px 16px 24px 47px; } }
 @media(prefers-reduced-motion: reduce) { .vui-generate-sheen,.vui-generate-spinner { animation: none !important; }.vui-generate-sheen,.vui-folder-paper,.vui-folder-cover,.vui-line-link>span::after,.vui-tooltip,.vui-faq-item button { transition: none !important; }.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper,.cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: none; } }

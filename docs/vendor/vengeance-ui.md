@@ -1,7 +1,7 @@
 # Vengeance UI adaptations
 
 Source: https://github.com/Ashutoshx7/VengeanceUI/tree/main/public/r
-Retrieved 2026-10-13. The nine selected registry components are adapted in
+Retrieved 2026-10-13. Eight selected registry components are adapted in
 `frontend/components/ui/vengeance/`. These are focused CodeForge adaptations,
 not unmodified registry installs. Existing Motion, Base UI and Next Link replace
 Framer Motion, custom modal handling and GSAP. No extra runtime dependency is needed.
@@ -14,7 +14,7 @@ Framer Motion, custom modal handling and GSAP. No extra runtime dependency is ne
 - Line Hover Link: slide underline; Next Link and keyboard focus.
 - Animated Tooltip: spring entrance; Base UI positioning, Escape and touch opening.
 - Expandable Bento Grid: feature cards opening accessible Base UI dialogs.
-- Animated Footer: wordmark scroll reveal using Motion; existing footer links retained.
+- Animated Footer was evaluated and then removed at user request; the original footer links and copyright remain.
 
 Registry JSON SHA-256 at retrieval:
 

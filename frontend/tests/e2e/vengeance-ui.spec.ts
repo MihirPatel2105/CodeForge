@@ -47,9 +47,8 @@ for (const width of [1440, 375]) {
     await expect(faq).toHaveAttribute("aria-expanded", "true");
     await faq.click();
     await expect(faq).toHaveAttribute("aria-expanded", "false");
-    await page.locator(".vui-footer-mark").scrollIntoViewIfNeeded();
-    await expect(page.locator(".vui-footer-word")).toBeInViewport();
-    await expect(page.locator(".vui-footer-word")).toHaveCSS("opacity", "1");
+    await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
+    await expect(page.locator(".vui-footer-word")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `/tmp/codeforge-vengeance-footer-${width}.png` });
@@ -115,8 +114,8 @@ test("reduced motion displays final values and disables decorative movement", as
   await page.goto(`/projects/${project.id}`);
   await expect(page.locator(".vui-generate-sheen")).toHaveCSS("animation-name", "none");
   await page.goto("/");
-  await page.locator(".vui-footer-mark").scrollIntoViewIfNeeded();
-  await expect(page.locator(".vui-footer-word")).toHaveCSS("opacity", "1");
+  await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
+  await expect(page.locator(".vui-footer-word")).toHaveCount(0);
 });
 
 test("FAQ page and dark footer retain readable content and links", async ({ page }) => {
