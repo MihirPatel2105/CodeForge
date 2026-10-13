@@ -39,6 +39,14 @@ def _terminal(envelope) -> bool:
     return envelope.to_dict()["event"] in {"run.completed", "run.failed"}
 
 
+async def _replay_latest_attempt(run_id: str, after_id: int) -> list[bus.Envelope]:
+    replay = await bus.replay(run_id, after_id=after_id)
+    restarted = max(
+        (item.id for item in replay if item.to_dict()["event"] == "run.retried"), default=0
+    )
+    return [item for item in replay if not (_terminal(item) and item.id < restarted)]
+
+
 async def _event_stream(
     request: Request,
     run_id: str,
@@ -53,7 +61,7 @@ async def _event_stream(
     try:
         if authorize is not None and not await authorize():
             return
-        for envelope in await bus.replay(run_id, after_id=sent):
+        for envelope in await _replay_latest_attempt(run_id, sent):
             if authorize is not None and not await authorize():
                 return
             sent = max(sent, envelope.id)
@@ -80,7 +88,7 @@ async def _event_stream(
             # reaches neither path — observed live, with agent.started vanishing from an
             # otherwise complete stream.
             if envelope.id > sent + 1:
-                for missed in await bus.replay(run_id, after_id=sent):
+                for missed in await _replay_latest_attempt(run_id, sent):
                     if missed.id >= envelope.id:
                         break
                     if authorize is not None and not await authorize():

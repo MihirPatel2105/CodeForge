@@ -118,6 +118,8 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | GET | `/runs/{id}/files` | current generated file tree |
 | GET | `/runs/{id}/file-history` | archived per-iteration versions for the Diff panel; owner-only |
 | GET | `/runs/{id}/artifacts` | GridFS zip download |
+| GET | `/runs/{id}/retry` | Owner-only availability and remaining manual recovery attempts |
+| POST | `/runs/{id}/retry` | Recover an eligible terminal provider failure from its checkpoint (202); normal admission limits apply |
 | GET | `/runs/{id}/preview` | Start or reuse a private temporary sandbox and list generated API endpoints |
 | POST | `/runs/{id}/preview/request` | Send `{method, path, body?}` to the generated API inside that sandbox; return its HTTP status and body |
 | DELETE | `/runs/{id}/preview` | Remove the preview and its temporary data |
@@ -157,6 +159,12 @@ Conventions
 - Errors: `{"error": {"code": "...", "message": "...", "run_id": "..."}}`, correct HTTP status.
 - `POST /runs` returns immediately (202) and executes the graph in the background — the client
   then attaches to the SSE stream. Never block the HTTP request on a full run.
+- Preview operations include `parameters` (default `[]`), with `name`, `location`
+  (`path` or `query`), `required`, `description`, and resolved local `schema`. Path-level
+  definitions are inherited and operation-level definitions override by name and location.
+  External references are not fetched. The tester guides primitive values and checks required
+  fields, types, enums, numeric bounds, and string lengths; the generated API remains the
+  authority for additional schema rules and complex parameter serialization.
 - Try API is owner-only and available only for succeeded runs with passing sandbox tests.
   Its Docker container has no network or published port, shares no database with the platform,
   and expires after 15 minutes. It is an in-app preview, not a deployed API URL.
@@ -390,3 +398,25 @@ registration, and sign-in checks it against the current user. A late credential 
 request started before recovery is therefore unusable even if deletion missed it. Passkey
 sign-count updates never upsert deleted credentials. Version zero preserves existing credentials
 until recovery; ordinary password changes keep registered passkeys working.
+
+### Manual provider recovery
+
+`GET /runs/{id}/retry` returns `{stage, remaining}`; unavailable recovery returns
+`{stage: null, remaining: 0}`. `POST` accepts no stage supplied by the caller: the
+server selects it from a matching stopped checkpoint and provider-exhaustion
+records. A failed requirements/design stage may be stopped at its approval boundary;
+no empty plan is offered for approval. It atomically claims the failed run and reserves the existing account/global
+capacity and monthly execution allowance. Admission failure restores the original
+failed state and releases reservations. Three manual retries are allowed per run.
+
+Successful earlier stages, generated files, usage history and repair-loop budgets
+remain. Regenerated requirements/design must pass their human approval gates again.
+Initial Coder recovery regenerates only missing files; recovery of a failed Coder
+repair pass is intentionally unavailable. Cancelled/rejected/succeeded runs, loop-cap
+failures, sandbox failures, unrelated exceptions and missing checkpoints cannot retry.
+Evaluation runs with automatic approvals are not eligible.
+
+The `run.retried` SSE event carries `{agent, attempt}`. Event IDs remain monotonic
+after process restarts. Replays omit terminal events superseded by a later retry,
+while retaining earlier agent/file history. The browser resets downstream stages
+and opens a fresh stream after an accepted retry.

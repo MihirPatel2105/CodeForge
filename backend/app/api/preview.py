@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from app.core.api_compatibility import compare_openapi
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import ConflictError, PreviewRequestError, PreviewUnavailableError
+from app.core.preview_parameters import operation_parameters
 from app.models import Run
 from app.sandbox.preview import PREVIEW_TTL_SECONDS, preview_request, stop_preview
 from app.sandbox.runner import SandboxUnavailableError
@@ -139,6 +140,7 @@ def _operations(openapi: dict[str, Any]) -> list[PreviewOperation]:
             operations.append(
                 PreviewOperation(
                     method=method.upper(),
+                    parameters=operation_parameters(openapi, routes, operation),
                     path=path,
                     summary=operation.get("summary") or "",
                     has_body=body_schema is not None,

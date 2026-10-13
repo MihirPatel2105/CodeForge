@@ -84,6 +84,13 @@ async def _after_invoke(run_id: str, graph, config: dict) -> None:
     if phase is None:
         return
 
+    output = "requirements" if phase == "pm" else "design"
+    if not snapshot.values.get(output):
+        # A provider failure has no plan for a human to approve; keep its checkpoint
+        # recoverable rather than displaying an empty approval form.
+        await _finish(run_id, "failed_llm", f"{phase} could not complete its plan")
+        return
+
     run = await Run.get(run_id)
     if run is not None:
         run.status = "awaiting_approval"
@@ -320,3 +327,50 @@ async def await_all(seconds: float | None = None) -> None:
     with contextlib.suppress(TimeoutError):
         async with asyncio.timeout(seconds):
             await asyncio.gather(*tasks, return_exceptions=True)
+
+
+async def retry_run(
+    run_id: str, graph, config: dict, stage: str, attempt: int, update: dict
+) -> None:
+    """Recover a terminal provider failure; the API has atomically claimed admission."""
+    from app.events import bus
+    from app.graph.recovery import PREDECESSORS
+
+    ready = asyncio.Event()
+    started = False
+
+    async def recover() -> None:
+        nonlocal started
+        started = True
+        try:
+            await mark_execution(run_id, True)
+            await bus.restore_counter(run_id)
+            await events.run_retried(run_id, stage, attempt)
+            ready.set()
+            await graph.aupdate_state(config, update, as_node=PREDECESSORS[stage])
+            await graph.ainvoke(None, config=config)
+            await _after_invoke(run_id, graph, config)
+        except asyncio.CancelledError:
+            await _finish(run_id, "cancelled", "cancelled by the user")
+            raise
+        except Exception as exc:
+            await _finish(run_id, "failed_llm", f"{type(exc).__name__}: {exc}"[:400])
+        finally:
+            ready.set()
+            try:
+                await mark_execution(run_id, False)
+            finally:
+                _running.pop(run_id, None)
+
+    task = asyncio.create_task(recover())
+    _running[run_id] = task
+    waiter = asyncio.create_task(ready.wait())
+    try:
+        # New stream subscriptions must see the retry marker before replaying old failures.
+        await asyncio.wait({task, waiter}, return_when=asyncio.FIRST_COMPLETED)
+        if task.cancelled() and not started:
+            await _finish(run_id, "cancelled", "cancelled by the user")
+            await mark_execution(run_id, False)
+            _running.pop(run_id, None)
+    finally:
+        waiter.cancel()

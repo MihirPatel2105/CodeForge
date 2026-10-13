@@ -120,6 +120,7 @@ def test_preview_discovers_routes_and_relays_a_request(client, registered_user):
                 "method": "POST",
                 "path": "/items",
                 "summary": "Create item",
+                "parameters": [],
                 "has_body": True,
                 "example_body": {"name": "Alex", "count": 0},
                 "example_response": {"id": "example", "name": "Alex"},

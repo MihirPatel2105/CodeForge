@@ -105,6 +105,10 @@ class RunState(TypedDict, total=False):
     awaiting_approval: ApprovalPhase | None
     approvals: dict[str, ApprovalRecord]
 
+    # Manual provider recovery does not reset repair-loop budgets.
+    stage_retries: int
+    retry_stage: AgentName | None
+
     # meta
     status: RunStatus
     current_agent: AgentName | None

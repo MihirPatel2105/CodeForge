@@ -97,6 +97,11 @@ A chronological feed of what is happening, newest at the bottom, auto-scrolling.
 are short, human sentences, each with a timestamp, the agent it came from, and an icon or
 colour for the kind of event.
 
+The Live timeline supports literal text search, agent selection, and All activity / Failures /
+Repair loops views. Filters combine and can be cleared without changing the run history.
+The result count shows matching versus total entries. Only matching new entries contribute
+to the unread button while the viewer is reading older activity.
+
 Real examples, taken from an actual run:
 
 ```

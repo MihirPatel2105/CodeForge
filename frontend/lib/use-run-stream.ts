@@ -23,8 +23,15 @@ const MAX_RETRY_MS = 15000;
  * "SSE connections drop... reconnect + replay from last event id").
  */
 export function useRunStream(runId: string) {
+  const [generation, setGeneration] = useState(0);
   const [snapshot, setSnapshot] = useState<RunSnapshot>(initialSnapshot);
   const [connectionLost, setConnectionLost] = useState<ConnectionLostInfo | null>(null);
+
+  const restart = useCallback(() => {
+    setSnapshot(initialSnapshot());
+    setConnectionLost(null);
+    setGeneration(value => value + 1);
+  }, []);
 
   const refreshRef = useRef<(() => void) | null>(null);
   const refresh = useCallback(() => refreshRef.current?.(), []);
@@ -135,7 +142,7 @@ export function useRunStream(runId: string) {
       if (retryTimer) clearTimeout(retryTimer);
       if (staleTimer) clearTimeout(staleTimer);
     };
-  }, [runId]);
+  }, [runId, generation]);
 
-  return { snapshot, connectionLost, refresh };
+  return { snapshot, connectionLost, refresh, restart };
 }

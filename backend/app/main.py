@@ -21,6 +21,7 @@ from app.api.health import router as health_router
 from app.api.passkeys import router as passkeys_router
 from app.api.preview import router as preview_router
 from app.api.projects import router as projects_router
+from app.api.run_retry import router as run_retry_router
 from app.api.runs import router as runs_router
 from app.api.stream import router as stream_router
 from app.config import settings
@@ -229,6 +230,7 @@ def create_app() -> FastAPI:
     app.include_router(projects_router)
     app.include_router(preview_router)
     app.include_router(runs_router)
+    app.include_router(run_retry_router)
     app.include_router(stream_router)
     return app
 

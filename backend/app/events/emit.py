@@ -23,6 +23,10 @@ async def run_started(run_id: str, prompt: str) -> None:
     await emit(run_id, ev.RunStarted(run_id=run_id, prompt=prompt))
 
 
+async def run_retried(run_id: str, agent: str, attempt: int) -> None:
+    await emit(run_id, ev.RunRetried(agent=agent, attempt=attempt))
+
+
 async def agent_started(run_id: str, agent: str, iteration: int = 0) -> None:
     await emit(run_id, ev.AgentStarted(agent=agent, iteration=iteration))
 

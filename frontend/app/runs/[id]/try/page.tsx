@@ -4,7 +4,11 @@ import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
+import { ParameterGuidance } from "@/components/dashboard/parameter-guidance";
+import { parameterDefault, parameterErrors } from "@/lib/preview-parameters";
 import { RequestFields } from "@/components/dashboard/request-fields";
+import { ResponseBody } from "@/components/dashboard/response-body";
+import { RequestQuery, requestPath, splitRequestPath, type QueryParameter } from "@/components/dashboard/request-query";
 import { readLocal, writeLocal } from "@/lib/workspace-storage";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
@@ -32,8 +36,10 @@ export default function TryApiPage() {
   const [preview, setPreview] = useState<PreviewInfo | null>(null);
   const [selected, setSelected] = useState(0);
   const [path, setPath] = useState("");
+  const [parameters, setParameters] = useState<QueryParameter[]>([]);
   const [body, setBody] = useState("");
   const [response, setResponse] = useState<PreviewResult | null>(null);
+  const [responseView, setResponseView] = useState<"pretty" | "raw" | "headers">("pretty");
   const [loading, setLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<"send" | "reset" | null>(null);
   const [mode, setMode] = useState<"json" | "fields">("json");
@@ -47,11 +53,13 @@ export default function TryApiPage() {
   useEffect(() => { if (storageKey) { const stored = readLocal<SavedRequest[]>(storageKey, []); setSaved(Array.isArray(stored) ? stored : []); } }, [storageKey]);
   const [error, setError] = useState<string | null>(null);
   const sending = pendingAction !== null;
+  const resolvedPath = requestPath(path, parameters);
 
   const choose = useCallback((operation: PreviewOperation, index: number) => {
     setSelected(index);
     setMode("json"); setFieldsValid(true);
     setPath(operation.path);
+    setParameters((operation.parameters ?? []).filter(parameter => parameter.location === "query").map(parameter => ({ key: crypto.randomUUID(), name: parameter.name, value: parameterDefault(parameter), enabled: parameter.required })));
     setBody(operation.has_body ? JSON.stringify(operation.example_body ?? {}, null, 2) : "");
     setResponse(null);
     setError(null);
@@ -83,6 +91,7 @@ export default function TryApiPage() {
   async function send() {
     const operation = preview?.operations[selected];
     if (!operation) return;
+    if (parameterErrors(operation, resolvedPath).length) return;
     setError(null);
     let parsedBody: unknown = null;
     if (operation.has_body) {
@@ -97,11 +106,11 @@ export default function TryApiPage() {
     try {
       const result = await api.sendPreviewRequest(id, {
         method: operation.method,
-        path: path.trim(),
+        path: resolvedPath,
         body: parsedBody,
       });
       setResponse(result);
-      setRecent(current => [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path, body, response: { ...result, body: result.body.slice(0, 20000) }, at: new Date().toISOString() }, ...current].slice(0, 10));
+      setRecent(current => [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path: resolvedPath, body, response: { ...result, body: result.body.slice(0, 20000), truncated: result.truncated || result.body.length > 20000 }, at: new Date().toISOString() }, ...current].slice(0, 10));
       if (result.session_started) setRecordId(null);
       if (result.status < 400 && operation.method === "POST") {
         try { const data = JSON.parse(result.body); if (typeof data.id === "string" || typeof data.id === "number") setRecordId({ collection: operation.path.replace(/\/$/, ""), value: String(data.id) }); } catch { /* Some APIs return no JSON body. */ }
@@ -130,16 +139,18 @@ export default function TryApiPage() {
   }
 
   const operation = preview?.operations[selected];
+  const inputErrors = parameterErrors(operation, resolvedPath);
 
   function saveRequest() {
     if (!operation || !storageKey) return;
-    const next = [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path, body, at: new Date().toISOString() }, ...saved].slice(0, 20);
+    const next = [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path: resolvedPath, body, at: new Date().toISOString() }, ...saved].slice(0, 20);
     setSaved(next); setNotice(writeLocal(storageKey, next) ? "Request saved on this device." : "Could not save this request on this device.");
   }
   function restore(item: SavedRequest) {
     const index = preview?.operations.findIndex(operation => operation.method === item.method && operation.path === item.endpoint) ?? -1;
     if (index < 0) { setError("That endpoint is no longer available."); return; }
-    choose(preview!.operations[index], index); setPath(item.path); setBody(item.body); setResponse(item.response ?? null);
+    const restored = splitRequestPath(item.path);
+    choose(preview!.operations[index], index); setPath(restored.path); setParameters(restored.parameters); setBody(item.body); setResponse(item.response ?? null);
   }
 
   return (
@@ -197,6 +208,9 @@ export default function TryApiPage() {
                     {recordId && operation?.path.startsWith(`${recordId.collection}/`) && /\{[^}]+\}/.test(operation.path) && <Button variant="outline" size="sm" className="mt-2" onClick={() => setPath(operation.path.replace(/\{[^}]+\}/, encodeURIComponent(recordId.value)))}>Use this ID: {recordId.value}</Button>}
                     {path.includes("{") && <p className="mt-2 text-[12px] text-fg-muted">Replace each name in braces with an actual ID or value.</p>}
                   </div>
+                  <ParameterGuidance parameters={operation?.parameters ?? []} />
+                  <RequestQuery parameters={parameters} onChange={setParameters} disabled={sending} />
+                  {parameters.some(parameter => parameter.enabled && parameter.name.trim()) && <p className="break-all font-mono text-xs text-fg-muted" aria-label="Request path">{resolvedPath}</p>}
                   {operation?.has_body && (
                     <div>
                       {operation.body_schema?.properties && <div className="mb-3 flex gap-2"><Button variant={mode === "json" ? "default" : "outline"} size="sm" onClick={() => { setMode("json"); setFieldsValid(true); }}>JSON</Button><Button variant={mode === "fields" ? "default" : "outline"} size="sm" onClick={() => { try { const parsed = JSON.parse(body); if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error(); setMode("fields"); setError(null); } catch { setError("Use a JSON object before switching to fields."); } }}>Fields</Button></div>}
@@ -204,9 +218,10 @@ export default function TryApiPage() {
                       <Textarea id="preview-body" value={body} onChange={(event) => setBody(event.target.value)} spellCheck={false} className="mt-2 min-h-48 font-mono text-[12px]" /></>}
                     </div>
                   )}
+                  {inputErrors.length > 0 && <ul aria-label="Parameter errors" className="space-y-1 text-xs text-danger">{inputErrors.map((message, index) => <li key={`${index}:${message}`}>{message}</li>)}</ul>}
                   <div className="flex flex-wrap items-center gap-3">
                     <Button variant="outline" onClick={saveRequest} disabled={sending || !fieldsValid}>Save request</Button>
-                    <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid}>
+                    <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid || inputErrors.length > 0}>
                       <Play className="h-3.5 w-3.5" aria-hidden /> {sending ? "Sending…" : "Send request"}
                     </Button>
                   </div>
@@ -223,8 +238,20 @@ export default function TryApiPage() {
                     HTTP {response.status} · {response.duration_ms} ms
                   </p>
                   {response.session_started && <p className="mt-2 text-[12px] text-fg-muted">A fresh temporary database was started for this request.</p>}
-                  <pre className="mt-4 max-h-[32rem] overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[12px] leading-5 whitespace-pre-wrap break-all text-term-fg">{displayBody(response.body) || "No response body"}</pre>
-                  {response.truncated && <Notice variant="warning" compact className="mt-2">Response shortened to 100 KB.</Notice>}
+                  <div role="group" aria-label="Response view" className="mt-4 flex flex-wrap gap-2">
+                    {(["pretty", "raw", "headers"] as const).map(view => <Button key={view} size="sm" variant={responseView === view ? "default" : "outline"} aria-pressed={responseView === view} onClick={() => setResponseView(view)}>{view === "pretty" ? "Pretty" : view === "raw" ? "Raw" : "Headers"}</Button>)}
+                  </div>
+                  {responseView === "headers" ? (
+                    <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+                      <table className="w-full table-fixed text-left text-xs">
+                        <caption className="sr-only">Response headers</caption>
+                        <thead className="bg-bg"><tr><th scope="col" className="w-2/5 p-3">Name</th><th scope="col" className="p-3">Value</th></tr></thead>
+                        <tbody>{Object.entries({ ...(response.content_type ? { "content-type": response.content_type } : {}), ...response.headers }).map(([name, value]) => <tr key={name} className="border-t border-border"><td className="break-all p-3 font-mono align-top">{name}</td><td className="break-all p-3 font-mono align-top">{value}</td></tr>)}</tbody>
+                      </table>
+                      <p className="border-t border-border p-3 text-fg-muted">Only selected response headers are shown. Older previews may provide only the content type.</p>
+                    </div>
+                  ) : <ResponseBody text={responseView === "pretty" ? displayBody(response.body) : response.body} pending={sending} />}
+                  {response.truncated && <Notice variant="warning" compact className="mt-2">Response shortened. Some content is not shown.</Notice>}
                 </div>
               ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}
             </section>

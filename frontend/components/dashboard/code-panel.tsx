@@ -14,6 +14,7 @@ import { typeScale } from "@/lib/type-scale";
 import { tokenizePythonLine } from "@/lib/python-highlight";
 import { buildHunks } from "@/lib/diff";
 import type { FileSnapshot } from "@/lib/run-reducer";
+import type { CodeLocation } from "@/lib/run-problems";
 
 export interface CodeVersion {
   content: string;
@@ -24,6 +25,7 @@ export interface CodeVersion {
 }
 
 export interface CodePanelProps {
+  location?: CodeLocation | null;
   files: FileSnapshot[];
   /** Looks up a file's content at a given iteration. Content isn't part of the SSE
    * contract (`FileWrittenEvent` carries only path + bytes) — the caller supplies it,
@@ -61,7 +63,7 @@ function CodeLine({ text }: { text: string }) {
  * isn't part of the SSE contract (`FileWrittenEvent` carries only path + bytes) — it's
  * joined here from mock data during dev playback or the REST file endpoints on a live run.
  */
-export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelProps) {
+export function CodePanel({ files, getVersion, getPreviousVersion, location }: CodePanelProps) {
   const reducedMotion = useMotionPreference();
   const selectionId = useId();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
@@ -71,6 +73,12 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   const [copied, setCopied] = useState(false);
   const lastSeenPath = useRef<string | null>(null);
   const copyTimer = useRef<number | null>(null);
+  const [problemLocation, setProblemLocation] = useState<CodeLocation | null>(null);
+
+  useEffect(() => {
+    if (!location) return;
+    setSelectedPath(location.path); setPinned(true); setView("current"); setProblemLocation(location);
+  }, [location]);
 
   useEffect(() => {
     const latest = files[files.length - 1];
@@ -131,7 +139,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
             <div className="hidden h-7 rounded-lg border border-dashed border-border bg-surface/60 sm:block" />
           </div>
         ) : (
-          <ScrollArea className="cf-file-list-cue flex-1">
+          <ScrollArea className="cf-file-list-cue min-h-0 flex-1">
             <LayoutGroup id={selectionId}><ul className="flex flex-col gap-1 p-2">
               {files.map((f) => {
                 const isSelected = f.path === selectedPath;
@@ -141,6 +149,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
                       aria-pressed={isSelected}
                       type="button"
                       onClick={() => {
+                        setProblemLocation(null);
                         setSelectedPath(f.path);
                         setPinned(true);
                         setView("current");
@@ -171,10 +180,10 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
       </div>
 
       {/* Code viewer */}
-      <div className="flex min-w-0 flex-1 flex-col bg-code-bg">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-code-bg">
         {selected && version ? (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                 <span className="min-w-0 truncate font-mono text-[13px] font-[650] text-fg">{selected.path}</span>
@@ -230,9 +239,11 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
               </div>
             </div>
 
-            <ScrollArea className="cf-run-scroll flex-1 bg-code-bg">
+            <ScrollArea className="cf-run-scroll min-h-0 flex-1 bg-code-bg">
               {view === "current" || !canDiff ? (
-                <CurrentView content={version.content} changedLines={version.changedLines ?? []} wrap={wrap} />
+                <CurrentView content={version.content} changedLines={version.changedLines ?? []} wrap={wrap}
+                  highlightedLine={problemLocation?.path === selected.path && problemLocation.iteration === selected.iteration && problemLocation.content === version.content ? problemLocation.line : null}
+                  navigationId={problemLocation?.requestId} />
               ) : (
                 <DiffView oldContent={prevVersion!.content} newContent={version.content} wrap={wrap} />
               )}
@@ -258,21 +269,32 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
   );
 }
 
-function CurrentView({ content, changedLines, wrap }: { content: string; changedLines: number[]; wrap: boolean }) {
+function CurrentView({ content, changedLines, wrap, highlightedLine, navigationId }: { content: string; changedLines: number[]; wrap: boolean; highlightedLine?: number | null; navigationId?: number }) {
+  const code = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const line = code.current?.querySelector<HTMLElement>("[data-problem-line]");
+    if (!line) return;
+    line.focus({ preventScroll: true });
+    line.scrollIntoView({ block: "nearest" });
+  }, [content, highlightedLine, navigationId]);
   const lines = content.split("\n");
   const changed = new Set(changedLines);
   return (
-    <div className={cn(typeScale.code, "p-4 text-code-fg")}>
+    <div ref={code} className={cn(typeScale.code, "p-4 text-code-fg")}>
       {lines.map((line, i) => {
         const n = i + 1;
         const isChanged = changed.has(n);
         return (
           <div
             key={n}
+            data-problem-line={highlightedLine === n ? n : undefined}
+            tabIndex={highlightedLine === n ? -1 : undefined}
+            aria-label={highlightedLine === n ? `Line ${n}` : undefined}
             className={cn(
               "grid grid-cols-[46px_14px_minmax(0,1fr)]",
               wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre",
               isChanged && "border-l-2 border-loop bg-loop-soft",
+              highlightedLine === n && "bg-accent-soft outline-2 outline-accent",
             )}
           >
             <span className="select-none pr-2 text-right font-mono text-[12px] text-fg-faint">{n}</span>

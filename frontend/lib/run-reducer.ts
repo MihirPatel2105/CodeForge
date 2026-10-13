@@ -241,6 +241,19 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
         startedAt: event.at,
       };
 
+    case "run.retried": {
+      const start = PIPELINE_STAGES.findIndex(stage => stage.id === event.agent);
+      if (start < 0) return prev;
+      const agents = { ...prev.agents };
+      for (const stage of PIPELINE_STAGES.slice(start)) agents[stage.id] = idleAgent();
+      return {
+        ...prev, agents, status: "running", endedAt: null, failureReason: null,
+        currentAgent: null, approval: null, tests: null, terminalLines: [],
+        approvedPhases: prev.approvedPhases.filter(phase => event.agent !== "pm" && (event.agent !== "architect" || phase === "pm")),
+        timeline: [...prev.timeline, { kind: "message", time, agent: stageName(event.agent), text: `Retry ${event.attempt}: continuing from ${stageName(event.agent)}. Earlier work is kept.`, variant: "default" }],
+      };
+    }
+
     case "agent.started": {
       if (!isPipelineStage(event.agent)) return prev;
       return {
@@ -367,6 +380,7 @@ export function applyEvent(prev: RunSnapshot, event: CodeForgeEvent): RunSnapsho
           : `${event.failed_tests} failing ${plural(event.failed_tests, "test", "tests")}`;
       const entry: TimelineEntryData = {
         kind: "loop",
+        agent: event.trigger === "reviewer" ? "Reviewer" : "Sandbox",
         time,
         text: `Iteration ${event.iteration} — sending ${subject} back to the Coder`,
       };

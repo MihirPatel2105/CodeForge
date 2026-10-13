@@ -259,12 +259,17 @@ async def coder_node(state: State) -> State:
 
 async def _generate_tree(state: State, coder, design: Design) -> State:
     """First pass: write every file in the Design, one call per file."""
-    files: list[GeneratedFile] = []
+    files: list[GeneratedFile] = (
+        list(state.get("files") or []) if state.get("retry_stage") == "coder" else []
+    )
+    written = {file.path for file in files}
     errors = list(state.get("errors") or [])
     attempts = list(state.get("llm_attempts") or [])
     tokens = int(state.get("llm_tokens") or 0)
 
     for spec in design.files:
+        if spec.path in written:
+            continue
         try:
             result = await coder.run_file(state, spec)
             attempts, tokens = _collect_usage(attempts, tokens, result)
@@ -273,7 +278,13 @@ async def _generate_tree(state: State, coder, design: Design) -> State:
             attempts = _failed_attempts(attempts, exc)
             errors = _error({"errors": errors}, "coder", exc)
 
-    return {"files": files, "errors": errors, "llm_attempts": attempts, "llm_tokens": tokens}
+    return {
+        "files": files,
+        "errors": errors,
+        "llm_attempts": attempts,
+        "llm_tokens": tokens,
+        "retry_stage": None,
+    }
 
 
 async def _fix_tree(state: State, coder, trigger: str) -> State:

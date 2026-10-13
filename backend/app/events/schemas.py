@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 EventName = Literal[
     "run.started",
+    "run.retried",
     "agent.started",
     "agent.message",
     "agent.completed",
@@ -44,6 +45,12 @@ class RunStarted(BaseEvent):
     event: Literal["run.started"] = "run.started"
     run_id: str
     prompt: str
+
+
+class RunRetried(BaseEvent):
+    event: Literal["run.retried"] = "run.retried"
+    agent: Literal["pm", "architect", "coder", "reviewer", "tester"]
+    attempt: int
 
 
 class AgentStarted(BaseEvent):
@@ -143,6 +150,7 @@ class RunFailed(BaseEvent):
 
 AnyEvent = Annotated[
     RunStarted
+    | RunRetried
     | AgentStarted
     | AgentMessage
     | AgentCompleted

@@ -34,6 +34,7 @@ import type {
   ProjectDeleteResponse,
   RunCreate,
   RunCreateResponse,
+  RunRetryInfo,
   RunResponse,
   PreviewCall,
   PreviewInfo,
@@ -333,6 +334,8 @@ export const api = {
 
   createRun: (payload: RunCreate) =>
     request<RunCreateResponse>("/runs", { method: "POST", body: JSON.stringify(payload) }),
+  getRunRetry: (id: string) => request<RunRetryInfo>(`/runs/${id}/retry`),
+  retryRun: (id: string) => request<RunCreateResponse>(`/runs/${id}/retry`, { method: "POST" }),
   getRun: (id: string) => request<RunResponse>(`/runs/${id}`),
   getPreview: (id: string) => request<PreviewInfo>(`/runs/${id}/preview`),
   sendPreviewRequest: (id: string, payload: PreviewCall) =>

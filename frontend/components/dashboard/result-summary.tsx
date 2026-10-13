@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Check, LoaderCircle } from "lucide-react";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
@@ -11,6 +12,9 @@ export interface ResultSummaryProps {
   onDownload?: () => void;
   downloadState?: "idle" | "pending" | "started";
   onRetry?: () => void;
+  retryStage?: string | null;
+  retrying?: boolean;
+  onRetryStage?: () => void;
   tryApiHref?: string;
 }
 
@@ -92,7 +96,7 @@ function copyFor(
 
 /** Inline at the bottom of the Live run screen when a run ends (docs/UI_BRIEF.md
  * §3.5), and the same card set standalone on the Screens tab. */
-export function ResultSummary({ snapshot, onDownload, downloadState = "idle", onRetry, tryApiHref }: ResultSummaryProps) {
+export function ResultSummary({ snapshot, onDownload, downloadState = "idle", onRetry, retryStage, retrying = false, onRetryStage, tryApiHref }: ResultSummaryProps) {
   const isPartial = snapshot.status === "succeeded" && snapshot.tests?.ok === false;
   const outcomeKey = isPartial ? "partial" : snapshot.status;
   const meta = RUN_STATUS_META[outcomeKey] ?? { label: outcomeKey, tone: "neutral" as const };
@@ -144,6 +148,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
               Use your API
             </RunFlowLink>
           )}
+          {retryStage && onRetryStage && outcomeKey === "failed_llm" && <Button onClick={onRetryStage} disabled={retrying}>{retrying ? "Resuming…" : `Retry ${retryStage}`}</Button>}
           {onRetry && outcomeKey !== "succeeded" && (
             <button
               type="button"

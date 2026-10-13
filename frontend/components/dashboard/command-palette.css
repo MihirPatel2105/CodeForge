@@ -1,0 +1,40 @@
+.cf-command-trigger { display: inline-flex; align-items: center; gap: 10px; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--fg-muted); font-size: 12px; cursor: pointer; transition: border-color 150ms, background 150ms; }
+.cf-command-trigger:hover { background: var(--surface-2); border-color: var(--border-strong); color: var(--fg); }
+.cf-command-trigger:focus-visible, .cf-command-dismiss:focus-visible, .cf-command-empty button:focus-visible, .cf-command-notice button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+.cf-command-trigger kbd, .cf-command-footer kbd { align-items: center; justify-content: center; gap: 2px; min-height: 20px; padding: 1px 5px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; font: 10px var(--font-ui); color: var(--fg-muted); background: var(--surface); }
+.cf-command-dialog[data-slot="dialog-content"] { top: min(16vh, 140px); transform: translateX(-50%); width: 640px; max-width: calc(100vw - 32px); max-height: calc(100dvh - min(16vh, 140px) - 32px); padding: 0; gap: 0; display: flex; flex-direction: column; border-radius: 20px; background: var(--surface); color: var(--fg); box-shadow: 0 0 0 1px var(--border), 0 2px 4px #00000006, 0 24px 64px -16px #00000040, 0 64px 120px -32px #00000030; animation: cf-command-appear 180ms cubic-bezier(.16,1,.3,1); }
+.cf-command-heading { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 0; color: var(--fg-faint); font-size: 11px; font-weight: 500; }
+.cf-command-heading > span:first-child { display: flex; align-items: center; gap: 7px; color: var(--fg-muted); }
+.cf-command-heading > span:last-child { font-weight: 650; letter-spacing: -.3px; }
+.cf-command-search { display: flex; align-items: center; gap: 13px; margin: 0 20px; padding: 20px 2px 22px; border-bottom: 1px solid var(--border); }
+.cf-command-search > svg { flex-shrink: 0; color: var(--fg-faint); }
+.cf-command-search input { width: 100%; min-width: 0; outline: none; background: transparent; color: var(--fg); font-size: 20px; font-weight: 450; letter-spacing: -.6px; }
+.cf-command-search input::placeholder { color: var(--fg-faint); opacity: .85; }
+.cf-command-dismiss { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 7px; color: var(--fg-faint); cursor: pointer; }
+.cf-command-dismiss:hover { color: var(--fg); background: var(--surface-2); }
+.cf-command-results { min-height: 120px; max-height: 430px; overflow-y: auto; overscroll-behavior: contain; padding: 6px 10px 12px; scrollbar-width: thin; }
+.cf-command-results:focus-visible { outline: 1px solid var(--border-strong); outline-offset: -2px; border-radius: 10px; }
+.cf-command-group { padding: 16px 12px 7px; font-size: 11px; font-weight: 600; color: var(--fg-faint); }
+.cf-command-option { position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 12px; min-height: 62px; border: 1px solid transparent; border-radius: 11px; cursor: pointer; }
+.cf-command-option[aria-selected="true"] { background: var(--surface-2); border-color: var(--border); }
+.cf-command-icon { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--fg-muted); }
+.cf-command-option[aria-selected="true"] .cf-command-icon { background: var(--fg); border-color: var(--fg); color: var(--surface); }
+.cf-command-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.cf-command-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; letter-spacing: -.15px; }
+.cf-command-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); font-size: 11px; }
+.cf-command-enter { visibility: hidden; color: var(--fg-muted); padding: 4px; }
+.cf-command-option[aria-selected="true"] .cf-command-enter { visibility: visible; }
+.cf-command-footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--surface-2); border-top: 1px solid var(--border); color: var(--fg-muted); font-size: 10px; }
+.cf-command-footer > span { display: inline-flex; align-items: center; gap: 7px; }
+.cf-command-footer kbd { display: inline-flex; }
+.cf-command-footer kbd:nth-of-type(2) { margin-left: 7px; }
+.cf-command-notice { display: flex; align-items: center; gap: 8px; margin: 12px; color: var(--fg-muted); font-size: 12px; }
+.cf-command-notice button, .cf-command-empty button { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.cf-command-empty { display: flex; align-items: center; flex-direction: column; gap: 10px; padding: 36px 12px; text-align: center; }
+.cf-command-empty-icon { display: grid; place-items: center; width: 48px; height: 48px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; color: var(--fg-faint); }
+.cf-command-empty p { margin: 5px 0 0; font-weight: 600; font-size: 14px; }
+.cf-command-empty > span:last-of-type { font-size: 12px; color: var(--fg-muted); }
+.cf-command-empty button { margin-top: 5px; font-size: 12px; }
+@keyframes cf-command-appear { from { opacity: 0; margin-top: -6px; } to { opacity: 1; margin-top: 0; } }
+@media (max-width: 639px) { .cf-command-dialog[data-slot="dialog-content"] { top: 8dvh; max-height: 84dvh; max-width: calc(100vw - 20px); border-radius: 16px; } .cf-command-heading { padding: 16px 16px 0; } .cf-command-search { margin: 0 14px; padding: 18px 0; gap: 10px; } .cf-command-search input { font-size: 17px; letter-spacing: -.35px; } .cf-command-results { max-height: 55dvh; padding-inline: 6px; } .cf-command-footer { padding-inline: 14px; } }
+@media (prefers-reduced-motion: reduce) { .cf-command-dialog[data-slot="dialog-content"] { animation: none; } .cf-command-trigger { transition: none; } }

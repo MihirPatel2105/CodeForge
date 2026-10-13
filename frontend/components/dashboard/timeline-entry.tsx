@@ -109,6 +109,8 @@ export function FindingEntry({ time, agent, file, line, issue, fixHint }: Findin
 
 export interface LoopEntryProps {
   time: string;
+  /** Recorded source of a repair loop, when supplied by the event reducer. */
+  agent?: string;
   /** "Iteration 1 — sending 2 blocking findings back to the Coder" */
   text: string;
 }

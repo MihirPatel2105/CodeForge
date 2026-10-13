@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { AttentionInbox } from "@/components/dashboard/attention-inbox";
+import { CommandPalette } from "@/components/dashboard/command-palette";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 
 const MotionLink = motion.create(Link);
@@ -26,9 +27,9 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
         <MotionLink {...pressMotion}
           href="/"
           aria-label="CodeForge home"
-          className="flex w-fit shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+          className="flex w-fit min-w-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
-          <LogoLockup className="h-9 w-auto shrink-0" />
+          <LogoLockup className="h-auto max-h-9 w-[147px] max-w-full" />
         </MotionLink>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
@@ -39,6 +40,7 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
               </div>
             ) : user ? (
             <>
+              <CommandPalette key={`commands-${user.id}`} isAdmin={user.is_admin} />
               <AttentionInbox key={user.id} userId={user.id} />
               {workspace && user.is_admin && (
                 <MotionLink {...pressMotion} href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="hidden sm:inline-flex h-10 items-center rounded-full px-3 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-4">

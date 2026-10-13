@@ -5,6 +5,8 @@ test("small screens show a dismissible notice that stays dismissed for the sessi
   await page.goto("/");
   const notice = page.getByRole("complementary", { name: "Screen size recommendation" });
   await expect(notice).toBeVisible();
+  await expect(notice.getByRole("note")).toBeVisible();
+  await expect(notice.getByRole("status")).toHaveCount(0);
   await expect(notice).toContainText("You can still browse on mobile.");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
   await page.screenshot({ path: "/tmp/codeforge-desktop-recommendation-mobile.png" });

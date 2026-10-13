@@ -583,6 +583,11 @@ class RunCreate(BaseModel):
     parent_run_id: str | None = None
 
 
+class RunRetryInfo(BaseModel):
+    stage: Literal["pm", "architect", "coder", "reviewer", "tester"] | None = None
+    remaining: int = 0
+
+
 class RunCreateResponse(BaseModel):
     """Returned immediately with 202; the graph executes in the background (FR-7)."""
 
@@ -646,7 +651,16 @@ class RunResponse(BaseModel):
     updated_at: datetime
 
 
+class PreviewParameter(BaseModel):
+    name: str
+    location: Literal["path", "query"]
+    required: bool = False
+    description: str = ""
+    schema_: dict[str, Any] = Field(default_factory=dict, alias="schema")
+
+
 class PreviewOperation(BaseModel):
+    parameters: list[PreviewParameter] = Field(default_factory=list)
     method: str
     path: str
     summary: str = ""
@@ -671,6 +685,7 @@ class PreviewCall(BaseModel):
 class PreviewResult(BaseModel):
     status: int
     content_type: str
+    headers: dict[str, str] = Field(default_factory=dict)
     body: str
     truncated: bool
     duration_ms: int

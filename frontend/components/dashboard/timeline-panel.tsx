@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, Clock3 } from "lucide-react";
+import { ArrowDown, ChevronDown, Clock3, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PIPELINE_STAGES } from "@/lib/pipeline";
+import { matchesTimeline, type TimelineFilters, type TimelineView } from "@/lib/timeline-filter";
 import { cn } from "@/lib/utils";
 import { preferredScrollBehavior } from "@/lib/motion";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -23,27 +27,44 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   const reducedMotion = useMotionPreference();
   const viewportRef = useRef<HTMLDivElement>(null);
   const previousLength = useRef(0);
-  const [following, setFollowing] = useState(true);
+  const [filters, setFilters] = useState<TimelineFilters>({ query: "", agent: "", view: "all" });
+  const visible = entries.flatMap((entry, index) => matchesTimeline(entry, filters) ? [{ entry, index }] : []);
+  const filtering = Boolean(filters.query || filters.agent || filters.view !== "all");
+  const following = useRef(true);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
-    const added = Math.max(0, entries.length - previousLength.current);
+    const reset = entries.length < previousLength.current;
+    const added = entries.slice(reset ? entries.length : previousLength.current).filter(entry => matchesTimeline(entry, filters)).length;
     previousLength.current = entries.length;
-    if (following) {
+    if (following.current) {
       el.scrollTop = el.scrollHeight;
+      setUnread(0);
+    } else if (reset) {
       setUnread(0);
     } else if (added > 0) {
       setUnread((count) => count + added);
     }
-  }, [entries.length, following]);
+  }, [entries, filters]);
+
+  function changeFilters(patch: Partial<TimelineFilters>) {
+    previousLength.current = entries.length;
+    setUnread(0);
+    following.current = true;
+    setFilters(current => ({ ...current, ...patch }));
+  }
+
+  function clearFilters() {
+    changeFilters({ query: "", agent: "", view: "all" });
+  }
 
   function handleScroll() {
     const el = viewportRef.current;
     if (!el) return;
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
-    setFollowing(nearBottom);
+    following.current = nearBottom;
     if (nearBottom) setUnread(0);
   }
 
@@ -51,18 +72,43 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
     const el = viewportRef.current;
     if (!el) return;
     el.scrollTo({ top: el.scrollHeight, behavior: preferredScrollBehavior() });
-    setFollowing(true);
+    following.current = true;
     setUnread(0);
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
       <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3">
         <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-muted")}>
           <Clock3 className="h-4 w-4 text-accent" aria-hidden />
           Live timeline
         </span>
-        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] text-fg-faint" aria-label={`${entries.length} ${entries.length === 1 ? "event" : "events"}`}>{entries.length}</span>
+        <span role="status" aria-label="Timeline results" className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] tabular-nums text-fg-faint">{filtering ? `${visible.length} of ${entries.length} events` : `${entries.length} ${entries.length === 1 ? "event" : "events"}`}</span>
+      </div>
+
+      <div className="shrink-0 space-y-2.5 border-b border-border px-3 py-3">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(100px,130px)] gap-2">
+          <div className="relative min-w-0">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-fg-faint" aria-hidden />
+            <Input type="search" aria-label="Search timeline" value={filters.query} placeholder="Search activity…"
+              onChange={event => changeFilters({ query: event.target.value })}
+              onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); changeFilters({ query: "" }); } }}
+              className="h-9 min-w-0 pl-8 text-xs" />
+          </div>
+          <div className="relative min-w-0">
+            <select aria-label="Timeline agent" value={filters.agent} onChange={event => changeFilters({ agent: event.target.value })}
+              className="h-9 w-full min-w-0 appearance-none rounded-lg border border-border-strong bg-bg pl-3 pr-8 text-xs text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              <option value="">All agents</option>
+              {PIPELINE_STAGES.map(stage => <option key={stage.id} value={stage.name}>{stage.name}</option>)}
+              <option value="—">Run updates</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-fg-muted" aria-hidden />
+          </div>
+        </div>
+        <div role="group" aria-label="Timeline view" className="flex flex-wrap gap-1.5">
+          {([["all", "All activity"], ["failures", "Failures"], ["loops", "Repair loops"]] as const).map(([view, label]) => <Button key={view} variant={filters.view === view ? "default" : "outline"} size="sm" aria-pressed={filters.view === view} onClick={() => changeFilters({ view: view as TimelineView })} className="h-8 px-2.5 text-xs">{label}</Button>)}
+          <Button variant="ghost" size="sm" disabled={!filtering} onClick={clearFilters} className="h-8 px-2 text-xs">Clear filters</Button>
+        </div>
       </div>
 
       {connectionLost && (
@@ -94,8 +140,13 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
             <p className="mt-4 text-[15px] font-[650] text-fg">Waiting for activity</p>
             <p className="mt-1.5 max-w-[32ch] text-[13px] leading-5 text-fg-muted">Agent updates will appear here as the run progresses.</p>
           </div>
+        ) : visible.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+            <p className="text-sm font-semibold text-fg">No matching activity</p>
+            <p className="mt-1.5 max-w-[32ch] text-xs leading-5 text-fg-muted">Try another search or clear the filters to see all events.</p>
+          </div>
         ) : (
-          entries.map((entry, i) => <TimelineEntry key={i} entry={entry} i={i} />)
+          visible.map(({ entry, index }) => <TimelineEntry key={index} entry={entry} i={index} />)
         )}
         </div>
         <AnimatePresence initial={false}>

@@ -16,6 +16,8 @@ import { RunStory } from "@/components/dashboard/run-story";
 import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
+import { ProblemsPanel } from "@/components/dashboard/problems-panel";
+import { canOpenProblem, runProblems, type CodeLocation } from "@/lib/run-problems";
 import { buildHunks } from "@/lib/diff";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
@@ -41,17 +43,23 @@ import { preferredScrollBehavior } from "@/lib/motion";
 export default function LiveRunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { snapshot, connectionLost, refresh: refreshRun } = useRunStream(id);
+  const { snapshot, connectionLost, refresh: refreshRun, restart: restartRun } = useRunStream(id);
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
   const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadState, setDownloadState] = useState<"idle" | "pending" | "started">("idle");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [retryStage, setRetryStage] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const retryPending = useRef(false);
   const [deciding, setDeciding] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [sourceRunId, setSourceRunId] = useState<string | null>(null);
   const [runProjectId, setRunProjectId] = useState<string | null>(null);
   const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
+  const [problemState, setProblemState] = useState<{ runId: string; state: Record<string, unknown> } | null>(null);
+  const [problemError, setProblemError] = useState(false);
+  const [codeLocation, setCodeLocation] = useState<{ runId: string; location: CodeLocation } | null>(null);
   const pipelineViewport = useRef<HTMLDivElement>(null);
 
   // `replace`, not `push`: a signed-out visitor should not be able to press Back and
@@ -68,11 +76,28 @@ export default function LiveRunPage() {
 
   useEffect(() => {
     if (!getToken()) return;
-    api.getRun(id).then((run) => { setRunProjectId(run.project_id); setSourceRunId(run.parent_run_id ?? null); }).catch(() => {
-      // The event stream still renders the run. This only disables the convenience
-      // action that returns to the original project with the prompt prefilled.
-    });
-  }, [id]);
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let terminalAttempts = 0;
+    async function refreshEvidence() {
+      let persistedTerminal = false;
+      try {
+        const run = await api.getRun(id);
+        if (disposed) return;
+        setRunProjectId(run.project_id); setSourceRunId(run.parent_run_id ?? null);
+        setProblemState({ runId: id, state: run.state ?? {} }); setProblemError(false);
+        persistedTerminal = !["queued", "running", "awaiting_approval"].includes(run.status);
+      } catch {
+        if (!disposed) setProblemError(true);
+      }
+      // Completion events precede persistence; allow a bounded catch-up after the stream ends.
+      if (!disposed && ((!snapshot.endedAt && snapshot.status !== "awaiting_approval") || (snapshot.endedAt && !persistedTerminal && ++terminalAttempts < 3))) {
+        timer = setTimeout(refreshEvidence, 2000);
+      }
+    }
+    void refreshEvidence();
+    return () => { disposed = true; if (timer) clearTimeout(timer); };
+  }, [id, snapshot.endedAt, snapshot.status]);
 
   useEffect(() => {
     const viewport = pipelineViewport.current;
@@ -206,6 +231,35 @@ export default function LiveRunPage() {
     return () => window.clearTimeout(timeout);
   }, [downloadState]);
 
+  useEffect(() => {
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    setRetryStage(null);
+    async function probe(attempt: number) {
+      try {
+        const info = await api.getRunRetry(id);
+        if (disposed) return;
+        setRetryStage(info.stage ? PIPELINE_STAGES.find(stage => stage.id === info.stage)?.name ?? null : null);
+        // Terminal events precede the final checkpoint write and task cleanup.
+        if (!info.stage && attempt < 3) timer = setTimeout(() => { void probe(attempt + 1); }, 500 * attempt);
+      } catch { /* Keep Run again available when recovery cannot be checked. */ }
+    }
+    if (snapshot.status === "failed_llm" && snapshot.endedAt) void probe(1);
+    return () => { disposed = true; if (timer) clearTimeout(timer); };
+  }, [id, snapshot.status, snapshot.endedAt]);
+
+  async function handleStageRetry() {
+    if (retryPending.current || !retryStage) return;
+    retryPending.current = true; setRetrying(true); setActionError(null);
+    try {
+      await api.retryRun(id);
+      setRetryStage(null);
+      restartRun();
+    } catch (err) {
+      setActionError(err instanceof ApiError && err.code === "conflict" ? "This run cannot be retried right now. Refresh the run and check its status." : err instanceof ApiError ? err.message : "Couldn't resume this run. Please try again.");
+    } finally { retryPending.current = false; setRetrying(false); }
+  }
+
   function handleRetry() {
     if (!runProjectId || !snapshot.prompt) return;
     sessionStorage.setItem(
@@ -220,6 +274,7 @@ export default function LiveRunPage() {
   const isLive = snapshot.runId != null && !snapshot.endedAt;
 
   const status = displayStatus(snapshot.status, snapshot.tests?.ok ?? null);
+  const problems = runProblems(problemState?.runId === id ? problemState.state : {});
   const completedStages = Object.values(snapshot.agents).filter(
     (agent) => agent.state === "done",
   ).length;
@@ -348,6 +403,9 @@ export default function LiveRunPage() {
               snapshot={snapshot}
               onDownload={handleDownload}
               downloadState={downloadState}
+              retryStage={retryStage}
+              retrying={retrying}
+              onRetryStage={handleStageRetry}
               onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
               tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : undefined}
             />
@@ -371,6 +429,14 @@ export default function LiveRunPage() {
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
 
+          <ProblemsPanel problems={problems} error={problemError}
+            canOpen={problem => canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)}
+            onOpen={problem => {
+              if (!problem.location || !canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)) return;
+              setMobileEvidence("code");
+              const target = problem.location;
+              setCodeLocation(current => ({ runId: id, location: { path: target.path, line: target.line, content: target.content, iteration: target.iteration, requestId: (current?.location.requestId ?? 0) + 1 } }));
+            }} />
           <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="evidence" label="Run evidence" />
 
           <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
@@ -390,7 +456,7 @@ export default function LiveRunPage() {
                 aria-labelledby="evidence-tab-code"
                 className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}
               >
-                <CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />
+                <CodePanel key={id} files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} location={codeLocation?.runId === id ? codeLocation.location : null} />
               </div>
 
               <div className={cn("flex-col gap-3 md:flex-row xl:flex", mobileEvidence === "terminal" || mobileEvidence === "tests" ? "flex" : "hidden")}>

@@ -409,6 +409,11 @@ export interface RunCreate {
   rag_enabled?: boolean;
 }
 
+export interface RunRetryInfo {
+  stage: AgentName | null;
+  remaining: number;
+}
+
 export interface RunCreateResponse {
   run_id: string;
   status: RunStatus;
@@ -450,9 +455,21 @@ export interface JsonSchema {
   description?: string;
   minimum?: number;
   maximum?: number;
+  default?: unknown;
+  minLength?: number;
+  maxLength?: number;
+}
+
+export interface PreviewParameter {
+  name: string;
+  location: "path" | "query";
+  required: boolean;
+  description: string;
+  schema: JsonSchema;
 }
 
 export interface PreviewOperation {
+  parameters?: PreviewParameter[];
   body_schema?: JsonSchema | null;
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
@@ -477,6 +494,7 @@ export interface PreviewCall {
 export interface PreviewResult {
   status: number;
   content_type: string;
+  headers?: Record<string, string>;
   body: string;
   truncated: boolean;
   duration_ms: number;
@@ -618,6 +636,12 @@ export interface RunStartedEvent extends EventBase {
   prompt: string;
 }
 
+export interface RunRetriedEvent extends EventBase {
+  event: "run.retried";
+  agent: AgentName;
+  attempt: number;
+}
+
 export interface AgentStartedEvent extends EventBase {
   event: "agent.started";
   agent: string;
@@ -706,6 +730,7 @@ export interface RunFailedEvent extends EventBase {
 
 export type CodeForgeEvent =
   | RunStartedEvent
+  | RunRetriedEvent
   | AgentStartedEvent
   | AgentMessageEvent
   | AgentCompletedEvent

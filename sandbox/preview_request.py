@@ -33,6 +33,19 @@ def main() -> None:
             {
                 "status": response.status_code,
                 "content_type": response.headers.get("content-type", ""),
+                "headers": {
+                    name: response.headers[name]
+                    for name in (
+                        "content-type",
+                        "content-length",
+                        "cache-control",
+                        "etag",
+                        "last-modified",
+                        "allow",
+                        "retry-after",
+                    )
+                    if name in response.headers
+                },
                 "body": response.text[:100_000],
                 "truncated": len(response.text) > 100_000,
             }
