@@ -13,6 +13,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND="$ROOT/frontend"
 COMPOSE_FILE="$ROOT/docker-compose.yml"
+SANDBOX_COMPOSE_FILE="$ROOT/compose.local-sandbox.yml"
+
+compose() {
+  docker compose -f "$COMPOSE_FILE" -f "$SANDBOX_COMPOSE_FILE" "$@"
+}
 
 PORT=3001
 SANDBOX_IMAGE="codeforge-sandbox:latest"
@@ -51,7 +56,7 @@ if [[ "$MODE" == "stop" ]]; then
     ok "Docker is already stopped"
     exit 0
   fi
-  docker compose -f "$COMPOSE_FILE" stop
+  compose stop
   ok "CodeForge Docker services stopped"
   exit 0
 fi
@@ -61,6 +66,7 @@ bold "1/4  Prerequisites"
 command -v npm >/dev/null 2>&1 || die "Node.js/npm is not installed. Install Node.js 20 or newer."
 command -v curl >/dev/null 2>&1 || die "curl is required but was not found."
 command -v lsof >/dev/null 2>&1 || die "lsof is required but was not found."
+command -v tar >/dev/null 2>&1 || die "tar is required but was not found."
 [[ -f "$ROOT/backend/.env" ]] || die "backend/.env is missing. Create it from backend/.env.example."
 [[ -d "$FRONTEND" ]] || die "Frontend directory not found: $FRONTEND"
 
@@ -71,10 +77,10 @@ if [[ "$MODE" == "check" ]]; then
 
   if docker info >/dev/null 2>&1; then
     ok "Docker engine ready"
-    if docker image inspect "$SANDBOX_IMAGE" >/dev/null 2>&1; then
+    if compose exec -T sandbox-docker docker image inspect "$SANDBOX_IMAGE" >/dev/null 2>&1; then
       ok "Sandbox image present"
     else
-      warn "Sandbox image missing; normal startup will build it automatically"
+      warn "Local sandbox service or image is unavailable; normal startup will set it up"
       CHECK_FAILED=true
     fi
   else
@@ -123,14 +129,6 @@ if ! docker info >/dev/null 2>&1; then
 fi
 ok "Docker engine ready"
 
-if docker image inspect "$SANDBOX_IMAGE" >/dev/null 2>&1; then
-  ok "Sandbox image present"
-else
-  warn "Sandbox image missing — building it now (first run only)…"
-  docker build -t "$SANDBOX_IMAGE" "$ROOT/sandbox"
-  ok "Sandbox image built"
-fi
-
 if [[ ! -d "$FRONTEND/node_modules" ]]; then
   warn "Frontend dependencies missing — installing them now (first run only)…"
   if [[ -f "$FRONTEND/package-lock.json" ]]; then
@@ -145,24 +143,32 @@ if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   die "Port $PORT is already in use. Stop that process, then run ./start.sh again."
 fi
 
-bold "3/4  Backend stack"
+bold "3/4  Sandbox and backend stack"
 
 STACK_STARTED=false
 cleanup() {
   if $STACK_STARTED; then
     printf "\n"
     warn "Stopping CodeForge services…"
-    docker compose -f "$COMPOSE_FILE" stop >/dev/null 2>&1 || true
+    compose stop >/dev/null 2>&1 || true
     ok "CodeForge stopped"
   fi
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
+# Keep the image on the daemon the backend actually uses. Cached builds also pick
+# up changes to sandbox helpers without requiring a manual image rebuild.
+STACK_STARTED=true
+compose up -d --wait --wait-timeout 180 sandbox-docker
+ok "Local sandbox ready with TLS certificates"
+warn "Preparing sandbox image (the first build can take a few minutes)…"
+tar -C "$ROOT/sandbox" -cf - . | compose exec -T sandbox-docker docker build -t "$SANDBOX_IMAGE" -
+ok "Sandbox image ready"
+
 # App code is bind-mounted, but Python dependencies live in the image. Rebuild when
 # starting so a new requirement cannot leave an otherwise healthy-looking stale image.
-docker compose -f "$COMPOSE_FILE" up -d --build
-STACK_STARTED=true
+compose up -d --build
 ok "Containers started"
 
 printf "  waiting for the backend to answer"
@@ -178,14 +184,19 @@ done
 printf "\n"
 
 if ! $BACKEND_READY; then
-  docker compose -f "$COMPOSE_FILE" logs --tail=30 backend >&2 || true
+  compose logs --tail=30 backend >&2 || true
   die "Backend did not become healthy in 90 seconds."
 fi
 ok "Backend healthy on :8000"
 
+if ! compose exec -T backend python -c 'import docker; c = docker.from_env(timeout=12); c.ping(); c.images.get("codeforge-sandbox:latest"); c.close()'; then
+  die "Backend cannot reach its sandbox image. Check the local sandbox service and certificates."
+fi
+ok "Backend connected to sandbox image"
+
 if [[ "$MODE" == "demo" ]]; then
   warn "Running live AI-provider preflight…"
-  if ! docker compose -f "$COMPOSE_FILE" exec -T backend python scripts/preflight.py; then
+  if ! compose exec -T backend python scripts/preflight.py; then
     die "No working model chain is available. Wait for provider limits before the demo."
   fi
   ok "Every agent has a working model provider"
