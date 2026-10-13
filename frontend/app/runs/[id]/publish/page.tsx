@@ -1,5 +1,6 @@
 "use client";
 
+import { ShareSheet } from "@/components/ui/enhancements/share-sheet";
 import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -216,6 +217,7 @@ export default function PublishApiPage() {
                   <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
                     <code className="block min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-lg bg-surface px-3 py-2 text-[12px] text-fg">{deployment.url}</code>
                     <Button variant="outline" size="sm" aria-label={copied === "URL" ? "Base URL copied" : "Copy base URL"} onClick={() => void copy(deployment.url, "URL")}><CopyFeedback copied={copied === "URL"} label="Copy URL" /></Button>
+                    {deployment.status === "active" && <ShareSheet url={deployment.url} />}
                   </div>
                 </div>
                 {apiKey ? (

@@ -87,7 +87,7 @@ export function AgentCard({ data }: { data: AgentCardData }) {
         "relative flex flex-1 snap-center flex-col gap-3 overflow-hidden rounded-3xl border bg-surface px-5 py-6",
         "transition-[box-shadow,border-color] duration-300 ease-out",
         state === "idle" && "border-border",
-        working && "border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
+        working && "cf-agent-glow border-accent-bd bg-accent-soft/25 shadow-[0_12px_28px_rgba(63,71,201,0.12)]",
         state === "done" && "border-ok-bd",
         failed && "border-danger-bd",
         // Reads as "ran, then was interrupted": not faded as far as idle, which means

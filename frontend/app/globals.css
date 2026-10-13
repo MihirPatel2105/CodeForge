@@ -1,3 +1,4 @@
+@import "../components/ui/enhancements/enhancements.css";
 @import "../components/ui/vengeance/vengeance.css";
 @import "tailwindcss";
 @import "tw-animate-css";

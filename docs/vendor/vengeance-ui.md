@@ -53,3 +53,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Second component pass
+
+Share Sheet, Staggered Grid, Glow Border Card and Flip Text were reviewed from the same MIT-licensed registry and adapted in `frontend/components/ui/enhancements/`. Sharing uses the existing local QR renderer and native sharing; links omit query strings and fragments. Project-card stagger uses CSS, the active-agent border stops outside the working state, and the heading reveal plays once.
+
+| Component | Registry JSON SHA-256 |
+| --- | --- |
+| share-sheet | `a841a8de63968b10520db184fe40ddbccbf746e93d8bd0cd33e29792b6999617` |
+| staggered-grid | `483591897c904ff70cf9c485f2c90ca394e81c6de5db4457308760587f4beb1d` |
+| glow-border-card | `692d034f1335ea9ed6154f9c9a482a2a1c3f958633c39291bd3635ecefbe7816` |
+| flip-text | `21f038b229b7e810b6e042e303900be7459045c0902cc01a298b530616f5e85d` |

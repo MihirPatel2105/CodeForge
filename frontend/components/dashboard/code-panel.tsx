@@ -131,7 +131,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion }: CodePanelPr
             <div className="hidden h-7 rounded-lg border border-dashed border-border bg-surface/60 sm:block" />
           </div>
         ) : (
-          <ScrollArea className="flex-1">
+          <ScrollArea className="cf-file-list-cue flex-1">
             <LayoutGroup id={selectionId}><ul className="flex flex-col gap-1 p-2">
               {files.map((f) => {
                 const isSelected = f.path === selectedPath;

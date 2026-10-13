@@ -1,5 +1,6 @@
 "use client";
 
+import { MobileNavigation } from "@/components/ui/enhancements/mobile-navigation";
 import { motion } from "motion/react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motionSpring } from "@/lib/motion-tokens";
@@ -55,9 +56,10 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
             </>
           ) : (
             <>
+              <MobileNavigation />
               <MotionLink {...pressMotion}
                 href="/login"
-                className="inline-flex h-10 items-center rounded-lg px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-3"
+                className="hidden sm:inline-flex h-10 items-center rounded-lg px-2 text-[13px] font-[600] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:px-3"
               >
                 Sign in
               </MotionLink>

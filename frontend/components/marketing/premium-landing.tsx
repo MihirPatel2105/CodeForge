@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
+import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
+import { FlipText } from "@/components/ui/enhancements/flip-text";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
 import { AgentBentoGrid } from "@/components/ui/vengeance/agent-bento-grid";
 import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-grid";
@@ -58,7 +60,7 @@ export function PremiumLanding() {
       <LandingScrollNav />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
-          <motion.p {...entrance(0)} className="lp-intro">Five agents. One API. You in control.</motion.p>
+          <motion.p {...entrance(0)} className="lp-intro"><FlipText>Five agents. One API. You in control.</FlipText></motion.p>
           <motion.h1 {...entrance(0.08)} id="landing-title">Your idea.<br />A working API.</motion.h1>
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
@@ -72,6 +74,8 @@ export function PremiumLanding() {
           </ProductScrollPreview>
           <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
+
+        <section className="lp-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <motion.div {...reveal} className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One real sandbox.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>

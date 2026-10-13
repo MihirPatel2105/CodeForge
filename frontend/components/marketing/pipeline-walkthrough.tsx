@@ -2,9 +2,10 @@
 
 import { MotionButton } from "@/components/ui/motion-button";
 
+import { WalkthroughControl } from "@/components/ui/enhancements/walkthrough-control";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, ClipboardList, Code2, FlaskConical, Layers3, Pause, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
+import { ArrowRight, Check, ClipboardList, Code2, FlaskConical, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { DEMO_RUNS, type DemoRun } from "@/lib/demo-runs";
 import { motion } from "motion/react";
 import { motionTransition } from "@/lib/motion-tokens";
@@ -93,7 +94,7 @@ export function PipelineWalkthrough({ demo, example, onExampleChange }: {
         </div>
         <div className="lp-pipeline-outcome" data-complete={finished}>
           <div><span className="lp-outcome-icon">{finished ? <Check size={18} aria-hidden /> : <ArrowRight size={18} aria-hidden />}</span><motion.div key={step} initial={{ opacity: reducedMotion ? 1 : 0, transform: reducedMotion ? "none" : "translateY(4px)" }} animate={{ opacity: 1, transform: "none" }} transition={transition}><strong>{finished ? `Tests passed · ${demo.tests}/${demo.tests}` : `${stages[active].name} · ${repair ? "review & repair" : "in progress"}`}</strong><p>{messages[step]}</p></motion.div></div>
-          <div className="lp-walkthrough-controls">{finished ? <Link href={`/demo/${demo.slug}`}>Inspect generated code<ArrowRight size={14} aria-hidden /></Link> : null}<MotionButton type="button" onClick={() => { if (finished) { setStep(0); setPlaying(true); } else setPlaying(value => !value); }} disabled={reducedMotion} aria-label={finished ? "Replay walkthrough" : playing ? "Pause walkthrough" : "Play walkthrough"}>{finished ? <RotateCcw size={15} aria-hidden /> : playing ? <Pause size={15} aria-hidden /> : <Play size={15} aria-hidden />}{finished ? "Replay" : playing ? "Pause" : "Play"}</MotionButton></div>
+          <div className="lp-walkthrough-controls">{finished ? <Link href={`/demo/${demo.slug}`}>Inspect generated code<ArrowRight size={14} aria-hidden /></Link> : null}<WalkthroughControl playing={playing} finished={finished} disabled={reducedMotion} onClick={() => { if (finished) { setStep(0); setPlaying(true); } else setPlaying(value => !value); }} /></div>
         </div>
       </div>
     </div>

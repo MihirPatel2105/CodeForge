@@ -54,8 +54,8 @@ jobs:
             sleep 2
           done
           E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/auth-recovery.spec.ts tests/e2e/workspace-experience.spec.ts tests/e2e/admin-operations.spec.ts tests/e2e/admin-live-search.spec.ts tests/e2e/admin-user-delete-ui.spec.ts tests/e2e/admin-security.spec.ts tests/e2e/security-hardening.spec.ts tests/e2e/motion-ui.spec.ts tests/e2e/landing-scroll.spec.ts
-      - name: Vengeance UI regression checks
-        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts
+      - name: Component interaction regression checks
+        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts tests/e2e/component-enhancements.spec.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

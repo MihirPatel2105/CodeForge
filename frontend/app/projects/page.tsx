@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
+import { AnimatedArrow } from "@/components/ui/enhancements/animated-icons";
 import { FolderPreview } from "@/components/ui/vengeance/folder-preview";
 import { Notice } from "@/components/ui/notice";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
@@ -228,8 +229,8 @@ export default function ProjectsPage() {
 
             {projects.length ? (
               <ul className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
-                {projects.map((project) => (
-                  <li key={project.id} className={project.id === newProjectId ? "motion-safe:animate-[cfReadoutEnter_300ms_cubic-bezier(.16,1,.3,1)]" : undefined}>
+                {projects.map((project, index) => (
+                  <li key={project.id} className="cf-project-enter" style={{ "--cf-card-delay": `${project.id === newProjectId ? 0 : Math.min(index, 5) * 45}ms` } as CSSProperties}>
                     <ProjectCard project={project} />
                   </li>
                 ))}
@@ -317,10 +318,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
           )}
         </div>
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-fg-faint transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent">
-          <ArrowRight
-            className="h-4 w-4 transition-transform group-hover:translate-x-[2px]"
-            aria-hidden
-          />
+          <AnimatedArrow />
         </span>
       </div>
 
