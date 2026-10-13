@@ -79,6 +79,7 @@ test("empty filter results explain how to recover and remain usable on mobile", 
 test("only matching live events count as unread while reading earlier filtered activity", async ({ page }) => {
   const additions: Record<string, unknown>[] = [];
   const log = await fixture(page, true, additions);
+  await expect(log).toHaveCSS("scroll-behavior", "auto");
   await page.getByRole("searchbox", { name: "Search timeline", exact: true }).fill("Saved progress");
   await expect(page.getByRole("status", { name: "Timeline results" })).toHaveText("30 of 37 events");
   await expect.poll(() => log.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(48);

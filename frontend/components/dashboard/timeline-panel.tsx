@@ -131,6 +131,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           role="log"
           aria-label="Live timeline"
           className="cf-run-scroll cf-scroll-cue absolute inset-0 flex flex-col gap-1.5 overflow-y-auto p-2.5"
+          style={{ scrollBehavior: "auto" }}
         >
         {entries.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
