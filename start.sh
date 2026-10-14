@@ -66,7 +66,6 @@ bold "1/4  Prerequisites"
 command -v npm >/dev/null 2>&1 || die "Node.js/npm is not installed. Install Node.js 20 or newer."
 command -v curl >/dev/null 2>&1 || die "curl is required but was not found."
 command -v lsof >/dev/null 2>&1 || die "lsof is required but was not found."
-command -v tar >/dev/null 2>&1 || die "tar is required but was not found."
 [[ -f "$ROOT/backend/.env" ]] || die "backend/.env is missing. Create it from backend/.env.example."
 [[ -d "$FRONTEND" ]] || die "Frontend directory not found: $FRONTEND"
 
@@ -157,13 +156,14 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT TERM
 
-# Keep the image on the daemon the backend actually uses. Cached builds also pick
-# up changes to sandbox helpers without requiring a manual image rebuild.
+# Build with Docker Desktop's network access, then transfer the image to the
+# internal sandbox daemon. That daemon cannot pull images or build dependencies.
 STACK_STARTED=true
 compose up -d --wait --wait-timeout 180 sandbox-docker
 ok "Local sandbox ready with TLS certificates"
 warn "Preparing sandbox image (the first build can take a few minutes)…"
-tar -C "$ROOT/sandbox" -cf - . | compose exec -T sandbox-docker docker build -t "$SANDBOX_IMAGE" -
+docker build -t "$SANDBOX_IMAGE" "$ROOT/sandbox"
+docker image save "$SANDBOX_IMAGE" | compose exec -T sandbox-docker docker image load
 ok "Sandbox image ready"
 
 # App code is bind-mounted, but Python dependencies live in the image. Rebuild when

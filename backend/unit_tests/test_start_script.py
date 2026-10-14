@@ -31,11 +31,15 @@ printf 'docker %s\\n' "$*" >> "$COMMAND_LOG"
 case "$*" in
   info) exit 0 ;;
   *"sandbox-docker docker build"*)
+    exit 99 ;;
+  "build "*) exit "${BUILD_FAIL:-0}" ;;
+  "image save "*) printf 'image archive'; exit 0 ;;
+  *"sandbox-docker docker image load"*)
     cat >/dev/null
-    exit "${BUILD_FAIL:-0}" ;;
+    exit "${LOAD_FAIL:-0}" ;;
   *"backend python -c"*) exit "${CONNECTION_FAIL:-0}" ;;
   *"sandbox-docker docker image inspect"*) exit "${IMAGE_MISSING:-0}" ;;
-  "image inspect"*|"build "*) exit 99 ;;
+  "image inspect"*) exit 99 ;;
 esac
 """,
         )
@@ -63,18 +67,34 @@ esac
             timeout=10,
         )
 
-    def test_start_builds_on_sandbox_daemon_and_checks_backend_before_frontend(self):
+    def test_start_builds_on_host_and_loads_isolated_daemon_before_backend_check(self):
         result = self.run_script()
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.log.read_text().splitlines()
         docker_commands = [line for line in commands if line.startswith("docker compose")]
         self.assertTrue(docker_commands)
         self.assertTrue(all("compose.local-sandbox.yml" in line for line in docker_commands))
-        build = next(i for i, line in enumerate(commands) if "sandbox-docker docker build" in line)
+        build = next(i for i, line in enumerate(commands) if line.startswith("docker build "))
+        save = next(i for i, line in enumerate(commands) if "docker image save" in line)
+        load = next(
+            i for i, line in enumerate(commands) if "sandbox-docker docker image load" in line
+        )
         connect = next(i for i, line in enumerate(commands) if "backend python -c" in line)
         frontend = next(i for i, line in enumerate(commands) if "npm run dev" in line)
-        self.assertLess(build, connect)
+        self.assertLess(build, save)
+        self.assertLess(build, load)
+        self.assertLess(save, connect)
+        self.assertLess(load, connect)
+        self.assertFalse(any("sandbox-docker docker build" in line for line in commands))
         self.assertLess(connect, frontend)
+
+    def test_failed_image_transfer_does_not_start_backend_or_frontend(self):
+        result = self.run_script(LOAD_FAIL="1")
+        self.assertNotEqual(result.returncode, 0)
+        commands = self.log.read_text()
+        self.assertNotIn("up -d --build", commands)
+        self.assertNotIn("npm run dev", commands)
+        self.assertIn(" stop", commands)
 
     def test_failed_image_build_does_not_start_frontend(self):
         result = self.run_script(BUILD_FAIL="1")
