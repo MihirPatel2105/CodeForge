@@ -10,6 +10,7 @@ import { useAnimatedList } from "@/lib/use-animated-list";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -243,15 +244,7 @@ export default function ProjectsPage() {
                 )}
               </ul>
             ) : (
-              <div className="mt-5 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
-                <h3 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
-                  {archived ? "No archived projects found" : "No matching projects"}
-                </h3>
-                <p className="mt-2 text-[14px] text-fg-muted">Try a different name or description.</p>
-                <Button type="button" variant="outline" onClick={() => setSearch("")} className="mt-5 rounded-xl">
-                  Clear search
-                </Button>
-              </div>
+              <Empty className="mt-5 border border-border bg-surface py-14"><EmptyHeader><EmptyTitle>{archived ? "No archived projects found" : "No matching projects"}</EmptyTitle><EmptyDescription>Try a different name or description.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setSearch("")}>Clear search</Button></EmptyContent></Empty>
             )}
             {nextCursor && <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore} className="mt-6">{loadingMore ? "Loading…" : "Load more projects"}</Button>}
           </section>
@@ -430,22 +423,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function EmptyState({ onNewProject }: { onNewProject: () => void }) {
   return (
-    <div className="cf-project-empty mt-8 flex min-h-[360px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-border px-6 py-20 text-center">
-      <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-accent-bd bg-accent-soft">
-        <FolderPlus className="h-6 w-6 text-accent" aria-hidden />
-      </div>
-      <span className={cn(LABEL, "mt-6 text-accent")}>empty workspace</span>
-      <h2 className="font-display mt-3 text-[24px] font-[650] tracking-[-0.045em] text-fg">
-        Start your first API project
-      </h2>
-      <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-fg-muted">
-        A project holds the runs for one API. Name it after the thing you are building.
-      </p>
-      <Button onClick={onNewProject} className="cf-project-action mt-7 h-11 gap-2 px-5">
-        <Plus className="h-4 w-4" aria-hidden />
-        New project
-      </Button>
-    </div>
+    <Empty className="cf-project-empty mt-8 min-h-[360px] border border-border py-16"><EmptyHeader><FolderPlus className="size-8 text-fg-muted" aria-hidden /><EmptyTitle><h2 className="font-display text-2xl font-semibold">Start your first API project</h2></EmptyTitle><EmptyDescription>A project holds the runs for one API. Name it after the thing you are building.</EmptyDescription></EmptyHeader><EmptyContent><Button onClick={onNewProject} className="cf-project-action"><Plus aria-hidden />New project</Button></EmptyContent></Empty>
   );
 }
 

@@ -1,4 +1,7 @@
 "use client";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { motion, LayoutGroup } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 
 import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
@@ -65,6 +68,7 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
   onCopy: (value: string, label: string) => void;
 }) {
   const [selected, setSelected] = useState(0);
+  const reduced = useMotionPreference();
   const [language, setLanguage] = useState<Language>("cURL");
   const [shell, setShell] = useState<Shell>("Bash / zsh");
   const hostname = new URL(url).hostname.toLowerCase();
@@ -116,13 +120,16 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
             {operation.path.includes("{") && <p className="mt-1 text-[12px] text-fg-muted">Replace the value in braces before running this request.</p>}
             {operation.has_body && <p className="mt-1 text-[12px] text-fg-muted">Example JSON body is included below.</p>}
             {language === "Python" && <p className="mt-1 text-[12px] text-fg-muted">Install the HTTP client with <code>pip install requests</code>.</p>}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {(["cURL", "Node.js", "Python"] as const).map((item) => (
-                <Button key={item} type="button" size="sm" variant={language === item ? "default" : "outline"} aria-pressed={language === item} onClick={() => setLanguage(item)}>{item === "cURL" && shell === "PowerShell" ? "PowerShell" : item}</Button>
-              ))}
-              <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => onCopy(snippet, requestCopyId)} aria-label={copied === requestCopyId ? "Request example copied" : "Copy request example"}><CopyFeedback copied={copied === requestCopyId} label="Copy" /></Button>
-            </div>
-            <pre key={requestCopyId} className="mt-2 max-h-80 min-h-32 overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[11px] leading-5 text-term-fg motion-safe:animate-[cfFade_220ms_ease-out]">{snippet}</pre>
+            <Tabs value={language} onValueChange={value => setLanguage(value as Language)} className="mt-3">
+              <div className="flex flex-wrap items-center gap-2"><LayoutGroup>
+                <TabsList aria-label="Request example language">{(["cURL", "Node.js", "Python"] as const).map(item => <TabsTrigger key={item} value={item} className="isolate">
+                  {language === item && <motion.span layoutId="request-language" transition={{ duration: reduced ? 0 : .2 }} className="absolute inset-0 -z-10 rounded-full bg-background shadow-sm" aria-hidden />}
+                  {item === "cURL" && shell === "PowerShell" ? "PowerShell" : item}
+                </TabsTrigger>)}</TabsList></LayoutGroup>
+                <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => onCopy(snippet, requestCopyId)} aria-label={copied === requestCopyId ? "Request example copied" : "Copy request example"}><CopyFeedback copied={copied === requestCopyId} label="Copy" /></Button>
+              </div>
+              <TabsContent value={language}><pre key={requestCopyId} className="max-h-80 min-h-32 overflow-auto rounded-lg bg-term-bg p-4 font-mono text-[11px] leading-5 text-term-fg motion-safe:animate-[cfFade_220ms_ease-out]">{snippet}</pre></TabsContent>
+            </Tabs>
             {operation.example_response != null && <AnimatedDisclosure title="Example response shape" className="mt-3"><pre className="max-h-48 overflow-auto font-mono text-[11px] text-fg-muted">{JSON.stringify(operation.example_response, null, 2)}</pre></AnimatedDisclosure>}
           </div>
         </div>

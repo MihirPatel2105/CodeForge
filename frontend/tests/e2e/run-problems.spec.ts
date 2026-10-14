@@ -49,7 +49,7 @@ test("reviewer findings navigate to and focus the recorded generated-code line",
   await expect(line).toBeFocused();
   await problems.getByRole("button", { name: "View main.py line 3" }).click();
   await expect(line).toBeFocused();
-  await page.getByRole("button", { name: /test_main.py/ }).click();
+  await page.getByRole("button", { name: "test_main.py new", exact: true }).click();
   await expect(page.locator("[data-problem-line]")).toHaveCount(0);
 });
 
@@ -125,7 +125,9 @@ for (const width of [1440, 375]) {
     await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     await expect(viewport.getByText("value_120", { exact: false }).last()).toBeInViewport();
     await expect(page.getByRole("button", { name: "Copy code" })).toBeInViewport();
+    await page.getByRole("button", { name: "View options", exact: true }).click();
     await page.getByRole("button", { name: "Wrap", exact: true }).click();
+    await page.keyboard.press("Escape");
     await expect(viewport.getByText("value_120", { exact: false }).last()).toBeInViewport();
   });
 }

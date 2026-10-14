@@ -6,6 +6,7 @@ until then a created run stays `queued`.
 
 import re
 from datetime import UTC, datetime
+from typing import Annotated
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
@@ -19,7 +20,7 @@ from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
 from app.graph import executor
 from app.graph.metrics import score_run
-from app.graph.state import new_run_state
+from app.graph.state import RunStatus, new_run_state
 from app.models import Project, Run
 from app.schemas.agents import GeneratedFile
 from app.schemas.api import (
@@ -223,6 +224,7 @@ async def project_run_page(
     limit: int = Query(default=20, ge=1, le=50),
     q: str = Query(default="", max_length=200),
     outcome: str = Query(default="", max_length=40),
+    outcomes: Annotated[list[RunStatus] | None, Query(max_length=9)] = None,
 ) -> ProjectRunPage:
     await get_owned(Project, project_id, str(user.id), "Project")
     owner = str(user.id)
@@ -230,7 +232,9 @@ async def project_run_page(
     query = dict(match)
     if q.strip():
         query["prompt"] = {"$regex": re.escape(q.strip()), "$options": "i"}
-    if outcome:
+    if outcomes:
+        query["status"] = {"$in": list(dict.fromkeys(outcomes))}
+    elif outcome:
         query["status"] = outcome
     if cursor:
         if not ObjectId.is_valid(cursor):

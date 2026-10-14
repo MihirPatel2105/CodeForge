@@ -42,6 +42,19 @@ test("code folders support keyboard expansion and distinguish files with the sam
     await expect(folder).toHaveAttribute("aria-expanded", "true");
     await expect(code).toContainText("app_value = 1");
   }
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await code.getByRole("button", { name: "tests/main.py new", exact: true }).click({ button: "right" });
+  await page.getByRole("menuitem", { name: "Copy code", exact: true }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("test_value = 2\n");
+  await code.getByRole("button", { name: "Actions for app/main.py", exact: true }).click();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download file", exact: true }).click();
+  expect((await download).suggestedFilename()).toBe("main.py");
+  await page.keyboard.press("Escape");
+  const resize = page.getByRole("separator", { name: "Resize file sidebar", exact: true });
+  const before = await resize.getAttribute("aria-valuenow");
+  await resize.focus(); await page.keyboard.press("ArrowRight");
+  await expect(resize).not.toHaveAttribute("aria-valuenow", before!);
   await page.setViewportSize({ width: 375, height: 812 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

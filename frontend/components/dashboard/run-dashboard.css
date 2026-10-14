@@ -118,13 +118,13 @@
 .cf-evidence-timeline [role=log] > div { padding-block:16px; }
 .cf-evidence-timeline [role=log] p { font-size:13px; line-height:1.65; }
 .cf-evidence-code > div:first-child { background:var(--surface-2); }
-.cf-evidence-code > div:first-child > div:first-child { padding:18px 16px; }
-.cf-evidence-code li button { padding:11px 12px; border-radius:8px; font-size:11px; }
-.cf-evidence-code li button > span[aria-hidden] { border-radius:8px; box-shadow:0 1px 4px rgb(0 0 0 / .04); }
-.cf-evidence-code li button > span:last-child { border-radius:5px; font-size:9px; }
-.cf-evidence-code > div:last-child > div:first-child { padding:16px 20px; gap:12px; }
-.cf-evidence-code > div:last-child > div:first-child > div:first-child { flex-wrap:wrap; }
-.cf-evidence-code > div:last-child > div:first-child button { height:32px; border-radius:7px; font-size:10px; text-transform:none; letter-spacing:0; padding-inline:10px; }
+.cf-evidence-code .cf-file-rail > div:first-child { padding:18px 16px; }
+.cf-evidence-code li button[data-motion-control] { padding:11px 12px; border-radius:8px; font-size:11px; }
+.cf-evidence-code li button[data-motion-control] > span[aria-hidden] { border-radius:8px; box-shadow:0 1px 4px rgb(0 0 0 / .04); }
+.cf-evidence-code li button[data-motion-control] > span:last-child { border-radius:5px; font-size:9px; }
+.cf-evidence-code .cf-code-toolbar { padding:16px 20px; gap:12px; }
+.cf-evidence-code .cf-code-toolbar > div:first-child { flex-wrap:wrap; }
+.cf-evidence-code .cf-code-toolbar button { height:32px; border-radius:7px; font-size:10px; text-transform:none; letter-spacing:0; padding-inline:10px; }
 .cf-run-page .cf-evidence-terminal { border-radius:14px; height:224px; box-shadow:none; }
 .cf-evidence-terminal > div:first-child { padding:13px 18px; min-width:0; flex-wrap:wrap; }
 .cf-evidence-terminal > div:first-child > span:nth-child(2) { font-size:10px; overflow-wrap:anywhere; }
@@ -200,8 +200,8 @@
 .cf-evidence-workbench { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:18px; background:var(--surface); box-shadow:0 18px 60px -48px rgb(0 0 0 / .22); }
 .cf-workbench-editor { height:560px; min-width:0; scroll-margin-top:100px; }
 .cf-run-page .cf-workbench-editor .cf-evidence-code { border:0; border-radius:0; }
-.cf-workbench-editor .cf-evidence-code > div:first-child { width:184px; }
-.cf-workbench-editor .cf-evidence-code > div:last-child > div:first-child { min-height:64px; }
+
+.cf-workbench-editor .cf-evidence-code .cf-code-toolbar { min-height:64px; }
 .cf-workbench-console { border-top:1px solid var(--border-strong); }
 .cf-workbench-console > [data-slot=tabs] { gap:0; }
 .cf-workbench-console-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; min-height:60px; padding:0 24px; background:var(--surface-2); border-bottom:1px solid var(--rule); }
@@ -229,7 +229,7 @@
 @media(max-width:639px) {
  .cf-evidence-workbench { border-radius:14px; }
  .cf-workbench-editor { height:560px; }
- .cf-workbench-editor .cf-evidence-code > div:first-child { width:100%; height:122px; }
+
  .cf-workbench-console-heading { flex-wrap:wrap; gap:0; padding:0 16px 12px; }
  .cf-workbench-console-heading [data-slot=tabs-list] { gap:22px; width:100%; }
  .cf-workbench-console-panel { height:380px; }
@@ -305,3 +305,17 @@
 .cf-approval-dialog .cf-approval-actions { flex-direction:column; align-items:stretch; gap:16px; }
 .cf-approval-dialog .cf-approval-review { flex:1; }
 .cf-approval-dialog .cf-approval-scroll { flex:1; }
+
+.cf-evidence-code .cf-file-rail { background:var(--surface-2); }
+.cf-file-resizer { width:7px; background:var(--surface-2); border-inline:1px solid var(--border); }
+.cf-file-resizer:hover { background:var(--border); }
+@media(max-width:639px) { .cf-file-resizer { display:none; } }
+
+@media(prefers-reduced-motion:reduce) {
+ [data-slot=popover-content], [data-slot=context-menu-content] { animation:none!important; transition:none!important; }
+}
+
+.cf-evidence-workbench .cf-workbench-editor { height:100%; }
+.cf-evidence-workbench .cf-workbench-console { height:100%; border-top:0; }
+.cf-evidence-workbench .cf-workbench-console > [data-slot=tabs] { height:100%; }
+.cf-evidence-workbench .cf-workbench-console-panel { min-height:0; height:auto; flex:1; }

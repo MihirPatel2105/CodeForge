@@ -328,7 +328,8 @@ export const api = {
     const search = new URLSearchParams();
     if (cursor) search.set("cursor", cursor);
     if (q) search.set("q", q);
-    if (outcome) search.set("outcome", outcome);
+    if (outcome.includes(",")) outcome.split(",").filter(Boolean).forEach(status => search.append("outcomes", status));
+    else if (outcome) search.set("outcome", outcome);
     return request<ProjectRunPage>(`/projects/${projectId}/runs/page${search.size ? `?${search}` : ""}`);
   },
 

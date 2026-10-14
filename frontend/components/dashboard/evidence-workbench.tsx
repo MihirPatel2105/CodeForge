@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Activity, CheckCheck, TerminalSquare, ListChecks } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import type { TestsSnapshot } from "@/lib/run-reducer";
 import "./run-dashboard.css";
 
@@ -24,8 +25,12 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
   }, [navigationRequest]);
 
   return (
-    <div className="cf-evidence-workbench">
+    <ResizablePanelGroup orientation="vertical" className="cf-evidence-workbench" style={{ height: 960 }}>
+      <ResizablePanel id="code-evidence" defaultSize="60%" minSize="360px">
       <div ref={codeRef} className="cf-workbench-editor" role="region" aria-label="Generated code">{code}</div>
+      </ResizablePanel>
+      <ResizableHandle withHandle aria-label="Resize code and execution panels" />
+      <ResizablePanel id="execution-evidence" minSize="250px">
       <section className="cf-workbench-console" aria-label="Execution details">
         <Tabs value={view} onValueChange={value => setView(String(value))}>
           <div className="cf-workbench-console-heading">
@@ -45,6 +50,7 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
           <TabsContent value="tests" hidden={view !== "tests"} keepMounted className="cf-workbench-console-panel">{tests}</TabsContent>
         </Tabs>
       </section>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }

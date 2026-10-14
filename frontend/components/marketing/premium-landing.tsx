@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "motion/react";
+import { Magnetic } from "@/components/ui/magnetic";
+import { DemoSearchCell } from "@/components/ui/enhancements/demo-search-cell";
+import { DemoPreviewLink } from "@/components/ui/enhancements/demo-preview-link";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FlipText } from "@/components/ui/enhancements/flip-text";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
@@ -64,8 +67,8 @@ export function PremiumLanding() {
           <motion.h1 {...entrance(0.08)} id="landing-title">Your idea.<br />A working API.</motion.h1>
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
-            <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
-            <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
+            <Magnetic><Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></Magnetic>
+            <DemoPreviewLink className="lp-text-link" slug={demo.slug} label={demo.label}><Play size={15} aria-hidden />Watch a full run</DemoPreviewLink>
           </motion.div>
           <ProductScrollPreview>
             <div className="lp-product lp-pipeline">
@@ -75,7 +78,7 @@ export function PremiumLanding() {
           <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
 
-        <section className="lp-section" aria-label="Explore example APIs"><DemoCarousel /></section>
+        <section className="lp-section" aria-label="Explore example APIs"><DemoSearchCell /><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <motion.div {...reveal} className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One real sandbox.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>

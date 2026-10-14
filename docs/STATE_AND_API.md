@@ -420,3 +420,12 @@ The `run.retried` SSE event carries `{agent, attempt}`. Event IDs remain monoton
 after process restarts. Replays omit terminal events superseded by a later retry,
 while retaining earlier agent/file history. The browser resets downstream stages
 and opens a fresh stream after an accepted retry.
+
+### Run history outcome filters
+
+`GET /projects/{project_id}/runs/page` accepts repeated `outcomes` parameters
+(e.g. `?outcomes=succeeded&outcomes=failed_sandbox`). The statuses combine with OR,
+and intersect with the existing literal prompt search and cursor. Invalid statuses
+return 422. When both forms are supplied, `outcomes` takes precedence over legacy
+`outcome`. Omitting them returns every outcome. Ownership and unfiltered project
+statistics remain unchanged.

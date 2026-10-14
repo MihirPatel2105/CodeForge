@@ -2,7 +2,7 @@
 
 // Adapted from Skiper UI 48's swipe/navigation pattern. See docs/vendor/skiper-ui.md.
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { DemoPreviewLink } from "./demo-preview-link";
 import { ChevronLeft, ChevronRight, FileCode2 } from "lucide-react";
 import { DEMO_RUNS } from "@/lib/demo-runs";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ export function DemoCarousel() {
       {DEMO_RUNS.map((demo, index) => <article key={demo.slug} className="cf-demo-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${DEMO_RUNS.length}: ${demo.label}`}>
         <div className="cf-demo-slide-top"><FileCode2 size={24} aria-hidden /><span>Example API / 0{index + 1}</span></div>
         <h3>{demo.title}</h3><p>{demo.prompt}</p>
-        <Link href={`/demo/${demo.slug}`} className="cf-demo-slide-link">Explore {demo.label} API<AnimatedArrow /></Link>
+        <DemoPreviewLink slug={demo.slug} label={demo.label} className="cf-demo-slide-link">Explore {demo.label} API<AnimatedArrow /></DemoPreviewLink>
       </article>)}
     </div>
     <p className="cf-demo-position" aria-live="polite" aria-atomic="true">Example {active + 1} of {DEMO_RUNS.length}</p>

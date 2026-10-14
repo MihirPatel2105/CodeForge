@@ -355,3 +355,37 @@ def test_real_executor_persists_revisions_and_reapproval(client, registered_user
     assert current["state"]["design"]["endpoints"][0]["path"] == "/books"
     assert not current["state"]["files"]
     client.post(f"/runs/{run}/cancel", headers=headers)
+
+
+def test_multiple_outcomes_filter_before_pagination(client, workspace):
+    headers, project, first_run = workspace
+    update_run(first_run, status="succeeded")
+    for status in ("failed_sandbox", "running", "succeeded"):
+        response = client.post(
+            "/runs", json={"project_id": project, "prompt": f"Book {status}"}, headers=headers
+        )
+        assert response.status_code == 202
+        update_run(response.json()["run_id"], status=status)
+    url = f"/projects/{project}/runs/page?outcomes=succeeded&outcomes=failed_sandbox&limit=1&q=Book"
+    seen = []
+    cursor = None
+    while True:
+        response = client.get(url + (f"&cursor={cursor}" if cursor else ""), headers=headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["stats"]["total"] == 4
+        seen.extend(data["items"])
+        cursor = data["next_cursor"]
+        if not cursor:
+            break
+    assert len(seen) == 3
+    assert len({run["id"] for run in seen}) == 3
+    assert {run["status"] for run in seen} == {"succeeded", "failed_sandbox"}
+    assert (
+        client.get(url + "&outcome=running", headers=headers).json()["items"][0]["status"]
+        != "running"
+    )
+    assert (
+        client.get(f"/projects/{project}/runs/page?outcomes=unknown", headers=headers).status_code
+        == 422
+    )

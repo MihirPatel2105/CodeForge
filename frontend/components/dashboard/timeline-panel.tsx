@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ChevronDown, Clock3, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { MorphingPopover } from "@/components/ui/morphing-popover";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
@@ -86,13 +88,15 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         <span role="status" aria-label="Timeline results" className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] tabular-nums text-fg-faint">{filtering ? `${visible.length} of ${entries.length} events` : `${entries.length} ${entries.length === 1 ? "event" : "events"}`}</span>
       </div>
 
-      <div className="shrink-0 space-y-2.5 border-b border-border px-3 py-3">
+      <div className="shrink-0 border-b border-border px-3 py-2">
+      <MorphingPopover label={filtering ? "Filters active" : "Filter activity"} title="Filter activity">
+      <motion.div layout={!reducedMotion} initial={reducedMotion ? false : { opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .2 }} className="space-y-3">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(100px,130px)] gap-2">
           <div className="relative min-w-0">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-fg-faint" aria-hidden />
             <Input type="search" aria-label="Search timeline" value={filters.query} placeholder="Search activity…"
               onChange={event => changeFilters({ query: event.target.value })}
-              onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); changeFilters({ query: "" }); } }}
+              onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); changeFilters({ query: "" }); } }}
               className="h-9 min-w-0 pl-8 text-xs" />
           </div>
           <div className="relative min-w-0">
@@ -109,6 +113,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           {([["all", "All activity"], ["failures", "Failures"], ["loops", "Repair loops"]] as const).map(([view, label]) => <Button key={view} variant={filters.view === view ? "default" : "outline"} size="sm" aria-pressed={filters.view === view} onClick={() => changeFilters({ view: view as TimelineView })} className="h-8 px-2.5 text-xs">{label}</Button>)}
           <Button variant="ghost" size="sm" disabled={!filtering} onClick={clearFilters} className="h-8 px-2 text-xs">Clear filters</Button>
         </div>
+      </motion.div></MorphingPopover>
       </div>
 
       {connectionLost && (
@@ -142,10 +147,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
             <p className="mt-1.5 max-w-[32ch] text-[13px] leading-5 text-fg-muted">Agent updates will appear here as the run progresses.</p>
           </div>
         ) : visible.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
-            <p className="text-sm font-semibold text-fg">No matching activity</p>
-            <p className="mt-1.5 max-w-[32ch] text-xs leading-5 text-fg-muted">Try another search or clear the filters to see all events.</p>
-          </div>
+          <Empty><EmptyHeader><EmptyTitle>No matching activity</EmptyTitle><EmptyDescription>Try another search or clear the filters to see all events.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" size="sm" onClick={clearFilters}>Reset activity filters</Button></EmptyContent></Empty>
         ) : (
           visible.map(({ entry, index }) => <TimelineEntry key={index} entry={entry} i={index} />)
         )}

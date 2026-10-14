@@ -2,7 +2,10 @@
 
 import { MotionButton } from "@/components/ui/motion-button";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { DynamicToolbar } from "@/components/ui/dynamic-toolbar";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { toast } from "sonner";
 import { CodeFileTree } from "./code-file-tree";
 import { FileCode2, WrapText } from "lucide-react";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
@@ -35,6 +38,12 @@ export interface CodePanelProps {
   getPreviousVersion?: (path: string, iteration: number) => CodeVersion | null;
 }
 
+function subscribeCompact(change: () => void) {
+  const media = window.matchMedia("(max-width:639px)");
+  media.addEventListener("change", change);
+  return () => media.removeEventListener("change", change);
+}
+
 const TOKEN_CLASS: Record<string, string> = {
   kw: "text-code-kw",
   str: "text-code-str",
@@ -62,6 +71,7 @@ function CodeLine({ text }: { text: string }) {
  * joined here from mock data during dev playback or the REST file endpoints on a live run.
  */
 export function CodePanel({ files, getVersion, getPreviousVersion, location }: CodePanelProps) {
+  const compact = useSyncExternalStore(subscribeCompact, () => window.matchMedia("(max-width:639px)").matches, () => false);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
   const [view, setView] = useState<"current" | "diff">("current");
@@ -117,13 +127,14 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
       copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
+      toast.error("Couldn’t copy the code. Try again.");
     }
   }
 
   return (
-    <div className="cf-evidence-code flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface sm:flex-row">
+    <ResizablePanelGroup orientation={compact ? "vertical" : "horizontal"} className="cf-evidence-code h-full overflow-hidden rounded-3xl border border-border bg-surface">
       {/* File rail */}
-      <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-bg sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
+      <ResizablePanel id="generated-file-rail" defaultSize={compact ? "138px" : "22%"} minSize={compact ? "120px" : "150px"} maxSize={compact ? "160px" : "45%"} disabled={compact} className="cf-file-rail flex min-h-0 flex-col border-b border-border bg-bg sm:border-b-0">
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <span className="text-[12px] font-[650] text-fg-muted">Generated files</span>
           <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-[650] text-fg-faint" aria-label={`${files.length} ${files.length === 1 ? "file" : "files"}`}>{files.length}</span>
@@ -136,7 +147,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
           </div>
         ) : (
           <ScrollArea className="cf-file-list-cue min-h-0 flex-1">
-            <CodeFileTree files={files} selectedPath={selectedPath} revealRequestId={location?.requestId}
+            <CodeFileTree files={files} selectedPath={selectedPath} revealRequestId={location?.requestId} getContent={file => getVersion(file.path, file.iteration)?.content ?? null}
               onSelect={path => {
                 setProblemLocation(null);
                 setSelectedPath(path);
@@ -145,13 +156,13 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
               }} />
           </ScrollArea>
         )}
-      </div>
-
+      </ResizablePanel>
+      <ResizableHandle withHandle aria-label="Resize file sidebar" className="cf-file-resizer" />
       {/* Code viewer */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-code-bg">
+      <ResizablePanel id="generated-code-canvas" minSize={compact ? "280px" : "45%"} className="flex min-h-0 min-w-0 flex-col bg-code-bg">
         {selected && version ? (
           <>
-            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
+            <div className="cf-code-toolbar flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <FileCode2 className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                 <span className="min-w-0 truncate font-mono text-[13px] font-[650] text-fg">{selected.path}</span>
@@ -163,7 +174,16 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
                       } ${(version.changedLineCount ?? version.changedLines?.length ?? 0) === 1 ? "line" : "lines"} changed`}
                 </span>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5">
+              <DynamicToolbar primary={
+                <MotionButton
+                  type="button"
+                  onClick={copyCurrentFile}
+                  aria-label={copied ? "Code copied" : "Copy code"}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
+                >
+                  <CopyFeedback copied={copied} label="Copy" />
+                </MotionButton>
+              }>
                 {canDiff && (
                   <div className="flex gap-[2px] rounded-2xl bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
@@ -196,15 +216,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
                   <WrapText className="h-3.5 w-3.5" aria-hidden />
                   Wrap
                 </MotionButton>
-                <MotionButton
-                  type="button"
-                  onClick={copyCurrentFile}
-                  aria-label={copied ? "Code copied" : "Copy code"}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
-                >
-                  <CopyFeedback copied={copied} label="Copy" />
-                </MotionButton>
-              </div>
+              </DynamicToolbar>
             </div>
 
             <ScrollArea className="cf-run-scroll min-h-0 flex-1 bg-code-bg">
@@ -232,8 +244,8 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
             </p>
           </div>
         )}
-      </div>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
 

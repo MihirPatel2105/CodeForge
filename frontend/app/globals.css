@@ -1523,3 +1523,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
  --border: #292929; --border-strong: #525252; --rule: #292929;
  --code-bg: #080808; --code-fg: #ededed;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="hover-card-content"], [data-slot="combobox-content"] { animation: none !important; transition: none !important; }
+}

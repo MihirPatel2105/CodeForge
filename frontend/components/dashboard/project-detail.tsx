@@ -1,5 +1,7 @@
 "use client";
 
+import { RunStatusFilter } from "./run-status-filter";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
 import { GenerateButton } from "@/components/ui/vengeance/generate-button";
 import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
@@ -238,7 +240,7 @@ export function ProjectDetail({
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><select aria-label="Filter run outcome" value={outcome} onChange={e => onFilter?.(query, e.target.value)} className="cf-project-select h-11 rounded-lg border border-border bg-bg px-3 text-sm"><option value="">All outcomes</option>{Object.entries(RUN_STATUS_META).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</select></div>
+            <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><RunStatusFilter value={outcome} onChange={value => onFilter?.(query, value)} /></div>
             {filtering && <p role="status" className="px-5 py-2 text-sm text-fg-muted">Searching runs…</p>}
             <div
               className="cf-run-history-grid hidden items-center gap-x-4 border-b border-border bg-bg/45 px-5 py-[11px] md:grid md:px-6"
@@ -251,17 +253,7 @@ export function ProjectDetail({
             </div>
 
             {history.length === 0 ? (
-              <div className="cf-project-history-empty flex min-h-[330px] flex-col items-center justify-center px-6 py-20 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
-                  <Play className="h-4 w-4 fill-current" aria-hidden />
-                </span>
-                <p className="font-display mt-5 text-[18px] font-[650] tracking-[-0.035em] text-fg">
-                  {query || outcome ? "No matching runs" : "No runs yet"}
-                </p>
-                <p className="mt-2 max-w-[36ch] text-[13px] leading-[1.55] text-fg-muted">
-                  Describe the API in the composer and start the agent workflow.
-                </p>
-              </div>
+              <Empty className="cf-project-history-empty min-h-[330px]"><EmptyHeader><EmptyTitle>{query || outcome ? "No matching runs" : "No runs yet"}</EmptyTitle><EmptyDescription>{query || outcome ? "Try fewer outcomes or another search." : "Describe the API in the composer and start the agent workflow."}</EmptyDescription></EmptyHeader>{(query || outcome) && <EmptyContent><Button variant="outline" onClick={() => onFilter?.("", "")}>Clear run filters</Button></EmptyContent>}</Empty>
             ) : (
               history.map((run) => {
                 const meta = RUN_STATUS_META[run.status] ?? {

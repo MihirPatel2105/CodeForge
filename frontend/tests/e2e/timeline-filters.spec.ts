@@ -27,6 +27,7 @@ async function fixture(page: Page, live = false, additions: Record<string, unkno
   ];
   await page.route(`**/api/backend/runs/${runId}/stream`, route => route.fulfill({ contentType: "text/event-stream", body: [...events, ...additions].map((event, index) => `id: ${index + 1}\ndata: ${JSON.stringify(event)}\n\n`).join("") }));
   await page.goto(`/runs/${runId}`);
+  await page.getByRole("button", { name: "Filter activity", exact: true }).click();
   return page.getByRole("log", { name: "Live timeline", exact: true });
 }
 
@@ -63,7 +64,9 @@ test("empty filter results explain how to recover and remain usable on mobile", 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   const log = await fixture(page);
+  await page.keyboard.press("Escape");
   await page.getByRole("tab", { name: "Timeline", exact: true }).click();
+  await page.getByRole("button", { name: "Filter activity", exact: true }).click();
   const search = page.getByRole("searchbox", { name: "Search timeline", exact: true });
   await search.fill("no match here");
   await expect(log.getByText("No matching activity", { exact: true })).toBeVisible();
@@ -82,6 +85,7 @@ test("only matching live events count as unread while reading earlier filtered a
   await expect(log).toHaveCSS("scroll-behavior", "auto");
   await page.getByRole("searchbox", { name: "Search timeline", exact: true }).fill("Saved progress");
   await expect(page.getByRole("status", { name: "Timeline results" })).toHaveText("30 of 37 events");
+  await page.getByRole("button", { name: "Filters active", exact: true }).click();
   await expect.poll(() => log.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(48);
   await log.evaluate(element => { element.scrollTop = 0; element.dispatchEvent(new Event("scroll")); });
   additions.push({ event: "agent.message", agent: "pm", text: "Hidden live update", at });
@@ -94,6 +98,7 @@ test("only matching live events count as unread while reading earlier filtered a
   await page.getByRole("button", { name: "1 new event", exact: true }).click();
   await expect.poll(() => log.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(48);
   await expect(page.getByRole("button", { name: /new event/i })).toHaveCount(0);
+  await page.getByRole("button", { name: "Filters active", exact: true }).click();
   await page.getByRole("button", { name: "Clear filters", exact: true }).click();
   await expect(log).toContainText("Hidden live update");
 });
