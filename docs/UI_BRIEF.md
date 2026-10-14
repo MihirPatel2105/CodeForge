@@ -68,8 +68,8 @@ Six stages in order:
 PM  →  Architect  →  Coder  →  Reviewer  →  Tester  →  Sandbox
 ```
 
-Each stage is a card showing the agent's name, a one-line description of its job, and its
-current state. **Plus the loop:** a visible return path from Reviewer back to Coder, and
+Each stage has a compact selector showing its name, current state and repeat-pass badge.
+Selecting a stage reveals its job and recorded evidence in one shared detail panel. **Plus the loop:** a visible return path from Reviewer back to Coder, and
 from Sandbox back to Coder. When the loop fires, the viewer must see the work travel
 backwards and the iteration counter increase. This should be the most eye-catching moment
 in the whole demo — it is the project's core contribution.
@@ -83,9 +83,11 @@ Agent card states, all four of which need a distinct visual treatment:
 | `done` | Finished successfully |
 | `failed` | Could not produce valid output |
 
-Cards also show, when relevant: which AI model answered (e.g. "groq/gpt-oss-120b"), how
-long the step took, and a one-line summary of what it produced ("4 endpoints designed",
-"3 findings, 1 blocking").
+The shared detail panel shows the recorded model or runtime image, duration and output
+summary for the selected stage. It follows the active stage until the user chooses to
+inspect another stage; "Follow active stage" resumes automatic following. Inspection
+never starts or changes execution. The mobile layout wraps the same stage selectors
+instead of requiring horizontal scrolling.
 
 There is a real subtlety worth designing for: a stage can run **more than once**. The
 Coder card in iteration 2 is the same card doing a second pass, not a new stage. Consider

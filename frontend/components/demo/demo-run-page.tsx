@@ -2,7 +2,7 @@
 
 import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "lucide-react";
 import { motion } from "motion/react";
@@ -17,7 +17,6 @@ import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import type { DemoRun } from "@/lib/demo-runs";
-import { preferredScrollBehavior } from "@/lib/motion";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { reduceRun } from "@/lib/run-reducer";
 import { useCurrentUser } from "@/lib/use-current-user";
@@ -31,7 +30,6 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const [eventIndex, setEventIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
-  const pipelineViewport = useRef<HTMLDivElement>(null);
   const lastEventIndex = demo.events.length - 1;
   const isComplete = eventIndex >= lastEventIndex;
 
@@ -51,16 +49,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
     setPlaying(false);
   }, [isComplete]);
 
-  useEffect(() => {
-    const viewport = pipelineViewport.current;
-    if (!viewport || !snapshot.currentAgent || window.innerWidth >= 640) return;
-    const card = viewport.querySelector<HTMLElement>(`[data-stage="${snapshot.currentAgent}"]`);
-    if (!card) return;
-    viewport.scrollTo({
-      left: Math.max(0, card.offsetLeft - 20),
-      behavior: preferredScrollBehavior(),
-    });
-  }, [snapshot.currentAgent]);
+
 
   const finalFiles = useMemo(
     () => ({ ...demo.finalFiles, [demo.testFile.path]: demo.testFile.content }),
@@ -227,14 +216,14 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
               <h2 id="demo-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="text-[11px] text-fg-muted">
-              <span className="sm:hidden">swipe to inspect →</span>
+              <span className="sm:hidden">Tap a stage to inspect</span>
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
           <RunStory snapshot={snapshot} />
-          <div ref={pipelineViewport} className="cf-run-scroll snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
-            <div className="min-w-[1180px]">
-              <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
+          <div className="cf-pipeline-viewport">
+            <div className="min-w-0">
+              <PipelineStrip key={demo.slug} agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
             </div>
           </div>
         </section>

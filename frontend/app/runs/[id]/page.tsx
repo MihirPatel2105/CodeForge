@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
-import { preferredScrollBehavior } from "@/lib/motion";
 
 /**
  * The real Live Run screen (docs/UI_BRIEF.md §4) — the same components proven out
@@ -60,7 +59,6 @@ export default function LiveRunPage() {
   const [problemState, setProblemState] = useState<{ runId: string; state: Record<string, unknown> } | null>(null);
   const [problemError, setProblemError] = useState(false);
   const [codeLocation, setCodeLocation] = useState<{ runId: string; location: CodeLocation } | null>(null);
-  const pipelineViewport = useRef<HTMLDivElement>(null);
 
   // `replace`, not `push`: a signed-out visitor should not be able to press Back and
   // land on a protected page again. The `allowed` flag then stops the run UI rendering
@@ -99,16 +97,7 @@ export default function LiveRunPage() {
     return () => { disposed = true; if (timer) clearTimeout(timer); };
   }, [id, snapshot.endedAt, snapshot.status]);
 
-  useEffect(() => {
-    const viewport = pipelineViewport.current;
-    if (!viewport || !snapshot.currentAgent || window.innerWidth >= 640) return;
-    const card = viewport.querySelector<HTMLElement>(`[data-stage="${snapshot.currentAgent}"]`);
-    if (!card) return;
-    viewport.scrollTo({
-      left: Math.max(0, card.offsetLeft - 20),
-      behavior: preferredScrollBehavior(),
-    });
-  }, [snapshot.currentAgent]);
+
 
   const filesKey = snapshot.files.map((f) => `${f.path}:${f.iteration}`).join(",");
   useEffect(() => {
@@ -400,10 +389,10 @@ export default function LiveRunPage() {
             </span>
           </div>
           <RunStory snapshot={snapshot} />
-          <ol className="divide-y divide-border px-5 sm:hidden" aria-label="Pipeline stages">{PIPELINE_STAGES.map(stage => <li key={stage.id} className="flex gap-3 py-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-sm">{stage.index}</span><div><p className="text-sm font-semibold">{stage.name} · {snapshot.agents[stage.id].state}</p><p className="text-xs text-fg-muted">{snapshot.agents[stage.id].summary || stage.job}</p></div></li>)}</ol>
-          <div ref={pipelineViewport} className="cf-run-scroll hidden sm:block snap-x snap-proximity overflow-x-auto px-5 pb-1 pt-5 sm:px-6">
-            <div className="min-w-[1180px]">
-              <PipelineStrip agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
+
+          <div className="cf-pipeline-viewport">
+            <div className="min-w-0">
+              <PipelineStrip key={id} agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
             </div>
           </div>
         </section>
