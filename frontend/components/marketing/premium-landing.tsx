@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { DemoPreviewLink } from "@/components/ui/enhancements/demo-preview-link";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FlipText } from "@/components/ui/enhancements/flip-text";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
@@ -66,7 +65,7 @@ export function PremiumLanding() {
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
             <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
-            <DemoPreviewLink className="lp-text-link" slug={demo.slug} label={demo.label}><Play size={15} aria-hidden />Watch a full run</DemoPreviewLink>
+            <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
           </motion.div>
           <ProductScrollPreview>
             <div className="lp-product lp-pipeline">

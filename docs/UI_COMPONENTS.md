@@ -11,11 +11,9 @@ not a new theme. Stepper is excluded.
 | Morphing popover | Execution evidence → Timeline | Open Filter activity, combine search/agent/view filters, then close it. Escape in search clears the query. |
 | Code tabs | Publish API → Make a request | Switch cURL/Node.js/Python with mouse or arrow keys; copy the selected request. |
 | Empty states | Projects, Run history, Timeline, Try API saved requests | Search for a nonexistent item, clear filters, or inspect an empty account/list. |
-| Preview link card | Homepage → Watch a full run / Explore example links | Hover or focus a link to see a locally stored demo screenshot. |
 | Multi-select combobox | Project → Run history → All outcomes | Search and select multiple outcomes; remove chips. Filters persist when loading more runs. |
 
-Motion respects reduced-motion preferences. Link previews use screenshots of
-the local recorded demos, with no third-party screenshot calls.
+Motion respects reduced-motion preferences.
 
 ## References
 

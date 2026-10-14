@@ -1,11 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-test("homepage links retain previews without the removed search block", async ({ page }) => {
+test("homepage demo links work without hover previews or the removed search block", async ({ page }) => {
   await page.goto("/");
   const link = page.getByRole("link", { name: "Watch a full run", exact: true });
   await link.hover();
-  await expect(page.getByAltText("Library recorded run preview")).toBeVisible();
-  await expect.poll(() => page.getByAltText("Library recorded run preview").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  await expect(page.locator("[data-slot=hover-card-trigger], [data-slot=hover-card-content]")).toHaveCount(0);
+  await expect(link).toHaveAttribute("href", "/demo/library");
+  await link.click();
+  await expect(page).toHaveURL(/\/demo\/library$/);
+  await page.goto("/");
   await expect(page.getByRole("searchbox", { name: "Search example APIs", exact: true })).toHaveCount(0);
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
