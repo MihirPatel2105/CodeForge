@@ -7,6 +7,5 @@ import type { ReactNode } from "react";
 export function ThemeProvider({ children, nonce }: { children: ReactNode; nonce?: string }) {
   const pathname = usePathname();
   const isAgentDashboard = /^\/runs\/[^/]+\/?$/.test(pathname) || /^\/demo\/[^/]+\/?$/.test(pathname);
-  const supportsTheme = isAgentDashboard || pathname === "/profile" || pathname.startsWith("/profile/");
-  return <Provider forcedTheme={supportsTheme ? undefined : "light"} attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange storageKey="codeforge-theme" nonce={nonce}>{children}</Provider>;
+  return <Provider forcedTheme={isAgentDashboard ? undefined : "light"} attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange storageKey="codeforge-theme" nonce={nonce}>{children}</Provider>;
 }

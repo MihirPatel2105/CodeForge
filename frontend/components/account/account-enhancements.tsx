@@ -1,16 +1,13 @@
 "use client";
 
-// Interaction adaptations: Vengeance UI Spotlight Navbar / Highlight Grid / Stats Counter
-// and Skiper UI Theme Toggle Buttons. Sources and terms: docs/vendor/.
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+// Interaction adaptations: Vengeance UI Spotlight Navbar / Highlight Grid / Stats Counter.
+// Sources and terms: docs/vendor/vengeance-ui.md.
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { animate, LayoutGroup, motion } from "motion/react";
-import { useTheme } from "next-themes";
-import { Monitor, Moon, Sun } from "lucide-react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 
 const sections = [
   { id: "sign-in-methods", label: "Sign-in methods" },
-  { id: "appearance", label: "Appearance" },
   { id: "sessions", label: "Sessions and devices" },
   { id: "account", label: "Account" },
 ];
@@ -55,21 +52,6 @@ export function SecurityHighlightList({ children }: { children: ReactNode }) {
       onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setBounds(null); }}>
       {children}
     </ul>
-  </div>;
-}
-
-const subscribe = () => () => {};
-export function AppearanceSettings() {
-  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
-  const { theme, setTheme } = useTheme();
-  const reduced = useMotionPreference();
-  return <div className="mt-4 rounded-3xl border border-border bg-surface px-6 py-5">
-    <p className="text-[13px] text-fg-muted">Choose a theme for your account pages and run dashboards, or follow your device’s appearance.</p>
-    <div role="group" aria-label="Color theme" className="mt-4 flex flex-wrap gap-2">
-      {([{ value: "light", label: "Light", Icon: Sun }, { value: "dark", label: "Dark", Icon: Moon }, { value: "system", label: "System", Icon: Monitor }]).map(({ value, label, Icon }) => <button key={value} type="button" disabled={!mounted} aria-pressed={mounted && theme === value} onClick={() => setTheme(value)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-[13px] font-semibold aria-pressed:border-border-strong aria-pressed:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-        <motion.span initial={false} animate={{ rotate: mounted && theme === value ? 0 : -20, scale: mounted && theme === value ? 1 : 0.85 }} transition={{ duration: reduced ? 0 : 0.2 }}><Icon size={17} aria-hidden /></motion.span>{label}
-      </button>)}
-    </div>
   </div>;
 }
 

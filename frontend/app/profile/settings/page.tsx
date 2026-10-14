@@ -1,6 +1,6 @@
 "use client";
 
-import { AppearanceSettings, SecurityHighlightList, SettingsNavigation } from "@/components/account/account-enhancements";
+import { SecurityHighlightList, SettingsNavigation } from "@/components/account/account-enhancements";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -221,9 +221,6 @@ export default function SettingsPage() {
             </SecurityHighlightList>
           </section>
         ) : null}
-
-        <SectionHeading id="appearance" eyebrow="Preferences" title="Appearance" description="Make CodeForge comfortable to use in your workspace." />
-        <AppearanceSettings />
 
         <SectionHeading
           id="sessions"
