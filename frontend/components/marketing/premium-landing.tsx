@@ -10,7 +10,7 @@ import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
 import { useState } from "react";
-import { ArrowRight, Check, ChevronDown, Code2, Layers3, Play, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { LandingScrollNav } from "./landing-scroll-nav";
 import { SiteHeader } from "./site-header";
 import { ProductScrollPreview } from "./product-scroll-preview";
@@ -65,7 +65,7 @@ export function PremiumLanding() {
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
             <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
-            <Link className="lp-text-link" href={`/demo/${demo.slug}`}><Play size={15} aria-hidden />Watch a full run</Link>
+            <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
           </motion.div>
           <ProductScrollPreview>
             <div className="lp-product lp-pipeline">

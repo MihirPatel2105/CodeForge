@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("homepage demo links work without hover previews or the removed search block", async ({ page }) => {
+test("homepage explanation link works without hover previews or the removed search block", async ({ page }) => {
   await page.goto("/");
-  const link = page.getByRole("link", { name: "Watch a full run", exact: true });
+  const link = page.getByRole("link", { name: "How CodeForge works", exact: true });
   await link.hover();
   await expect(page.locator("[data-slot=hover-card-trigger], [data-slot=hover-card-content]")).toHaveCount(0);
-  await expect(link).toHaveAttribute("href", "/demo/library");
+  await expect(link).toHaveAttribute("href", "/how-it-works");
   await link.click();
-  await expect(page).toHaveURL(/\/demo\/library$/);
+  await expect(page).toHaveURL(/\/how-it-works$/);
   await page.goto("/");
   await expect(page.getByRole("searchbox", { name: "Search example APIs", exact: true })).toHaveCount(0);
   await page.setViewportSize({ width: 375, height: 812 });
