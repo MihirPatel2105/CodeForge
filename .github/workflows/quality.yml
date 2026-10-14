@@ -18,8 +18,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -45,8 +45,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
           cache: npm
@@ -66,7 +66,7 @@ jobs:
           E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/api-playground.spec.ts tests/e2e/auth-recovery.spec.ts tests/e2e/workspace-experience.spec.ts tests/e2e/run-problems.spec.ts tests/e2e/run-history-loading.spec.ts tests/e2e/run-dashboard-layout.spec.ts tests/e2e/run-approval-stream.spec.ts tests/e2e/code-folders.spec.ts tests/e2e/action-feedback.spec.ts tests/e2e/run-retry.spec.ts tests/e2e/timeline-filters.spec.ts tests/e2e/admin-operations.spec.ts tests/e2e/admin-live-search.spec.ts tests/e2e/admin-user-delete-ui.spec.ts tests/e2e/admin-security.spec.ts tests/e2e/security-hardening.spec.ts tests/e2e/motion-ui.spec.ts tests/e2e/landing-scroll.spec.ts
       - name: Component interaction regression checks
         run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts tests/e2e/component-enhancements.spec.ts tests/e2e/desktop-recommendation.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/agent-network-preview.spec.ts tests/e2e/api-machine-preview.spec.ts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-results
@@ -82,8 +82,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
