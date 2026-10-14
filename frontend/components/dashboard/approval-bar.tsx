@@ -66,7 +66,7 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <section className="mt-5 overflow-hidden rounded-3xl border border-warn-bd bg-surface shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
+    <section className="cf-approval-review mt-5 overflow-hidden rounded-3xl border border-warn-bd bg-surface shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
       <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-warn-soft px-5 py-4 sm:px-6">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
           <ShieldCheck className="h-5 w-5" aria-hidden />
@@ -79,7 +79,7 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
       </div>
 
       {chips.length > 0 && (
-        <div className="grid gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6">
+        <div className="cf-approval-facts grid gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6">
           {chips.map((chip) => (
             <div key={chip.label} className="min-w-0 rounded-2xl border border-border bg-surface-2/45 px-3.5 py-2.5">
               <span className={cn(typeScale.label, "block text-[10.5px] text-fg-faint")}>{chip.label}</span>
@@ -91,7 +91,7 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
 
       <ApprovalDetails details={approval.payload.details} />
       <p className="px-5 pb-3 text-sm text-fg-muted sm:px-6">Approve to continue. Request changes to review a revised plan. Reject ends this run. {Number(approval.payload.revisions_used || 0)}/3 revisions used.</p>
-      <div className="flex flex-col gap-3 border-t border-border bg-surface-2/40 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:gap-4">
+      <div className="cf-approval-actions flex flex-col gap-3 border-t border-border bg-surface-2/40 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:gap-4">
         <div className="min-w-0 flex-1">
           <label htmlFor="approval-note" className={cn(typeScale.label, "mb-1.5 block text-fg-muted")}>Note to agents (optional)</label>
           <Input

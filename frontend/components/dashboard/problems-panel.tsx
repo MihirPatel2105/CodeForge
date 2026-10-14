@@ -11,7 +11,7 @@ export function ProblemsPanel({ problems, canOpen, onOpen, error }: {
 }) {
   if (!problems.length && !error) return null;
   return (
-    <section aria-label="Problems" className="mb-4 min-w-0 rounded-2xl border border-border bg-surface p-4">
+    <section aria-label="Problems" className="cf-evidence-problems mb-4 min-w-0 rounded-2xl border border-border bg-surface p-4">
       <h3 className="font-semibold text-fg">Problems <span className="text-sm font-normal text-fg-muted">({problems.length})</span></h3>
       {error && <p role="status" className="mt-2 text-sm text-fg-muted">Could not refresh findings. Showing the last available results.</p>}
       <ul className="mt-3 max-h-64 space-y-2 overflow-auto">

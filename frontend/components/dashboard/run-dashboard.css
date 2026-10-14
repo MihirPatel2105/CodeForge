@@ -84,3 +84,114 @@
  .cf-run-page .cf-run-story[data-has-loop=false] > div:last-child { padding-top:0; border-top:0; }
 }
 @media(prefers-reduced-motion:reduce) { .cf-agent-step { transition:none; } }
+
+/* The review workspace shares the pipeline's quiet surfaces and sharper controls. */
+.cf-workspace-eyebrow { display:flex; align-items:center; gap:8px; color:var(--fg-muted); font-size:11px; font-weight:600; }
+.cf-run-page .cf-version-composer { margin-top:32px; padding:30px; border-radius:18px; }
+.cf-composer-layout { display:grid; grid-template-columns:minmax(190px,.7fr) minmax(0,2fr); gap:48px; }
+.cf-composer-intro h2 { margin-top:16px; font-size:25px; font-weight:650; letter-spacing:-.04em; }
+.cf-composer-intro > p { margin-top:10px; font-size:16px; line-height:1.55; color:var(--fg-muted); }
+.cf-composer-safety { display:block; max-width:26ch; margin-top:22px; color:var(--fg-faint); font-size:12px; line-height:1.65; }
+.cf-composer-input label { font-size:12px; font-weight:600; }
+.cf-composer-input textarea { min-height:132px; border-radius:12px; padding:17px; font-size:14px; line-height:1.7; background:var(--bg); resize:vertical; }
+.cf-composer-footer { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-top:16px; }
+.cf-composer-footer p { max-width:48ch; font-size:12px; line-height:1.65; color:var(--fg-muted); }
+.cf-composer-footer button { flex-shrink:0; border-radius:10px; height:42px; gap:12px; }
+.cf-version-composer > button { height:auto; padding:0; border:0; border-radius:4px; background:transparent; color:var(--fg-muted); font-size:12px; box-shadow:none; }
+.cf-version-composer > button:hover { color:var(--fg); text-decoration:underline; text-underline-offset:4px; }
+.cf-run-page .cf-evidence-problems { padding:0; border-radius:16px; overflow:hidden; margin-bottom:24px; }
+.cf-evidence-problems > h3 { padding:19px 24px; border-bottom:1px solid var(--rule); font-size:14px; }
+.cf-evidence-problems > p { margin:16px 24px; }
+.cf-evidence-problems > ul { margin:0; padding:0 24px; }
+.cf-evidence-problems > ul > li { padding:20px 0; border:0; border-radius:0; border-bottom:1px solid var(--rule); }
+.cf-evidence-problems > ul > li:last-child { border-bottom:0; }
+.cf-evidence-problems li p:nth-child(2) { max-width:100ch; line-height:1.75; margin-top:8px; }
+.cf-evidence-problems li p:nth-child(3) { font-size:11px; margin-top:9px; color:var(--fg-faint); }
+.cf-evidence-problems button { border-radius:8px; font-size:11px; }
+.cf-run-page .cf-evidence-timeline,.cf-run-page .cf-evidence-code { border-radius:16px; }
+.cf-evidence-timeline > div:first-child { padding:18px 20px; }
+.cf-evidence-timeline > div:nth-child(2) { padding:16px; background:var(--surface-2); }
+.cf-evidence-timeline input,.cf-evidence-timeline select { background:var(--surface); border-color:var(--border); border-radius:8px; height:38px; }
+.cf-evidence-timeline [aria-label="Timeline view"] button { border-radius:7px; border-color:transparent; box-shadow:none; font-size:11px; }
+.cf-evidence-timeline [aria-label="Timeline view"] button[aria-pressed=false] { background:transparent; }
+.cf-evidence-timeline [role=log] { padding:14px; gap:0; }
+.cf-evidence-timeline [role=log] > div { padding-block:16px; }
+.cf-evidence-timeline [role=log] p { font-size:13px; line-height:1.65; }
+.cf-evidence-code > div:first-child { background:var(--surface-2); }
+.cf-evidence-code > div:first-child > div:first-child { padding:18px 16px; }
+.cf-evidence-code li button { padding:11px 12px; border-radius:8px; font-size:11px; }
+.cf-evidence-code li button > span[aria-hidden] { border-radius:8px; box-shadow:0 1px 4px rgb(0 0 0 / .04); }
+.cf-evidence-code li button > span:last-child { border-radius:5px; font-size:9px; }
+.cf-evidence-code > div:last-child > div:first-child { padding:16px 20px; gap:12px; }
+.cf-evidence-code > div:last-child > div:first-child > div:first-child { flex-wrap:wrap; }
+.cf-evidence-code > div:last-child > div:first-child button { height:32px; border-radius:7px; font-size:10px; text-transform:none; letter-spacing:0; padding-inline:10px; }
+.cf-run-page .cf-evidence-terminal { border-radius:14px; height:224px; box-shadow:none; }
+.cf-evidence-terminal > div:first-child { padding:13px 18px; min-width:0; flex-wrap:wrap; }
+.cf-evidence-terminal > div:first-child > span:nth-child(2) { font-size:10px; overflow-wrap:anywhere; }
+.cf-evidence-terminal pre { padding:16px 18px; font-size:12px; line-height:1.8; }
+.cf-run-page .cf-evidence-tests { border-radius:14px; padding:22px; gap:18px; min-height:224px; }
+.cf-evidence-tests > div:first-child { align-items:baseline; }
+.cf-evidence-tests > div:first-child > span:last-child { font-size:32px; letter-spacing:-.06em; font-weight:550; }
+.cf-evidence-tests > div:nth-child(2) > div { height:5px; border-radius:2px; }
+.cf-evidence-tests > p { font-size:12px; line-height:1.7; }
+.cf-run-page .cf-approval-review { margin-top:32px; border-color:var(--border); border-radius:18px; box-shadow:0 14px 48px -32px rgb(0 0 0 / .2); }
+.cf-approval-review > div:first-child { padding:26px 30px; background:var(--surface); border-bottom:1px solid var(--rule); border-top:3px solid var(--warn); gap:18px; }
+.cf-approval-review > div:first-child > span { border-radius:12px; height:44px; width:44px; background:var(--warn-soft); border:0; }
+.cf-approval-review h2 { font-size:25px; letter-spacing:-.04em; margin-top:5px; }
+.cf-approval-review > div:first-child p { font-size:12px; margin-top:8px; }
+.cf-approval-review .cf-approval-facts { padding:24px 30px; gap:24px; }
+.cf-approval-facts > div { border:0; border-radius:0; background:transparent; padding:0 20px 0 0; border-right:1px solid var(--rule); }
+.cf-approval-facts > div:last-child { border-right:0; }
+.cf-approval-facts > div > span:last-child { font-size:15px; margin-top:8px; }
+.cf-approval-review .cf-approval-details { padding:0 30px 24px; }
+.cf-approval-details table { font-size:12px; }
+.cf-approval-details th { font-weight:500; color:var(--fg-muted); background:var(--surface-2); }
+.cf-approval-details td,.cf-approval-details th { padding:13px 16px; }
+.cf-approval-details > p { max-width:80ch; line-height:1.8; }
+.cf-approval-review > p { padding:0 30px 24px; font-size:12px; max-width:95ch; line-height:1.7; }
+.cf-approval-review .cf-approval-actions { padding:24px 30px; gap:24px; background:var(--surface-2); }
+.cf-approval-actions input { border-radius:9px; border-color:var(--border); }
+.cf-approval-actions button { border-radius:9px; }
+.cf-use-page .cf-api-intro { padding:30px 0 38px; border-bottom:1px solid var(--rule); }
+.cf-use-page .cf-api-intro h1 { font-size:clamp(32px,4vw,48px); font-weight:600; }
+.cf-use-page .cf-api-intro p { margin-top:14px; font-size:14px; }
+.cf-use-page .cf-use-options { margin-top:36px; grid-template-columns:1.2fr 1fr 1fr; gap:20px; }
+.cf-use-page .cf-use-option-card { display:flex; flex-direction:column; align-items:flex-start; border:1px solid var(--border); border-radius:16px; background:var(--surface); padding:30px; min-height:315px; }
+.cf-use-page .cf-use-option-card:first-child { background:var(--surface-2); border-color:var(--border-strong); }
+.cf-use-card-top { width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--fg-muted); }
+.cf-use-card-top svg { width:24px; height:24px; stroke-width:1.5; }
+.cf-use-card-top > span { font-size:10px; font-family:var(--font-mono-stack); }
+.cf-use-page .cf-use-option-card h2 { font-size:26px; letter-spacing:-.045em; margin-top:34px; font-weight:600; }
+.cf-use-page .cf-use-option-card p { font-size:13px; line-height:1.8; margin-top:12px; max-width:35ch; }
+.cf-use-page .cf-use-option-card > p + p { font-size:11px; }
+.cf-use-page .cf-use-option-card > span:last-child,.cf-use-page .cf-use-option-card > button { margin-top:auto; padding-top:28px; gap:10px; font-size:12px; }
+.cf-use-page .cf-use-runtime { border:0; border-top:1px solid var(--rule); border-radius:0; background:transparent; padding:28px 0; margin-top:40px; }
+.cf-use-runtime h2 { font-size:15px; }
+.cf-use-runtime > div { margin-top:20px; gap:24px; }
+.cf-use-runtime p { max-width:43ch; font-size:12px; line-height:1.8; }
+@media(max-width:1000px) {
+ .cf-composer-layout { grid-template-columns:1fr; gap:24px; }
+ .cf-composer-intro > p { display:none; }
+ .cf-composer-safety { max-width:none; margin-top:10px; }
+ .cf-use-page .cf-use-options { grid-template-columns:1fr; }
+ .cf-use-page .cf-use-option-card { min-height:260px; }
+}
+@media(max-width:639px) {
+ .cf-run-page .cf-version-composer { padding:22px 18px; }
+ .cf-composer-footer { flex-direction:column; align-items:stretch; gap:16px; }
+ .cf-evidence-problems > h3 { padding:17px 18px; }
+ .cf-evidence-problems > ul { padding:0 18px; }
+ .cf-approval-review > div:first-child { padding:22px 18px; }
+ .cf-approval-review h2 { font-size:21px; }
+ .cf-approval-review .cf-approval-facts { padding:20px 18px; gap:18px; }
+ .cf-approval-facts > div { border-right:0; }
+ .cf-approval-review .cf-approval-details { padding:0 18px 20px; }
+ .cf-approval-review > p { padding:0 18px 20px; }
+ .cf-approval-review .cf-approval-actions { padding:20px 18px; }
+ .cf-approval-actions > div:last-child { gap:10px; }
+ .cf-approval-actions button { flex-basis:100%; }
+ .cf-use-page .cf-api-intro { padding-top:18px; padding-bottom:26px; }
+ .cf-use-page .cf-use-options { margin-top:26px; gap:16px; }
+ .cf-use-page .cf-use-option-card { padding:25px; }
+ .cf-use-page .cf-use-runtime { margin-top:28px; }
+}

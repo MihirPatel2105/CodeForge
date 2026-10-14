@@ -77,7 +77,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
+    <div className="cf-evidence-timeline flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
       <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3">
         <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-muted")}>
           <Clock3 className="h-4 w-4 text-accent" aria-hidden />

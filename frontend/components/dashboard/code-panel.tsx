@@ -125,7 +125,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface sm:flex-row">
+    <div className="cf-evidence-code flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface sm:flex-row">
       {/* File rail */}
       <div className="flex h-[138px] w-full shrink-0 flex-col border-b border-border bg-bg sm:h-auto sm:w-[208px] sm:border-r sm:border-b-0">
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">

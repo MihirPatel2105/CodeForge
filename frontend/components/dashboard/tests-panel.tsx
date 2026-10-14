@@ -44,7 +44,7 @@ export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPa
   const scoreTone = tests == null ? "text-fg-faint" : tests.failed === 0 ? "text-ok" : "text-warn";
 
   return (
-    <div className="flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-2xl border border-border bg-surface p-4 xl:w-[300px]">
+    <div className="cf-evidence-tests flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-2xl border border-border bg-surface p-4 xl:w-[300px]">
       <div className="flex items-center justify-between">
         <span className={cn(typeScale.label, "text-fg-faint")}>TESTS</span>
         <span className={cn("font-mono text-[18px] font-bold", scoreTone)}>

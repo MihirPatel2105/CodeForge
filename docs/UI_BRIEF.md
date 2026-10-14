@@ -140,6 +140,9 @@ test_main.py ........                    [100%]
 8 passed in 1.42s
 ```
 
+The evidence workbench uses consistent panel headers, compact filters, a quieter file rail,
+and separated finding rows. The terminal remains dark and scrollable.
+
 And a test result summary: how many passed out of how many, with failures expandable to
 show the assertion that failed.
 
@@ -151,7 +154,9 @@ is stopped and nothing proceeds until the user acts.
 
 The bar shows what is being approved (the requirements, or the design, rendered readably —
 not raw JSON), an **Approve** action, a **Reject** action, and an optional note field. On
-approve the pipeline resumes; on reject the run ends.
+approve the pipeline resumes; on reject the run ends. A restrained amber top rule marks the
+checkpoint. Facts and readable details precede a distinct decision footer with the note,
+revision, reject and approve controls. On small screens, the controls stack.
 
 ---
 

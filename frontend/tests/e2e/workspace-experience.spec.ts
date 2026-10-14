@@ -92,8 +92,9 @@ test("approval details request revisions without rejecting the run", async ({ pa
   await page.getByLabel("Note to agents (optional)").fill("Add a due date");
   await page.getByRole("button", { name: "Request changes", exact: true }).click();
   expect(revision).toEqual({ phase: "pm", note: "Add a due date", expected_revision: 0 });
+  await page.locator(".cf-approval-review").screenshot({ path: "/tmp/codeforge-approval-desktop-refined.png" });
   await page.setViewportSize({ width: 375, height: 812 });
-  await expect(page.getByRole("list", { name: "Pipeline stages" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Inspect pipeline stages" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
   await page.screenshot({ path: "/tmp/codeforge-approval-mobile.png", fullPage: true });
 });
@@ -113,6 +114,7 @@ test("completed runs create linked versions and surface inbox updates", async ({
   await expect(page.getByRole("dialog").getByText(run.prompt, { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.getByLabel("Describe a change", { exact: true }).fill("Add publication date");
+  await page.locator(".cf-version-composer").screenshot({ path: "/tmp/codeforge-composer-refined.png" });
   await page.getByRole("button", { name: "Build new version", exact: true }).click();
   await expect(page).toHaveURL(/runs\/new-version$/);
   expect(creation).toEqual({ project_id: project.id, parent_run_id: run.id, prompt: "Add publication date", rag_enabled: true });
@@ -213,3 +215,16 @@ test("publish shows compatibility for a revision without starting checks or publ
   await expect(page.getByRole("button", { name: "Publish API", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "API compatibility", exact: true })).toHaveCount(0);
 });
+
+for (const width of [1440, 375, 320]) {
+  test(`API usage options remain reachable at ${width}px`, async ({ page }) => {
+    await session(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/runs/${run.id}/use`);
+    await expect(page.getByRole("link", { name: /Open tester/ })).toHaveAttribute("href", `/runs/${run.id}/try`);
+    await expect(page.getByRole("link", { name: /Open publish guide/ })).toHaveAttribute("href", `/runs/${run.id}/publish`);
+    await expect(page.getByRole("button", { name: "Download project" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `/tmp/codeforge-use-refined-${width}.png`, fullPage: true });
+  });
+}

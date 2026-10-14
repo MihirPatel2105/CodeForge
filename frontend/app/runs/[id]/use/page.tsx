@@ -1,12 +1,13 @@
 "use client";
 
+import "@/components/dashboard/run-dashboard.css";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Download, TerminalSquare, Radio, Package } from "lucide-react";
 import { motionSpring } from "@/lib/motion-tokens";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
@@ -64,7 +65,7 @@ export default function UseApiPage() {
   if (!sessionLoading && !user) return null;
 
   return (
-    <div className="cf-run-page min-h-screen bg-bg">
+    <div className="cf-run-page cf-use-page min-h-screen bg-bg">
       <AppHeader />
       <main data-run-flow-page className="mx-auto w-full max-w-[1200px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
         <RunFlowLink href={`/runs/${id}`} className="inline-flex items-center gap-2 text-[12px] font-[650] text-fg-muted transition-colors hover:text-fg">
@@ -79,21 +80,21 @@ export default function UseApiPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok"><span className="size-1.5 rounded-full bg-ok" />Run complete</span>
         </header>
 
-        <section className="mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
+        <section className="cf-use-options mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
           <MotionLink {...cardMotion} href={`/runs/${id}/try`} className="cf-use-option-card group rounded-3xl border border-accent-bd bg-accent-soft p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-            <span className="text-[12px] font-[700] text-accent">Test here</span>
+            <span className="cf-use-card-top"><TerminalSquare aria-hidden /><span>01 / Test here</span></span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Try your API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Send requests and inspect responses. No setup or key needed.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open tester <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>
           </MotionLink>
           <MotionLink {...cardMotion} href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-3xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-            <span className="text-[12px] font-[700] text-fg-muted">Connect an app</span>
+            <span className="cf-use-card-top"><Radio aria-hidden /><span>02 / Connect an app</span></span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Publish API</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>
           </MotionLink>
           <motion.div {...cardMotion} className="cf-use-option-card rounded-3xl border border-border bg-surface p-5">
-            <span className="text-[12px] font-[700] text-fg-muted">Run it yourself</span>
+            <span className="cf-use-card-top"><Package aria-hidden /><span>03 / Run it yourself</span></span>
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
             <p className="mt-3 text-[11px] leading-5 text-fg-muted">After unzipping, follow the README to run Docker Compose and open the API docs.</p>
@@ -104,7 +105,7 @@ export default function UseApiPage() {
           </motion.div>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">
+        <section className="cf-use-runtime mt-6 rounded-3xl border border-border bg-surface p-5 md:p-6" aria-labelledby="where-to-run-heading">
           <h2 id="where-to-run-heading" className="font-display text-[17px] font-[650] text-fg">Where does each option run?</h2>
           <div className="mt-3 grid gap-3 text-[12px] leading-5 text-fg-muted md:grid-cols-3">
             <p><strong className="text-fg">Try here:</strong> Works in your browser. Nothing to install.</p>
