@@ -73,6 +73,7 @@ test("palette stays within the screen, traps focus and adapts to dark mode", asy
   expect(desktopBounds!.y).toBeGreaterThanOrEqual(0);
   expect(Math.abs(desktopBounds!.x + desktopBounds!.width / 2 - 720)).toBeLessThan(2);
   await page.screenshot({ path: "/tmp/codeforge-command-palette-desktop.png" });
+  await dialog.screenshot({ path: "/tmp/codeforge-command-palette-panel.png" });
   for (let i = 0; i < 5; i++) {
     await page.keyboard.press("Tab");
     await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
@@ -98,4 +99,27 @@ test("current run commands are available without exposing admin actions", async 
   const search = page.getByRole("combobox", { name: "Search commands and projects" });
   await search.fill("tster");
   await expect(page.getByRole("option", { name: /Open API tester/ })).toBeVisible();
+});
+
+test("Vengeance search scopes filter real projects and actions and reset on reopen", async ({ page }) => {
+  await page.getByRole("button", { name: "Open command palette" }).click();
+  const dialog = page.getByRole("dialog", { name: "Go anywhere" });
+  const scopes = dialog.getByRole("group", { name: "Search scope" });
+  await expect(scopes.getByRole("button", { name: "All", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("option", { name: /Inventory API/ })).toBeVisible();
+  await scopes.getByRole("button", { name: "Projects", exact: true }).click();
+  await expect(page.getByRole("option", { name: /Contact directory/ })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Account settings/ })).toHaveCount(0);
+  await scopes.getByRole("button", { name: "Actions", exact: true }).click();
+  await expect(page.getByRole("option", { name: /Contact directory/ })).toHaveCount(0);
+  const search = page.getByRole("combobox", { name: "Search commands and projects" });
+  await search.fill("settings");
+  await expect(page.getByRole("option", { name: /Account settings/ })).toBeVisible();
+  await search.press("Enter");
+  await expect(page).toHaveURL(/\/profile\/settings$/);
+  await page.getByRole("button", { name: "Open command palette" }).click();
+  await expect(scopes.getByRole("button", { name: "All", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(search).toHaveValue("");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(dialog).toHaveCSS("animation-name", "none");
 });

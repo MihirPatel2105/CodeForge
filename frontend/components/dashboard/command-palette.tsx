@@ -2,9 +2,10 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, ArrowUpRight, BookOpen, Command, CornerDownLeft, Folder, FolderOpen, LayoutGrid, Search, Settings2, ShieldCheck, TerminalSquare, UserRound, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, CornerDownLeft, Folder, FolderOpen, LayoutGrid, Search, Settings2, ShieldCheck, TerminalSquare, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { SearchModal, type SearchScope } from "@/components/ui/vengeance/search-modal";
 import { api } from "@/lib/api";
 import type { ProjectResponse } from "@/lib/types";
 import "./command-palette.css";
@@ -36,6 +37,7 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<SearchScope>("all");
   const [selected, setSelected] = useState(0);
   const [projects, setProjects] = useState<ProjectResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +55,7 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
 
   function changeOpen(next: boolean) {
     setOpen(next);
-    if (next) { setQuery(""); setSelected(0); }
+    if (next) { setQuery(""); setScope("all"); setSelected(0); }
   }
 
   useEffect(() => {
@@ -102,7 +104,10 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
     ];
     return items;
   }, [pathname, projects, isAdmin]);
-  const results = useMemo(() => entries.map(entry => ({ entry, rank: score(entry, query) })).filter(item => item.rank > 0).sort((a, b) => b.rank - a.rank).map(item => item.entry), [entries, query]);
+  const results = useMemo(() => entries
+    .filter(entry => scope === "all" || (scope === "projects" ? entry.group === "Projects" : entry.group !== "Projects"))
+    .map(entry => ({ entry, rank: score(entry, query) })).filter(item => item.rank > 0)
+    .sort((a, b) => b.rank - a.rank).map(item => item.entry), [entries, query, scope]);
   const activeIndex = Math.min(selected, Math.max(0, results.length - 1));
   const activeEntry = results[activeIndex];
 
@@ -119,29 +124,23 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
     <DialogTrigger ref={trigger} className="cf-command-trigger" aria-label="Open command palette" aria-keyshortcuts="Meta+K Control+K">
       <Search size={16} aria-hidden /><span className="hidden lg:inline">Search anything</span><kbd className="hidden sm:inline-flex">{shortcutLabel}</kbd>
     </DialogTrigger>
-    <DialogContent className="cf-command-dialog translate-x-0 translate-y-0" showCloseButton={false} initialFocus={input} finalFocus={trigger}>
-      <DialogTitle className="sr-only">Go anywhere</DialogTitle>
-      <DialogDescription className="sr-only">Find projects and commands. Use the arrow keys to choose a result and Enter to open it.</DialogDescription>
-      <div className="cf-command-heading"><span><Command size={14} aria-hidden /> Go anywhere</span><span>CodeForge</span></div>
-      <div className="cf-command-search">
-        <Search size={22} strokeWidth={1.7} aria-hidden />
-        <input ref={input} role="combobox" aria-label="Search commands and projects" aria-expanded={open} aria-controls={listId} aria-autocomplete="list" aria-activedescendant={activeEntry ? `${listId}-${activeEntry.id}` : undefined} placeholder="Where do you want to go?" value={query} autoComplete="off" spellCheck={false}
-          onChange={event => { setQuery(event.target.value); setSelected(0); }}
-          onKeyDown={event => {
+    <SearchModal query={query} onQueryChange={value => { setQuery(value); setSelected(0); }}
+      scope={scope} onScopeChange={value => { setScope(value); setSelected(0); }} onClose={() => changeOpen(false)}
+      inputRef={input} triggerRef={trigger} listId={listId} activeId={activeEntry ? `${listId}-${activeEntry.id}` : undefined}
+      resultCount={results.length} shortcut={shortcutLabel}
+      onQueryKeyDown={event => {
             if (event.nativeEvent.isComposing) return;
             if (event.key === "ArrowDown" || event.key === "ArrowUp") {
               event.preventDefault();
               setSelected(results.length ? (activeIndex + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length : 0);
             } else if (event.key === "Enter" && activeEntry) { event.preventDefault(); execute(activeEntry); }
-          }} />
-        <button className="cf-command-dismiss" onClick={() => changeOpen(false)} aria-label="Close command palette"><X size={16} aria-hidden /></button>
-      </div>
+          }}>
       <div className="cf-command-results" data-lenis-prevent>
         <div id={listId} role="listbox" aria-label="Commands and projects" aria-busy={loading}>
           {results.map((entry, index) => {
             const Icon = entry.icon;
             return <div key={entry.id}>
-              {(index === 0 || results[index - 1].group !== entry.group) && <div className="cf-command-group" aria-hidden>{entry.group}</div>}
+              {(index === 0 || results[index - 1].group !== entry.group) && <div className="cf-command-group" aria-hidden>{entry.group === "Workspace" ? "Quick actions" : entry.group}</div>}
               <div id={`${listId}-${entry.id}`} role="option" aria-selected={index === activeIndex} className="cf-command-option" onPointerMove={() => setSelected(index)} onMouseDown={event => event.preventDefault()} onClick={() => execute(entry)}>
                 <span className="cf-command-icon"><Icon size={19} strokeWidth={1.65} aria-hidden /></span>
                 <span className="cf-command-copy"><span className="cf-command-label">{entry.label}</span><span className="cf-command-detail">{entry.detail}</span></span>
@@ -154,8 +153,6 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
         {loading && <p className="cf-command-notice" role="status"><Folder size={14} aria-hidden /> Finding your projects…</p>}
         {failed && <div className="cf-command-notice" role="status">Projects couldn&apos;t load. <button onClick={() => setAttempt(value => value + 1)}>Retry</button></div>}
       </div>
-      <div className="sr-only" role="status" aria-live="polite">{results.length} results</div>
-      <footer className="cf-command-footer"><span><kbd><ArrowUp size={11} /><ArrowDown size={11} /></kbd> Navigate <kbd><CornerDownLeft size={12} /></kbd> Open</span><span><kbd>esc</kbd> Close</span></footer>
-    </DialogContent>
+    </SearchModal>
   </Dialog>;
 }

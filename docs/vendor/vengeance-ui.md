@@ -1,7 +1,7 @@
 # Vengeance UI adaptations
 
 Source: https://github.com/Ashutoshx7/VengeanceUI/tree/main/public/r
-Retrieved 2026-10-13. Eight selected registry components are adapted in
+Retrieved 2026-10-13, with Search Modal added 2026-10-14. Nine selected registry components are adapted in
 `frontend/components/ui/vengeance/`. These are focused CodeForge adaptations,
 not unmodified registry installs. Existing Motion, Base UI and Next Link replace
 Framer Motion, custom modal handling and GSAP. No extra runtime dependency is needed.
@@ -29,6 +29,24 @@ Registry JSON SHA-256 at retrieval:
 | folder-preview | `7e4aa49c3216b542679731a6ba783e560a9e7f6a7b225c942b2c4391d2ce2128` |
 | generate-button | `269c6d3adefa65a58b7d94c7cdd6ae141a70a26cfe92f88d77bbb10c0a57c56e` |
 | line-hover-link | `6e1108ddfd1cdc42e9c6165a7f42eac027d34edb00ec4c5f03389b8161d3adfa` |
+
+## Search Modal adaptation (2026-10-14)
+
+Source: https://www.vengenceui.com/components/search-modal
+
+Registry: https://raw.githubusercontent.com/Ashutoshx7/VengeanceUI/main/public/r/search-modal.json
+
+Registry SHA-256: `db1dcdac8d1d04eaaf92912cc66b4c05d9c49616b01fd114b49c61fcd43f1636`.
+
+`frontend/components/ui/vengeance/search-modal.tsx` adapts the search-first panel,
+rounded scope tags, compact result sections and keyboard hints for CodeForge's
+existing command palette. Scope tags filter actual Projects / Actions; sample
+people, files and decorative actions are omitted. Existing Lucide icons and Base UI
+Dialog replace Phosphor and the upstream overlay so keyboard navigation, focus
+trapping, Escape and focus restoration remain intact. Semantic theme tokens and
+reduced-motion support preserve CodeForge's established design. No new dependency.
+
+The MIT license below also applies to this adaptation.
 
 ## License
 
