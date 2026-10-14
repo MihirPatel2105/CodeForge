@@ -1,18 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-test("homepage search finds real demos and links show local previews", async ({ page }) => {
+test("homepage links retain previews without the removed search block", async ({ page }) => {
   await page.goto("/");
   const link = page.getByRole("link", { name: "Watch a full run", exact: true });
   await link.hover();
   await expect(page.getByAltText("Library recorded run preview")).toBeVisible();
   await expect.poll(() => page.getByAltText("Library recorded run preview").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
-  const search = page.getByRole("searchbox", { name: "Search example APIs", exact: true });
-  await search.fill("Inventory");
-  const results = page.getByRole("search", { name: "Search example APIs" });
-  await expect(results.getByRole("link", { name: "Inventory" })).toHaveAttribute("href", "/demo/inventory");
-  await expect(results.getByRole("link")).toHaveCount(1);
-  await search.fill("no such API");
-  await expect(results).toContainText("No matching examples");
+  await expect(page.getByRole("searchbox", { name: "Search example APIs", exact: true })).toHaveCount(0);
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");

@@ -3,7 +3,6 @@
 import { MotionButton } from "@/components/ui/motion-button";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { DynamicToolbar } from "@/components/ui/dynamic-toolbar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { toast } from "sonner";
 import { CodeFileTree } from "./code-file-tree";
@@ -147,7 +146,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
           </div>
         ) : (
           <ScrollArea className="cf-file-list-cue min-h-0 flex-1">
-            <CodeFileTree files={files} selectedPath={selectedPath} revealRequestId={location?.requestId} getContent={file => getVersion(file.path, file.iteration)?.content ?? null}
+            <CodeFileTree files={files} selectedPath={selectedPath} revealRequestId={location?.requestId}
               onSelect={path => {
                 setProblemLocation(null);
                 setSelectedPath(path);
@@ -174,16 +173,7 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
                       } ${(version.changedLineCount ?? version.changedLines?.length ?? 0) === 1 ? "line" : "lines"} changed`}
                 </span>
               </div>
-              <DynamicToolbar primary={
-                <MotionButton
-                  type="button"
-                  onClick={copyCurrentFile}
-                  aria-label={copied ? "Code copied" : "Copy code"}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
-                >
-                  <CopyFeedback copied={copied} label="Copy" />
-                </MotionButton>
-              }>
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5" role="group" aria-label="Code actions">
                 {canDiff && (
                   <div className="flex gap-[2px] rounded-2xl bg-surface-2 p-[2px]">
                   {(["current", "diff"] as const).map((v) => (
@@ -216,7 +206,15 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
                   <WrapText className="h-3.5 w-3.5" aria-hidden />
                   Wrap
                 </MotionButton>
-              </DynamicToolbar>
+                <MotionButton
+                  type="button"
+                  onClick={copyCurrentFile}
+                  aria-label={copied ? "Code copied" : "Copy code"}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-surface px-2 font-mono text-[12px] font-[650] uppercase tracking-[0.08em] text-fg-muted hover:border-border-strong hover:text-fg"
+                >
+                  <CopyFeedback copied={copied} label="Copy" />
+                </MotionButton>
+              </div>
             </div>
 
             <ScrollArea className="cf-run-scroll min-h-0 flex-1 bg-code-bg">

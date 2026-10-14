@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { Magnetic } from "@/components/ui/magnetic";
-import { DemoSearchCell } from "@/components/ui/enhancements/demo-search-cell";
 import { DemoPreviewLink } from "@/components/ui/enhancements/demo-preview-link";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FlipText } from "@/components/ui/enhancements/flip-text";
@@ -78,7 +77,7 @@ export function PremiumLanding() {
           <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
 
-        <section className="lp-section" aria-label="Explore example APIs"><DemoSearchCell /><DemoCarousel /></section>
+        <section className="lp-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <motion.div {...reveal} className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One real sandbox.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>

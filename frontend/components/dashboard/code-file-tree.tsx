@@ -3,7 +3,6 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { LayoutGroup, motion } from "motion/react";
 import { ChevronRight, FileCode2, Folder, FolderOpen } from "lucide-react";
-import { FileActions } from "./file-actions";
 import { MotionButton } from "@/components/ui/motion-button";
 import { MotionCollapse } from "@/components/ui/motion-collapse";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -18,7 +17,6 @@ type Props = {
   selectedPath: string | null;
   onSelect: (path: string) => void;
   revealRequestId?: number;
-  getContent?: (file: FileSnapshot) => string | null;
 };
 
 function groupFiles(files: FileSnapshot[]): Node[] {
@@ -53,7 +51,7 @@ function FileNodes({ nodes, ...props }: Props & { nodes: Node[] }) {
   return <ul className="flex min-w-0 flex-col gap-1 p-2">
     {nodes.map(node => node.kind === "folder"
       ? <FolderNode key={`folder:${node.path}`} node={node} {...props} />
-      : <li key={`file:${node.path}`}><FileActions path={node.path} content={props.getContent?.(node.file) ?? null}>
+      : <li key={`file:${node.path}`}>
         <MotionButton type="button" aria-label={`${node.path} ${node.file.status}`}
           aria-pressed={node.path === props.selectedPath} onClick={() => props.onSelect(node.path)}
           title={node.path} className={cn(
@@ -67,7 +65,7 @@ function FileNodes({ nodes, ...props }: Props & { nodes: Node[] }) {
           <span className="min-w-0 flex-1 truncate">{node.name}</span>
           <span className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold", node.file.status === "new" ? "bg-ok-soft text-ok" : "bg-loop-soft text-loop")}>{node.file.status}</span>
         </MotionButton>
-      </FileActions></li>)}
+      </li>)}
   </ul>;
 }
 

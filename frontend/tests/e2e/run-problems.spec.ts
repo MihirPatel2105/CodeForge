@@ -125,9 +125,7 @@ for (const width of [1440, 375]) {
     await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     await expect(viewport.getByText("value_120", { exact: false }).last()).toBeInViewport();
     await expect(page.getByRole("button", { name: "Copy code" })).toBeInViewport();
-    await page.getByRole("button", { name: "View options", exact: true }).click();
     await page.getByRole("button", { name: "Wrap", exact: true }).click();
-    await page.keyboard.press("Escape");
     await expect(viewport.getByText("value_120", { exact: false }).last()).toBeInViewport();
   });
 }

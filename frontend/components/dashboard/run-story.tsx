@@ -4,7 +4,6 @@ import { RotateCcw } from "lucide-react";
 import { stageMeta } from "@/lib/pipeline";
 import type { RunSnapshot } from "@/lib/run-reducer";
 import { displayStatus } from "@/lib/tone";
-import { TextMorph } from "@/components/ui/text-morph";
 import { cn } from "@/lib/utils";
 
 /** A plain-language readout beside the visual pipeline, including its feedback loop. */
@@ -50,7 +49,7 @@ export function RunStory({ snapshot, connectionLost = false }: { snapshot: RunSn
         <span className={cn("absolute inset-y-0 left-0 w-1", statusRule)} aria-hidden />
         <div>
           <p className="text-[12px] font-[650] text-fg-muted">Current state</p>
-          <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg"><span className={cn(isWorking && !snapshot.approval && !snapshot.endedAt && !connectionLost && "cf-working-text")}><TextMorph>{title}</TextMorph></span></p>
+          <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg"><span className={cn(isWorking && !snapshot.approval && !snapshot.endedAt && !connectionLost && "cf-working-text")}>{title}</span></p>
           <p className="cf-feedback-description mt-1 text-[14px] leading-snug text-fg-muted">{description}</p>
           {now && !snapshot.endedAt && <p className="mt-2 text-xs text-fg-muted">{isWorking && active && snapshot.agents[active.id].startedAt ? `Stage active for ${Math.max(0, Math.floor((now - new Date(snapshot.agents[active.id].startedAt!).getTime()) / 1000))}s. ` : ""}{snapshot.lastEventAt ? `Last update ${Math.max(0, Math.floor((now - new Date(snapshot.lastEventAt).getTime()) / 1000))}s ago.` : "Waiting for the first update."}</p>}
         </div>
