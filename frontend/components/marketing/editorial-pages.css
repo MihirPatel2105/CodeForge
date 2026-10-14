@@ -130,3 +130,56 @@
 @media(prefers-reduced-motion:reduce) {
  .cf-editorial-page .ed-stages details::details-content,.cf-editorial-page .ed-stage-expand { transition:none; }
 }
+
+/* Purpose-led About and product-led process page share the brand, not a template. */
+.cf-editorial-page .ed-about-masthead { text-align:left; padding-block:80px 48px; }
+.cf-editorial-page .ed-about-masthead > .ed-kicker { justify-content:flex-start; }
+.cf-editorial-page .ed-about-masthead .ed-about-lead { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); gap:80px; max-width:none; align-items:end; margin-top:32px; }
+.cf-editorial-page .ed-about-masthead h1 { font-size:clamp(52px,6.5vw,92px); }
+.cf-editorial-page .ed-about-masthead .ed-hero-note { margin:0; padding-bottom:10px; }
+.cf-editorial-page .ed-about-masthead .lp-actions { justify-content:flex-start; }
+.cf-editorial-page .ed-facts { display:grid; grid-template-columns:1fr 1fr 1.4fr; border-top:1px solid var(--rule); margin-top:64px; padding-top:24px; gap:32px; }
+.cf-editorial-page .ed-facts > div { display:flex; flex-direction:column-reverse; gap:10px; }
+.cf-editorial-page .ed-facts dt { font-size:12px; color:var(--fg-muted); }
+.cf-editorial-page .ed-facts dd { font-size:26px; font-weight:600; letter-spacing:-.04em; }
+.cf-editorial-page .ed-about-showcase { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:72px; align-items:center; }
+.cf-editorial-page .ed-about-showcase > section { max-width:none; border-radius:var(--lp-radius); }
+.cf-editorial-page.ed-how-page .ed-process-hero { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); gap:64px; text-align:left; padding-block:88px 64px; }
+.cf-editorial-page.ed-how-page .ed-process-copy > .ed-kicker { justify-content:flex-start; }
+.cf-editorial-page.ed-how-page .ed-process-copy h1 { font-size:clamp(48px,5vw,72px); margin-inline:0; }
+.cf-editorial-page.ed-how-page .ed-process-copy > p { font-size:17px; margin-inline:0; }
+.cf-editorial-page.ed-how-page .ed-actions { justify-content:flex-start; gap:20px; }
+.cf-editorial-page.ed-how-page .ed-process-copy > .ed-small-note { margin-inline:0; }
+.cf-editorial-page.ed-how-page .ed-route-preview .cf-frame > ol { display:block; }
+.cf-editorial-page.ed-how-page .ed-route-preview .cf-frame > ol::before { display:block; }
+.cf-editorial-page .ed-chapters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--rule); padding-block:22px; gap:32px; }
+.cf-editorial-page .ed-chapters a { display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600; min-height:44px; }
+.cf-editorial-page .ed-chapters a > span { color:var(--fg-faint); font:11px var(--font-mono-stack); }
+.cf-editorial-page .ed-chapters svg { margin-left:auto; color:var(--fg-faint); }
+.cf-editorial-page .ed-chapters a:hover { color:var(--fg-muted); }
+.cf-editorial-page .ed-chapters a:focus-visible { outline:2px solid var(--accent); outline-offset:4px; border-radius:4px; }
+.cf-editorial-page #evidence { scroll-margin-top:100px; }
+.cf-editorial-page.ed-how-page .ed-tech-grid { grid-template-columns:1fr; gap:32px; }
+.cf-editorial-page.ed-how-page .ed-tech-grid .ed-section-intro { display:flex; align-items:baseline; justify-content:space-between; gap:32px; }
+.cf-editorial-page.ed-how-page .ed-tech-grid h2 { font-size:32px; margin-top:0; }
+.cf-editorial-page.ed-how-page .ed-tech { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:32px; }
+.cf-editorial-page.ed-how-page .ed-tech > div { display:block; border-bottom:0; border-top:1px solid var(--rule); }
+.cf-editorial-page.ed-how-page .ed-tech dd { margin-top:14px; }
+@media(max-width:1000px) {
+ .cf-editorial-page .ed-about-masthead .ed-about-lead,.cf-editorial-page.ed-how-page .ed-process-hero { grid-template-columns:1fr; gap:32px; }
+ .cf-editorial-page.ed-how-page .ed-route-preview { max-width:720px; margin-inline:auto; }
+ .cf-editorial-page .ed-about-showcase { gap:40px; }
+}
+@media(max-width:767px) {
+ .cf-editorial-page .ed-about-masthead,.cf-editorial-page.ed-how-page .ed-process-hero { padding-block:44px 32px; }
+ .cf-editorial-page .ed-about-masthead h1,.cf-editorial-page.ed-how-page .ed-process-copy h1 { font-size:clamp(38px,8.8vw,62px); }
+ .cf-editorial-page .ed-facts { grid-template-columns:1fr 1fr; margin-top:36px; gap:24px; }
+ .cf-editorial-page .ed-facts > div:last-child { grid-column:1 / -1; }
+ .cf-editorial-page .ed-facts dd { font-size:23px; }
+ .cf-editorial-page .ed-about-showcase { grid-template-columns:1fr; gap:32px; }
+ .cf-editorial-page .ed-chapters { grid-template-columns:1fr; gap:0; padding-block:12px; }
+ .cf-editorial-page.ed-how-page .ed-process-copy > p { font-size:15px; }
+ .cf-editorial-page.ed-how-page .ed-tech-grid .ed-section-intro { display:block; }
+ .cf-editorial-page.ed-how-page .ed-tech-grid h2 { margin-top:20px; }
+ .cf-editorial-page.ed-how-page .ed-tech { grid-template-columns:1fr 1fr; gap:16px 24px; }
+}

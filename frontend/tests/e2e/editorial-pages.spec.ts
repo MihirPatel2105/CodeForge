@@ -18,7 +18,12 @@ for (const route of ["about", "how-it-works"]) {
         await expect(stage).not.toHaveAttribute("open", "");
         await expect(page.locator(".cf-frame")).toContainText("Findings or failed tests → Coder");
         await expect(page.getByRole("link", { name: "Follow the process" })).toHaveAttribute("href", "#stages");
+        const chapters = page.getByRole("navigation", { name: "Process chapters" });
+        await expect(chapters.getByRole("link")).toHaveCount(3);
+        await expect(chapters.getByRole("link", { name: /Inspect the result/ })).toHaveAttribute("href", "#evidence");
+        await expect(page.locator("#evidence")).toHaveCount(1);
       } else {
+        await expect(page.locator(".ed-facts")).toContainText("Your approval checkpoints");
         const proof = page.getByRole("region", { name: "Library demo source and test result" });
         await expect(proof).toContainText("8 passed in 1.42s");
         await expect(proof.getByRole("link")).toHaveAttribute("href", "/demo/library");
