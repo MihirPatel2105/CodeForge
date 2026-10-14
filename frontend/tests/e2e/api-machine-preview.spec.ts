@@ -6,6 +6,12 @@ test("assembly machine builds, pauses, replays, and respects reduced motion", as
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install();
+  // Keep real WebGL rendering at 20 fps under the virtual clock. CI's software
+  // renderer otherwise spends the test budget drawing hundreds of redundant frames.
+  await page.addInitScript(() => {
+    window.requestAnimationFrame = callback => window.setTimeout(() => callback(performance.now()), 50);
+    window.cancelAnimationFrame = handle => window.clearTimeout(handle);
+  });
   await page.goto("/preview/api-machine");
   const scene = page.locator(".machine-canvas");
   await expect(scene).toHaveAttribute("data-rendered", "true");

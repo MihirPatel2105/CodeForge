@@ -7,7 +7,7 @@ import { displayStatus } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 
 /** A plain-language readout beside the visual pipeline, including its feedback loop. */
-export function RunStory({ snapshot }: { snapshot: RunSnapshot }) {
+export function RunStory({ snapshot, connectionLost = false }: { snapshot: RunSnapshot; connectionLost?: boolean }) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => { setNow(Date.now()); const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const status = displayStatus(snapshot.status, snapshot.tests?.ok ?? null);
@@ -49,7 +49,7 @@ export function RunStory({ snapshot }: { snapshot: RunSnapshot }) {
         <span className={cn("absolute inset-y-0 left-0 w-1", statusRule)} aria-hidden />
         <div key={title} className="motion-safe:animate-[cfReadoutEnter_280ms_cubic-bezier(.16,1,.3,1)]">
           <p className="text-[12px] font-[650] text-fg-muted">Current state</p>
-          <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg">{title}</p>
+          <p className="mt-1 text-[20px] font-[700] leading-snug tracking-[-0.03em] text-fg"><span className={cn(isWorking && !snapshot.approval && !snapshot.endedAt && !connectionLost && "cf-working-text")}>{title}</span></p>
           <p className="cf-feedback-description mt-1 text-[14px] leading-snug text-fg-muted">{description}</p>
           {now && !snapshot.endedAt && <p className="mt-2 text-xs text-fg-muted">{isWorking && active && snapshot.agents[active.id].startedAt ? `Stage active for ${Math.max(0, Math.floor((now - new Date(snapshot.agents[active.id].startedAt!).getTime()) / 1000))}s. ` : ""}{snapshot.lastEventAt ? `Last update ${Math.max(0, Math.floor((now - new Date(snapshot.lastEventAt).getTime()) / 1000))}s ago.` : "Waiting for the first update."}</p>}
         </div>

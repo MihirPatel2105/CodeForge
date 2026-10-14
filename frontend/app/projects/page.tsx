@@ -4,7 +4,9 @@ import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
 import { AnimatedArrow } from "@/components/ui/enhancements/animated-icons";
 import { FolderPreview } from "@/components/ui/vengeance/folder-preview";
 import { Notice } from "@/components/ui/notice";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useAnimatedList } from "@/lib/use-animated-list";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
@@ -57,7 +59,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [open, setOpen] = useState(false);
-  const [newProjectId, setNewProjectId] = useState<string | null>(null);
+  const { ref: projectListRef, key: listMotionKey } = useAnimatedList<HTMLUListElement>();
   const [search, setSearch] = useState("");
   const [archived, setArchived] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -143,9 +145,9 @@ export default function ProjectsPage() {
                 New project
               </DialogTrigger>
               <NewProjectDialogContent
-                onCreated={(project) => {
+                onCreated={() => {
                   setSearch("");
-                  setNewProjectId(project.id);
+                  toast.success("Project created.");
                   setOpen(false);
                   void load("");
                 }}
@@ -228,14 +230,14 @@ export default function ProjectsPage() {
             </p>
 
             {projects.length ? (
-              <ul className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
-                {projects.map((project, index) => (
-                  <li key={project.id} className="cf-project-enter" style={{ "--cf-card-delay": `${project.id === newProjectId ? 0 : Math.min(index, 5) * 45}ms` } as CSSProperties}>
+              <ul key={listMotionKey} ref={projectListRef} className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
+                {projects.map((project) => (
+                  <li key={project.id}>
                     <ProjectCard project={project} />
                   </li>
                 ))}
                 {!query && (
-                  <li>
+                  <li key="new-project">
                     <NewProjectCard onClick={() => setOpen(true)} />
                   </li>
                 )}
@@ -317,8 +319,8 @@ function ProjectCard({ project }: { project: ProjectRow }) {
             </p>
           )}
         </div>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-fg-faint transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent">
-          <AnimatedArrow />
+        <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-fg-muted transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent group-focus-visible:border-accent-bd group-focus-visible:bg-accent-soft group-focus-visible:text-accent">
+          <AnimatedArrow className="size-[18px]" />
         </span>
       </div>
 
@@ -492,6 +494,7 @@ function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectRe
       onCreated(project);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't create the project.");
+      toast.error("Couldn't create the project. Please try again.");
     } finally {
       setSubmitting(false);
     }

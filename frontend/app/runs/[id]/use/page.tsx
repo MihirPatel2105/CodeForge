@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import "@/components/dashboard/run-dashboard.css";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
@@ -55,10 +57,12 @@ export default function UseApiPage() {
     try {
       await downloadLatestFileTree(id);
       setDownloadState("started");
+      toast.success("Download started.");
       downloadTimer.current = setTimeout(() => setDownloadState("idle"), 2400);
     } catch (err) {
       setDownloadState("idle");
       setDownloadError(err instanceof ApiError ? err.message : "Couldn't download the project.");
+      toast.error("Couldn't download the project. Please try again.");
     }
   }
 

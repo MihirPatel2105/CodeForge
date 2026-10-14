@@ -1,6 +1,10 @@
 "use client";
 
 import { Notice } from "@/components/ui/notice";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { StatefulButton } from "@/components/ui/stateful-button";
+import { toast } from "sonner";
+import { useAnimatedList } from "@/lib/use-animated-list";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
@@ -48,7 +52,8 @@ export default function TryApiPage() {
   const [recent, setRecent] = useState<SavedRequest[]>([]);
   const [recordId, setRecordId] = useState<{ collection: string; value: string } | null>(null);
   const [guide, setGuide] = useState(false);
-  const [notice, setNotice] = useState("");
+  const { ref: savedListRef, key: savedMotionKey } = useAnimatedList<HTMLDivElement>();
+  const { ref: recentListRef, key: recentMotionKey } = useAnimatedList<HTMLDivElement>();
   const storageKey = user ? `codeforge:requests:${user.id}:${id}` : null;
   useEffect(() => { if (storageKey) { const stored = readLocal<SavedRequest[]>(storageKey, []); setSaved(Array.isArray(stored) ? stored : []); } }, [storageKey]);
   const [error, setError] = useState<string | null>(null);
@@ -90,8 +95,8 @@ export default function TryApiPage() {
 
   async function send() {
     const operation = preview?.operations[selected];
-    if (!operation) return;
-    if (parameterErrors(operation, resolvedPath).length) return;
+    if (!operation) return false;
+    if (parameterErrors(operation, resolvedPath).length) return false;
     setError(null);
     let parsedBody: unknown = null;
     if (operation.has_body) {
@@ -99,7 +104,7 @@ export default function TryApiPage() {
         parsedBody = JSON.parse(body);
       } catch {
         setError("Request body must be valid JSON.");
-        return;
+        return false;
       }
     }
     setPendingAction("send");
@@ -115,9 +120,13 @@ export default function TryApiPage() {
       if (result.status < 400 && operation.method === "POST") {
         try { const data = JSON.parse(result.body); if (typeof data.id === "string" || typeof data.id === "number") setRecordId({ collection: operation.path.replace(/\/$/, ""), value: String(data.id) }); } catch { /* Some APIs return no JSON body. */ }
       }
+      if (result.status >= 400) toast.error(`Request returned HTTP ${result.status}.`);
+      return result.status < 400;
     } catch (err) {
       setResponse(null);
       setError(err instanceof ApiError ? err.message : "Couldn't send the request.");
+      toast.error("Couldn't send the request. Please try again.");
+      return false;
     } finally {
       setPendingAction(null);
     }
@@ -131,8 +140,10 @@ export default function TryApiPage() {
       setRecordId(null); setRecent([]);
       setResponse(null);
       await load();
+      toast.success("Preview data reset.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reset the preview.");
+      toast.error("Couldn't reset the preview. Please try again.");
     } finally {
       setPendingAction(null);
     }
@@ -142,9 +153,15 @@ export default function TryApiPage() {
   const inputErrors = parameterErrors(operation, resolvedPath);
 
   function saveRequest() {
-    if (!operation || !storageKey) return;
+    if (!operation || !storageKey) return false;
     const next = [{ key: crypto.randomUUID(), method: operation.method, endpoint: operation.path, path: resolvedPath, body, at: new Date().toISOString() }, ...saved].slice(0, 20);
-    setSaved(next); setNotice(writeLocal(storageKey, next) ? "Request saved on this device." : "Could not save this request on this device.");
+    if (!writeLocal(storageKey, next)) {
+      toast.error("Could not save this request on this device.");
+      return false;
+    }
+    setSaved(next);
+    toast.success("Request saved on this device.");
+    return true;
   }
   function restore(item: SavedRequest) {
     const index = preview?.operations.findIndex(operation => operation.method === item.method && operation.path === item.endpoint) ?? -1;
@@ -173,11 +190,10 @@ export default function TryApiPage() {
         </header>
 
         <div className="mt-5"><Button variant="outline" onClick={() => setGuide(!guide)}>{guide ? "Hide CRUD walkthrough" : "Show CRUD walkthrough"}</Button>{guide && <ol className="mt-3 grid gap-2 rounded-xl border border-border bg-surface p-4 text-sm sm:grid-cols-4">{["1. POST: create a record", "2. GET: inspect the new record", "3. PUT/PATCH: change a field", "4. DELETE: remove the test record"].map(step => <li key={step}>{step}</li>)}<li className="text-fg-muted sm:col-span-4">Select each endpoint below and send it yourself. After POST, use the returned ID for the other requests. Preview data is temporary.</li></ol>}</div>
-        {notice && <p role="status" className="mt-3 text-sm text-fg-muted">{notice}</p>}
         {error && <Notice className="mt-5">{error}</Notice>}
 
         {loading ? (
-          <p className="mt-8 font-mono text-[12px] text-fg-muted">Starting your temporary API…</p>
+          <LoadingScreen label="Starting API preview" message="Starting your temporary API…" />
         ) : preview ? (
           <section className="mt-6" aria-labelledby="try-api-heading">
             <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -220,10 +236,9 @@ export default function TryApiPage() {
                   )}
                   {inputErrors.length > 0 && <ul aria-label="Parameter errors" className="space-y-1 text-xs text-danger">{inputErrors.map((message, index) => <li key={`${index}:${message}`}>{message}</li>)}</ul>}
                   <div className="flex flex-wrap items-center gap-3">
-                    <Button variant="outline" onClick={saveRequest} disabled={sending || !fieldsValid}>Save request</Button>
-                    <Button onClick={send} disabled={sending || path.includes("{") || !fieldsValid || inputErrors.length > 0}>
-                      <Play className="h-3.5 w-3.5" aria-hidden /> {sending ? "Sending…" : "Send request"}
-                    </Button>
+                    <StatefulButton variant="outline" label="Save request" pendingLabel="Saving…" successLabel="Saved" onAction={saveRequest} disabled={sending || !fieldsValid} />
+                    <StatefulButton label="Send request" pendingLabel="Sending…" successLabel="Sent" onAction={send}
+                      icon={<Play className="size-3.5" aria-hidden />} disabled={sending || path.includes("{") || !fieldsValid || inputErrors.length > 0} />
                   </div>
                 </div>
               )}
@@ -256,7 +271,7 @@ export default function TryApiPage() {
               ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}
             </section>
             </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">{[{ title: "Saved requests", items: saved }, { title: "Recent responses", items: recent }].map(group => <section key={group.title} className="rounded-2xl border border-border bg-surface p-5"><h2 className="font-semibold">{group.title}</h2><p className="mt-1 text-xs text-fg-muted">{group.title === "Saved requests" ? "Stored on this device. Loading a request does not send it." : "Last 10 responses in this visit; previews limited to 20 KB."}</p>{group.items.length ? group.items.map(item => <div key={item.key} className="mt-3 flex items-center gap-2"><Button variant="outline" className="h-auto min-h-10 min-w-0 flex-1 justify-start whitespace-normal break-all text-left text-xs" disabled={sending} onClick={() => restore(item)}>{item.method} {item.path}{item.response ? ` · HTTP ${item.response.status}` : ""}</Button>{group.title === "Saved requests" && <Button variant="ghost" size="sm" onClick={() => { const next = saved.filter(value => value.key !== item.key); setSaved(next); if (storageKey) writeLocal(storageKey, next); }}>Remove</Button>}</div>) : <p className="mt-3 text-sm text-fg-muted">Nothing saved yet.</p>}</section>)}</div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">{[{ title: "Saved requests", items: saved }, { title: "Recent responses", items: recent }].map(group => <section key={group.title} className="rounded-2xl border border-border bg-surface p-5"><h2 className="font-semibold">{group.title}</h2><p className="mt-1 text-xs text-fg-muted">{group.title === "Saved requests" ? "Stored on this device. Loading a request does not send it." : "Last 10 responses in this visit; previews limited to 20 KB."}</p><div key={group.title === "Saved requests" ? savedMotionKey : recentMotionKey} ref={group.title === "Saved requests" ? savedListRef : recentListRef}>{group.items.length ? group.items.map(item => <div key={item.key} className="mt-3 flex items-center gap-2"><Button variant="outline" className="h-auto min-h-10 min-w-0 flex-1 justify-start whitespace-normal break-all text-left text-xs" disabled={sending} onClick={() => restore(item)}>{item.method} {item.path}{item.response ? ` · HTTP ${item.response.status}` : ""}</Button>{group.title === "Saved requests" && <Button variant="ghost" size="sm" onClick={() => { const next = saved.filter(value => value.key !== item.key); setSaved(next); if (storageKey) writeLocal(storageKey, next); }}>Remove</Button>}</div>) : <p className="mt-3 text-sm text-fg-muted">Nothing saved yet.</p>}</div></section>)}</div>
           </section>
         ) : (
           <Button variant="outline" onClick={() => void load()} className="mt-6">Try again</Button>

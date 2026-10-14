@@ -1,10 +1,11 @@
 "use client";
 
 import { Notice } from "@/components/ui/notice";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Ban, Clock3, Download, RefreshCw, RotateCcw, ShieldAlert, ShieldCheck, TestTube2, Workflow } from "lucide-react";
+import { ArrowLeft, Ban, Clock3, Download, RotateCcw, ShieldAlert, ShieldCheck, TestTube2, Workflow } from "lucide-react";
 import { ADMIN_LABEL, AdminPageHeader, AdminSectionHeading, AdminShell } from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +56,7 @@ export default function AdminRunPage() {
     finally { setBusy(false); }
   };
 
-  if (!detail) return <AdminShell><Link href="/admin/runs" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Runs</Link>{error ? <Notice className="mt-6">{error}</Notice> : <div className="flex min-h-[55vh] items-center justify-center"><RefreshCw className="h-5 w-5 animate-spin text-accent" aria-label="Loading run" /></div>}</AdminShell>;
+  if (!detail) return <AdminShell><Link href="/admin/runs" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Runs</Link>{error ? <Notice className="mt-6">{error}</Notice> : <LoadingScreen label="Loading run" message="Loading run details…" />}</AdminShell>;
 
   const { run } = detail;
   const meta = RUN_STATUS_META[run.status] ?? { label: run.status, tone: "neutral" as const };

@@ -1,8 +1,11 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
 
 import { Notice } from "@/components/ui/notice";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -211,8 +214,10 @@ export default function LiveRunPage() {
     try {
       await downloadLatestFileTree(id);
       setDownloadState("started");
+      toast.success("Download started.");
     } catch (err) {
       setDownloadError(err instanceof ApiError ? err.message : "Couldn't download the code.");
+      toast.error("Couldn't download the code. Please try again.");
       setDownloadState("idle");
     }
   }
@@ -273,13 +278,15 @@ export default function LiveRunPage() {
 
   if (!allowed) return null;
   if (loading) return (
-    <div className="cf-run-page min-h-screen bg-bg">
+    <div className="cf-run-page cf-run-loading flex min-h-0 flex-1 flex-col bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/projects" className="text-[13px] font-semibold text-fg-muted">Back to projects</Link>
-        <Notice variant="info" title="Loading run" className="mt-6" aria-label="Loading run">
-          {connectionLost ? "Reconnecting to load the saved run details…" : "Loading saved run details…"}
-        </Notice>
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 pt-4! pb-0! sm:px-6 lg:px-8">
+        <Link href="/projects" className="inline-flex min-h-9 shrink-0 items-center self-start text-[13px] font-semibold text-fg-muted">Back to projects</Link>
+        <LoadingScreen
+          label="Loading run"
+          className="min-h-0 flex-1"
+          message={connectionLost ? "Reconnecting to load the saved run details…" : undefined}
+        />
       </main>
     </div>
   );
@@ -287,17 +294,19 @@ export default function LiveRunPage() {
   return (
     <div className="cf-run-page min-h-screen bg-bg">
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-[1600px] justify-end px-5 pt-4 sm:px-6"><DashboardThemeToggle /></div>
-      <main data-run-flow-page className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
-        <Link
-          href="/projects"
-          className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-          Projects
-        </Link>
+      <main data-run-flow-page className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-9 items-center justify-between gap-3">
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+            Projects
+          </Link>
+          <DashboardThemeToggle />
+        </div>
 
-        <header className="cf-run-hero cf-run-summary mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
+        <header className="cf-run-hero cf-run-summary mt-2 overflow-hidden rounded-3xl border border-border bg-surface">
           <div className="cf-build-stage grid">
             <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -391,7 +400,7 @@ export default function LiveRunPage() {
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
-          <RunStory snapshot={snapshot} />
+          <RunStory snapshot={snapshot} connectionLost={Boolean(connectionLost)} />
 
           <div className="cf-pipeline-viewport">
             <div className="min-w-0">

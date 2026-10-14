@@ -2,6 +2,9 @@
 
 import { ShareSheet } from "@/components/ui/enhancements/share-sheet";
 import { Notice } from "@/components/ui/notice";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { StatefulButton } from "@/components/ui/stateful-button";
+import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -90,8 +93,12 @@ export default function PublishApiPage() {
       setHealth(null);
       setApiKey(created.api_key);
       setShowKey(false);
+      toast.success(created.status === "active" ? "API published." : "Your API is starting.");
+      return true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't publish this API.");
+      toast.error("Couldn't publish this API. Please try again.");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -106,8 +113,10 @@ export default function PublishApiPage() {
       setApiKey(updated.api_key);
       setShowKey(false);
       setConfirmAction(null);
+      toast.success("API key rotated.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't rotate the API key.");
+      toast.error("Couldn't rotate the API key. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -123,8 +132,10 @@ export default function PublishApiPage() {
       setApiKey(null);
       setShowKey(false);
       setConfirmAction(null);
+      toast.success("API unpublished.");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't unpublish this API.");
+      toast.error("Couldn't unpublish this API. Please try again.");
       try {
         setDeployment(await api.getDeployment(id));
       } catch {
@@ -140,9 +151,13 @@ export default function PublishApiPage() {
     setError(null);
     setHealth(null);
     try {
-      setHealth(await api.checkDeployment(id));
+      const result = await api.checkDeployment(id);
+      setHealth(result);
+      return result.ready;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't check this API. Try again.");
+      toast.error("Couldn't check this API. Please try again.");
+      return false;
     } finally {
       setChecking(false);
     }
@@ -182,7 +197,7 @@ export default function PublishApiPage() {
         {!loading && run?.parent_run_id && run.status === "succeeded" && run.metrics?.tests_passed && <div className="mt-6 rounded-3xl border border-border bg-surface p-5 sm:p-6"><ApiCompatibility id={id} sourceId={run.parent_run_id} /></div>}
         {!loading && versionError && <Notice className="mt-5" variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Version history could not load. Review the run before publishing an update.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry version history</Button></div></Notice>}
 
-        {loading ? <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">Checking your API…</section> : publicationError ? (
+        {loading ? <LoadingScreen label="Checking API publication" message="Checking your API…" /> : publicationError ? (
           <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">
             <p>Publication status is unavailable. Retry before making changes.</p>
             <Button className="mt-3" variant="outline" size="sm" onClick={() => void load()}>Retry status</Button>
@@ -202,7 +217,7 @@ export default function PublishApiPage() {
                   <p className="mt-1 text-[13px] leading-5 text-fg-muted">Use the URL from your backend and keep the key private.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" onClick={() => void checkConnection()} disabled={busy || checking || deployment.status !== "active"}>{checking ? "Checking…" : "Check connection"}</Button>
+                  <StatefulButton variant="outline" size="sm" label="Check connection" pendingLabel="Checking…" successLabel="Connected" onAction={checkConnection} disabled={busy || checking || deployment.status !== "active"} />
                   <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy || checking || deployment.status !== "active"}>Rotate key</Button>
                   <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy || checking}>{deployment.status === "deleting" ? "Retry unpublish" : "Unpublish"}</Button>
                 </div>
@@ -243,7 +258,7 @@ export default function PublishApiPage() {
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
               <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
-              <Button className="mt-5" onClick={publish} disabled={busy}>{busy ? "Publishing…" : "Publish API"}</Button>
+              <StatefulButton className="mt-5" label="Publish API" pendingLabel="Publishing…" successLabel="Published" onAction={publish} disabled={busy} />
             </div>
           </section>
         )}

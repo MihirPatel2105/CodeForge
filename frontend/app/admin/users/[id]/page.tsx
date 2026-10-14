@@ -2,10 +2,11 @@
 
 import { SupportPanel } from "@/components/admin/support-panel";
 import { Notice } from "@/components/ui/notice";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, BadgeCheck, Ban, FolderKanban, Gauge, KeyRound, RefreshCw, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Ban, FolderKanban, Gauge, KeyRound, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { ADMIN_LABEL, AdminPageHeader, AdminSectionHeading, AdminShell } from "@/components/admin/admin-shell";
 import { AdminRunTable } from "@/components/admin/run-table";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,7 @@ export default function AdminUserPage() {
     finally { setBusy(false); }
   };
 
-  if (!detail) return <AdminShell><Link href="/admin/users" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Users</Link>{error ? <Notice className="mt-6">{error}</Notice> : <div className="flex min-h-[55vh] items-center justify-center"><RefreshCw className="h-5 w-5 animate-spin text-accent" aria-label="Loading user" /></div>}</AdminShell>;
+  if (!detail) return <AdminShell><Link href="/admin/users" className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-fg-muted"><ArrowLeft className="h-4 w-4" aria-hidden />Users</Link>{error ? <Notice className="mt-6">{error}</Notice> : <LoadingScreen label="Loading user" message="Loading user details…" />}</AdminShell>;
   const { user } = detail;
   const displayName = [user.first_name, user.last_name].filter(Boolean).join(" ") || "Unnamed user";
 

@@ -3,6 +3,9 @@
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AnimatedCheckbox } from "@/components/ui/animated-checkbox";
+import { motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
 
 export type QueryParameter = { key: string; name: string; value: string; enabled: boolean };
 
@@ -35,6 +38,7 @@ export function RequestQuery({ parameters, onChange, disabled }: {
   onChange: (parameters: QueryParameter[]) => void;
   disabled: boolean;
 }) {
+  const reduced = useMotionPreference();
   function update(key: string, patch: Partial<QueryParameter>) {
     onChange(parameters.map(parameter => parameter.key === key ? { ...parameter, ...patch } : parameter));
   }
@@ -42,11 +46,14 @@ export function RequestQuery({ parameters, onChange, disabled }: {
   return (
     <fieldset disabled={disabled} className="min-w-0 space-y-3">
       <legend className="text-[12px] font-[700] text-fg">Query parameters</legend>
+      <div className="space-y-3">
       {parameters.map((parameter, index) => (
-        <div key={parameter.key} className="flex min-w-0 items-center gap-2">
-          <input type="checkbox" checked={parameter.enabled}
+        <motion.div key={parameter.key} layout={reduced ? false : "position"}
+          initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduced ? 0 : 0.18 }} className="flex min-w-0 items-center gap-2">
+          <AnimatedCheckbox checked={parameter.enabled}
             onChange={event => update(parameter.key, { enabled: event.target.checked })}
-            aria-label={`Include parameter ${index + 1}`} className="size-4 shrink-0 accent-accent" />
+            aria-label={`Include parameter ${index + 1}`} />
           <Input value={parameter.name} aria-label={`Parameter name ${index + 1}`} placeholder="Name"
             onChange={event => update(parameter.key, { name: event.target.value })}
             className="min-w-0 flex-1 font-mono text-xs" />
@@ -58,8 +65,9 @@ export function RequestQuery({ parameters, onChange, disabled }: {
             onClick={() => onChange(parameters.filter(item => item.key !== parameter.key))}>
             <X className="size-3.5" aria-hidden />
           </Button>
-        </div>
+        </motion.div>
       ))}
+      </div>
       <Button variant="outline" size="sm" disabled={disabled} onClick={() => onChange([
         ...parameters, { key: crypto.randomUUID(), name: "", value: "", enabled: true },
       ])}><Plus className="size-3.5" aria-hidden /> Add parameter</Button>

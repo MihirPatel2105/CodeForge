@@ -2,10 +2,8 @@
 
 import { MotionButton } from "@/components/ui/motion-button";
 
-import { LayoutGroup, motion } from "motion/react";
-import { useMotionPreference } from "@/lib/use-motion-preference";
-import { motionSpring } from "@/lib/motion-tokens";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { CodeFileTree } from "./code-file-tree";
 import { FileCode2, WrapText } from "lucide-react";
 import { CopyFeedback } from "@/components/ui/copy-feedback";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,8 +62,6 @@ function CodeLine({ text }: { text: string }) {
  * joined here from mock data during dev playback or the REST file endpoints on a live run.
  */
 export function CodePanel({ files, getVersion, getPreviousVersion, location }: CodePanelProps) {
-  const reducedMotion = useMotionPreference();
-  const selectionId = useId();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
   const [view, setView] = useState<"current" | "diff">("current");
@@ -140,41 +136,13 @@ export function CodePanel({ files, getVersion, getPreviousVersion, location }: C
           </div>
         ) : (
           <ScrollArea className="cf-file-list-cue min-h-0 flex-1">
-            <LayoutGroup id={selectionId}><ul className="flex flex-col gap-1 p-2">
-              {files.map((f) => {
-                const isSelected = f.path === selectedPath;
-                return (
-                  <li key={f.path}>
-                    <MotionButton
-                      aria-pressed={isSelected}
-                      type="button"
-                      onClick={() => {
-                        setProblemLocation(null);
-                        setSelectedPath(f.path);
-                        setPinned(true);
-                        setView("current");
-                      }}
-                      className={cn(
-                        "relative isolate flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-2.5 py-2 text-left",
-                        "font-mono text-[12px] text-fg-muted transition-[border-color,background-color,box-shadow,color] hover:bg-surface hover:text-fg",
-                        isSelected && "border-accent-bd font-bold text-accent",
-                      )}
-                    >
-                      {isSelected && <motion.span layoutId="file-selection" transition={reducedMotion ? { duration: 0 } : motionSpring} className="absolute inset-0 -z-10 rounded-2xl bg-surface shadow-[0_2px_9px_rgba(35,50,81,0.07)]" aria-hidden />}
-                      <span className="truncate">{f.path}</span>
-                      <span
-                        className={cn(
-                          "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-[700]",
-                          f.status === "new" ? "bg-ok-soft text-ok" : "bg-loop-soft text-loop",
-                        )}
-                      >
-                        {f.status}
-                      </span>
-                    </MotionButton>
-                  </li>
-                );
-              })}
-            </ul></LayoutGroup>
+            <CodeFileTree files={files} selectedPath={selectedPath} revealRequestId={location?.requestId}
+              onSelect={path => {
+                setProblemLocation(null);
+                setSelectedPath(path);
+                setPinned(true);
+                setView("current");
+              }} />
           </ScrollArea>
         )}
       </div>

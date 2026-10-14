@@ -1,8 +1,6 @@
 /* Source attribution: docs/vendor/skiper-ui.md and docs/vendor/vengeance-ui.md. */
-.cf-arrow-shaft { transform: scaleX(.6); transform-origin: right center; transition: transform .2s ease; }
-.cf-arrow-head { transition: transform .2s ease; }
-:is(a,button):is(:hover,:focus-visible) .cf-arrow-shaft { transform: scaleX(1); }
-:is(a,button):is(:hover,:focus-visible) .cf-arrow-head { transform: translateX(1px); }
+.cf-animated-arrow { transition: transform .2s ease; }
+:is(a,button):is(:hover,:focus-visible) .cf-animated-arrow { transform: translateX(2px); }
 .cf-playback-control { overflow: hidden; flex: none; border: 1px solid var(--border); border-radius: 100px; background: var(--surface); }
 .cf-playback-button[data-slot=button] { width: 100%; display: flex; gap: 8px; border: 0; padding: 5px 10px 5px 5px; color: var(--fg); font-size: 12px; font-weight: 600; }
 .cf-playback-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--accent-soft); }
@@ -46,7 +44,7 @@
 @media(max-width: 650px) { .cf-demo-slide { padding: 24px; }.cf-demo-slide h3 { font-size: 24px; }.cf-demo-gallery-heading { align-items: center; }.cf-demo-gallery-heading h2 { font-size: 26px; } }
 @media(prefers-reduced-motion: reduce) {
   .cf-flip-word { opacity: 1 !important; transform: none !important; }
-  .cf-arrow-shaft,.cf-arrow-head { transition: none; }.cf-playback-bars i,.cf-project-enter { animation: none; }
+  .cf-animated-arrow { transform: none !important; transition: none; }.cf-playback-bars i,.cf-project-enter { animation: none; }
   .cf-agent-glow::after { animation: none; background: none; }
   .cf-scroll-cue,.cf-file-list-cue [data-slot="scroll-area-viewport"] { animation: none; mask-image: none; }
 }

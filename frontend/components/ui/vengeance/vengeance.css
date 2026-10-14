@@ -19,9 +19,11 @@
 .vui-folder { position: relative; width: 58px; height: 44px; flex: none; perspective: 240px; }
 .vui-folder-back { position: absolute; inset: 5px 0 0; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-radius: 5px; }
 .vui-folder-back::before { content: ""; position: absolute; top: -6px; left: -1px; width: 26px; height: 8px; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-bottom: 0; border-radius: 5px 5px 0 0; }
-.vui-folder-paper { position: absolute; inset: 5px 7px 4px; display: flex; justify-content: center; padding-top: 4px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 3px; color: var(--fg-muted); transition: transform .25s ease; }
-.vui-folder-cover { position: absolute; inset: 15px -2px -1px; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-radius: 5px; transform-origin: bottom; transition: transform .25s ease; }
-.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper { transform: translateY(-7px) rotate(-5deg); }
+.vui-folder-paper { position: absolute; top: 3px; width: 28px; height: 34px; z-index: 1; display: flex; justify-content: center; padding-top: 3px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 3px; color: var(--fg-muted); transform: var(--paper-rest); transition: transform .25s ease; }
+.vui-folder-paper-left { left: 8px; --paper-rest: translateY(-1px) rotate(-10deg); --paper-open: translate(-5px,-10px) rotate(-18deg); }
+.vui-folder-paper-right { left: 22px; --paper-rest: translateY(-1px) rotate(10deg); --paper-open: translate(5px,-10px) rotate(18deg); }
+.vui-folder-cover { position: absolute; inset: 15px -2px -1px; z-index: 3; background: var(--accent-soft); border: 1px solid var(--accent-bd); border-radius: 5px; transform-origin: bottom; transition: transform .25s ease; }
+.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper { transform: var(--paper-open); }
 .cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: rotateX(-25deg); }
 .vui-faq { width: 100%; }
 .vui-faq-item { border-bottom: 1px solid var(--rule); }
@@ -59,4 +61,4 @@
 .vui-feature-dialog-icon { display: inline-flex; align-self: flex-start; padding: 16px; border-radius: 16px; background: var(--accent-soft); color: var(--fg); margin-bottom: 12px; }
 @media(max-width: 1000px) { .vui-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.vui-agent-card { padding: 24px; } }
 @media(max-width: 650px) { .vui-agent-grid,.vui-feature-grid { grid-template-columns: minmax(0,1fr); }.vui-feature-card { min-height: 220px; }.vui-faq-item button { padding: 18px 12px; font-size: 16px; gap: 12px; }.vui-faq-item p { padding: 16px 16px 24px 47px; } }
-@media(prefers-reduced-motion: reduce) { .vui-generate-sheen,.vui-generate-spinner { animation: none !important; }.vui-generate-sheen,.vui-folder-paper,.vui-folder-cover,.vui-line-link>span::after,.vui-tooltip,.vui-faq-item button { transition: none !important; }.cf-project-card:hover .vui-folder-paper,.cf-project-card:focus-visible .vui-folder-paper,.cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: none; } }
+@media(prefers-reduced-motion: reduce) { .vui-generate-sheen,.vui-generate-spinner { animation: none !important; }.vui-generate-sheen,.vui-folder-paper,.vui-folder-cover,.vui-line-link>span::after,.vui-tooltip,.vui-faq-item button { transition: none !important; }.vui-folder-paper { transform: var(--paper-rest) !important; }.cf-project-card:hover .vui-folder-cover,.cf-project-card:focus-visible .vui-folder-cover { transform: none; } }
