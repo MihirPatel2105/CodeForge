@@ -46,3 +46,31 @@ test("public pages reuse homepage typography and primary controls", async ({ pag
     expect(await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily)).toBe(family);
   }
 });
+
+test("section colors span the page and stage disclosures animate in both directions", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  for (const route of ["about", "how-it-works"]) {
+    await page.goto(`/${route}`);
+    for (const band of await page.locator("main > .ed-band").all()) {
+      const bounds = await band.boundingBox();
+      expect(bounds?.x).toBe(0);
+      expect(bounds?.width).toBe(1440);
+    }
+  }
+  const stage = page.locator(".ed-stages details").first();
+  const summary = stage.locator("summary");
+  const contentHeight = () => stage.evaluate(el => parseFloat(getComputedStyle(el, "::details-content").height));
+  await summary.click();
+  await expect.poll(contentHeight).toBeGreaterThan(0);
+  await expect.poll(() => stage.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
+  const expanded = await contentHeight();
+  await summary.click();
+  const closing = await contentHeight();
+  expect(closing).toBeGreaterThan(0);
+  expect(closing).toBeLessThanOrEqual(expanded);
+  await expect.poll(contentHeight).toBe(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await summary.click();
+  expect(await stage.evaluate(el => getComputedStyle(el, "::details-content").transitionDuration)).toBe("0s");
+});

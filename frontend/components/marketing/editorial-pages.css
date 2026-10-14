@@ -111,4 +111,22 @@
 }
 .cf-editorial-page.cf-premium-marketing h1 { font-weight:650; letter-spacing:-.055em; line-height:1.08; }
 .cf-editorial-page .ed-section-intro > .lp-text-link { margin-top:22px; }
-.cf-editorial-page .ed-scope-grid { background:transparent; }
+/* Explicit full-width bands avoid the shared marketing nth-child backgrounds. */
+.cf-editorial-page.cf-premium-marketing main > section { background:var(--surface); }
+.cf-editorial-page.cf-premium-marketing main > .ed-band { background:var(--bg); }
+.cf-editorial-page.cf-premium-marketing main > .ed-tinted { background:var(--surface-2); }
+
+/* Native details retain keyboard and no-JavaScript behavior. */
+@supports (interpolate-size: allow-keywords) {
+ .cf-editorial-page .ed-stages details { interpolate-size:allow-keywords; }
+ .cf-editorial-page .ed-stages details::details-content {
+  height:0;
+  opacity:0;
+  overflow:clip;
+  transition:height 280ms cubic-bezier(.22,1,.36,1), opacity 180ms ease, content-visibility 280ms allow-discrete;
+ }
+ .cf-editorial-page .ed-stages details[open]::details-content { height:auto; opacity:1; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-editorial-page .ed-stages details::details-content,.cf-editorial-page .ed-stage-expand { transition:none; }
+}
