@@ -56,14 +56,14 @@ test("demo carousel supports keyboard, arrows and native horizontal scrolling", 
   await expect(page).toHaveURL(/\/demo\/library$/);
 });
 
-test("expanding playback control pauses and resumes the real walkthrough", async ({ page }) => {
+test("standard playback control pauses and resumes the real walkthrough", async ({ page }) => {
   await page.goto("/");
   const pause = page.getByRole("button", { name: "Pause walkthrough" });
   await pause.scrollIntoViewIfNeeded();
   await pause.click();
   const play = page.getByRole("button", { name: "Play walkthrough" });
   await expect(play).toBeVisible();
-  await expect(page.locator(".cf-playback-control")).toHaveCSS("width", "100px");
+  await expect(play).toBeEnabled();
   await play.click();
   await expect(pause).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });

@@ -1,6 +1,5 @@
 "use client";
 
-// Adapted from Skiper UI 48's swipe/navigation pattern. See docs/vendor/skiper-ui.md.
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, FileCode2 } from "lucide-react";
@@ -14,26 +13,25 @@ export function DemoCarousel() {
   const [active, setActive] = useState(0);
   const reduced = useMotionPreference();
   useEffect(() => {
-    const root = viewport.current;
-    if (!root) return;
-    const update = () => {
-      const cards = Array.from(root.children) as HTMLElement[];
-      let closest = 0;
-      let distance = Infinity;
-      for (let index = 0; index < cards.length; index++) {
-        const offset = Math.abs(cards[index].getBoundingClientRect().left - root.getBoundingClientRect().left);
-        if (offset < distance) { distance = offset; closest = index; }
+    const list = viewport.current;
+    if (!list) return;
+    const observer = new IntersectionObserver(records => {
+      const visible = records.filter(record => record.isIntersecting && record.intersectionRatio >= .6);
+      for (const record of visible) {
+        const index = Array.from(list.children).indexOf(record.target);
+        if (index >= 0) setActive(index);
       }
-      setActive(closest);
-    };
-    root.addEventListener("scroll", update, { passive: true });
-    return () => root.removeEventListener("scroll", update);
+    }, { root: list, threshold: .6 });
+    for (const card of list.children) observer.observe(card);
+    return () => observer.disconnect();
   }, []);
+
   function go(index: number) {
-    const root = viewport.current;
-    const target = root?.children[index] as HTMLElement | undefined;
-    if (!root || !target) return;
-    root.scrollTo({ left: root.scrollLeft + target.getBoundingClientRect().left - root.getBoundingClientRect().left, behavior: reduced ? "instant" : "smooth" });
+    const list = viewport.current;
+    const card = list?.children.item(index) as HTMLElement | null;
+    const first = list?.firstElementChild as HTMLElement | null;
+    if (!list || !card || !first) return;
+    list.scrollTo({ left: card.offsetLeft - first.offsetLeft, behavior: reduced ? "instant" : "smooth" });
   }
   return <div className="cf-demo-gallery" role="region" aria-roledescription="carousel" aria-label="Example APIs">
     <div className="cf-demo-gallery-heading"><div><p>Explore the examples</p><h2>See what a finished API looks like.</h2></div>

@@ -1,13 +1,7 @@
-/* Source attribution: docs/vendor/skiper-ui.md and docs/vendor/vengeance-ui.md. */
-.cf-animated-arrow { transition: transform .2s ease; }
-:is(a,button):is(:hover,:focus-visible) .cf-animated-arrow { transform: translateX(2px); }
+/* License notices for retained third-party adaptations: docs/vendor/vengeance-ui.md. */
 .cf-playback-control { overflow: hidden; flex: none; border: 1px solid var(--border); border-radius: 100px; background: var(--surface); }
 .cf-playback-button[data-slot=button] { width: 100%; display: flex; gap: 8px; border: 0; padding: 5px 10px 5px 5px; color: var(--fg); font-size: 12px; font-weight: 600; }
 .cf-playback-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--accent-soft); }
-.cf-playback-bars { display: flex; align-items: center; gap: 2px; height: 14px; }
-.cf-playback-bars i { width: 2px; height: 7px; border-radius: 2px; background: currentColor; animation: cf-play-bars .8s ease-in-out infinite alternate; }
-.cf-playback-bars i:nth-child(2) { animation-delay: -.3s; }.cf-playback-bars i:nth-child(3) { animation-delay: -.5s; }
-@keyframes cf-play-bars { to { transform: scaleY(1.8); } }
 .cf-demo-gallery { width: 100%; max-width: 1000px; margin: 0 auto; }
 .cf-demo-gallery-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .cf-demo-gallery-heading p { margin: 0 0 12px; color: var(--fg-muted); font-size: 12px; font-weight: 600; }
@@ -25,18 +19,6 @@
 .cf-share-qr svg { border-radius: 10px; }
 .cf-project-enter { animation: cf-project-arrive .35s ease-out both; animation-delay: var(--cf-card-delay,0ms); }
 @keyframes cf-project-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@supports (animation-timeline: scroll()) {
-  @property --cf-fade-top { syntax: "<length>"; inherits: false; initial-value: 0px; }
-  @property --cf-fade-bottom { syntax: "<length>"; inherits: false; initial-value: 0px; }
-  .cf-scroll-cue, .cf-file-list-cue [data-slot="scroll-area-viewport"] {
-    mask-image: linear-gradient(to bottom,transparent 0,#000 var(--cf-fade-top),#000 calc(100% - var(--cf-fade-bottom)),transparent 100%);
-    animation: cf-fade-top linear both,cf-fade-bottom linear both;
-    animation-timeline: scroll(self),scroll(self);
-    animation-range: 0% 8%,92% 100%;
-  }
-  @keyframes cf-fade-top { from { --cf-fade-top: 0px; } to { --cf-fade-top: 14px; } }
-  @keyframes cf-fade-bottom { from { --cf-fade-bottom: 14px; } to { --cf-fade-bottom: 0px; } }
-}
 @property --cf-glow-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .cf-agent-glow { position: relative; isolation: isolate; }
 .cf-agent-glow::after { content: ""; position: absolute; inset: 0; border: 1px solid transparent; border-radius: inherit; pointer-events: none; background: conic-gradient(from var(--cf-glow-angle),transparent 60%,var(--border-strong) 82%,var(--accent) 92%,transparent) border-box; mask: linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0); mask-composite: exclude; animation: cf-agent-border 4s linear infinite; }
@@ -44,7 +26,7 @@
 @media(max-width: 650px) { .cf-demo-slide { padding: 24px; }.cf-demo-slide h3 { font-size: 24px; }.cf-demo-gallery-heading { align-items: center; }.cf-demo-gallery-heading h2 { font-size: 26px; } }
 @media(prefers-reduced-motion: reduce) {
   .cf-flip-word { opacity: 1 !important; transform: none !important; }
-  .cf-animated-arrow { transform: none !important; transition: none; }.cf-playback-bars i,.cf-project-enter { animation: none; }
+  .cf-project-enter { animation: none; }
   .cf-agent-glow::after { animation: none; background: none; }
   .cf-scroll-cue,.cf-file-list-cue [data-slot="scroll-area-viewport"] { animation: none; mask-image: none; }
 }
