@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Magnetic } from "@/components/ui/magnetic";
 import { DemoPreviewLink } from "@/components/ui/enhancements/demo-preview-link";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FlipText } from "@/components/ui/enhancements/flip-text";
@@ -66,7 +65,7 @@ export function PremiumLanding() {
           <motion.h1 {...entrance(0.08)} id="landing-title">Your idea.<br />A working API.</motion.h1>
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
-            <Magnetic><Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></Magnetic>
+            <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <DemoPreviewLink className="lp-text-link" slug={demo.slug} label={demo.label}><Play size={15} aria-hidden />Watch a full run</DemoPreviewLink>
           </motion.div>
           <ProductScrollPreview>

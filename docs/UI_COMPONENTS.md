@@ -13,9 +13,8 @@ not a new theme. Stepper is excluded.
 | Empty states | Projects, Run history, Timeline, Try API saved requests | Search for a nonexistent item, clear filters, or inspect an empty account/list. |
 | Preview link card | Homepage → Watch a full run / Explore example links | Hover or focus a link to see a locally stored demo screenshot. |
 | Multi-select combobox | Project → Run history → All outcomes | Search and select multiple outcomes; remove chips. Filters persist when loading more runs. |
-| Magnetic CTA | Homepage → Build your first API / Start a project | The main button follows a fine mouse pointer by a few pixels and returns on exit. |
 
-Motion respects reduced-motion preferences. Magnetic motion is disabled for touch. Link previews use screenshots of
+Motion respects reduced-motion preferences. Link previews use screenshots of
 the local recorded demos, with no third-party screenshot calls.
 
 ## References

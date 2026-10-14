@@ -12,7 +12,7 @@ test("homepage links retain previews without the removed search block", async ({
   await page.goto("/");
   const cta = page.locator(".lp-actions").getByRole("link", { name: "Build your first API" });
   await cta.hover();
-  await expect(cta.locator("..")).toHaveCSS("transform", "none");
+  await expect(cta).toHaveAttribute("href", "/signup");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
