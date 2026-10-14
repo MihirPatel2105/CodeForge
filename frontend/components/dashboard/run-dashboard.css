@@ -237,3 +237,18 @@
  .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:12px; }
 }
 .cf-workbench-console-panel { flex:none; }
+
+.cf-problem-count { display:inline-grid; place-items:center; min-width:19px; height:19px; padding:0 5px; border-radius:5px; background:var(--border); color:var(--fg-muted); font:10px var(--font-mono-stack); }
+.cf-run-page .cf-workbench-console-panel .cf-evidence-problems { border:0; border-radius:0; margin:0; padding:0; }
+.cf-workbench-console-panel .cf-evidence-problems > h3 { display:none; }
+.cf-workbench-console-panel .cf-evidence-problems > ul { max-height:none; padding:0 24px; }
+.cf-workbench-console-panel .cf-evidence-problems li { gap:20px; padding:20px 0; }
+.cf-workbench-console-panel .cf-evidence-problems li p:first-child { font-size:11px; }
+.cf-workbench-console-panel .cf-evidence-problems li p:nth-child(2) { max-width:95ch; font-size:13px; }
+.cf-problems-empty { padding:24px 0; font-size:13px; line-height:1.7; color:var(--fg-muted); }
+@media(max-width:639px) {
+ .cf-workbench-console-heading [data-slot=tabs-list] { gap:16px; }
+ .cf-workbench-console-heading [data-slot=tabs-trigger] { font-size:11px; gap:5px; }
+ .cf-workbench-console-heading [data-slot=tabs-trigger] svg { display:none; }
+ .cf-workbench-console-panel .cf-evidence-problems > ul { padding:0 16px; }
+}

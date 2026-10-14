@@ -428,14 +428,15 @@ export default function LiveRunPage() {
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
 
-          <ProblemsPanel problems={problems} error={problemError}
+          <EvidenceWorkbench
+            problemCount={problems.length}
+            problems={<ProblemsPanel problems={problems} error={problemError}
             canOpen={problem => canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)}
             onOpen={problem => {
               if (!problem.location || !canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)) return;
               const target = problem.location;
               setCodeLocation(current => ({ runId: id, location: { path: target.path, line: target.line, content: target.content, iteration: target.iteration, requestId: (current?.location.requestId ?? 0) + 1 } }));
-            }} />
-          <EvidenceWorkbench
+            }} />}
             result={snapshot.tests}
             navigationRequest={codeLocation?.runId === id ? codeLocation.location.requestId : undefined}
             code={<CodePanel key={id} files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} location={codeLocation?.runId === id ? codeLocation.location : null} />}

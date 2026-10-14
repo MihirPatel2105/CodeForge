@@ -1,18 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Activity, CheckCheck, TerminalSquare } from "lucide-react";
+import { Activity, CheckCheck, TerminalSquare, ListChecks } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { TestsSnapshot } from "@/lib/run-reducer";
 import "./run-dashboard.css";
 
-export function EvidenceWorkbench({ code, timeline, terminal, tests, result, navigationRequest }: {
+export function EvidenceWorkbench({ code, timeline, terminal, tests, result, navigationRequest, problems, problemCount = 0 }: {
   code: ReactNode;
   timeline: ReactNode;
   terminal: ReactNode;
   tests: ReactNode;
   result: TestsSnapshot | null;
   navigationRequest?: number;
+  problems?: ReactNode;
+  problemCount?: number;
 }) {
   const [view, setView] = useState("timeline");
   const codeRef = useRef<HTMLDivElement>(null);
@@ -28,6 +30,7 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
         <Tabs value={view} onValueChange={value => setView(String(value))}>
           <div className="cf-workbench-console-heading">
             <TabsList activateOnFocus variant="line" aria-label="Run evidence">
+              {problems && <TabsTrigger value="problems"><ListChecks aria-hidden />Problems<span className="cf-problem-count">{problemCount}</span></TabsTrigger>}
               <TabsTrigger value="timeline"><Activity aria-hidden />Timeline</TabsTrigger>
               <TabsTrigger value="terminal"><TerminalSquare aria-hidden />Sandbox</TabsTrigger>
               <TabsTrigger value="tests"><CheckCheck aria-hidden />Tests</TabsTrigger>
@@ -36,6 +39,7 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
               <span aria-hidden />{result ? `${result.passed}/${result.total} tests passed` : "Tests pending"}
             </span>
           </div>
+          {problems && <TabsContent value="problems" hidden={view !== "problems"} keepMounted className="cf-workbench-console-panel">{problems}</TabsContent>}
           <TabsContent value="timeline" hidden={view !== "timeline"} keepMounted className="cf-workbench-console-panel">{timeline}</TabsContent>
           <TabsContent value="terminal" hidden={view !== "terminal"} keepMounted className="cf-workbench-console-panel">{terminal}</TabsContent>
           <TabsContent value="tests" hidden={view !== "tests"} keepMounted className="cf-workbench-console-panel">{tests}</TabsContent>

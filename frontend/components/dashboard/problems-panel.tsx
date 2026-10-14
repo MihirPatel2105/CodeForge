@@ -9,11 +9,11 @@ export function ProblemsPanel({ problems, canOpen, onOpen, error }: {
   onOpen: (problem: RunProblem) => void;
   error: boolean;
 }) {
-  if (!problems.length && !error) return null;
   return (
     <section aria-label="Problems" className="cf-evidence-problems mb-4 min-w-0 rounded-2xl border border-border bg-surface p-4">
       <h3 className="font-semibold text-fg">Problems <span className="text-sm font-normal text-fg-muted">({problems.length})</span></h3>
       {error && <p role="status" className="mt-2 text-sm text-fg-muted">Could not refresh findings. Showing the last available results.</p>}
+      {!problems.length && !error && <p className="cf-problems-empty">No recorded findings. Reviewer findings and test failures will appear here.</p>}
       <ul className="mt-3 max-h-64 space-y-2 overflow-auto">
         {problems.map(problem => <li key={problem.id} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border p-3">
           <div className="min-w-0 flex-1 basis-52">
