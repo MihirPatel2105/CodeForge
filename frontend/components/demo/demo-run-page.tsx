@@ -11,7 +11,7 @@ import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
 import { RunStory } from "@/components/dashboard/run-story";
-import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
+import { EvidenceWorkbench } from "@/components/dashboard/evidence-workbench";
 import { ResultSummary } from "@/components/dashboard/result-summary";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
@@ -20,7 +20,6 @@ import type { DemoRun } from "@/lib/demo-runs";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { reduceRun } from "@/lib/run-reducer";
 import { useCurrentUser } from "@/lib/use-current-user";
-import { cn } from "@/lib/utils";
 
 const EVENT_INTERVAL_MS = 980;
 
@@ -29,7 +28,6 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const reducedMotion = useMotionPreference();
   const [eventIndex, setEventIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
   const lastEventIndex = demo.events.length - 1;
   const isComplete = eventIndex >= lastEventIndex;
 
@@ -76,7 +74,6 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   function replay() {
     setEventIndex(0);
     setPlaying(true);
-    setMobileEvidence("timeline");
   }
 
   function skipToResult() {
@@ -243,28 +240,13 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
 
-          <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="demo-evidence" label="Demo evidence" />
-
-          <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
-            <div id="demo-evidence-panel-timeline" role="tabpanel" aria-labelledby="demo-evidence-tab-timeline" className={cn("h-[520px] xl:block xl:h-[648px]", mobileEvidence !== "timeline" && "hidden")}>
-              <TimelinePanel entries={snapshot.timeline} />
-            </div>
-
-            <div className={cn("min-w-0 flex-col gap-3 xl:flex", mobileEvidence === "timeline" ? "hidden" : "flex")}>
-              <div id="demo-evidence-panel-code" role="tabpanel" aria-labelledby="demo-evidence-tab-code" className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}>
-                <CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />
-              </div>
-
-              <div className={cn("flex-col gap-3 md:flex-row xl:flex", mobileEvidence === "terminal" || mobileEvidence === "tests" ? "flex" : "hidden")}>
-                <div id="demo-evidence-panel-terminal" role="tabpanel" aria-labelledby="demo-evidence-tab-terminal" className={cn("min-w-0 flex-1 xl:block", mobileEvidence !== "terminal" && "hidden")}>
-                  <TerminalPanel lines={snapshot.terminalLines} image={snapshot.agents.sandbox.model} running={snapshot.agents.sandbox.state === "working"} />
-                </div>
-                <div id="demo-evidence-panel-tests" role="tabpanel" aria-labelledby="demo-evidence-tab-tests" className={cn("xl:block", mobileEvidence !== "tests" && "hidden")}>
-                  <TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />
-                </div>
-              </div>
-            </div>
-          </div>
+          <EvidenceWorkbench
+            result={snapshot.tests}
+            code={<CodePanel files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} />}
+            timeline={<TimelinePanel entries={snapshot.timeline} />}
+            terminal={<TerminalPanel lines={snapshot.terminalLines} image={snapshot.agents.sandbox.model} running={snapshot.agents.sandbox.state === "working"} />}
+            tests={<TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />}
+          />
         </section>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-6">

@@ -13,7 +13,7 @@ import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
 import { RunVersions } from "@/components/dashboard/run-versions";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
 import { RunStory } from "@/components/dashboard/run-story";
-import { EvidenceTabs, type EvidenceView } from "@/components/dashboard/evidence-tabs";
+import { EvidenceWorkbench } from "@/components/dashboard/evidence-workbench";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { ProblemsPanel } from "@/components/dashboard/problems-panel";
@@ -55,7 +55,6 @@ export default function LiveRunPage() {
   const [cancelling, setCancelling] = useState(false);
   const [sourceRunId, setSourceRunId] = useState<string | null>(null);
   const [runProjectId, setRunProjectId] = useState<string | null>(null);
-  const [mobileEvidence, setMobileEvidence] = useState<EvidenceView>("timeline");
   const [problemState, setProblemState] = useState<{ runId: string; state: Record<string, unknown> } | null>(null);
   const [problemError, setProblemError] = useState(false);
   const [codeLocation, setCodeLocation] = useState<{ runId: string; location: CodeLocation } | null>(null);
@@ -433,56 +432,17 @@ export default function LiveRunPage() {
             canOpen={problem => canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)}
             onOpen={problem => {
               if (!problem.location || !canOpenProblem(problem, snapshot.files, fileContent, snapshot.iterations)) return;
-              setMobileEvidence("code");
               const target = problem.location;
               setCodeLocation(current => ({ runId: id, location: { path: target.path, line: target.line, content: target.content, iteration: target.iteration, requestId: (current?.location.requestId ?? 0) + 1 } }));
             }} />
-          <EvidenceTabs value={mobileEvidence} onValueChange={setMobileEvidence} idPrefix="evidence" label="Run evidence" />
-
-          <div className="grid items-start gap-4 xl:grid-cols-[minmax(380px,0.82fr)_minmax(0,1.45fr)]">
-            <div
-              id="evidence-panel-timeline"
-              role="tabpanel"
-              aria-labelledby="evidence-tab-timeline"
-              className={cn("h-[520px] xl:block xl:h-[648px]", mobileEvidence !== "timeline" && "hidden")}
-            >
-              <TimelinePanel entries={snapshot.timeline} connectionLost={connectionLost} />
-            </div>
-
-            <div className={cn("min-w-0 flex-col gap-3 xl:flex", mobileEvidence === "timeline" ? "hidden" : "flex")}>
-              <div
-                id="evidence-panel-code"
-                role="tabpanel"
-                aria-labelledby="evidence-tab-code"
-                className={cn("h-[560px] sm:h-[440px] xl:block", mobileEvidence !== "code" && "hidden")}
-              >
-                <CodePanel key={id} files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} location={codeLocation?.runId === id ? codeLocation.location : null} />
-              </div>
-
-              <div className={cn("flex-col gap-3 md:flex-row xl:flex", mobileEvidence === "terminal" || mobileEvidence === "tests" ? "flex" : "hidden")}>
-                <div
-                  id="evidence-panel-terminal"
-                  role="tabpanel"
-                  aria-labelledby="evidence-tab-terminal"
-                  className={cn("min-w-0 flex-1 xl:block", mobileEvidence !== "terminal" && "hidden")}
-                >
-                  <TerminalPanel
-                    lines={snapshot.terminalLines}
-                    image={snapshot.agents.sandbox.model}
-                    running={snapshot.agents.sandbox.state === "working"}
-                  />
-                </div>
-                <div
-                  id="evidence-panel-tests"
-                  role="tabpanel"
-                  aria-labelledby="evidence-tab-tests"
-                  className={cn("xl:block", mobileEvidence !== "tests" && "hidden")}
-                >
-                  <TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />
-                </div>
-              </div>
-            </div>
-          </div>
+          <EvidenceWorkbench
+            result={snapshot.tests}
+            navigationRequest={codeLocation?.runId === id ? codeLocation.location.requestId : undefined}
+            code={<CodePanel key={id} files={snapshot.files} getVersion={getVersion} getPreviousVersion={getPreviousVersion} location={codeLocation?.runId === id ? codeLocation.location : null} />}
+            timeline={<TimelinePanel entries={snapshot.timeline} connectionLost={connectionLost} />}
+            terminal={<TerminalPanel lines={snapshot.terminalLines} image={snapshot.agents.sandbox.model} running={snapshot.agents.sandbox.state === "working"} />}
+            tests={<TestsPanel tests={snapshot.tests} terminalLines={snapshot.terminalLines} />}
+          />
         </section>
 
       </main>

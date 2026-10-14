@@ -180,8 +180,8 @@ test("mobile evidence tabs retain arrow-key navigation and active panel semantic
   const timeline = page.getByRole("tab", { name: "Timeline", exact: true });
   await timeline.focus();
   await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("tab", { name: "Code", exact: true })).toBeFocused();
-  await expect(page.getByRole("tab", { name: "Code", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Sandbox", exact: true })).toBeFocused();
+  await expect(page.getByRole("tab", { name: "Sandbox", exact: true })).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("End");
   await expect(page.getByRole("tab", { name: "Tests", exact: true })).toHaveAttribute("aria-selected", "true");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

@@ -1,0 +1,46 @@
+"use client";
+
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Activity, CheckCheck, TerminalSquare } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { TestsSnapshot } from "@/lib/run-reducer";
+import "./run-dashboard.css";
+
+export function EvidenceWorkbench({ code, timeline, terminal, tests, result, navigationRequest }: {
+  code: ReactNode;
+  timeline: ReactNode;
+  terminal: ReactNode;
+  tests: ReactNode;
+  result: TestsSnapshot | null;
+  navigationRequest?: number;
+}) {
+  const [view, setView] = useState("timeline");
+  const codeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (navigationRequest) codeRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [navigationRequest]);
+
+  return (
+    <div className="cf-evidence-workbench">
+      <div ref={codeRef} className="cf-workbench-editor" role="region" aria-label="Generated code">{code}</div>
+      <section className="cf-workbench-console" aria-label="Execution details">
+        <Tabs value={view} onValueChange={value => setView(String(value))}>
+          <div className="cf-workbench-console-heading">
+            <TabsList activateOnFocus variant="line" aria-label="Run evidence">
+              <TabsTrigger value="timeline"><Activity aria-hidden />Timeline</TabsTrigger>
+              <TabsTrigger value="terminal"><TerminalSquare aria-hidden />Sandbox</TabsTrigger>
+              <TabsTrigger value="tests"><CheckCheck aria-hidden />Tests</TabsTrigger>
+            </TabsList>
+            <span className="cf-workbench-test-summary" data-outcome={result ? result.failed ? "failed" : "passed" : "waiting"} role="status" aria-label="Test summary">
+              <span aria-hidden />{result ? `${result.passed}/${result.total} tests passed` : "Tests pending"}
+            </span>
+          </div>
+          <TabsContent value="timeline" hidden={view !== "timeline"} keepMounted className="cf-workbench-console-panel">{timeline}</TabsContent>
+          <TabsContent value="terminal" hidden={view !== "terminal"} keepMounted className="cf-workbench-console-panel">{terminal}</TabsContent>
+          <TabsContent value="tests" hidden={view !== "tests"} keepMounted className="cf-workbench-console-panel">{tests}</TabsContent>
+        </Tabs>
+      </section>
+    </div>
+  );
+}

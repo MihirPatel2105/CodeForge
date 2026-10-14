@@ -57,7 +57,7 @@ test("a captured pytest location opens code on mobile without exposing raw trace
   await runFixture(page, state);
   await page.goto(`/runs/${runId}`);
   await page.getByRole("region", { name: "Problems", exact: true }).getByRole("button", { name: "View test_main.py line 2" }).click();
-  await expect(page.getByRole("tab", { name: "Code", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("region", { name: "Generated code", exact: true })).toBeVisible();
   await expect(page.locator('[data-problem-line="2"]')).toContainText("assert False");
   await expect(page.locator('[data-problem-line="2"]')).toBeFocused();
   await expect(page.getByText("AssertionError: internal detail", { exact: true })).toHaveCount(0);
@@ -107,7 +107,6 @@ for (const width of [1440, 375]) {
       run_id: runId, files: [{ path: "main.py", content: longCode }, { path: "test_main.py", content: testContent }],
     } }));
     await page.goto(`/runs/${runId}`);
-    if (width < 1280) await page.getByRole("tab", { name: "Code", exact: true }).click();
     await page.getByRole("button", { name: /^main.py/ }).click();
     const viewport = page.locator('[data-slot="scroll-area-viewport"]').filter({ hasText: "value_120" });
     await expect(viewport).toBeVisible();

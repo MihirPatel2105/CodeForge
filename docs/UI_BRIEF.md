@@ -140,8 +140,10 @@ test_main.py ........                    [100%]
 8 passed in 1.42s
 ```
 
-The evidence workbench uses consistent panel headers, compact filters, a quieter file rail,
-and separated finding rows. The terminal remains dark and scrollable.
+The evidence workbench puts a full-width code canvas above one tabbed execution console.
+Timeline, Sandbox and Tests share that console; a compact recorded test score stays visible
+next to its tabs. Switching console tabs keeps code visible and preserves timeline filters
+and scroll position. The terminal remains dark and scrollable.
 
 And a test result summary: how many passed out of how many, with failures expandable to
 show the assertion that failed.

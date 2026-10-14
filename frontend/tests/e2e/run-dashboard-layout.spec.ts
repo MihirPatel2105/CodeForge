@@ -77,3 +77,29 @@ for (const width of [1440, 1024, 375, 320]) {
     }
   });
 }
+
+for (const width of [1440, 375]) {
+  test(`code stays visible while the execution console switches at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/demo/library");
+    await page.getByRole("button", { name: "Skip", exact: true }).click();
+    const editor = page.getByRole("region", { name: "Generated code", exact: true });
+    const consolePanel = page.getByRole("region", { name: "Execution details", exact: true });
+    await expect(editor).toBeVisible();
+    await expect(consolePanel.getByRole("status", { name: "Test summary" })).toContainText("tests passed");
+    await consolePanel.getByRole("searchbox", { name: "Search timeline" }).fill("Coder");
+    await consolePanel.getByRole("tab", { name: "Sandbox", exact: true }).click();
+    await expect(consolePanel.getByRole("tabpanel")).toContainText("SANDBOX");
+    await expect(editor).toBeVisible();
+    await consolePanel.getByRole("tab", { name: "Tests", exact: true }).click();
+    await expect(consolePanel.getByRole("tabpanel")).toContainText("TESTS");
+    await consolePanel.getByRole("tab", { name: "Timeline", exact: true }).click();
+    await expect(consolePanel.getByRole("log")).toBeVisible();
+    await expect(consolePanel.getByRole("searchbox", { name: "Search timeline" })).toHaveValue("Coder");
+    expect(await consolePanel.getByRole("log").evaluate(el => el.clientHeight)).toBeGreaterThan(100);
+    await consolePanel.getByRole("searchbox", { name: "Search timeline" }).fill("");
+    await editor.getByRole("button", { name: /^main.py/ }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.locator(".cf-evidence-workbench").screenshot({ path: `/tmp/codeforge-workbench-${width}.png` });
+  });
+}
