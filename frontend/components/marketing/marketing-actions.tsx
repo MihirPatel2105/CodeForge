@@ -104,10 +104,10 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <p className="mt-8 text-[11px] text-fg-faint">Selected interactions adapted from <a href="https://skiper-ui.com/" className="underline underline-offset-4 hover:text-fg">Skiper UI</a> and <a href="https://www.vengenceui.com/" className="underline underline-offset-4 hover:text-fg">Vengeance UI</a>.</p>
         <div className="mt-8 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>
             © {new Date().getFullYear()} CodeForge
+            <Link href="/credits" className="ml-4 hover:text-fg">Credits</Link>
           </p>
           <p>
             Plan. Build. Review. Test.

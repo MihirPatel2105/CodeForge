@@ -20,7 +20,7 @@ These are focused adaptations, not unmodified installs:
 
 Official terms: https://skiper-ui.com/docs/quick-start (License & Usage).
 Free to use and modify for personal and commercial projects. Attribution to Skiper UI is required for free components.
-Attribution is included in the public site footer and retained in source comments and this document.
+Attribution is included on the public `/credits` page, linked from the site footer, and retained in source comments and this document.
 
 Skiper UI credits the scroll-mask technique to Gustav Ekerot and jh3yy:
 https://skiper-ui.com/v1/skiper87.
