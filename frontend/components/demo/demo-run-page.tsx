@@ -28,6 +28,8 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const reducedMotion = useMotionPreference();
   const [eventIndex, setEventIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [controlsReady, setControlsReady] = useState(false);
+  useEffect(() => { setControlsReady(true); }, []);
   const lastEventIndex = demo.events.length - 1;
   const isComplete = eventIndex >= lastEventIndex;
 
@@ -124,7 +126,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   <button
                     type="button"
                     onClick={() => setPlaying((current) => !current)}
-                    disabled={isComplete}
+                    disabled={!controlsReady || isComplete}
                     aria-label={playing ? "Pause" : "Continue"}
                     className="inline-flex min-h-9 items-center rounded-full bg-accent px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
                   >
@@ -146,6 +148,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   <button
                     type="button"
                     onClick={replay}
+                    disabled={!controlsReady}
                     className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-[650] text-fg hover:border-accent-bd hover:text-accent"
                   >
                     <RotateCcw className="h-3.5 w-3.5" aria-hidden />
@@ -154,7 +157,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
                   <button
                     type="button"
                     onClick={skipToResult}
-                    disabled={isComplete}
+                    disabled={!controlsReady || isComplete}
                     className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] font-[650] text-fg-muted hover:border-border-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     <SkipForward className="h-3.5 w-3.5" aria-hidden />

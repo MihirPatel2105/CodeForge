@@ -103,3 +103,17 @@ for (const width of [1440, 375]) {
     await page.locator(".cf-evidence-workbench").screenshot({ path: `/tmp/codeforge-workbench-${width}.png` });
   });
 }
+
+test("demo controls wait for client code before accepting a mobile Skip click", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
+  let release!: () => void;
+  const ready = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/_next/static/**/*.js", async route => { await ready; await route.continue(); });
+  await page.goto("/demo/library", { waitUntil: "commit" });
+  const skip = page.getByRole("button", { name: "Skip", exact: true });
+  await expect(skip).toBeDisabled();
+  release();
+  await expect(skip).toBeEnabled();
+  await skip.click();
+  await expect(page.getByRole("status", { name: "Test summary" })).toContainText("8/8 tests passed");
+});
