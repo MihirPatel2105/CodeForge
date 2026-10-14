@@ -1,7 +1,7 @@
 "use client";
-import { ArrowUpRight, GitBranch } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Notice } from "@/components/ui/notice";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
@@ -14,6 +14,7 @@ import { ApiCompatibility } from "./api-compatibility";
 
 export function RunVersions({ id, completed }: { id: string; completed: boolean }) {
   const router = useRouter();
+  const changeId = useId();
   const [run, setRun] = useState<RunResponse | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,34 +46,29 @@ export function RunVersions({ id, completed }: { id: string; completed: boolean 
     catch (error) { setError(error instanceof ApiError ? error.message : "Could not start the revision."); setBusy(false); }
   }
   if (!run) return error ? <Notice className="mt-4">{error}</Notice> : null;
-  return <section className="cf-version-composer mt-5 space-y-4 rounded-3xl border border-border bg-surface p-5" aria-label="API versions">
+  const canImprove = completed && run.status === "succeeded" && run.metrics?.tests_passed;
+  if (!canImprove && !run.parent_run_id) return error ? <Notice className="mt-4">{error}</Notice> : null;
+  return <section className="cf-version-composer cf-version-compact mt-5 space-y-4 rounded-3xl border border-border bg-surface p-5" aria-label="API versions">
     {run.parent_run_id && <><p className="text-sm">Based on <Link className="font-semibold text-accent underline" href={`/runs/${run.parent_run_id}`}>the previous version</Link>. {run.change_request}</p><p className="text-sm text-fg-muted">Source tests: {sourceTests === null ? "Unknown" : sourceTests ? "Passed" : "Not passed"} · This version: {completed ? run.metrics?.tests_passed ? "Tests passed" : "Tests not passed" : "In progress"}</p>{completed && <AnimatedDisclosure title={`${comparison.length} changed files compared with source`}><div className="space-y-3">{comparison.map(file => <div key={file.path}><h3 className="py-2 font-mono text-sm font-semibold">{file.path}{!file.before ? " · Added" : !file.after ? " · Removed" : ""}</h3><pre className="max-h-72 overflow-auto rounded-xl bg-term-bg p-3 text-xs text-term-fg">{buildHunks(file.before, file.after, 2).flatMap(hunk => hunk.lines).map((line, i) => <span key={i} className={`block ${line.kind === "added" ? "text-green-300" : line.kind === "removed" ? "text-red-300" : ""}`}>{line.kind === "added" ? "+ " : line.kind === "removed" ? "- " : "  "}{line.text}</span>)}</pre></div>)}</div></AnimatedDisclosure>}</>}
     {completed && run.status === "succeeded" && run.metrics?.tests_passed && run.parent_run_id && <ApiCompatibility id={id} sourceId={run.parent_run_id} />}
-    {completed && run.status === "succeeded" && run.metrics?.tests_passed && (
-      <div className="cf-composer-layout">
-        <div className="cf-composer-intro">
-          <span className="cf-workspace-eyebrow"><GitBranch size={16} aria-hidden />Next iteration</span>
-          <h2>Improve this API</h2>
-          <p>Keep what works.<br />Build what’s next.</p>
-          <span className="cf-composer-safety">A separate version, with fresh approvals and tests.</span>
-        </div>
+    {canImprove && (
+      <AnimatedDisclosure className="cf-improve-disclosure" title={<span className="cf-improve-trigger"><span><strong>Improve this API</strong><span>Create a new version</span></span><span>Describe a change +</span></span>}>
         <div className="cf-composer-input">
-          <label className="block text-sm">
+          <label htmlFor={changeId} className="block text-sm">
             Describe a change
-            <Textarea className="mt-2" value={note} maxLength={2000}
+          </label>
+            <Textarea id={changeId} className="mt-2" value={note} maxLength={2000}
               onChange={event => setNote(event.target.value)}
               placeholder="Add a due-date field and reject dates in the past…" />
-          </label>
           <div className="cf-composer-footer">
-            <p>Your current version stays available. Publish the new version after its tests pass.</p>
+            <p>Your current version stays available.</p>
             <Button onClick={improve} disabled={busy || !note.trim()}>
               {busy ? "Starting revision…" : "Build new version"}<ArrowUpRight size={16} aria-hidden />
             </Button>
           </div>
         </div>
-      </div>
+      </AnimatedDisclosure>
     )}
-    <Button variant="outline" onClick={() => { try { sessionStorage.setItem("codeforge:retry-prompt", JSON.stringify({ projectId: run.project_id, prompt: run.prompt, parentRunId: run.parent_run_id })); router.push(`/projects/${run.project_id}`); } catch { setError("Could not copy the prompt to your workspace."); } }}>Reuse this prompt</Button>
     {error && <Notice>{error}</Notice>}
   </section>;
 }

@@ -405,6 +405,7 @@ export default function LiveRunPage() {
               retrying={retrying}
               onRetryStage={handleStageRetry}
               onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
+              onReuse={runProjectId && snapshot.prompt ? handleRetry : undefined}
               tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : undefined}
             />
           </section>

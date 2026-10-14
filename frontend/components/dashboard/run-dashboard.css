@@ -252,3 +252,21 @@
  .cf-workbench-console-heading [data-slot=tabs-trigger] svg { display:none; }
  .cf-workbench-console-panel .cf-evidence-problems > ul { padding:0 16px; }
 }
+
+.cf-run-page .cf-version-composer.cf-version-compact { padding:0; border:0; background:transparent; border-radius:0; margin-top:20px; }
+.cf-improve-disclosure { border-radius:12px; background:var(--surface); }
+.cf-improve-disclosure > button { padding:18px 20px; font-weight:500; }
+.cf-improve-trigger { display:flex; align-items:center; justify-content:space-between; gap:24px; width:100%; font-size:12px; }
+.cf-improve-trigger > span:first-child { display:flex; align-items:center; gap:16px; }
+.cf-improve-trigger strong { font-size:14px; font-weight:600; letter-spacing:-.02em; }
+.cf-improve-trigger > span:first-child > span { color:var(--fg-faint); }
+.cf-improve-trigger > span:last-child { font-weight:600; white-space:nowrap; }
+.cf-improve-disclosure .cf-composer-input { padding:4px 20px 8px; }
+.cf-improve-disclosure .cf-composer-input textarea { min-height:100px; }
+@media(max-width:639px) {
+ .cf-improve-trigger { gap:12px; font-size:11px; }
+ .cf-improve-trigger > span:first-child { display:block; }
+ .cf-improve-trigger > span:first-child > span { display:block; font-size:11px; margin-top:3px; }
+ .cf-improve-disclosure > button { padding:16px 12px; }
+ .cf-improve-disclosure .cf-composer-input { padding:4px 0; }
+}

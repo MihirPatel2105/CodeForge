@@ -113,11 +113,26 @@ test("completed runs create linked versions and surface inbox updates", async ({
   await page.getByRole("button", { name: /Run updates/ }).click();
   await expect(page.getByRole("dialog").getByText(run.prompt, { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
+  const improveToggle = page.getByRole("button", { name: /Improve this API.*Describe a change/ });
+  await expect(improveToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".cf-improve-disclosure [inert]")).toHaveCSS("height", "0px");
+  await page.locator(".cf-version-composer").screenshot({ path: "/tmp/codeforge-improve-collapsed.png" });
+  await expect(page.getByRole("region", { name: "Run result" }).getByRole("button", { name: "Reuse this prompt" })).toBeVisible();
+  await improveToggle.click();
   await page.getByLabel("Describe a change", { exact: true }).fill("Add publication date");
+  await improveToggle.click();
+  await expect(improveToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".cf-improve-disclosure [inert]")).toHaveCSS("height", "0px");
+  await improveToggle.click();
+  await expect(page.getByLabel("Describe a change", { exact: true })).toHaveValue("Add publication date");
   await page.locator(".cf-version-composer").screenshot({ path: "/tmp/codeforge-composer-refined.png" });
   await page.getByRole("button", { name: "Build new version", exact: true }).click();
   await expect(page).toHaveURL(/runs\/new-version$/);
   expect(creation).toEqual({ project_id: project.id, parent_run_id: run.id, prompt: "Add publication date", rag_enabled: true });
+  await page.goto(`/runs/${run.id}`);
+  await page.getByRole("region", { name: "Run result" }).getByRole("button", { name: "Reuse this prompt" }).click();
+  await expect(page).toHaveURL(new RegExp(`/projects/${project.id}$`));
+  expect(await page.evaluate(() => JSON.parse(sessionStorage.getItem("codeforge:retry-prompt") || "null"))).toEqual({ projectId: project.id, prompt: run.prompt, parentRunId: null });
 });
 
 test("version comparison shows changed files and source test evidence", async ({ page }) => {

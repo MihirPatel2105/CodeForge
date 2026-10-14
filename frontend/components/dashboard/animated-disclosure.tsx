@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { ChevronRight } from "lucide-react";
 
 export function AnimatedDisclosure({ title, children, className = "" }: {
-  title: string;
+  title: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
