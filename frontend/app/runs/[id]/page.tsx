@@ -43,7 +43,7 @@ import { preferredScrollBehavior } from "@/lib/motion";
 export default function LiveRunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { snapshot, connectionLost, refresh: refreshRun, restart: restartRun } = useRunStream(id);
+  const { snapshot, connectionLost, loading, refresh: refreshRun, restart: restartRun } = useRunStream(id);
   const [fileContent, setFileContent] = useState<Record<string, string>>({});
   const [fileHistory, setFileHistory] = useState<FileHistoryVersion[]>([]);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -280,6 +280,17 @@ export default function LiveRunPage() {
   ).length;
 
   if (!allowed) return null;
+  if (loading) return (
+    <div className="cf-run-page min-h-screen bg-bg">
+      <AppHeader />
+      <main className="mx-auto w-full max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
+        <Link href="/projects" className="text-[13px] font-semibold text-fg-muted">Back to projects</Link>
+        <Notice variant="info" title="Loading run" className="mt-6" aria-label="Loading run">
+          {connectionLost ? "Reconnecting to load the saved run details…" : "Loading saved run details…"}
+        </Notice>
+      </main>
+    </div>
+  );
 
   return (
     <div className="cf-run-page min-h-screen bg-bg">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { API_BASE_URL } from "./api";
+import { api, API_BASE_URL } from "./api";
 import { applyEvent, initialSnapshot, type RunSnapshot } from "./run-reducer";
 import type { CodeForgeEvent } from "./types";
 
@@ -26,6 +26,8 @@ export function useRunStream(runId: string) {
   const [generation, setGeneration] = useState(0);
   const [snapshot, setSnapshot] = useState<RunSnapshot>(initialSnapshot);
   const [connectionLost, setConnectionLost] = useState<ConnectionLostInfo | null>(null);
+  const [loadedRun, setLoadedRun] = useState<string | null>(null);
+  const runKey = `${runId}:${generation}`;
 
   const restart = useCallback(() => {
     setSnapshot(initialSnapshot());
@@ -45,6 +47,14 @@ export function useRunStream(runId: string) {
     let staleTimer: ReturnType<typeof setTimeout> | null = null;
     let resyncRequested = false;
     let abortController: AbortController | null = null;
+    let history: RunSnapshot | null = null;
+    let published = false;
+
+    function publish(next: RunSnapshot) {
+      setSnapshot(next);
+      setLoadedRun(runKey);
+      published = true;
+    }
 
     function handleFrame(frame: string) {
       let id: number | null = null;
@@ -61,7 +71,18 @@ export function useRunStream(runId: string) {
           if (id <= lastEventId) return;
           lastEventId = id;
         }
-        setSnapshot((prev) => ({ ...applyEvent(prev, event), lastEventAt: event.at }));
+        if (history) {
+          history = { ...applyEvent(history, event), lastEventAt: event.at };
+          if (event.event === "run.completed" || event.event === "run.failed") {
+            publish(history);
+            history = null;
+          }
+        } else {
+          const first = !published;
+          setSnapshot((prev) => ({ ...applyEvent(first ? initialSnapshot() : prev, event), lastEventAt: event.at }));
+          setLoadedRun(runKey);
+          published = true;
+        }
         if (event.event === "run.completed" || event.event === "run.failed") {
           terminalSeen = true;
           setConnectionLost(null);
@@ -134,7 +155,21 @@ export function useRunStream(runId: string) {
         void connect();
       } else abortController?.abort();
     };
-    void connect();
+    async function initialize() {
+      try {
+        const run = await api.getRun(runId);
+        if (cancelled) return;
+        // Historical stages describe past work; publish them together after the
+        // terminal event instead of presenting their replay as live execution.
+        if (!["queued", "running", "awaiting_approval"].includes(run.status)) {
+          history = initialSnapshot();
+        }
+      } catch {
+        // The authenticated stream can still recover if this metadata read failed.
+      }
+      if (!cancelled) void connect();
+    }
+    void initialize();
     return () => {
       refreshRef.current = null;
       cancelled = true;
@@ -142,7 +177,7 @@ export function useRunStream(runId: string) {
       if (retryTimer) clearTimeout(retryTimer);
       if (staleTimer) clearTimeout(staleTimer);
     };
-  }, [runId, generation]);
+  }, [runId, generation, runKey]);
 
-  return { snapshot, connectionLost, refresh, restart };
+  return { snapshot, connectionLost, loading: loadedRun !== runKey, refresh, restart };
 }
