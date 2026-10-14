@@ -69,3 +69,7 @@
  .account-main .profile-summary .cf-identity-metrics > div { padding: 16px 12px; }
  .profile-membership { line-height: 1.5; }
 }
+
+/* The section indicator supplies its own background. */
+.account-main .cf-settings-nav a { background: transparent; }
+.account-main .cf-settings-nav a[aria-current="location"] { color: var(--fg); }

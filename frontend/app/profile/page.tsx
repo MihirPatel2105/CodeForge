@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileCounter } from "@/components/account/account-enhancements";
 import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -204,7 +205,7 @@ function ProfileMetric({
         </dt>
       </div>
       <dd className="font-display text-[28px] font-[700] tracking-[-0.05em] text-fg">
-        {value}
+        <ProfileCounter value={value} />
       </dd>
     </div>
   );

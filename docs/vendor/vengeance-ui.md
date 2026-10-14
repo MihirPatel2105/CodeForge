@@ -82,3 +82,14 @@ Share Sheet, Staggered Grid, Glow Border Card and Flip Text were reviewed from t
 | staggered-grid | `483591897c904ff70cf9c485f2c90ca394e81c6de5db4457308760587f4beb1d` |
 | glow-border-card | `692d034f1335ea9ed6154f9c9a482a2a1c3f958633c39291bd3635ecefbe7816` |
 | flip-text | `21f038b229b7e810b6e042e303900be7459045c0902cc01a298b530616f5e85d` |
+
+## Account page interactions (2026-10-14)
+
+`components/account/account-enhancements.tsx` adapts the documented interaction patterns from
+[Spotlight Navbar](https://www.vengenceui.com/components/spotlight-navbar),
+[Highlight Grid](https://www.vengenceui.com/components/highlight-grid), and
+[Stats Counter](https://www.vengenceui.com/components/stats-counter).
+These are focused implementations using existing Motion: native section anchors with a moving
+active background, one neutral hover/focus layer behind security rows, and short count-ups after
+activity loads. Static final values are available to screen readers; reduced motion skips animation.
+No sample data or extra packages are included. The MIT terms above apply to adaptations.

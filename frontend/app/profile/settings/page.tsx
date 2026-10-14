@@ -1,5 +1,6 @@
 "use client";
 
+import { AppearanceSettings, SecurityHighlightList, SettingsNavigation } from "@/components/account/account-enhancements";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -127,17 +128,7 @@ export default function SettingsPage() {
         </section>
 
         <div className="cf-settings-layout mt-6">
-        <nav aria-label="Settings sections" className="cf-settings-nav flex flex-wrap gap-2">
-          {[
-            { href: "#sign-in-methods", label: "Sign-in methods" },
-            { href: "#sessions", label: "Sessions and devices" },
-            { href: "#account", label: "Account" },
-          ].map(({ href, label }) => (
-            <a key={href} href={href} className="inline-flex min-h-10 items-center rounded-3xl border border-border bg-surface px-4 text-[13px] font-[600] text-fg-muted transition-colors hover:border-accent-bd hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-              {label}
-            </a>
-          ))}
-        </nav>
+        <SettingsNavigation />
 
         <div className="min-w-0">
         {user?.is_admin ? (
@@ -192,7 +183,7 @@ export default function SettingsPage() {
             aria-label="Sign-in methods"
             className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface"
           >
-            <ul className="divide-y divide-rule">
+            <SecurityHighlightList>
               <SecurityMethodRow
                 icon={KeyRound}
                 label="Password"
@@ -227,9 +218,12 @@ export default function SettingsPage() {
                 status={user.totp_enabled ? "On" : "Off"}
                 highlighted
               />
-            </ul>
+            </SecurityHighlightList>
           </section>
         ) : null}
+
+        <SectionHeading id="appearance" eyebrow="Preferences" title="Appearance" description="Make CodeForge comfortable to use in your workspace." />
+        <AppearanceSettings />
 
         <SectionHeading
           id="sessions"
@@ -444,7 +438,7 @@ function SecurityMethodRow({
   highlighted?: boolean;
 }) {
   return (
-    <li className="flex flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
+    <li data-method={label} className="flex flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
       <div className="flex min-w-0 items-start gap-4">
         <span
           className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}

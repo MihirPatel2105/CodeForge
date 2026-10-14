@@ -26,3 +26,11 @@ Skiper UI credits the scroll-mask technique to Gustav Ekerot and jh3yy:
 https://skiper-ui.com/v1/skiper87.
 
 Existing CodeForge Motion, Base UI, Next Link and native scrolling are used; no additional runtime dependencies were installed.
+
+## Settings appearance (2026-10-14)
+
+The Appearance controls in `components/account/account-enhancements.tsx` are inspired by
+[Theme Toggle Buttons (skiper4)](https://skiper-ui.com/v1/skiper4).
+This is an independent implementation of its animated icon interaction, using existing Lucide,
+Motion and next-themes. Light, Dark and System selections persist through the existing provider.
+No upstream source was copied. Existing public footer attribution is retained.
