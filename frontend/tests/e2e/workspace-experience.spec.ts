@@ -113,8 +113,6 @@ test("approval details request revisions without rejecting the run", async ({ pa
   await page.locator(".cf-approval-dialog").screenshot({ path: "/tmp/codeforge-approval-dialog-mobile.png" });
   await page.getByRole("button", { name: "Request changes", exact: true }).click();
   expect(revision).toEqual({ phase: "pm", note: "Add a due date", expected_revision: 0 });
-  await expect(page.getByRole("button", { name: "Request changes", exact: true })).toBeEnabled();
-  await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole("group", { name: "Inspect pipeline stages" })).toBeVisible();

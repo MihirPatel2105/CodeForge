@@ -147,7 +147,7 @@ export default function LiveRunPage() {
   }
 
   async function handleApprove(note: string) {
-    if (!snapshot.approval || deciding) return;
+    if (!snapshot.approval || deciding) return false;
     setDeciding(true);
     setActionError(null);
     try {
@@ -158,13 +158,15 @@ export default function LiveRunPage() {
         note: note || null,
       });
       refreshRun();
+      return true;
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't approve the run.");
+      return false;
     } finally { setDeciding(false); }
   }
 
   async function handleReject(note: string) {
-    if (!snapshot.approval || deciding) return;
+    if (!snapshot.approval || deciding) return false;
     setDeciding(true);
     setActionError(null);
     try {
@@ -175,16 +177,18 @@ export default function LiveRunPage() {
         note: note || null,
       });
       refreshRun();
+      return true;
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Couldn't reject the run.");
+      return false;
     } finally { setDeciding(false); }
   }
 
   async function handleRevise(note: string) {
-    if (!snapshot.approval || deciding) return;
+    if (!snapshot.approval || deciding) return false;
     setDeciding(true); setActionError(null);
-    try { await api.reviseRun(id, snapshot.approval.phase, note, Number(snapshot.approval.payload.revisions_used || 0)); refreshRun(); }
-    catch (err) { setActionError(err instanceof ApiError ? err.message : "Could not request changes."); }
+    try { await api.reviseRun(id, snapshot.approval.phase, note, Number(snapshot.approval.payload.revisions_used || 0)); refreshRun(); return true; }
+    catch (err) { setActionError(err instanceof ApiError ? err.message : "Could not request changes."); return false; }
     finally { setDeciding(false); }
   }
 

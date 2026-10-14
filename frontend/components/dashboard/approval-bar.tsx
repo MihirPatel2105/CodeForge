@@ -14,9 +14,9 @@ import "./run-dashboard.css";
 
 export interface ApprovalBarProps {
   approval: ApprovalSnapshot;
-  onApprove: (note: string) => void;
-  onReject: (note: string) => void;
-  onRevise?: (note: string) => void;
+  onApprove: (note: string) => Promise<boolean>;
+  onReject: (note: string) => Promise<boolean>;
+  onRevise?: (note: string) => Promise<boolean>;
   busy?: boolean;
   error?: string | null;
 }
@@ -68,16 +68,31 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
   const [note, setNote] = useState("");
   const [open, setOpen] = useState(false);
   const noteId = useId();
+  const [pending, setPending] = useState<"approve" | "reject" | "revise" | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const locked = busy || pending !== null || submitted;
+  async function decide(action: "approve" | "reject" | "revise") {
+    if (locked) return;
+    const callback = action === "approve" ? onApprove : action === "reject" ? onReject : onRevise;
+    if (!callback) return;
+    setPending(action);
+    try {
+      if (await callback(note)) {
+        setSubmitted(true);
+        setOpen(false);
+      }
+    } finally { setPending(null); }
+  }
   const chips = factChips(approval.phase, approval.payload);
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <Dialog open={open} onOpenChange={next => { if (!busy) setOpen(next); }}>
+    <Dialog open={open} onOpenChange={next => { if (!locked) setOpen(next); }}>
       <section className="cf-approval-compact" aria-label="Approval checkpoint">
-        <div><ShieldCheck size={18} aria-hidden /><span><strong>Approval needed</strong><span>{title}</span></span></div>
-        <DialogTrigger render={<Button variant="outline" />}>Review &amp; approve →</DialogTrigger>
+        <div><ShieldCheck size={18} aria-hidden /><span><strong>{submitted ? "Decision submitted" : "Approval needed"}</strong><span>{title}</span></span></div>
+        <DialogTrigger disabled={locked} render={<Button variant="outline" />}>{submitted ? "Updating run…" : "Review & approve →"}</DialogTrigger>
       </section>
-      <DialogContent className="cf-approval-dialog" showCloseButton={!busy}>
+      <DialogContent className="cf-approval-dialog" showCloseButton={!locked}>
       <div className="cf-approval-review">
       <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-warn-soft px-5 py-4 sm:px-6">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
@@ -122,23 +137,23 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
         </div>
 
         <div className="flex flex-wrap gap-2 lg:shrink-0">
-          {onRevise && <Button variant="outline" disabled={busy || note.trim().length < 3 || Number(approval.payload.revisions_used || 0) >= 3} onClick={() => onRevise(note)} className="h-11 rounded-2xl">Request changes</Button>}
+          {onRevise && <Button variant="outline" disabled={locked || note.trim().length < 3 || Number(approval.payload.revisions_used || 0) >= 3} onClick={() => void decide("revise")} className="h-11 rounded-2xl">{pending === "revise" ? "Requesting changes…" : "Request changes"}</Button>}
           <Button
             type="button"
             variant="outline"
-            disabled={busy}
-            onClick={() => onReject(note)}
+            disabled={locked}
+            onClick={() => void decide("reject")}
             className="h-11 flex-1 rounded-2xl border-border-strong px-5 text-[13px] text-danger hover:bg-danger-soft motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >
-            Reject
+            {pending === "reject" ? "Rejecting…" : "Reject"}
           </Button>
           <Button
             type="button"
-            disabled={busy}
-            onClick={() => onApprove(note)}
+            disabled={locked}
+            onClick={() => void decide("approve")}
             className="h-11 flex-1 rounded-2xl px-6 text-[13px] motion-safe:transition-transform motion-safe:duration-150 motion-safe:active:scale-[0.98] lg:flex-none"
           >
-            Approve
+            {pending === "approve" ? "Approving…" : "Approve"}
           </Button>
         </div>
       </div>

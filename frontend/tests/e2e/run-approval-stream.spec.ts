@@ -5,6 +5,8 @@ test("both approvals update the live pipeline without leaving the page", async (
     document.cookie = "codeforge_session_present=1; Path=/";
     const original = window.fetch.bind(window);
     let phase = 0;
+    let streamReleased = false;
+    window.addEventListener("release-approval-stream", () => { streamReleased = true; });
     const events = [
       { event: "run.started", run_id: "approval-live", prompt: "Build books" },
       { event: "agent.started", agent: "pm", iteration: 0 },
@@ -19,13 +21,19 @@ test("both approvals update the live pipeline without leaving the page", async (
     ];
     window.fetch = (input, init) => {
       const url = String(input);
-      if (url.endsWith("/approval-live/approve")) { phase++; return Promise.resolve(Response.json({ approved: true, status: "running" })); }
+      if (url.endsWith("/approval-live/approve")) {
+        phase++;
+        const response = Response.json({ approved: true, status: "running" });
+        return phase === 1 ? new Promise(resolve => window.addEventListener("accept-approval", () => resolve(response), { once: true })) : Promise.resolve(response);
+      }
       if (url.endsWith("/approval-live/stream")) {
         const after = Number(new Headers(init?.headers).get("Last-Event-ID") ?? 0);
         const until = phase === 0 ? 4 : phase === 1 ? 8 : 10;
         // The old connection stays open but never emits new events, reproducing a stale feed.
         const body = events.slice(after, until).map((event, i) => `id: ${after+i+1}\ndata: ${JSON.stringify({ ...event, at: new Date().toISOString() })}\n\n`).join("");
-        return Promise.resolve(new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode(body)); init?.signal?.addEventListener("abort", () => controller.error(new DOMException("Aborted", "AbortError"))); } }), { headers: { "Content-Type": "text/event-stream" } }));
+        const response = new Response(new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode(body)); init?.signal?.addEventListener("abort", () => controller.error(new DOMException("Aborted", "AbortError"))); } }), { headers: { "Content-Type": "text/event-stream" } });
+        if (phase === 1 && !streamReleased) return new Promise(resolve => window.addEventListener("release-approval-stream", () => resolve(response), { once: true }));
+        return Promise.resolve(response);
       }
       return original(input, init);
     };
@@ -36,6 +44,12 @@ test("both approvals update the live pipeline without leaving the page", async (
   await page.goto("/runs/approval-live");
   await page.getByRole("button", { name: "Review & approve →", exact: true }).click();
   await page.getByRole("button", { name: "Approve", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approving…", exact: true })).toBeDisabled();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event("accept-approval")));
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Updating run…", exact: true })).toBeDisabled();
+  await page.evaluate(() => window.dispatchEvent(new Event("release-approval-stream")));
   await expect(page.locator('[data-stage="architect"]')).toHaveAttribute("data-state", "done");
   await page.getByRole("button", { name: "Review & approve →", exact: true }).click();
   await page.getByRole("button", { name: "Approve", exact: true }).click();
