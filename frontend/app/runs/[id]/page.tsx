@@ -367,6 +367,7 @@ export default function LiveRunPage() {
             <ApprovalBar
               key={`${snapshot.approval.phase}:${snapshot.approval.payload.revisions_used ?? 0}`}
               busy={deciding}
+              error={actionError}
               onRevise={handleRevise}
               approval={snapshot.approval}
               onApprove={handleApprove}

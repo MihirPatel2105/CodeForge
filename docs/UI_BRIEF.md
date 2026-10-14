@@ -156,9 +156,11 @@ is stopped and nothing proceeds until the user acts.
 
 The bar shows what is being approved (the requirements, or the design, rendered readably —
 not raw JSON), an **Approve** action, a **Reject** action, and an optional note field. On
-approve the pipeline resumes; on reject the run ends. A restrained amber top rule marks the
-checkpoint. Facts and readable details precede a distinct decision footer with the note,
-revision, reject and approve controls. On small screens, the controls stack.
+approve the pipeline resumes; on reject the run ends. A compact amber row identifies the checkpoint and opens a review dialog on demand.
+Facts and readable details sit above a decision footer with the note, revision, reject
+and approve controls. Closing the dialog never sends a decision; the run stays paused
+and the note is retained. The dialog fills the screen on mobile, with scrollable review
+content and visible decision controls. Request failures appear inside the dialog.
 
 ---
 

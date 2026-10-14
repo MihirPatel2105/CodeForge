@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { typeScale } from "@/lib/type-scale";
 import type { ApprovalSnapshot } from "@/lib/run-reducer";
 import { Button } from "@/components/ui/button";
 import { ApprovalDetails } from "./approval-details";
+import { Notice } from "@/components/ui/notice";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import "./run-dashboard.css";
 
 export interface ApprovalBarProps {
   approval: ApprovalSnapshot;
@@ -15,6 +18,7 @@ export interface ApprovalBarProps {
   onReject: (note: string) => void;
   onRevise?: (note: string) => void;
   busy?: boolean;
+  error?: string | null;
 }
 
 const PHASE_TITLE: Record<string, string> = {
@@ -60,24 +64,33 @@ function factChips(phase: string, payload: Record<string, unknown>): FactChip[] 
 
 /** The paused checkpoint sits immediately after the run summary so it is visible
  * before the user starts inspecting the long evidence workbench. */
-export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = false }: ApprovalBarProps) {
+export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = false, error }: ApprovalBarProps) {
   const [note, setNote] = useState("");
+  const [open, setOpen] = useState(false);
+  const noteId = useId();
   const chips = factChips(approval.phase, approval.payload);
   const title = PHASE_TITLE[approval.phase] ?? `Approval — ${approval.phase}`;
 
   return (
-    <section className="cf-approval-review mt-5 overflow-hidden rounded-3xl border border-warn-bd bg-surface shadow-[0_18px_48px_rgba(64,48,25,0.09)]" aria-labelledby="approval-heading">
+    <Dialog open={open} onOpenChange={next => { if (!busy) setOpen(next); }}>
+      <section className="cf-approval-compact" aria-label="Approval checkpoint">
+        <div><ShieldCheck size={18} aria-hidden /><span><strong>Approval needed</strong><span>{title}</span></span></div>
+        <DialogTrigger render={<Button variant="outline" />}>Review &amp; approve →</DialogTrigger>
+      </section>
+      <DialogContent className="cf-approval-dialog" showCloseButton={!busy}>
+      <div className="cf-approval-review">
       <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-warn-soft px-5 py-4 sm:px-6">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
           <ShieldCheck className="h-5 w-5" aria-hidden />
         </span>
         <div className="min-w-0">
           <span className={cn(typeScale.label, "text-warn")} role="status">Awaiting your approval</span>
-          <h2 id="approval-heading" className="mt-0.5 text-[19px] font-[700] tracking-[-0.03em] text-fg">{title}</h2>
-          <p className="mt-1 text-[13px] leading-5 text-fg-muted">Review this checkpoint before the agents continue.</p>
+          <DialogTitle className="mt-0.5 text-[19px] font-[700] tracking-[-0.03em] text-fg">{title}</DialogTitle>
+          <DialogDescription className="mt-1 text-[13px] leading-5 text-fg-muted">Review this checkpoint before the agents continue.</DialogDescription>
         </div>
       </div>
 
+      <div className="cf-approval-scroll">
       {chips.length > 0 && (
         <div className="cf-approval-facts grid gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6">
           {chips.map((chip) => (
@@ -91,11 +104,13 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
 
       <ApprovalDetails details={approval.payload.details} />
       <p className="px-5 pb-3 text-sm text-fg-muted sm:px-6">Approve to continue. Request changes to review a revised plan. Reject ends this run. {Number(approval.payload.revisions_used || 0)}/3 revisions used.</p>
+      </div>
       <div className="cf-approval-actions flex flex-col gap-3 border-t border-border bg-surface-2/40 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:gap-4">
+        {error && <Notice>{error}</Notice>}
         <div className="min-w-0 flex-1">
-          <label htmlFor="approval-note" className={cn(typeScale.label, "mb-1.5 block text-fg-muted")}>Note to agents (optional)</label>
+          <label htmlFor={noteId} className={cn(typeScale.label, "mb-1.5 block text-fg-muted")}>Note to agents (optional)</label>
           <Input
-            id="approval-note"
+            id={noteId}
             name="approval_note"
             autoComplete="off"
             maxLength={2000}
@@ -127,6 +142,8 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
           </Button>
         </div>
       </div>
-    </section>
+      </div>
+      </DialogContent>
+    </Dialog>
   );
 }
