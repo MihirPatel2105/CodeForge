@@ -67,11 +67,11 @@ test("switching to reduced motion during removal leaves no stale saved request",
   await page.getByRole("button", { name: "Save request", exact: true }).click();
   const saved = page.locator("section").filter({ has: page.getByRole("heading", { name: "Saved requests", exact: true }) }).last();
   await expect(saved.getByRole("button", { name: "GET /items", exact: true })).toBeVisible();
-  await expect(saved.getByText("Nothing saved yet.")).toHaveCount(0);
+  await expect(saved.getByText("No saved requests", { exact: true })).toHaveCount(0);
   await saved.getByRole("button", { name: "Remove", exact: true }).click();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(saved.getByRole("button", { name: "GET /items", exact: true })).toHaveCount(0);
-  await expect(saved.getByText("Nothing saved yet.")).toBeVisible();
+  await expect(saved.getByText("No saved requests", { exact: true })).toBeVisible();
 });
 
 test("parameter checkbox supports Space and is disabled while its request is pending", async ({ page }) => {

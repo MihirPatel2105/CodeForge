@@ -244,7 +244,7 @@ export default function ProjectsPage() {
                 )}
               </ul>
             ) : (
-              <Empty className="mt-5 border border-border bg-surface py-14"><EmptyHeader><EmptyTitle>{archived ? "No archived projects found" : "No matching projects"}</EmptyTitle><EmptyDescription>Try a different name or description.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setSearch("")}>Clear search</Button></EmptyContent></Empty>
+              <Empty className="mt-5 border border-border bg-surface py-14"><EmptyHeader><EmptyTitle><h3>{archived ? "No archived projects found" : "No matching projects"}</h3></EmptyTitle><EmptyDescription>Try a different name or description.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setSearch("")}>Clear search</Button></EmptyContent></Empty>
             )}
             {nextCursor && <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore} className="mt-6">{loadingMore ? "Loading…" : "Load more projects"}</Button>}
           </section>

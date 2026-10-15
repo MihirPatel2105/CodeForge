@@ -87,7 +87,10 @@ for (const width of [1440, 375]) {
     const consolePanel = page.getByRole("region", { name: "Execution details", exact: true });
     await expect(editor).toBeVisible();
     await expect(consolePanel.getByRole("status", { name: "Test summary" })).toContainText("tests passed");
-    await consolePanel.getByRole("searchbox", { name: "Search timeline" }).fill("Coder");
+    await consolePanel.getByRole("button", { name: "Filter activity", exact: true }).click();
+    const timelineSearch = page.getByRole("searchbox", { name: "Search timeline", exact: true });
+    await timelineSearch.fill("Coder");
+    await consolePanel.getByRole("button", { name: "Filters active", exact: true }).click();
     await consolePanel.getByRole("tab", { name: "Sandbox", exact: true }).click();
     await expect(consolePanel.getByRole("tabpanel")).toContainText("SANDBOX");
     await expect(editor).toBeVisible();
@@ -95,9 +98,11 @@ for (const width of [1440, 375]) {
     await expect(consolePanel.getByRole("tabpanel")).toContainText("TESTS");
     await consolePanel.getByRole("tab", { name: "Timeline", exact: true }).click();
     await expect(consolePanel.getByRole("log")).toBeVisible();
-    await expect(consolePanel.getByRole("searchbox", { name: "Search timeline" })).toHaveValue("Coder");
+    await consolePanel.getByRole("button", { name: "Filters active", exact: true }).click();
+    await expect(timelineSearch).toHaveValue("Coder");
     expect(await consolePanel.getByRole("log").evaluate(el => el.clientHeight)).toBeGreaterThan(100);
-    await consolePanel.getByRole("searchbox", { name: "Search timeline" }).fill("");
+    await timelineSearch.fill("");
+    await consolePanel.getByRole("button", { name: "Filter activity", exact: true }).click();
     await editor.getByRole("button", { name: /^main.py/ }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.locator(".cf-evidence-workbench").screenshot({ path: `/tmp/codeforge-workbench-${width}.png` });
