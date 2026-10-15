@@ -73,7 +73,8 @@ test("section colors span the page and stage disclosures animate in both directi
   await summary.click();
   const closing = await contentHeight();
   expect(closing).toBeGreaterThan(0);
-  expect(closing).toBeLessThanOrEqual(expanded);
+  // Chromium may round interpolated auto heights differently by a subpixel.
+  expect(closing).toBeLessThanOrEqual(expanded + 1);
   await expect.poll(contentHeight).toBe(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await summary.click();
