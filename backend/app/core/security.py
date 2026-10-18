@@ -131,6 +131,41 @@ def verify_totp(code: str, secret: str, *, at_time: int | None = None) -> bool:
     return any(hmac.compare_digest(cleaned, _totp(secret, counter + drift)) for drift in (-1, 0, 1))
 
 
+async def consume_totp(code: str, user: Any) -> bool:
+    """Accept a time step once, including across workers and security endpoints."""
+    from app.models import User
+
+    if not user.totp_secret_encrypted:
+        return False
+    secret = decrypt_totp_secret(user.totp_secret_encrypted)
+    cleaned = code.replace(" ", "").replace("-", "")
+    if len(cleaned) != 6 or not cleaned.isdigit():
+        return False
+    counter = int(time.time()) // 30
+    matches = [
+        step
+        for step in (counter - 1, counter, counter + 1)
+        if hmac.compare_digest(cleaned, _totp(secret, step))
+    ]
+    if not matches:
+        return False
+    step = max(matches)
+    result = await User.get_pymongo_collection().update_one(
+        {
+            "_id": user.id,
+            "totp_secret_encrypted": user.totp_secret_encrypted,
+            "$expr": {
+                "$and": [
+                    {"$lt": [{"$ifNull": ["$totp_last_counter", -1]}, step]},
+                    {"$eq": [{"$ifNull": ["$token_version", 0]}, user.token_version]},
+                ]
+            },
+        },
+        {"$set": {"totp_last_counter": step}},
+    )
+    return result.modified_count == 1
+
+
 def totp_uri(secret: str, email: str) -> str:
     from urllib.parse import quote
 

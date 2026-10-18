@@ -105,7 +105,7 @@ export default function VerifyLoginPage() {
           <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> One more step</div>
           <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Verify yourself</h1>
           <p className="mt-3 text-[15px] leading-6 text-fg-muted">
-            Complete sign-in for <span className="font-[650] text-fg">{pending.email}</span> using a method you saved.
+            Complete sign-in{pending.email ? <> for <span className="font-[650] text-fg">{pending.email}</span></> : ""} using a method you saved.
           </p>
 
           {availableMethods.length > 1 ? (

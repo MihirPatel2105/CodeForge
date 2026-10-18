@@ -1,7 +1,7 @@
 "use client";
 
 import { Notice } from "@/components/ui/notice";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Eye, EyeOff, KeyRound, LoaderCircle } from "lucide-react";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { api, setToken, ApiError } from "@/lib/api";
 import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
+import { savePendingPasswordMfa } from "@/lib/password-mfa";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 
 const FIELD =
@@ -31,6 +32,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const confirmRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   const touched = password.length > 0;
   const passwordOk = passwordMeetsAllRules(password);
   const matches = confirm.length > 0 && confirm === password;
+  const confirmInvalid = confirm.length > 0 && !matches;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,14 +52,22 @@ export function ResetPasswordForm({ token }: { token: string }) {
       return;
     }
     if (!matches) {
-      setError("The two passwords don't match.");
+      confirmRef.current?.focus();
       return;
     }
 
     setSubmitting(true);
     try {
-      const { access_token } = await api.resetPassword({ token, new_password: password });
-      setToken(access_token);
+      const result = await api.resetPassword({ token, new_password: password });
+      setPassword("");
+      setConfirm("");
+      if (result.mfa_required && result.mfa_ticket && result.mfa_methods?.length) {
+        savePendingPasswordMfa({ ticket: result.mfa_ticket, email: "", methods: result.mfa_methods });
+        router.replace("/login/verify");
+        return;
+      }
+      if (!result.access_token) throw new Error("Missing session");
+      setToken(result.access_token);
       // A returning user with proof of the account, same as sign-in — straight to work.
       router.replace("/projects");
     } catch (err) {
@@ -74,7 +85,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           </h1>
           <p className="mt-3 text-[15px] leading-6 text-fg-muted">
             Choose a strong password you have not used here before. You&apos;ll be
-            signed in when the reset succeeds. Existing passkeys will be removed; you can add them again in Settings.
+            asked to verify your authenticator if two-factor authentication is enabled. Existing passkeys will be removed; you can add them again in Settings.
           </p>
           <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2">
@@ -142,6 +153,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
               <div className="relative">
                 <Input
                   id="confirm_password"
+                  ref={confirmRef}
+                  aria-invalid={confirmInvalid}
+                  aria-describedby={confirmInvalid ? "confirm-password-error" : undefined}
                   type={showConfirm ? "text" : "password"}
                   autoComplete="new-password"
                   required
@@ -150,7 +164,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   className={cn(
                     FIELD,
                     "w-full pr-[88px]",
-                    confirm.length > 0 && !matches && "border-danger-bd",
+                    confirmInvalid && "border-danger-bd",
                   )}
                 />
                 <button
@@ -164,6 +178,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
                   {showConfirm ? "Hide" : "Show"}
                 </button>
               </div>
+              {confirmInvalid && <p id="confirm-password-error" role="alert" className="text-[13px] text-danger">The two passwords don&apos;t match.</p>}
             </div>
 
             {error && (

@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { setSessionTotpEnabled } from "@/lib/use-current-user";
 import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +93,7 @@ export function TotpSettings({
     setMessage(null);
     try {
       const result = await api.verifyTotp(code);
+      setSessionTotpEnabled(accountEmail, true);
       setEnabled(true);
       setRecoveryCodes(result.codes);
       setSecret(null);

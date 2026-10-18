@@ -181,7 +181,7 @@ export default function ProjectsPage() {
 
         </div>
 
-        <div className="mt-5 flex gap-2" aria-label="Project view"><Button variant={!archived ? "default" : "outline"} onClick={() => setArchived(false)}>Active projects</Button><Button variant={archived ? "default" : "outline"} onClick={() => setArchived(true)}>Archived projects</Button></div>
+        <div className="mt-5 flex gap-2" role="group" aria-label="Project view"><Button aria-pressed={!archived} variant={!archived ? "default" : "outline"} onClick={() => setArchived(false)}>Active projects</Button><Button aria-pressed={archived} variant={archived ? "default" : "outline"} onClick={() => setArchived(true)}>Archived projects</Button></div>
 
         {error && (
           <Notice className="mt-6"><div className="flex flex-wrap items-center justify-between gap-3">
@@ -244,7 +244,16 @@ export default function ProjectsPage() {
                 )}
               </ul>
             ) : (
-              <Empty className="mt-5 border border-border bg-surface py-14"><EmptyHeader><EmptyTitle><h3>{archived ? "No archived projects found" : "No matching projects"}</h3></EmptyTitle><EmptyDescription>Try a different name or description.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setSearch("")}>Clear search</Button></EmptyContent></Empty>
+              <Empty className="mt-5 border border-border bg-surface py-14">
+                <EmptyHeader>
+                  <EmptyTitle><h3>{archived ? query ? "No archived projects found" : "No archived projects yet" : "No matching projects"}</h3></EmptyTitle>
+                  <EmptyDescription>{archived && !query ? "Projects you archive will appear here." : "Try a different name or description."}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  {query ? <Button variant="outline" onClick={() => setSearch("")}>Clear search</Button>
+                    : <Button variant="outline" onClick={() => setArchived(false)}>Back to active projects</Button>}
+                </EmptyContent>
+              </Empty>
             )}
             {nextCursor && <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore} className="mt-6">{loadingMore ? "Loading…" : "Load more projects"}</Button>}
           </section>

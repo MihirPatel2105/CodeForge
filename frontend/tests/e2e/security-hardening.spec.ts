@@ -65,3 +65,30 @@ test("chunked oversized proxy requests stop before reaching the backend", async 
     process.env = saved;
   }
 });
+
+test("MFA enrollment installs the replacement session without exposing its token", async () => {
+  const saved = { ...process.env };
+  const originalFetch = globalThis.fetch;
+  process.env.CODEFORGE_FRONTEND_ORIGIN = "https://frontend.example.com";
+  process.env.CODEFORGE_API_INTERNAL_URL = "https://api.example.com";
+  process.env.CODEFORGE_PROXY_IP_SECRET = "a-proxy-secret-that-is-at-least-32-characters";
+  delete process.env.VERCEL;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    codes: ["offline-recovery-code"], access_token: "replacement-server-token",
+  }), { headers: { "content-type": "application/json" } });
+  try {
+    const request = new NextRequest("https://frontend.example.com/api/backend/auth/totp/verify", {
+      method: "POST", headers: { origin: "https://frontend.example.com" },
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.cookies.getAll().find(cookie => cookie.name.endsWith("codeforge_session"))?.value)
+      .toBe("replacement-server-token");
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(await response.json()).toEqual({ codes: ["offline-recovery-code"], access_token: "browser-session" });
+  } finally {
+    globalThis.fetch = originalFetch;
+    process.env = saved;
+  }
+});

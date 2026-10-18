@@ -37,7 +37,7 @@ from app.core.exceptions import (
 )
 from app.core.login_activity import issue_session, revoke_device_sessions
 from app.core.security import (
-    decrypt_totp_secret,
+    consume_totp,
     encrypt_totp_secret,
     generate_otp,
     generate_recovery_codes,
@@ -51,7 +51,6 @@ from app.core.security import (
     totp_uri,
     verify_otp,
     verify_password,
-    verify_totp,
 )
 from app.core.user_updates import update_user
 from app.models import (
@@ -87,6 +86,7 @@ from app.schemas.api import (
     SignInAlertResponseRequest,
     TokenResponse,
     TotpDisableRequest,
+    TotpEnableResponse,
     TotpSetupRequest,
     TotpSetupResponse,
     TotpVerifyRequest,
@@ -362,6 +362,12 @@ async def login(
     if passkey is not None:
         methods.append("passkey")
 
+    return await login_result(user, methods, background, request)
+
+
+async def login_result(
+    user: User, methods: list[str], background: BackgroundTasks, request: Request
+) -> LoginResponse:
     if methods:
         ticket = secrets.token_urlsafe(32)
         await PasskeyChallenge(
@@ -369,7 +375,7 @@ async def login(
             challenge="",
             purpose="password_mfa",
             user_id=str(user.id),
-            expires_at=now + PASSWORD_MFA_LIFETIME,
+            expires_at=_now() + PASSWORD_MFA_LIFETIME,
             token_version=user.token_version,
         ).insert()
         return LoginResponse(mfa_required=True, mfa_ticket=ticket, mfa_methods=methods)
@@ -484,7 +490,7 @@ async def complete_password_login(
         if consumed is None:
             await _record_failed_login(user, background)
             raise AuthError("The recovery code is not correct")
-    elif not verify_totp(payload.totp_code or "", decrypt_totp_secret(user.totp_secret_encrypted)):
+    elif not await consume_totp(payload.totp_code or "", user):
         await _record_failed_login(user, background)
         raise AuthError("The two-factor code is not correct")
     await consume_password_mfa_ticket(payload.ticket, user)
@@ -536,25 +542,33 @@ async def setup_totp(
         raise ConflictError("Disable two-factor authentication before setting it up again")
     secret = generate_totp_secret()
     user = await update_user(
-        user, {"totp_secret_encrypted": encrypt_totp_secret(secret), "totp_enabled": False}
+        user,
+        {
+            "totp_secret_encrypted": encrypt_totp_secret(secret),
+            "totp_enabled": False,
+            "totp_last_counter": -1,
+        },
     )
     await RecoveryCode.find(RecoveryCode.user_id == str(user.id)).delete()
     return TotpSetupResponse(secret=secret, provisioning_uri=totp_uri(secret, user.email))
 
 
-@router.post("/totp/verify", response_model=RecoveryCodesResponse)
+@router.post("/totp/verify", response_model=TotpEnableResponse)
 async def enable_totp(
     payload: TotpVerifyRequest, user: CurrentUser, response: Response, request: Request
-) -> RecoveryCodesResponse:
+) -> TotpEnableResponse:
     await check_reauthentication_limit(request, str(user.id))
+    if user.totp_enabled:
+        raise ConflictError("Two-factor authentication is already enabled")
     if not user.totp_secret_encrypted:
         raise ConflictError("Start two-factor setup before verifying a code")
-    if not verify_totp(payload.code, decrypt_totp_secret(user.totp_secret_encrypted)):
+    if not await consume_totp(payload.code, user):
         raise AuthError("The two-factor code is not correct")
-    user = await update_user(user, {"totp_enabled": True})
+    user = await update_user(user, {"totp_enabled": True}, revoke=True)
     codes = await _replace_recovery_codes(str(user.id))
     response.headers["Cache-Control"] = "no-store"
-    return RecoveryCodesResponse(codes=codes)
+    token, _, _ = await issue_session(user, request, strong_auth=True)
+    return TotpEnableResponse(codes=codes, access_token=token)
 
 
 @router.post("/recovery-codes/regenerate", response_model=RecoveryCodesResponse)
@@ -566,7 +580,7 @@ async def regenerate_recovery_codes(
     await check_reauthentication_limit(request, str(user.id))
     if not verify_password(payload.current_password, user.hashed_password):
         raise AuthError("Your current password is not correct")
-    if not verify_totp(payload.totp_code, decrypt_totp_secret(user.totp_secret_encrypted)):
+    if not await consume_totp(payload.totp_code, user):
         raise AuthError("The two-factor code is not correct")
     codes = await _replace_recovery_codes(str(user.id))
     response.headers["Cache-Control"] = "no-store"
@@ -595,7 +609,7 @@ async def disable_totp(
         )
         if consumed is None:
             raise AuthError("The recovery code is not correct")
-    elif not verify_totp(payload.code or "", decrypt_totp_secret(user.totp_secret_encrypted)):
+    elif not await consume_totp(payload.code or "", user):
         raise AuthError("The two-factor code is not correct")
     user = await update_user(
         user, {"totp_enabled": False, "totp_secret_encrypted": None}, revoke=True
@@ -654,11 +668,11 @@ async def _send_reset_link(user: User) -> None:
         logger.exception("Password reset email to %s failed", user.email)
 
 
-@router.post("/reset-password", response_model=TokenResponse)
+@router.post("/reset-password", response_model=LoginResponse)
 async def reset_password(
     payload: ResetPasswordRequest, background: BackgroundTasks, request: Request
-) -> TokenResponse:
-    """Exchange a reset link for a new password and a session.
+) -> LoginResponse:
+    """Exchange a reset link for a new password, preserving authenticator MFA.
 
     The token names the account on its own — nothing else identifies who is resetting
     what, which is the entire point of a mailed link. One message covers a token that
@@ -693,8 +707,12 @@ async def reset_password(
         first_name=user.first_name,
     )
 
-    token, _, _ = await issue_session(user, request)
-    return TokenResponse(access_token=token)
+    methods = []
+    if user.totp_enabled:
+        methods.append("totp")
+        if await RecoveryCode.find_one(RecoveryCode.user_id == str(user.id)) is not None:
+            methods.append("recovery_code")
+    return await login_result(user, methods, background, request)
 
 
 @router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT)

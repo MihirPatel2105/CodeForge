@@ -32,7 +32,7 @@ const LABEL =
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user } = useSession();
+  const { user, error: accountError } = useSession();
   const [confirming, setConfirming] = useState(false);
   const [endingSessions, setEndingSessions] = useState(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
@@ -121,7 +121,7 @@ export default function SettingsPage() {
             <div className="min-w-0 rounded-3xl border border-border bg-surface/80 px-4 py-3 backdrop-blur-sm">
               <span className={LABEL}>Signed in as</span>
               <p className="mt-1.5 max-w-[28rem] break-all text-[13px] font-[600] text-fg">
-                {user?.email ?? "Loading account…"}
+                {user?.email ?? (accountError ? "Account temporarily unavailable" : "Loading account…")}
               </p>
             </div>
           </div>

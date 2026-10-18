@@ -34,6 +34,7 @@ class User(Document):
     last_login_at: datetime | None = None
     totp_secret_encrypted: str | None = None
     totp_enabled: bool = False
+    totp_last_counter: int = -1
 
     class Settings:
         name = "users"

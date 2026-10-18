@@ -3,7 +3,6 @@
 import base64
 import hashlib
 import json
-import time
 from types import SimpleNamespace
 
 import cbor2
@@ -11,7 +10,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from app.config import settings
-from app.core.security import _totp
 
 
 def _b64(value: bytes) -> str:
@@ -189,7 +187,7 @@ def test_remove_passkey_requires_password_and_owner(client, registered_user, mon
 
 
 def test_passkey_login_skips_totp_and_password_mfa_offers_both(
-    client, registered_user, monkeypatch
+    client, registered_user, monkeypatch, totp_code
 ):
     headers = registered_user["headers"]
     setup = client.post(
@@ -198,8 +196,10 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
         json={"current_password": registered_user["password"]},
     )
     secret = setup.json()["secret"]
-    code = _totp(secret, int(time.time()) // 30)
-    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 200
+    code = totp_code(secret)
+    enabled = client.post("/auth/totp/verify", headers=headers, json={"code": code})
+    assert enabled.status_code == 200
+    headers = {"Authorization": f"Bearer {enabled.json()['access_token']}"}
 
     denied = client.post(
         "/auth/passkeys/register/options",
@@ -210,7 +210,7 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
     options = client.post(
         "/auth/passkeys/register/options",
         headers=headers,
-        json={"current_password": registered_user["password"], "totp_code": code},
+        json={"current_password": registered_user["password"], "totp_code": totp_code(secret)},
     )
     assert options.status_code == 200
     monkeypatch.setattr(
@@ -259,7 +259,9 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
     assert completed.json()["access_token"]
 
 
-def test_admin_password_login_can_finish_with_code_or_passkey(client, registered_user, monkeypatch):
+def test_admin_password_login_can_finish_with_code_or_passkey(
+    client, registered_user, monkeypatch, totp_code
+):
     monkeypatch.setattr(settings, "admin_email", registered_user["email"])
     headers = registered_user["headers"]
 
@@ -269,13 +271,15 @@ def test_admin_password_login_can_finish_with_code_or_passkey(client, registered
         json={"current_password": registered_user["password"]},
     )
     secret = setup.json()["secret"]
-    code = _totp(secret, int(time.time()) // 30)
-    assert client.post("/auth/totp/verify", headers=headers, json={"code": code}).status_code == 200
+    code = totp_code(secret)
+    enabled = client.post("/auth/totp/verify", headers=headers, json={"code": code})
+    assert enabled.status_code == 200
+    headers = {"Authorization": f"Bearer {enabled.json()['access_token']}"}
 
     options = client.post(
         "/auth/passkeys/register/options",
         headers=headers,
-        json={"current_password": registered_user["password"], "totp_code": code},
+        json={"current_password": registered_user["password"], "totp_code": totp_code(secret)},
     )
     monkeypatch.setattr(
         "app.api.passkeys.verify_registration_response",
@@ -305,7 +309,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(client, registered
         "/auth/login/complete",
         json={
             "ticket": code_login["mfa_ticket"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
+            "totp_code": totp_code(secret),
         },
     )
     assert code_session.status_code == 200

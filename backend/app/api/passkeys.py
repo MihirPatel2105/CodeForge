@@ -42,7 +42,7 @@ from app.core.exceptions import (
     NotFoundError,
     RateLimitError,
 )
-from app.core.security import decrypt_totp_secret, verify_password, verify_totp
+from app.core.security import consume_totp, verify_password
 from app.models import PasskeyChallenge, PasskeyCredential, User
 
 router = APIRouter(prefix="/auth/passkeys", tags=["auth"])
@@ -102,13 +102,11 @@ async def _consume(challenge_id: str, purpose: str, user_id: str | None = None) 
     return challenge
 
 
-def _reauth(user: User, password: str, totp_code: str | None) -> None:
+async def _reauth(user: User, password: str, totp_code: str | None) -> None:
     if not verify_password(password, user.hashed_password):
         raise AuthError("Your current password is not correct")
     if user.totp_enabled and (
-        not user.totp_secret_encrypted
-        or not totp_code
-        or not verify_totp(totp_code, decrypt_totp_secret(user.totp_secret_encrypted))
+        not user.totp_secret_encrypted or not totp_code or not await consume_totp(totp_code, user)
     ):
         raise AuthError("The two-factor code is not correct")
 
@@ -174,7 +172,7 @@ async def registration_options(
     payload: PasskeyReauth, user: CurrentUser, request: Request
 ) -> PasskeyOptions:
     await check_reauthentication_limit(request, str(user.id))
-    _reauth(user, payload.current_password, payload.totp_code)
+    await _reauth(user, payload.current_password, payload.totp_code)
     existing = await PasskeyCredential.find(
         PasskeyCredential.owner_filter(str(user.id), user.passkey_version)
     ).to_list()
@@ -264,7 +262,7 @@ async def delete_passkey(
     request: Request,
 ) -> None:
     await check_reauthentication_limit(request, str(user.id))
-    _reauth(user, payload.current_password, payload.totp_code)
+    await _reauth(user, payload.current_password, payload.totp_code)
     try:
         credential = await PasskeyCredential.get(passkey_id)
     except ValueError:

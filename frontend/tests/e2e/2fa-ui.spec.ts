@@ -67,8 +67,9 @@ test("settings owns the 2FA entry instead of the admin navigation", async ({ pag
 });
 
 test("normal users can open 2FA settings and use QR or manual enrollment", async ({ page }) => {
+  let enabled = false;
   await page.unroute("**/auth/me");
-  await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(USER) }));
+  await page.route("**/auth/me", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ...USER, totp_enabled: enabled }) }));
   await page.route("**/auth/totp/setup", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -77,11 +78,14 @@ test("normal users can open 2FA settings and use QR or manual enrollment", async
       provisioning_uri: "otpauth://totp/CodeForge%3Auser%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=CodeForge&algorithm=SHA1&digits=6&period=30",
     }),
   }));
-  await page.route("**/auth/totp/verify", (route) => route.fulfill({
+  await page.route("**/auth/totp/verify", (route) => {
+    enabled = true;
+    return route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ codes: ["12345678-12345678-12345678-12345678"] }),
-  }));
+    body: JSON.stringify({ codes: ["12345678-12345678-12345678-12345678"], access_token: "browser-session" }),
+    });
+  });
 
   await page.goto("/profile/settings/2fa");
   await expect(page.getByRole("heading", { level: 1, name: "Two-factor authentication" })).toBeVisible();
@@ -126,4 +130,10 @@ test("normal users can open 2FA settings and use QR or manual enrollment", async
   expect(JSON.parse((await verifyRequest).postData() ?? "null")).toEqual({ code: "123456" });
   await expect(page.getByText("Authenticator codes are on")).toBeVisible();
   await expect(page.getByText("Save your recovery codes now")).toBeVisible();
+  await page.getByRole("link", { name: "Back to settings" }).click();
+  await expect(page.getByRole("link", { name: "Manage 2FA", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Manage 2FA", exact: true }).click();
+  await expect(page).toHaveURL(/\/profile\/settings\/2fa$/);
+  await expect(page.getByText("Authenticator codes are on")).toBeVisible();
+  await expect(page.getByText("Authenticator codes are off")).toHaveCount(0);
 });

@@ -1,14 +1,11 @@
 """One-time recovery codes for accounts protected by authenticator MFA."""
 
-import time
-
 from pymongo import MongoClient
 
 from app.config import settings
-from app.core.security import _totp
 
 
-def _enable(client, user) -> tuple[str, list[str]]:
+def _enable(client, user, totp_code) -> tuple[str, list[str]]:
     setup = client.post(
         "/auth/totp/setup",
         json={"current_password": user["password"]},
@@ -18,11 +15,13 @@ def _enable(client, user) -> tuple[str, list[str]]:
     secret = setup.json()["secret"]
     response = client.post(
         "/auth/totp/verify",
-        json={"code": _totp(secret, int(time.time()) // 30)},
+        json={"code": totp_code(secret)},
         headers=user["headers"],
     )
     assert response.status_code == 200
     assert response.headers["cache-control"] == "no-store"
+    user["token"] = response.json()["access_token"]
+    user["headers"] = {"Authorization": f"Bearer {user['token']}"}
     return secret, response.json()["codes"]
 
 
@@ -36,8 +35,8 @@ def _ticket(client, user) -> str:
     return response.json()["mfa_ticket"]
 
 
-def test_codes_are_hashed_and_single_use(client, registered_user) -> None:
-    _, codes = _enable(client, registered_user)
+def test_codes_are_hashed_and_single_use(client, registered_user, totp_code) -> None:
+    _, codes = _enable(client, registered_user, totp_code)
     assert len(codes) == len(set(codes)) == 8
     with MongoClient(settings.mongo_uri) as mongo:
         stored = list(mongo[settings.mongo_db].recovery_codes.find({}))
@@ -62,8 +61,8 @@ def test_codes_are_hashed_and_single_use(client, registered_user) -> None:
     assert next_code.status_code == 200
 
 
-def test_regeneration_invalidates_previous_codes(client, registered_user) -> None:
-    secret, old_codes = _enable(client, registered_user)
+def test_regeneration_invalidates_previous_codes(client, registered_user, totp_code) -> None:
+    secret, old_codes = _enable(client, registered_user, totp_code)
     denied = client.post(
         "/auth/recovery-codes/regenerate",
         json={"current_password": registered_user["password"], "totp_code": "000000"},
@@ -74,7 +73,7 @@ def test_regeneration_invalidates_previous_codes(client, registered_user) -> Non
         "/auth/recovery-codes/regenerate",
         json={
             "current_password": registered_user["password"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
+            "totp_code": totp_code(secret),
         },
         headers=registered_user["headers"],
     )
@@ -98,13 +97,13 @@ def test_regeneration_invalidates_previous_codes(client, registered_user) -> Non
     )
 
 
-def test_disabling_totp_revokes_recovery_codes(client, registered_user) -> None:
-    secret, _ = _enable(client, registered_user)
+def test_disabling_totp_revokes_recovery_codes(client, registered_user, totp_code) -> None:
+    secret, _ = _enable(client, registered_user, totp_code)
     response = client.post(
         "/auth/totp/disable",
         json={
             "current_password": registered_user["password"],
-            "code": _totp(secret, int(time.time()) // 30),
+            "code": totp_code(secret),
         },
         headers=registered_user["headers"],
     )
@@ -113,8 +112,10 @@ def test_disabling_totp_revokes_recovery_codes(client, registered_user) -> None:
         assert mongo[settings.mongo_db].recovery_codes.count_documents({}) == 0
 
 
-def test_lost_authenticator_can_be_replaced_with_recovery_code(client, registered_user) -> None:
-    _, codes = _enable(client, registered_user)
+def test_lost_authenticator_can_be_replaced_with_recovery_code(
+    client, registered_user, totp_code
+) -> None:
+    _, codes = _enable(client, registered_user, totp_code)
     assert (
         client.post(
             "/auth/totp/setup",

@@ -160,7 +160,7 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   resetPassword: (payload: ResetPasswordRequest) =>
-    request<TokenResponse>("/auth/reset-password", {
+    request<LoginResponse>("/auth/reset-password", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
@@ -229,7 +229,7 @@ export const api = {
   setupTotp: (currentPassword: string) =>
     request<TotpSetupResponse>("/auth/totp/setup", { method: "POST", body: JSON.stringify({ current_password: currentPassword }) }),
   verifyTotp: (code: string) =>
-    request<{ codes: string[] }>("/auth/totp/verify", { method: "POST", body: JSON.stringify({ code }) }),
+    request<{ codes: string[]; access_token: string }>("/auth/totp/verify", { method: "POST", body: JSON.stringify({ code }) }),
   regenerateRecoveryCodes: (currentPassword: string, totpCode: string) =>
     request<{ codes: string[] }>("/auth/recovery-codes/regenerate", {
       method: "POST", body: JSON.stringify({ current_password: currentPassword, totp_code: totpCode }),

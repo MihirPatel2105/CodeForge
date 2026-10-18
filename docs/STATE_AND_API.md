@@ -189,6 +189,17 @@ Conventions
   Password sign-in and recovery remain available. Challenges and tickets are single-use.
   A password reset or "not me" sign-in response removes passkeys so an unrecognized credential
   cannot reopen a recovered account.
+  `POST /auth/reset-password` returns the same `LoginResponse` shape as password login:
+  accounts with TOTP receive `mfa_required`, a five-minute `mfa_ticket`, and available
+  `mfa_methods`, with no access token until `/auth/login/complete` verifies an authenticator
+  or unused recovery code. The password and existing-session revocation take effect immediately.
+  Accounts without TOTP retain the existing direct-session recovery behavior.
+  TOTP codes are consumed atomically per account and secret across login, enrollment,
+  disable, recovery-code regeneration, and passkey management. Accepted time steps cannot
+  be replayed or replaced with an earlier step; callers must wait for a fresh code.
+  `POST /auth/totp/verify` enables TOTP once, revokes all prior sessions, and returns
+  `{codes, access_token}`. The browser proxy installs the replacement token in its HttpOnly
+  cookie. Recovery-code regeneration continues to return only `{codes}`.
   TOTP setup returns both a manual Base32 key and an `otpauth://` provisioning URI; the
   dedicated account-security screen renders the URI as a QR code while keeping manual entry available.
 - Browser sessions carry a separate device identifier; new browsers receive a sign-in email when SMTP is configured.

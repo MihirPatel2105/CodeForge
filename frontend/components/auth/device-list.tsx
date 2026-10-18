@@ -14,13 +14,15 @@ export function DeviceList() {
   const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
       setDevices(await api.devices());
-      setError(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not load your devices.");
+      setLoadError(err instanceof ApiError ? err.message : "Could not load your devices.");
     } finally {
       setLoading(false);
     }
@@ -49,14 +51,14 @@ export function DeviceList() {
   }
 
   return (
-    <div className="px-6 py-2">
-      {loading ? <p className="py-4 text-[12px] text-fg-muted">Loading devices…</p> : null}
-      {!loading && devices.length === 0 ? (
+    <div className="px-6 py-2" aria-busy={loading}>
+      {loading ? <p role="status" className="py-4 text-[12px] text-fg-muted">Loading devices…</p> : null}
+      {!loading && !loadError && devices.length === 0 ? (
         <p className="py-4 text-[12px] leading-5 text-fg-muted">
           No tracked browser sessions yet. Sessions opened before this feature will not appear.
         </p>
       ) : null}
-      <div className="divide-y divide-rule">
+      {!loading && !loadError && <div className="divide-y divide-rule">
         {devices.map((device) => (
           <div key={device.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div>
@@ -79,7 +81,11 @@ export function DeviceList() {
             </Button>
           </div>
         ))}
-      </div>
+      </div>}
+      {loadError && <Notice><div className="flex flex-wrap items-center justify-between gap-3">
+        <p>{loadError}</p>
+        <Button type="button" variant="outline" onClick={() => void refresh()}>Retry devices</Button>
+      </div></Notice>}
       {error ? <Notice>{error}</Notice> : null}
     </div>
   );

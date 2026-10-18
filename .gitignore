@@ -72,3 +72,6 @@ CodeForge-Faculty-Review.pdf
 
 # Local Codex skills and tooling
 .codex/
+
+# Downloaded local animation tooling, not application source.
+/downloads/motion-ai/

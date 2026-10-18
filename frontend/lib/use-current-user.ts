@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { api, getToken, clearToken } from "@/lib/api";
+import { api, getToken, clearToken, ApiError } from "@/lib/api";
 import type { UserResponse } from "@/lib/types";
 
 export interface CurrentUser extends UserResponse {
@@ -26,10 +26,12 @@ function initialsFor(user: UserResponse): string {
 
 export interface Session {
   user: CurrentUser | null;
+  /** Account identity remains unresolved while a temporary error awaits retry. */
   loading: boolean;
+  error: string | null;
 }
 
-const initialSession: Session = { user: null, loading: true };
+const initialSession: Session = { user: null, loading: true, error: null };
 let session = initialSession;
 let generation = 0;
 let pending = false;
@@ -46,7 +48,7 @@ function resolveSession() {
     if (session.user || session.loading) {
       generation++;
       pending = false;
-      publish({ user: null, loading: false });
+      publish({ user: null, loading: false, error: null });
     }
     return;
   }
@@ -57,15 +59,31 @@ function resolveSession() {
     .then((user) => {
       if (generation !== requestGeneration) return;
       const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
-      publish({ user: { ...user, displayName: name || user.email, initials: initialsFor(user) }, loading: false });
+      publish({ user: { ...user, displayName: name || user.email, initials: initialsFor(user) }, loading: false, error: null });
     })
-    .catch(() => {
+    .catch((error: unknown) => {
       if (generation !== requestGeneration) return;
-      clearToken();
+      if (error instanceof ApiError && (error.status === 401 || error.code === "account_suspended")) {
+        clearToken();
+        return;
+      }
+      publish({ user: null, loading: true, error: "Couldn't load your account. Check your connection and try again." });
     })
     .finally(() => {
       if (generation === requestGeneration) pending = false;
     });
+}
+
+export function retrySession() {
+  if (pending || !session.error) return;
+  publish(initialSession);
+  resolveSession();
+}
+
+/** Apply a server-confirmed security change without unmounting recovery codes. */
+export function setSessionTotpEnabled(email: string, enabled: boolean) {
+  if (!session.user || session.user.email !== email) return;
+  publish({ ...session, user: { ...session.user, totp_enabled: enabled } });
 }
 
 function onSessionChange() {

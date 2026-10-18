@@ -1,6 +1,5 @@
 """Admin proof is server-side, session-bound, recent and rate-limited."""
 
-import time
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -9,7 +8,7 @@ from pymongo import MongoClient
 from redis.exceptions import ConnectionError
 
 from app.config import settings
-from app.core.security import _totp, create_access_token, decode_access_token, decrypt_totp_secret
+from app.core.security import create_access_token, decode_access_token, decrypt_totp_secret
 
 
 class FakeRedis:
@@ -118,7 +117,7 @@ def test_signed_token_without_session_cannot_become_admin(client, operator):
     )
 
 
-def test_admin_limits_shared_across_sessions_fail_closed(client, operator, monkeypatch):
+def test_admin_limits_shared_across_sessions_fail_closed(client, operator, monkeypatch, totp_code):
     redis = FakeRedis()
     client.app.state.redis = redis
     monkeypatch.setattr(settings, "redis_url", "redis://test")
@@ -149,7 +148,7 @@ def test_admin_limits_shared_across_sessions_fail_closed(client, operator, monke
     ).json()["mfa_ticket"]
     token = client.post(
         "/auth/login/complete",
-        json={"ticket": ticket, "totp_code": _totp(secret, int(time.time()) // 30)},
+        json={"ticket": ticket, "totp_code": totp_code(secret)},
     ).json()["access_token"]
     assert (
         client.patch(
@@ -180,7 +179,7 @@ def test_all_admin_routes_use_central_server_guard():
     assert all(has_guard(route.dependant) for route in routes)
 
 
-def test_recovery_login_keeps_account_access_but_cannot_unlock_admin(client, operator):
+def test_recovery_login_keeps_account_access_but_cannot_unlock_admin(client, operator, totp_code):
     claims = decode_access_token(operator["token"])
     user = db().users.find_one({"_id": ObjectId(claims["sub"])})
     secret = decrypt_totp_secret(user["totp_secret_encrypted"])
@@ -189,7 +188,7 @@ def test_recovery_login_keeps_account_access_but_cannot_unlock_admin(client, ope
         headers=operator["headers"],
         json={
             "current_password": operator["password"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
+            "totp_code": totp_code(secret),
         },
     )
     assert codes.status_code == 200

@@ -6,7 +6,9 @@ import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motionSpring } from "@/lib/motion-tokens";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "@/lib/use-current-user";
+import { Notice } from "@/components/ui/notice";
+import { Button } from "@/components/ui/button";
+import { retrySession, useSession } from "@/lib/use-current-user";
 import { UserAvatar } from "@/components/user-avatar";
 import { AttentionInbox } from "@/components/dashboard/attention-inbox";
 import { CommandPalette } from "@/components/dashboard/command-palette";
@@ -19,8 +21,9 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
-  const { user, loading } = useSession();
+  const { user, loading, error } = useSession();
   return (
+    <>
     <header className="cf-site-header sticky top-0 z-20 h-16">
       <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
@@ -33,7 +36,9 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
         </MotionLink>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
-          {loading ? (
+          {error ? (
+            <span className="text-[13px] text-fg-muted">Account unavailable</span>
+          ) : loading ? (
               <div role="status" aria-label="Loading account" className="flex h-10 items-center gap-3">
                 <span aria-hidden className="h-10 w-24 rounded-full bg-fg/5 motion-safe:animate-pulse" />
                 <span aria-hidden className="h-10 w-10 rounded-full bg-fg/5 motion-safe:animate-pulse" />
@@ -78,5 +83,16 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
       </div>
       </div>
     </header>
+    {error && (
+      <div className="mx-auto w-full max-w-[1320px] px-5 pt-4 md:px-10 lg:px-14">
+        <Notice variant="warning">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{error}</p>
+            <Button type="button" variant="outline" onClick={retrySession}>Retry account</Button>
+          </div>
+        </Notice>
+      </div>
+    )}
+    </>
   );
 }

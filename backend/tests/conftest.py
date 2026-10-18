@@ -122,12 +122,8 @@ def clean_database():
 
 
 @pytest.fixture
-def strong_auth_user(client, registered_user):
+def strong_auth_user(client, registered_user, totp_code):
     """Exercise the real authenticator login path for admin integration fixtures."""
-    import time
-
-    from app.core.security import _totp
-
     # Offline signup deliberately leaves email unverified; simulate completed mail verification.
     with MongoClient(settings.mongo_uri) as mongo:
         mongo[settings.mongo_db].users.update_one(
@@ -140,7 +136,8 @@ def strong_auth_user(client, registered_user):
         headers=registered_user["headers"],
     )
     assert setup.status_code == 200
-    code = _totp(setup.json()["secret"], int(time.time()) // 30)
+    secret = setup.json()["secret"]
+    code = totp_code(secret)
     enabled = client.post(
         "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
     )
@@ -151,7 +148,8 @@ def strong_auth_user(client, registered_user):
     )
     assert login.status_code == 200
     complete = client.post(
-        "/auth/login/complete", json={"ticket": login.json()["mfa_ticket"], "totp_code": code}
+        "/auth/login/complete",
+        json={"ticket": login.json()["mfa_ticket"], "totp_code": totp_code(secret)},
     )
     assert complete.status_code == 200
     token = complete.json()["access_token"]
@@ -176,3 +174,22 @@ def registered_user(client):
         "token": token,
         "headers": {"Authorization": f"Bearer {token}"},
     }
+
+
+@pytest.fixture
+def totp_code(monkeypatch):
+    """Move only the authenticator clock; never sleep through real OTP windows."""
+    import time
+    from types import SimpleNamespace
+
+    from app.core import security
+
+    clock = int(time.time()) // 30 * 30
+    monkeypatch.setattr(security, "time", SimpleNamespace(time=lambda: clock))
+
+    def next_code(secret):
+        nonlocal clock
+        clock += 30
+        return security._totp(secret, clock // 30)
+
+    return next_code

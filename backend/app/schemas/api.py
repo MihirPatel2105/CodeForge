@@ -273,6 +273,10 @@ class RecoveryCodesResponse(BaseModel):
     codes: list[str]
 
 
+class TotpEnableResponse(RecoveryCodesResponse):
+    access_token: str
+
+
 class RecoveryCodesRegenerateRequest(BaseModel):
     current_password: str
     totp_code: str = Field(min_length=6, max_length=8)

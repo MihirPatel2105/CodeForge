@@ -1,13 +1,10 @@
 """Admin control-centre access and read-only inventory endpoints."""
 
-import time
-
 import pytest
 from bson import ObjectId
 from pymongo import MongoClient
 
 from app.config import settings
-from app.core.security import _totp
 from app.graph.state import RunMetrics
 
 
@@ -386,7 +383,9 @@ def test_admin_cannot_delete_the_configured_administrator(client, admin_user):
     assert response.json()["error"]["code"] == "conflict"
 
 
-def test_admin_totp_setup_changes_login_to_two_step(client, registered_user, monkeypatch):
+def test_admin_totp_setup_changes_login_to_two_step(
+    client, registered_user, monkeypatch, totp_code
+):
     admin_user = registered_user
     monkeypatch.setattr(settings, "admin_email", admin_user["email"])
     setup = client.post(
@@ -398,7 +397,7 @@ def test_admin_totp_setup_changes_login_to_two_step(client, registered_user, mon
     secret = setup.json()["secret"]
     assert setup.json()["provisioning_uri"].startswith("otpauth://totp/CodeForge%3A")
     assert f"secret={secret}" in setup.json()["provisioning_uri"]
-    code = _totp(secret, int(time.time()) // 30)
+    code = totp_code(secret)
     assert (
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=admin_user["headers"]
@@ -416,7 +415,7 @@ def test_admin_totp_setup_changes_login_to_two_step(client, registered_user, mon
 
     second = client.post(
         "/auth/login/complete",
-        json={"ticket": first.json()["mfa_ticket"], "totp_code": code},
+        json={"ticket": first.json()["mfa_ticket"], "totp_code": totp_code(secret)},
     )
     assert second.status_code == 200
     assert second.json()["access_token"]

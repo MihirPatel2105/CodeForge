@@ -1,12 +1,10 @@
 """New Argon2id hashes and safe migration of existing bcrypt accounts."""
 
-import time
-
 from passlib.hash import bcrypt
 from pymongo import MongoClient
 
 from app.config import settings
-from app.core.security import _totp, hash_otp, hash_password, verify_otp, verify_password
+from app.core.security import hash_otp, hash_password, verify_otp, verify_password
 
 
 def _stored_hash(email: str) -> str:
@@ -59,14 +57,14 @@ def test_bcrypt_account_upgrades_after_correct_password(client, registered_user)
     )
 
 
-def test_bcrypt_account_with_totp_keeps_upgraded_hash_after_mfa(client, registered_user):
+def test_bcrypt_account_with_totp_keeps_upgraded_hash_after_mfa(client, registered_user, totp_code):
     setup = client.post(
         "/auth/totp/setup",
         json={"current_password": registered_user["password"]},
         headers=registered_user["headers"],
     )
     secret = setup.json()["secret"]
-    code = _totp(secret, int(time.time()) // 30)
+    code = totp_code(secret)
     assert (
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
@@ -87,7 +85,7 @@ def test_bcrypt_account_with_totp_keeps_upgraded_hash_after_mfa(client, register
         "/auth/login/complete",
         json={
             "ticket": start.json()["mfa_ticket"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
+            "totp_code": totp_code(secret),
         },
     )
     assert complete.status_code == 200

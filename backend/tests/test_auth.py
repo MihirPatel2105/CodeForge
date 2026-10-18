@@ -1,8 +1,4 @@
-import time
-
 import pytest
-
-from app.core.security import _totp
 
 
 def _registration(**overrides) -> dict:
@@ -87,7 +83,7 @@ def test_login_succeeds(client, registered_user):
     assert response.json()["access_token"]
 
 
-def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_user):
+def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_user, totp_code):
     setup = client.post(
         "/auth/totp/setup",
         json={"current_password": registered_user["password"]},
@@ -95,7 +91,7 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
     )
     assert setup.status_code == 200
     secret = setup.json()["secret"]
-    code = _totp(secret, int(time.time()) // 30)
+    code = totp_code(secret)
 
     verify = client.post(
         "/auth/totp/verify",
@@ -118,7 +114,7 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
 
     completed = client.post(
         "/auth/login/complete",
-        json={"ticket": ticket, "totp_code": _totp(secret, int(time.time()) // 30)},
+        json={"ticket": ticket, "totp_code": totp_code(secret)},
     )
     assert completed.status_code == 200
     assert completed.json()["access_token"]
@@ -132,7 +128,7 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
         json={
             "email": registered_user["email"],
             "password": registered_user["password"],
-            "totp_code": _totp(secret, int(time.time()) // 30),
+            "totp_code": totp_code(secret),
         },
     )
     assert old_one_step_payload.status_code == 200
@@ -140,14 +136,14 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
     assert old_one_step_payload.json()["access_token"] is None
 
 
-def test_password_mfa_ticket_allows_five_code_attempts(client, registered_user):
+def test_password_mfa_ticket_allows_five_code_attempts(client, registered_user, totp_code):
     setup = client.post(
         "/auth/totp/setup",
         json={"current_password": registered_user["password"]},
         headers=registered_user["headers"],
     )
     secret = setup.json()["secret"]
-    code = _totp(secret, int(time.time()) // 30)
+    code = totp_code(secret)
     assert (
         client.post(
             "/auth/totp/verify", json={"code": code}, headers=registered_user["headers"]
