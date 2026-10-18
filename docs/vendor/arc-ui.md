@@ -11,6 +11,20 @@ CodeForge uses its existing Base UI popover, Motion, semantic colors and real ru
 Read/dismiss state remains local to each user. Approval requests cannot be cleared.
 No Arc service, paid component, global foundation or additional dependency is used.
 
+## Additional free components
+
+- User Menu: https://uiarc.dev/components/user-menu
+- JSON Viewer: https://uiarc.dev/components/json-viewer
+- Empty States illustration geometry: https://uiarc.dev/components/blocks/empty-states
+- Shared motion tokens from https://uiarc.dev/r/arc-motion-tokens.json
+
+Retrieved 2026-10-18. Source lives in `frontend/components/ui/arc/`.
+Scoped CSS maps Arc tokens to CodeForge's colors. The user menu uses existing
+account routes, sign-out and supported theme behavior. The JSON viewer is an
+additional Tree response view; Pretty, Raw, Headers and non-JSON fallback remain.
+Empty scenes retain existing product copy and real actions; demo simulations,
+sample identities and pointer-following effects are not included.
+
 ## MIT License
 
 Copyright (c) 2026 Elia Kuratli

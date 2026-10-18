@@ -253,7 +253,7 @@ export function ProjectDetail({
             </div>
 
             {history.length === 0 ? (
-              <Empty className="cf-project-history-empty min-h-[330px]"><EmptyHeader><EmptyTitle>{query || outcome ? "No matching runs" : "No runs yet"}</EmptyTitle><EmptyDescription>{query || outcome ? "Try fewer outcomes or another search." : "Describe the API in the composer and start the agent workflow."}</EmptyDescription></EmptyHeader>{(query || outcome) && <EmptyContent><Button variant="outline" onClick={() => onFilter?.("", "")}>Clear run filters</Button></EmptyContent>}</Empty>
+              <Empty illustration={query || outcome ? "search" : "inbox"} className="cf-project-history-empty min-h-[330px]"><EmptyHeader><EmptyTitle>{query || outcome ? "No matching runs" : "No runs yet"}</EmptyTitle><EmptyDescription>{query || outcome ? "Try fewer outcomes or another search." : "Describe the API in the composer and start the agent workflow."}</EmptyDescription></EmptyHeader>{(query || outcome) && <EmptyContent><Button variant="outline" onClick={() => onFilter?.("", "")}>Clear run filters</Button></EmptyContent>}</Empty>
             ) : (
               history.map((run) => {
                 const meta = RUN_STATUS_META[run.status] ?? {

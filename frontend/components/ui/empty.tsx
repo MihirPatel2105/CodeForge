@@ -1,16 +1,21 @@
+import { EmptyIllustration } from "@/components/ui/arc/empty-illustration"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-function Empty({ className, ...props }: React.ComponentProps<"div">) {
+function Empty({ className, children, illustration, ...props }: React.ComponentProps<"div"> & { illustration?: "search" | "inbox" | "map" | "offline" }) {
   return (
     <div
       data-slot="empty"
       className={cn(
         "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center text-balance",
+        (illustration || className?.includes("cf-project-empty")) && "[&_[data-slot=empty-header]>svg]:hidden",
         className
       )}
       {...props}
-    />
+    >
+      {(illustration || className?.includes("cf-project-empty")) && <EmptyIllustration scene={illustration ?? "inbox"} />}
+      {children}
+    </div>
   )
 }
 

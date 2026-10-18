@@ -11,6 +11,7 @@ import { ArrowLeft, ChevronDown, Play, RotateCcw } from "lucide-react";
 import { ParameterGuidance } from "@/components/dashboard/parameter-guidance";
 import { parameterDefault, parameterErrors } from "@/lib/preview-parameters";
 import { RequestFields } from "@/components/dashboard/request-fields";
+import { JsonResponse } from "@/components/dashboard/json-response";
 import { ResponseBody } from "@/components/dashboard/response-body";
 import { RequestQuery, requestPath, splitRequestPath, type QueryParameter } from "@/components/dashboard/request-query";
 import { readLocal, writeLocal } from "@/lib/workspace-storage";
@@ -44,7 +45,7 @@ export default function TryApiPage() {
   const [parameters, setParameters] = useState<QueryParameter[]>([]);
   const [body, setBody] = useState("");
   const [response, setResponse] = useState<PreviewResult | null>(null);
-  const [responseView, setResponseView] = useState<"pretty" | "raw" | "headers">("pretty");
+  const [responseView, setResponseView] = useState<"pretty" | "raw" | "headers" | "tree">("pretty");
   const [loading, setLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<"send" | "reset" | null>(null);
   const [mode, setMode] = useState<"json" | "fields">("json");
@@ -255,7 +256,7 @@ export default function TryApiPage() {
                   </p>
                   {response.session_started && <p className="mt-2 text-[12px] text-fg-muted">A fresh temporary database was started for this request.</p>}
                   <div role="group" aria-label="Response view" className="mt-4 flex flex-wrap gap-2">
-                    {(["pretty", "raw", "headers"] as const).map(view => <Button key={view} size="sm" variant={responseView === view ? "default" : "outline"} aria-pressed={responseView === view} onClick={() => setResponseView(view)}>{view === "pretty" ? "Pretty" : view === "raw" ? "Raw" : "Headers"}</Button>)}
+                    {(["pretty", "tree", "raw", "headers"] as const).map(view => <Button key={view} size="sm" variant={responseView === view ? "default" : "outline"} aria-pressed={responseView === view} onClick={() => setResponseView(view)}>{view === "pretty" ? "Pretty" : view === "tree" ? "Tree" : view === "raw" ? "Raw" : "Headers"}</Button>)}
                   </div>
                   {responseView === "headers" ? (
                     <div className="mt-4 overflow-x-auto rounded-lg border border-border">
@@ -266,7 +267,7 @@ export default function TryApiPage() {
                       </table>
                       <p className="border-t border-border p-3 text-fg-muted">Only selected response headers are shown. Older previews may provide only the content type.</p>
                     </div>
-                  ) : <ResponseBody text={responseView === "pretty" ? displayBody(response.body) : response.body} pending={sending} />}
+                  ) : responseView === "tree" ? <JsonResponse body={response.body} pending={sending} /> : <ResponseBody text={responseView === "pretty" ? displayBody(response.body) : response.body} pending={sending} />}
                   {response.truncated && <Notice variant="warning" compact className="mt-2">Response shortened. Some content is not shown.</Notice>}
                 </div>
               ) : <div className="mt-5 flex min-h-44 items-center justify-center rounded-lg border border-dashed border-border bg-bg px-5 text-center text-[13px] text-fg-muted">{pendingAction === "send" ? "Waiting for the API…" : pendingAction === "reset" ? "Clearing temporary data…" : "Send a request to see what your API returns."}</div>}

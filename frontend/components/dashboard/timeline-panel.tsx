@@ -147,7 +147,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
             <p className="mt-1.5 max-w-[32ch] text-[13px] leading-5 text-fg-muted">Agent updates will appear here as the run progresses.</p>
           </div>
         ) : visible.length === 0 ? (
-          <Empty><EmptyHeader><EmptyTitle>No matching activity</EmptyTitle><EmptyDescription>Try another search or clear the filters to see all events.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" size="sm" onClick={clearFilters}>Reset activity filters</Button></EmptyContent></Empty>
+          <Empty illustration="search"><EmptyHeader><EmptyTitle>No matching activity</EmptyTitle><EmptyDescription>Try another search or clear the filters to see all events.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" size="sm" onClick={clearFilters}>Reset activity filters</Button></EmptyContent></Empty>
         ) : (
           visible.map(({ entry, index }) => <TimelineEntry key={index} entry={entry} i={index} />)
         )}
