@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import "./site-footer.css";
 import { LineHoverLink } from "@/components/ui/vengeance/line-hover-link";
 import { ArrowUpRight } from "lucide-react";
 import { useCurrentUser } from "@/lib/use-current-user";
@@ -32,11 +35,31 @@ export function ClosingBanner() {
 
 export function SiteFooter() {
   const user = useCurrentUser();
+  const reducedMotion = useMotionPreference();
+  const footer = useRef<HTMLElement>(null);
+  const [reveal, setReveal] = useState(false);
+
+  useEffect(() => {
+    const element = footer.current;
+    if (!element) return;
+    // A footer taller than the viewport must remain in flow so every link is reachable.
+    const update = () => setReveal(!reducedMotion && window.innerWidth >= 1024 && element.offsetHeight <= window.innerHeight - 80);
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    window.addEventListener("resize", update);
+    update();
+    return () => { observer.disconnect(); window.removeEventListener("resize", update); };
+  }, [reducedMotion]);
 
   return (
-    <footer className="cf-invert cf-site-footer border-t border-rule bg-bg">
-      <div className="mx-auto w-full max-w-[1200px] px-6 pb-7 pt-14 md:px-10 md:pt-16 lg:px-12">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] lg:gap-x-14">
+    <footer ref={footer} data-reveal={reveal} className="cf-invert cf-site-footer border-t border-rule bg-bg" onFocusCapture={event => {
+      // Sticky links can appear in the viewport while the page still covers them.
+      if (reveal && event.target instanceof HTMLElement && event.target.matches(":focus-visible")) {
+        window.scrollTo({ top: document.documentElement.scrollHeight - window.innerHeight, behavior: "instant" });
+      }
+    }}>
+      <div className="mx-auto w-full max-w-[1200px] px-6 pb-6 pt-10 md:px-10 lg:px-12">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] lg:gap-x-14">
           <div className="col-span-2 border-b border-rule pb-9 md:col-span-3 lg:col-span-1 lg:border-0 lg:pb-0">
             <Link
               href="/"
@@ -45,11 +68,11 @@ export function SiteFooter() {
             >
               <LogoLockup variant="dark" className="h-9 w-auto" />
             </Link>
-            <p className="mt-6 text-[20px] font-[550] leading-[1.4] tracking-[-0.025em] text-fg">From idea to tested API.</p>
-            <p className="mt-3 max-w-[32ch] text-[14px] leading-[1.75] text-fg-muted">
+            <p className="mt-5 text-[20px] font-[550] leading-[1.4] tracking-[-0.025em] text-fg">From idea to tested API.</p>
+            <p className="mt-2 max-w-[32ch] text-[14px] leading-[1.75] text-fg-muted">
               A team of agents. A visible process. You stay in control of the build.
             </p>
-            <address className="mt-6 flex flex-col items-start gap-2 not-italic">
+            <address className="mt-4 flex flex-col items-start gap-2 not-italic">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-rule px-4 text-[12px] font-[550] text-fg transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
@@ -104,7 +127,9 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="cf-footer-wordmark" aria-hidden="true">CodeForge</div>
+
+        <div className="mt-6 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>
             © {new Date().getFullYear()} CodeForge
           </p>
@@ -134,7 +159,7 @@ function FooterColumn({
           <li key={link.href}>
             <LineHoverLink
               href={link.href}
-              className="inline-flex min-h-11 items-center rounded-sm text-[14px] leading-6 text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="inline-flex min-h-10 items-center rounded-sm text-[13px] leading-6 text-fg-muted transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {link.label}
             </LineHoverLink>

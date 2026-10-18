@@ -65,7 +65,7 @@ jobs:
           done
           E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/projects-retry.spec.ts tests/e2e/projects-search.spec.ts tests/e2e/project-time-ui.spec.ts tests/e2e/profile-ui.spec.ts tests/e2e/try-api-ui.spec.ts tests/e2e/api-playground.spec.ts tests/e2e/auth-recovery.spec.ts tests/e2e/workspace-experience.spec.ts tests/e2e/run-problems.spec.ts tests/e2e/run-history-loading.spec.ts tests/e2e/run-dashboard-layout.spec.ts tests/e2e/run-approval-stream.spec.ts tests/e2e/code-folders.spec.ts tests/e2e/action-feedback.spec.ts tests/e2e/run-retry.spec.ts tests/e2e/timeline-filters.spec.ts tests/e2e/admin-operations.spec.ts tests/e2e/admin-live-search.spec.ts tests/e2e/admin-user-delete-ui.spec.ts tests/e2e/admin-security.spec.ts tests/e2e/security-hardening.spec.ts tests/e2e/motion-ui.spec.ts tests/e2e/landing-scroll.spec.ts tests/e2e/editorial-pages.spec.ts
       - name: Component interaction regression checks
-        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts tests/e2e/component-enhancements.spec.ts tests/e2e/notification-inbox.spec.ts tests/e2e/desktop-recommendation.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/agent-network-preview.spec.ts tests/e2e/api-machine-preview.spec.ts
+        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts tests/e2e/component-enhancements.spec.ts tests/e2e/notification-inbox.spec.ts tests/e2e/footer-reveal.spec.ts tests/e2e/desktop-recommendation.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/agent-network-preview.spec.ts tests/e2e/api-machine-preview.spec.ts
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

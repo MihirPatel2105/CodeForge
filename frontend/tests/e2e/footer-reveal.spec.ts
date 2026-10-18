@@ -1,0 +1,36 @@
+import { expect, test } from "@playwright/test";
+
+for (const path of ["/", "/about"]) test(`desktop footer reveals beneath ${path} and keyboard focus uncovers links`, async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route("**/api/backend/auth/me", route => route.fulfill({ status: 401, json: {} }));
+  await page.goto(path);
+  const footer = page.getByRole("contentinfo");
+  await expect(footer).toHaveAttribute("data-reveal", "true");
+  const before = await footer.boundingBox();
+  expect(before!.y + before!.height).toBeLessThanOrEqual(1001);
+  const total = await page.evaluate(() => document.documentElement.scrollHeight);
+  await page.evaluate(top => window.scrollTo({ top, behavior: "instant" }), total - 1100);
+  const partial = await footer.boundingBox();
+  expect(Math.abs(partial!.y - before!.y)).toBeLessThanOrEqual(1);
+  await page.keyboard.press("Tab");
+  await footer.getByRole("link", { name: "How it works", exact: true }).focus();
+  await expect.poll(() => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - innerHeight - scrollY))).toBeLessThanOrEqual(1);
+  await expect(footer.getByRole("navigation", { name: "Product links" })).toBeVisible();
+  await expect(footer.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
+  await page.screenshot({ path: "/tmp/codeforge-footer-desktop.png" });
+});
+
+for (const variant of ["mobile", "short", "reduced"] as const) {
+  test(`footer stays in normal flow for ${variant}`, async ({ page }) => {
+    await page.setViewportSize(variant === "mobile" ? { width: 375, height: 812 } : { width: 1440, height: variant === "short" ? 420 : 1000 });
+    if (variant === "reduced") await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/faq");
+    const footer = page.getByRole("contentinfo");
+    await expect(footer).toHaveAttribute("data-reveal", "false");
+    await expect(footer).toHaveCSS("position", "relative");
+    await footer.getByRole("link", { name: "Terms of Use" }).scrollIntoViewIfNeeded();
+    await expect(footer.getByRole("link", { name: "Terms of Use" })).toBeInViewport();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(variant === "mobile" ? 375 : 1440);
+    if (variant === "mobile") await page.screenshot({ path: "/tmp/codeforge-footer-mobile.png", fullPage: true });
+  });
+}
