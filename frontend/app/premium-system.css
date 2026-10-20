@@ -75,7 +75,7 @@
 .cf-premium-marketing :is(.cf-about-hero,.cf-subpage-hero,.cf-contact-hero) > div > div:last-child:not(:first-child) { border-radius: var(--premium-radius-panel); box-shadow: none; }
 .cf-premium-marketing .cf-closing-banner { background: var(--bg); border: 0; }
 .cf-closing-banner h2 { font-size: clamp(28px,3vw,40px); }
-.cf-not-found h1 { font-size: var(--premium-display); }
+.cf-not-found h1 { font-size: clamp(28px, 4vw, 44px); }
 .cf-not-found main { background: var(--surface); }
 .cf-error > div { padding: 48px 32px; box-shadow: none; }
 .cf-error h1 { font-size: 36px; line-height: 1.15; }
