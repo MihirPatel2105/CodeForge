@@ -1,0 +1,57 @@
+/* Admin surfaces follow the shared light and dark theme tokens. */
+.cf-admin .cf-operations-layout { max-width:1600px; gap:40px; padding:28px 36px; }
+.cf-admin aside.cf-operations-nav { width:224px; padding:24px 10px 12px; border:1px solid var(--border); border-radius:20px; background:var(--bg); }
+.cf-admin aside.cf-operations-nav {
+  position: sticky;
+  top: 88px;
+  align-self: flex-start;
+}
+.cf-admin-brand { display:flex; align-items:center; gap:11px; padding:0 10px 24px; border-bottom:1px solid var(--border); }
+.cf-admin-brand-icon { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--accent); }
+.cf-admin-brand-title { display:block; font-size:13px; font-weight:650; letter-spacing:-.02em; }
+.cf-admin-brand-caption { display:block; margin-top:3px; font-size:10px; color:var(--fg-muted); }
+.cf-admin .cf-operations-nav nav { margin-top:18px; }
+.cf-admin .cf-operations-nav nav a { position:relative; min-height:44px; border:1px solid transparent; font-size:12px; font-weight:550; }
+.cf-admin .cf-operations-nav nav a[aria-current="page"] { border-color:color-mix(in srgb,var(--accent) 18%,transparent); background:var(--accent-soft); }
+.cf-admin-nav-indicator { width:5px; height:5px; margin-left:auto; border-radius:50%; background:currentColor; }
+.cf-admin-workspace-link { display:flex; justify-content:space-between; align-items:center; margin:24px 12px 0; padding-top:20px; border-top:1px solid var(--border); font-size:11px; color:var(--fg-muted); }
+.cf-admin-workspace-link:hover { color:var(--accent); }
+.cf-admin main { padding:12px 0 64px; }
+.cf-admin .cf-admin-page-header { padding:0 0 28px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+.cf-admin .cf-admin-page-header h1 { margin-top:12px; font-size:clamp(28px,3vw,40px); letter-spacing:-.045em; line-height:1.15; }
+.cf-admin .cf-admin-page-header p { max-width:58ch; margin-top:12px; font-size:13px; line-height:1.8; }
+.cf-admin .cf-admin-page-header > div > div > span:last-child { color:var(--accent); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+.cf-admin .cf-admin-page-header button { background:var(--bg); border-radius:10px; font-size:12px; }
+.cf-admin .cf-admin-metrics { gap:1px; border-radius:18px; background:var(--border); box-shadow:0 4px 18px color-mix(in srgb,var(--fg) 3%,transparent); }
+.cf-admin .cf-admin-metric { border:0; background:var(--bg); padding:0; min-height:146px; }
+.cf-admin-metric > a { height:100%; padding:22px; border-radius:0; transition:background-color 180ms ease; }
+.cf-admin-metric > a:hover { background:var(--surface-2); }
+.cf-admin-metric dt { font-size:11px; font-weight:500; }
+.cf-admin-metric dd { font-variant-numeric:tabular-nums; font-size:34px; line-height:1; margin-top:24px; letter-spacing:-.045em; }
+.cf-admin-metric dd[aria-busy="true"] { color:var(--fg-faint); }
+.cf-admin .cf-admin-attention { padding:24px; margin-top:32px; border:1px solid var(--border); border-radius:18px; background:var(--bg); }
+.cf-admin-attention h2 { font-size:18px; letter-spacing:-.035em; }
+.cf-admin .cf-admin-queue-item { border-radius:12px; background:var(--surface); border-left:3px solid var(--accent); }
+.cf-admin-attention > p:last-child { max-width:85ch; line-height:1.7; }
+.cf-admin .cf-admin-activity { padding-top:36px; gap:24px; }
+.cf-admin .cf-admin-activity h2 { font-size:18px; }
+.cf-admin .cf-admin-activity .rounded-3xl { border-radius:16px; }
+.cf-admin table { font-variant-numeric:tabular-nums; }
+.cf-admin th { font-size:10px; letter-spacing:.035em; }
+.cf-admin :is(a,button,input,select):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+@media(max-width:1279px) { .cf-admin .cf-operations-layout { gap:28px; padding-inline:24px; } }
+@media(max-width:1023px) {
+ .cf-admin .cf-operations-layout { padding:0 24px; }
+ .cf-admin main { padding-top:28px; }
+ .cf-admin nav[aria-label="Admin navigation"] a { min-height:38px; display:inline-flex; align-items:center; }
+}
+@media(max-width:639px) {
+ .cf-admin .cf-operations-layout { padding-inline:16px; }
+ .cf-admin .cf-admin-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .cf-admin-metric > a { padding:16px; }
+ .cf-admin .cf-admin-metric { min-height:126px; }
+ .cf-admin-metric dd { font-size:28px; }
+ .cf-admin .cf-admin-attention { padding:18px; }
+ .cf-admin .cf-admin-page-header h1 { font-size:30px; }
+}
+@media(prefers-reduced-motion:reduce) { .cf-admin :is(a,button,tr) { transition:none; } }

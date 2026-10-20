@@ -8,13 +8,13 @@ export default function NotFound() {
   return (
     <div className="cf-not-found flex min-h-screen flex-col bg-surface">
       <SiteHeader />
-      <main className="flex min-h-[calc(100svh-4rem)] flex-1 items-center justify-center border-b border-rule px-6 py-8 sm:py-20">
+      <main className="flex min-h-[calc(100svh-4rem)] flex-1 items-center justify-center border-b border-rule px-6 py-12 sm:py-16">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center text-center">
-          <div className="mb-5 flex justify-center [&_svg]:h-auto [&_svg]:w-[220px] sm:[&_svg]:w-[260px]">
-            <EmptyIllustration scene="map" />
+          <div className="mb-3 flex justify-center [&_svg]:h-auto [&_svg]:w-[220px] sm:[&_svg]:w-[260px]">
+            <EmptyIllustration scene="map" animateMap />
           </div>
-          <p aria-hidden="true" className="font-display text-[clamp(6rem,15vw,10rem)] font-[650] leading-none tracking-[-0.08em] text-fg">404</p>
-          <h1 className="font-display mt-6 text-[clamp(1.75rem,4vw,2.75rem)] font-[650] leading-[1.15] tracking-[-0.05em] text-fg">
+          <p aria-hidden="true" className="font-display text-[clamp(4rem,10vw,6rem)] font-[650] leading-none tracking-[-0.08em] text-fg">404</p>
+          <h1 className="font-display mt-4 text-[clamp(1.75rem,4vw,2.75rem)] font-[650] leading-[1.15] tracking-[-0.05em] text-fg">
             <span className="sr-only">Page not found. </span>This page is off the map.
           </h1>
           <p className="mt-4 max-w-[38ch] text-[15px] leading-7 text-fg-muted sm:text-base">

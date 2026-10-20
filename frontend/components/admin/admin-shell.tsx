@@ -1,10 +1,13 @@
 "use client";
 
+import "./admin-premium.css";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Activity,
+  ArrowUpRight,
+  Command,
   Globe,
   ShieldAlert,
   BarChart3,
@@ -40,7 +43,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <AppHeader />
       <div className="cf-operations-layout mx-auto flex w-full max-w-[1540px] gap-8">
         <aside className="cf-operations-nav sticky top-[88px] hidden h-fit w-[220px] shrink-0 rounded-3xl border border-border px-3 py-6 lg:block">
-          <span className={cn(ADMIN_LABEL, "px-3")}>Control centre</span>
+          <div className="cf-admin-brand">
+            <span className="cf-admin-brand-icon"><Command className="h-5 w-5" aria-hidden /></span>
+            <div><span className="cf-admin-brand-title">Control centre</span><span className="cf-admin-brand-caption">Platform administration</span></div>
+          </div>
           <nav className="mt-4 space-y-1" aria-label="Admin navigation">
             {NAV.map(({ href, label, icon: Icon, exact }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
@@ -58,21 +64,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 >
                   <Icon className="h-4 w-4" aria-hidden />
                   {label}
+                  {active && <span className="cf-admin-nav-indicator" aria-hidden />}
                 </Link>
               );
             })}
           </nav>
-          <div className="mx-1 mt-8 rounded-2xl bg-surface-2 p-4">
-            <div className="flex items-center gap-2 text-ok">
-              <Activity className="h-4 w-4" aria-hidden />
-              <span className="text-[12px] font-[650]">
-                Audited actions
-              </span>
-            </div>
-            <p className="mt-2 text-[11px] leading-5 text-fg-muted">
-              Run cancellation and session revocation require a reason and leave a durable record.
-            </p>
-          </div>
+          <Link href="/projects" className="cf-admin-workspace-link">Open workspace <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></Link>
         </aside>
 
         <div className="min-w-0 flex-1">

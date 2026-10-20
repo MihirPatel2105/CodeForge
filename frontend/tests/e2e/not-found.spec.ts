@@ -18,3 +18,14 @@ for (const width of [1440, 375]) {
     await expect(page).toHaveURL("/");
   });
 }
+
+test("map route animates and stops with reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/this-page-does-not-exist");
+  const illustration = page.getByRole("main").locator("svg").first();
+  const route = illustration.locator("clipPath rect");
+  const firstWidth = await route.evaluate((node) => parseFloat(getComputedStyle(node).width));
+  await expect.poll(() => route.evaluate((node) => parseFloat(getComputedStyle(node).width))).not.toBe(firstWidth);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => illustration.locator("g").first().evaluate((node) => getComputedStyle(node).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+});

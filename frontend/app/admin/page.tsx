@@ -34,14 +34,14 @@ export default function AdminPage() {
       <RefreshStatus at={updatedAt} loading={loading} />
       {error ? <ErrorBanner message={error} /> : null}
 
-      <section className="pt-8" aria-labelledby="overview-heading">
+      <section className="cf-admin-overview pt-8" aria-labelledby="overview-heading">
         <AdminSectionHeading eyebrow="01 / overview" title="Platform at a glance" id="overview-heading" />
         <MetricGrid overview={overview} loading={loading} />
       </section>
 
       <AttentionQueue />
 
-      <section className="grid gap-8 pt-12 xl:grid-cols-[1fr_340px]" aria-labelledby="recent-heading">
+      <section className="cf-admin-activity grid gap-8 pt-12 xl:grid-cols-[minmax(0,1fr)_280px]" aria-labelledby="recent-heading">
         <div className="min-w-0">
           <AdminSectionHeading eyebrow="03 / activity" title="Recent runs" id="recent-heading" />
           <div className="mt-5"><AdminRunTable runs={overview?.recent_runs ?? []} /></div>
@@ -86,13 +86,13 @@ function MetricGrid({ overview, loading }: { overview: AdminOverviewResponse | n
     { label: "fallback runs", value: totals?.runs_with_provider_fallbacks, icon: ServerCog, className: "text-warn" },
   ];
   return (
-    <dl className="mt-5 grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-2 xl:grid-cols-4">
+    <dl className="cf-admin-metrics mt-5 grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map(({ label, value, icon: Icon, className, hint }, index) => (
-        <div key={label} className={cn("min-h-[136px] p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "xl:border-t-0", index % 4 !== 0 && "xl:border-l", index % 4 === 0 && "xl:border-l-0", index > 3 && "xl:border-t")}>
+        <div key={label} className={cn("cf-admin-metric min-h-[136px] p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "xl:border-t-0", index % 4 !== 0 && "xl:border-l", index % 4 === 0 && "xl:border-l-0", index > 3 && "xl:border-t")}>
           <Link href={label === "users" ? "/admin/users" : label === "awaiting approval" ? "/admin/runs?status=awaiting_approval" : label === "successful" ? "/admin/runs?status=succeeded" : label === "failed" ? "/admin/incidents" : label === "active now" ? "#operator-queue-heading" : label === "L5 outcomes" ? "/admin/runs?acceptance_level=L5" : label === "fallback runs" ? "/admin/system" : "/admin/runs"} className="block rounded-xl focus-visible:outline-2 focus-visible:outline-accent">
           <div className="flex items-center justify-between gap-4"><dt className={ADMIN_LABEL}>{label}</dt><Icon className={cn("h-4 w-4", className)} aria-hidden /></div>
-          <dd className="font-display mt-5 text-[30px] font-[650] tracking-[-0.05em] text-fg">{loading || value == null ? "—" : value.toLocaleString()}</dd>
-          {hint ? <p className="mt-1 font-mono text-[10px] text-fg-faint">{hint}</p> : null}
+          <dd aria-busy={loading} className="font-display mt-5 text-[30px] font-[650] tracking-[-0.05em] text-fg">{loading || value == null ? "—" : value.toLocaleString()}</dd>
+          {hint && !loading && value != null ? <p className="mt-1 font-mono text-[10px] text-fg-faint">{hint}</p> : null}
           </Link>
         </div>
       ))}
