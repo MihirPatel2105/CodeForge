@@ -1,6 +1,7 @@
 "use client";
 
 import { ShareSheet } from "@/components/ui/enhancements/share-sheet";
+import { ActionIcon } from "@/components/ui/action-icon";
 import { Notice } from "@/components/ui/notice";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { StatefulButton } from "@/components/ui/stateful-button";
@@ -195,12 +196,12 @@ export default function PublishApiPage() {
         {error && <Notice className="mt-5">{error}</Notice>}
 
         {!loading && run?.parent_run_id && run.status === "succeeded" && run.metrics?.tests_passed && <div className="mt-6 rounded-3xl border border-border bg-surface p-5 sm:p-6"><ApiCompatibility id={id} sourceId={run.parent_run_id} /></div>}
-        {!loading && versionError && <Notice className="mt-5" variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Version history could not load. Review the run before publishing an update.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry version history</Button></div></Notice>}
+        {!loading && versionError && <Notice className="mt-5" variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Version history could not load. Review the run before publishing an update.</span><Button type="button" className="group" size="sm" variant="outline" onClick={() => void load()}><ActionIcon kind="reload" />Retry version history</Button></div></Notice>}
 
         {loading ? <LoadingScreen label="Checking API publication" message="Checking your API…" /> : publicationError ? (
           <section className="mt-6 rounded-3xl border border-border bg-surface p-6 text-[13px] text-fg-muted">
             <p>Publication status is unavailable. Retry before making changes.</p>
-            <Button className="mt-3" variant="outline" size="sm" onClick={() => void load()}>Retry status</Button>
+            <Button className="group mt-3" variant="outline" size="sm" onClick={() => void load()}><ActionIcon kind="reload" />Retry status</Button>
           </section>
         ) : deployment ? (
           <div className="mt-6 space-y-4 motion-safe:animate-[cfFade_300ms_ease-out]">
@@ -217,7 +218,7 @@ export default function PublishApiPage() {
                   <p className="mt-1 text-[13px] leading-5 text-fg-muted">Use the URL from your backend and keep the key private.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <StatefulButton variant="outline" size="sm" label="Check connection" pendingLabel="Checking…" successLabel="Connected" onAction={checkConnection} disabled={busy || checking || deployment.status !== "active"} />
+                  <StatefulButton variant="outline" size="sm" actionKind="reload" label="Check connection" pendingLabel="Checking…" successLabel="Connected" onAction={checkConnection} disabled={busy || checking || deployment.status !== "active"} />
                   <Button variant="outline" size="sm" onClick={() => setConfirmAction("rotate")} disabled={busy || checking || deployment.status !== "active"}>Rotate key</Button>
                   <Button variant="destructive" size="sm" onClick={() => setConfirmAction("unpublish")} disabled={busy || checking}>{deployment.status === "deleting" ? "Retry unpublish" : "Unpublish"}</Button>
                 </div>
@@ -225,7 +226,7 @@ export default function PublishApiPage() {
               <div role="status" className="mt-4 text-[12px] leading-5 text-fg-muted">
                 {checking ? "Checking the hosted API…" : deployment.status === "deleting" ? "Cleanup has not finished. Retry unpublish to finish removing the API and its hosted data." : deployment.status === "starting" ? "The API is starting. Refresh its status shortly." : health ? `${health.detail} Checked at ${new Date(health.checked_at).toLocaleTimeString()}. ${health.duration_ms} ms · ${health.requests_this_minute}/${health.request_limit} gateway requests this minute.` : "Runtime health has not been checked in this session."}
               </div>
-              {deployment.status === "starting" && <Button variant="outline" size="sm" className="mt-2" onClick={() => void load()}>Refresh status</Button>}
+              {deployment.status === "starting" && <Button variant="outline" size="sm" className="group mt-2" onClick={() => void load()}><ActionIcon kind="reload" state={loading ? "pending" : "idle"} />Refresh status</Button>}
               <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
                 <div className="min-w-0 rounded-lg border border-border bg-bg p-4">
                   <p className="text-[12px] font-[700] text-fg">Base URL</p>
@@ -249,7 +250,7 @@ export default function PublishApiPage() {
               <span role="status" className="sr-only">{copied ? `${copied === "key" ? "API key" : copied === "URL" ? "Base URL" : copied === "setup" ? "Terminal setup" : "Request example"} copied.` : ""}</span>
             </section>
             <div className="min-w-0 space-y-3">
-              {operationsError && <Notice variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Endpoint examples could not load.</span><Button type="button" size="sm" variant="outline" onClick={() => void load()}>Retry examples</Button></div></Notice>}
+              {operationsError && <Notice variant="warning"><div className="flex flex-wrap items-center gap-3"><span>Endpoint examples could not load.</span><Button type="button" className="group" size="sm" variant="outline" onClick={() => void load()}><ActionIcon kind="reload" />Retry examples</Button></div></Notice>}
               <PublishGuide url={deployment.url} status={deployment.status} apiKey={apiKey} operations={operations} copied={copied} onCopy={(value, label) => void copy(value, label)} />
             </div>
           </div>
@@ -258,7 +259,7 @@ export default function PublishApiPage() {
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
               <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
-              <StatefulButton className="mt-5" label="Publish API" pendingLabel="Publishing…" successLabel="Published" onAction={publish} disabled={busy} />
+              <StatefulButton className="mt-5" actionKind="publish" label="Publish API" pendingLabel="Publishing…" successLabel="Published" onAction={publish} disabled={busy} />
             </div>
           </section>
         )}

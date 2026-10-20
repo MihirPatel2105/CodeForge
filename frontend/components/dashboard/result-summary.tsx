@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, LoaderCircle } from "lucide-react";
+import { ActionIcon } from "@/components/ui/action-icon";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
 import { typeScale } from "@/lib/type-scale";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
@@ -165,11 +165,11 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
               type="button"
               onClick={onDownload}
               disabled={snapshot.files.length === 0 || downloadState === "pending"}
-              className="inline-flex min-w-[215px] shrink-0 items-center justify-center rounded-full bg-accent px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] hover:bg-accent/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] motion-safe:active:translate-y-0 motion-safe:active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-accent disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:disabled:hover:translate-y-0 motion-safe:disabled:hover:scale-100"
+              aria-busy={downloadState === "pending"}
+              className="group inline-flex min-w-[215px] shrink-0 items-center justify-center rounded-full bg-accent px-[16px] py-[10px] text-[13.5px] font-[700] text-surface shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:transition-[transform,background-color,box-shadow] motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] hover:bg-accent/90 hover:shadow-[0_12px_24px_rgba(23,32,51,0.2)] motion-safe:active:translate-y-0 motion-safe:active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-accent disabled:hover:shadow-[0_8px_20px_rgba(23,32,51,0.13)] motion-safe:disabled:hover:translate-y-0 motion-safe:disabled:hover:scale-100"
             >
-              <span key={downloadState} className="inline-flex items-center justify-center gap-2 motion-safe:animate-[cfFade_0.22s_ease-out]" aria-live="polite">
-                {downloadState === "pending" && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden="true" />}
-                {downloadState === "started" && <Check className="size-4" aria-hidden="true" />}
+              <span className="inline-flex items-center justify-center gap-2 motion-safe:animate-[cfFade_0.22s_ease-out]" aria-live="polite">
+                <ActionIcon kind="download" state={downloadState === "started" ? "success" : downloadState} />
                 {snapshot.files.length === 0
                   ? "No code generated"
                   : downloadState === "pending"

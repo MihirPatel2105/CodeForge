@@ -3,13 +3,14 @@
 import { toast } from "sonner";
 
 import "@/components/dashboard/run-dashboard.css";
+import { ActionIcon } from "@/components/ui/action-icon";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Download, TerminalSquare, Radio, Package } from "lucide-react";
+import { ArrowLeft, ArrowRight, TerminalSquare, Radio, Package } from "lucide-react";
 import { motionSpring } from "@/lib/motion-tokens";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { RunFlowLink } from "@/components/dashboard/run-flow-link";
@@ -102,8 +103,8 @@ export default function UseApiPage() {
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
             <p className="mt-3 text-[11px] leading-5 text-fg-muted">After unzipping, follow the README to run Docker Compose and open the API docs.</p>
-            <button type="button" onClick={() => void download()} disabled={downloadState === "pending"} className="mt-4 inline-flex min-w-[136px] items-center gap-1 rounded-lg text-[12px] font-[700] text-accent transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50">
-              {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : "Download project"} {downloadState === "started" ? <Check className="size-3.5 text-ok" aria-hidden /> : <Download className="size-3.5" aria-hidden />}
+            <button type="button" onClick={() => void download()} disabled={downloadState === "pending"} aria-busy={downloadState === "pending"} className="group mt-4 inline-flex min-w-[136px] items-center gap-1 rounded-lg text-[12px] font-[700] text-accent transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50">
+              {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : "Download project"} <ActionIcon kind="download" state={downloadState === "started" ? "success" : downloadState} />
             </button>
             <span role="status" className="sr-only">{downloadState === "started" ? "Project download started." : ""}</span>
           </motion.div>
