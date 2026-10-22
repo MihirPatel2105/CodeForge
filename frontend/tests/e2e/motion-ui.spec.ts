@@ -72,31 +72,21 @@ test("homepage repair sequence plays once and supports pause, replay, and reduce
   await page.goto("/");
   const pipeline = page.locator(".lp-pipeline-content");
   await pipeline.scrollIntoViewIfNeeded();
-  // Settle real scrolling and intersection delivery before controlling timers.
-  await expect.poll(() => pipeline.evaluate(el => {
-    const rect = el.getBoundingClientRect();
-    return Math.max(0, Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0)) / rect.height;
-  })).toBeGreaterThan(0.25);
-  await page.clock.install();
   const active = pipeline.locator(".lp-pipeline-stages > li[aria-current=step]");
-  await expect.poll(async () => {
-    await page.clock.runFor(1200);
-    return pipeline.evaluate(el => el.querySelector(".lp-feedback-route > span[data-current=true]")?.textContent ?? "");
-  }, { intervals: [50], timeout: 15000 }).toBe("Reviewer");
-  await page.clock.runFor(2200);
-  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
-  await expect(pipeline.locator(".lp-feedback-route > span[data-current=true]")).toHaveText("Coder");
+  const current = pipeline.locator(".lp-feedback-route > span[data-current=true]");
+  // Keep real browser time: the shader and scroll observers also use animation frames.
+  await expect(current).toHaveText("Reviewer", { timeout: 15000 });
+  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible({ timeout: 5000 });
+  await expect(current).toHaveText("Coder");
   await pipeline.getByRole("button", { name: "Pause walkthrough" }).click();
-  await page.clock.runFor(5000);
+  await page.waitForTimeout(2500); // Longer than the repair step's 2200ms timer.
   await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
   await pipeline.getByRole("button", { name: "Play walkthrough" }).click();
-  await expect.poll(async () => {
-    await page.clock.runFor(2200);
-    return pipeline.getByRole("button", { name: "Replay walkthrough" }).isVisible();
-  }, { intervals: [50], timeout: 15000 }).toBe(true);
-  await page.clock.runFor(5000);
-  await expect(pipeline.getByRole("button", { name: "Replay walkthrough" })).toBeVisible();
-  await pipeline.getByRole("button", { name: "Replay walkthrough" }).click();
+  const replay = pipeline.getByRole("button", { name: "Replay walkthrough" });
+  await expect(replay).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(1500);
+  await expect(replay).toBeVisible();
+  await replay.click();
   await expect(active.getByRole("heading", { name: "PM", exact: true })).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(pipeline.getByText(/Tests passed/)).toBeVisible();
