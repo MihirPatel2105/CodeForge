@@ -404,7 +404,7 @@ export default function LiveRunPage() {
 
           <div className="cf-pipeline-viewport">
             <div className="min-w-0">
-              <PipelineStrip key={id} agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
+              <PipelineStrip key={id} agents={snapshot.agents} lastLoop={snapshot.lastLoop} activity={snapshot.timeline} />
             </div>
           </div>
         </section>

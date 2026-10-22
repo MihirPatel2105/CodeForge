@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
+import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
-import { FlipText } from "@/components/ui/enhancements/flip-text";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
 import { AgentBentoGrid } from "@/components/ui/vengeance/agent-bento-grid";
 import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-grid";
@@ -60,11 +60,11 @@ export function PremiumLanding() {
       <LandingScrollNav />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
-          <motion.p {...entrance(0)} className="lp-intro"><FlipText>Five agents. One API. You in control.</FlipText></motion.p>
-          <motion.h1 {...entrance(0.08)} id="landing-title">Your idea.<br />A working API.</motion.h1>
+          <motion.p {...entrance(0)} className="lp-intro">Five agents. One API. You in control.</motion.p>
+          <BlurHeadline />
           <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.24)} className="lp-actions">
-            <Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
+            <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
           </motion.div>
           <ProductScrollPreview>
@@ -100,7 +100,7 @@ export function PremiumLanding() {
         ]} /></section>
 
         <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
-        <motion.section {...reveal} id="start-building" className="lp-closing"><h2>What will you build?</h2><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button" href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
+        <motion.section {...reveal} id="start-building" className="lp-closing"><h2>What will you build?</h2><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
       </main>
       <SiteFooter />
     </div>

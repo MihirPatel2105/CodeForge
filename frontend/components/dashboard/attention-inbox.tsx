@@ -1,4 +1,6 @@
 "use client";
+
+import { GradualScroll } from "@/components/ui/premium-effects";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Bell, CheckCheck, Check, CircleDot, CircleCheck, TriangleAlert, X, LoaderCircle } from "lucide-react";
@@ -97,7 +99,7 @@ export function AttentionInbox({ userId }: { userId: string }) {
       {visible.length > 0 && <motion.span key={badgePulse} animate={{ scale: badgePulse && !reducedMotion ? [1, 1.18, 1] : 1 }} className={styles.badge} aria-hidden>{visible.length > 99 ? "99+" : visible.length}</motion.span>}
     </Popover.Trigger>
     <Popover.Portal>
-      <Popover.Positioner align="end" sideOffset={12} collisionPadding={12} className="z-50">
+      <Popover.Positioner positionMethod="fixed" align="end" sideOffset={12} collisionPadding={12} className="z-50">
         <Popover.Popup className={styles.panel}>
           <header className={styles.header}>
             <div><div className={styles.heading}><Popover.Title>Run updates</Popover.Title><span className={styles.count} aria-hidden>{visible.length}</span></div>
@@ -113,7 +115,7 @@ export function AttentionInbox({ userId }: { userId: string }) {
               </button>)}
             </div>
           </div>
-          <div className={styles.list}>
+          <GradualScroll className={styles.list}>
             {unreadCompleted.length > 0 && <button type="button" className={styles.markAll} onClick={() => { allFilter.current?.focus(); updateSeen([...seen, ...unreadCompleted.map(fingerprint)]); }}><CheckCheck size={14} /><span>Mark completed runs as read</span></button>}
             <div role="list" aria-label="Run updates">
               <AnimatePresence initial={false}>
@@ -151,7 +153,7 @@ export function AttentionInbox({ userId }: { userId: string }) {
             {!filtered.length && <div className={styles.empty}>
               {!loaded && !notice ? <><LoaderCircle className="animate-spin motion-reduce:animate-none" size={24} /><strong>Loading run updates…</strong></> : notice && !loaded ? <><TriangleAlert size={24} /><strong>Updates unavailable</strong><p>We’ll retry shortly.</p></> : <><CheckCheck size={26} /><strong>{view === "unread" ? "Nothing unread" : "You’re all caught up."}</strong><p>{view === "approval" ? "No runs need your approval." : "New approvals and results will appear here."}</p></>}
             </div>}
-          </div>
+          </GradualScroll>
           {readItems.length > 0 && <div className={styles.footer}><span>{readItems.length} read</span><button type="button" onClick={clearRead}>Clear read updates</button></div>}
           <div className={styles.preferences}>
             <div><strong>Browser notifications</strong><p>{enabled ? "On while CodeForge is open" : "Get updates while this tab is in the background"}</p></div>

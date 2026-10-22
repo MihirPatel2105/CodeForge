@@ -1,3 +1,4 @@
+import "@/components/account/settings-premium.css";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, Fingerprint, KeyRound, ShieldCheck } from "lucide-react";

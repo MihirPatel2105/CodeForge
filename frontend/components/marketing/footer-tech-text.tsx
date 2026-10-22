@@ -12,10 +12,12 @@ export function FooterTechText() {
       <span className="cf-footer-tech-fallback">CodeForge</span>
       {!reducedMotion && (
         <div className="cf-footer-tech-canvas">
-          <TechText text="CodeForge" fontSize={172} fontWeight={750}
-            letterSpacing={-0.05} reach={140} reveal="letter" guides
-            sweep={false} draggable={false} clickKick={false} bounce={0}
-            specks={8} />
+          <TechText text="CodeForge" fontSize={172} fontWeight={600}
+            letterSpacing={-0.05} reach={200} softness={0.7}
+            reveal="letter" lineStyle="dashed" dashLength={4} dashGap={2}
+            strokeWidth={1.5} specks={15} selection labels
+            draggable clickKick bounce={0.4} sweep speed={1}
+            intro="none" introDuration={2} guides={false} />
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { VerificationCode } from "@/components/auth/verification-code";
+
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -306,7 +308,7 @@ export function TotpSettings({
                           <p id="totp-code-help" className="text-[13px] leading-5 text-fg-muted">Enter the current six-digit code shown for CodeForge. Codes refresh every 30 seconds.</p>
                         </div>
                         <label htmlFor="totp-verification-code" className={cn(LABEL, "mt-6 block text-fg-faint")}>six-digit authenticator code</label>
-                        <Input id="totp-verification-code" inputMode="numeric" autoComplete="one-time-code" aria-describedby="totp-code-help" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" className="mt-2 h-14 w-full max-w-xs rounded-lg bg-bg text-center font-mono text-[22px] font-[700] tracking-[0.35em]" />
+                        <VerificationCode id="totp-verification-code" describedBy="totp-code-help" value={code} onChange={setCode} disabled={busy} invalid={Boolean(error)} />
                         {error ? <Notice className="mt-4">{error}</Notice> : null}
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
@@ -335,7 +337,7 @@ export function TotpSettings({
           <p className="mt-2 text-[12.5px] leading-5 text-fg-muted">If you did not save your codes, generate a new set. This immediately invalidates every previous code.</p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div><label htmlFor="recovery-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="recovery-password" type="password" autoComplete="current-password" value={recoveryPassword} onChange={(event) => setRecoveryPassword(event.target.value)} className="mt-2 h-11 rounded-lg bg-bg" /></div>
-            <div><label htmlFor="recovery-totp" className={cn(LABEL, "text-fg-faint")}>current authenticator code</label><Input id="recovery-totp" inputMode="numeric" autoComplete="one-time-code" value={recoveryTotp} onChange={(event) => setRecoveryTotp(event.target.value.replace(/\D/g, "").slice(0, 6))} className="mt-2 h-11 rounded-lg bg-bg" /></div>
+            <div><label htmlFor="recovery-totp" className={cn(LABEL, "text-fg-faint")}>current authenticator code</label><VerificationCode id="recovery-totp" value={recoveryTotp} onChange={setRecoveryTotp} disabled={busy} /></div>
           </div>
           <Button type="button" variant="outline" onClick={regenerateRecoveryCodes} disabled={busy || !recoveryPassword || recoveryTotp.length !== 6} className="mt-4">Generate new recovery codes</Button>
         </section>
@@ -353,7 +355,7 @@ export function TotpSettings({
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-muted" aria-hidden />
               </div>
             </div>
-            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>{disableMethod === "recovery" ? "recovery code" : "authenticator code"}</label><Input id="totp-disable-code" inputMode={disableMethod === "recovery" ? "text" : "numeric"} autoComplete={disableMethod === "recovery" ? "off" : "one-time-code"} value={code} onChange={(event) => setCode(disableMethod === "recovery" ? event.target.value.replace(/[^a-fA-F0-9-]/g, "").slice(0, 35) : event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder={disableMethod === "recovery" ? "XXXX-XXXX-XXXX-XXXX" : "000000"} className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" /></div>
+            <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>{disableMethod === "recovery" ? "recovery code" : "authenticator code"}</label>{disableMethod === "totp" ? <VerificationCode id="totp-disable-code" value={code} onChange={setCode} disabled={busy} /> : <Input id="totp-disable-code" inputMode={disableMethod === "recovery" ? "text" : "numeric"} autoComplete={disableMethod === "recovery" ? "off" : "one-time-code"} value={code} onChange={(event) => setCode(disableMethod === "recovery" ? event.target.value.replace(/[^a-fA-F0-9-]/g, "").slice(0, 35) : event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder={disableMethod === "recovery" ? "XXXX-XXXX-XXXX-XXXX" : "000000"} className="mt-2 h-11 rounded-lg bg-bg font-mono tracking-[0.2em]" />}</div>
             <Button variant="outline" onClick={disable} disabled={busy || !password || (disableMethod === "recovery" ? code.replace(/-/g, "").length !== 32 : code.length !== 6)} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
           </div>
         </section>

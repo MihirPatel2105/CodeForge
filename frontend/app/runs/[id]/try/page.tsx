@@ -1,5 +1,6 @@
 "use client";
 
+import RubberSegment from "@/components/ui/react-bits/rubber-segment";
 import { Notice } from "@/components/ui/notice";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { StatefulButton } from "@/components/ui/stateful-button";
@@ -255,9 +256,11 @@ export default function TryApiPage() {
                     HTTP {response.status} · {response.duration_ms} ms
                   </p>
                   {response.session_started && <p className="mt-2 text-[12px] text-fg-muted">A fresh temporary database was started for this request.</p>}
-                  <div role="group" aria-label="Response view" className="mt-4 flex flex-wrap gap-2">
-                    {(["pretty", "tree", "raw", "headers"] as const).map(view => <Button key={view} size="sm" variant={responseView === view ? "default" : "outline"} aria-pressed={responseView === view} onClick={() => setResponseView(view)}>{view === "pretty" ? "Pretty" : view === "tree" ? "Tree" : view === "raw" ? "Raw" : "Headers"}</Button>)}
-                  </div>
+                  <RubberSegment className="cf-response-segments mt-4 max-w-full" aria-label="Response view" buttonSemantics
+                    items={[{ value: "pretty", label: "Pretty" }, { value: "tree", label: "Tree" }, { value: "raw", label: "Raw" }, { value: "headers", label: "Headers" }]}
+                    value={responseView} onChange={value => { if (value === "pretty" || value === "tree" || value === "raw" || value === "headers") setResponseView(value); }}
+                    size="md" draggable={false} stretch={35} squash={1.5} trackColor="var(--surface-2)" thumbColor="var(--surface)"
+                    textColor="var(--fg-muted)" activeTextColor="var(--fg)" />
                   {responseView === "headers" ? (
                     <div className="mt-4 overflow-x-auto rounded-lg border border-border">
                       <table className="w-full table-fixed text-left text-xs">

@@ -7,7 +7,7 @@ import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/br
 import { ArrowLeft, Fingerprint, KeyRound, LoaderCircle } from "lucide-react";
 import { AuthEntryShell } from "@/components/auth/auth-entry-shell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { VerificationCode } from "@/components/auth/verification-code";
 import { Label } from "@/components/ui/label";
 import { api, ApiError, setToken } from "@/lib/api";
 import {
@@ -131,17 +131,7 @@ export default function VerifyLoginPage() {
             <form onSubmit={verifyCode} className="mt-7 space-y-5">
               <div>
                 <Label htmlFor="login-verification-code" className="text-[13px] font-[650] text-fg">Authenticator code</Label>
-                <Input
-                  id="login-verification-code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  autoFocus
-                  required
-                  value={code}
-                  onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
-                  className="mt-2 h-12 rounded-xl border-border-strong bg-surface px-4 font-mono text-[16px] tracking-[0.2em] focus-visible:border-accent focus-visible:ring-4 focus-visible:ring-accent/15"
-                />
+                <VerificationCode id="login-verification-code" value={code} onChange={setCode} autoFocus disabled={busy} invalid={Boolean(error)} />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>
               <Button type="submit" disabled={busy || code.length !== 6} className="h-12 w-full rounded-xl text-[14px] font-[650]">

@@ -10,6 +10,7 @@ import { AppToaster } from "@/components/ui/app-toaster";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./premium-system.css";
+import "@/components/ui/premium-effects.css";
 
 // Nonces must be generated for each response rather than cached in static HTML.
 export const dynamic = "force-dynamic";

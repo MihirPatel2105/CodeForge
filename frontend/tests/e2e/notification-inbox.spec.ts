@@ -58,3 +58,25 @@ test("open inbox receives fresh polling updates without losing the selected view
   await expect(panel.getByRole("link", { name: "Open run" })).toBeVisible();
   await page.screenshot({ path: "/tmp/codeforge-arc-inbox-desktop.png" });
 });
+
+for (const path of ["/", "/faq"]) {
+  test(`notification panel stays anchored while scrolling ${path}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await setup(page);
+    if (path !== "/") {
+      await page.goto(path);
+      await page.getByRole("button", { name: /Run updates/ }).click();
+    }
+    const panel = page.getByRole("dialog", { name: "Run updates" });
+    await expect(panel).toBeVisible();
+    await expect(panel.locator("..")).toHaveCSS("position", "fixed");
+    await panel.evaluate(async element => { await Promise.all(element.getAnimations().map(animation => animation.finished)); });
+    const before = await panel.boundingBox();
+    await page.mouse.move(30, 800);
+    await page.mouse.wheel(0, 650);
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(300);
+    await expect.poll(async () => Math.abs((await panel.boundingBox())!.y - before!.y)).toBeLessThanOrEqual(2);
+    await page.getByRole("button", { name: "Close run updates" }).click();
+    await expect(panel).toHaveCount(0);
+  });
+}

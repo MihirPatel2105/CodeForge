@@ -152,9 +152,29 @@
 }
 .ascii-layer { background: #0e0b17; position: absolute; z-index: -1; inset: 0; pointer-events: none; overflow: hidden; mask-image: linear-gradient(black calc(100% - 64px), transparent); }
 /* Keep the demo's opening composition while carrying its dark base behind the full card. */
-.ascii-layer .hero-ascii { height: 780px; }
+.ascii-layer .hero-ascii { height: 780px; filter: brightness(.75); }
+.ascii-layer .hero-ascii::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 42% 32% at 50% 40%, rgb(3 7 18 / .12), transparent);
+}
 .cf-gradient-ascii .lp-hero > h1 { text-shadow: 0 2px 4px rgb(3 7 18 / .5), 0 8px 28px rgb(3 7 18 / .45); color: color-mix(in srgb, #f7f9ff calc(var(--relief-opacity, 1) * 100%), #171717); }
 .cf-gradient-ascii .lp-hero > :is(.lp-intro, .lp-lead) { color: color-mix(in srgb, #bfc9df calc(var(--relief-opacity, 1) * 100%), #606060); }
+.cf-gradient-ascii .lp-hero > .lp-intro {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #c4cee0;
+  font-size: clamp(12px, 1vw, 14px);
+  font-weight: 450;
+  letter-spacing: .015em;
+  text-shadow: 0 1px 4px rgb(3 7 18 / .9), 0 0 12px rgb(3 7 18 / .65);
+  box-shadow: none;
+}
 .cf-gradient-ascii .lp-hero > .lp-actions .lp-button { background: color-mix(in srgb, #f1f5ff calc(var(--relief-opacity, 1) * 100%), #171717); color: color-mix(in srgb, #111827 calc(var(--relief-opacity, 1) * 100%), white); }
 .cf-gradient-ascii .lp-hero > .lp-actions .lp-text-link { color: color-mix(in srgb, #e5ecff calc(var(--relief-opacity, 1) * 100%), #171717); }
 .cf-gradient-ascii .lp-hero > .lp-actions :is(a,button):focus-visible { outline-color: #91b1ff; }

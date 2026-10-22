@@ -67,5 +67,31 @@ Retrieved: 2026-10-22. Covered by the upstream license above.
 Used in `frontend/components/marketing/tech-text.tsx`, with a footer wrapper in
 `footer-tech-text.tsx`. Adaptations fit the existing wordmark footprint, expose
 first-paint readiness for a text fallback, and pause rendering in hidden tabs.
-The wrapper disables animation for reduced motion. Automatic sweeping, dragging,
-and click kicks are disabled; pointer interaction reveals dashed letters and guides.
+The wrapper disables animation for reduced motion. The footer uses the demo’s default Vector preset, including the idle sweep,
+letter dragging, click kicks, selection labels, and spring bounce. Only its text,
+white color, and maximum font size are customized.
+
+# React Bits profile enhancements
+
+Spotlight source: https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/SpotlightCard/SpotlightCard.tsx
+Profile interaction reference: https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/ProfileCard/ProfileCard.tsx
+Retrieved: 2026-10-22. Covered by the upstream license above.
+
+`profile-spotlight.tsx` vendors Spotlight Card with shared theme tokens supplied by
+`profile-premium.tsx`. The identity card is a custom initials-based adaptation of
+the Profile Card pointer tilt and glare, using a monochrome surface instead of its
+portrait, holographic foil, icon packages, or device-orientation features. Entrances
+use local CSS; the existing Motion counter remains. Reduced motion disables tilt,
+entrances, and spotlight intensity.
+
+# Settings surfaces and navigation
+
+Line Sidebar reference: https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/LineSidebar/LineSidebar.tsx
+Retrieved: 2026-10-22. Covered by the upstream license above.
+
+`settings-premium.tsx` reuses the vendored Spotlight Card for settings panels.
+Its section rail adapts Line Sidebar's smooth proximity falloff into a restrained
+four-pixel shift on the existing native anchor links. It preserves scroll tracking,
+keyboard focus, and account controls. Reduced motion disables proximity movement,
+panel entrances, and spotlight intensity. Local CSS carries the shared surfaces
+into the password, passkey, and authenticator pages.

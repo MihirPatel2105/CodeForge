@@ -1,10 +1,16 @@
 "use client";
 
+import "@/components/account/profile-premium.css";
+import Link from "next/link";
+import { ProfilePanel, ProfileIdentityCard } from "@/components/account/profile-premium";
 import { ProfileCounter } from "@/components/account/account-enhancements";
 import { Notice } from "@/components/ui/notice";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ArrowUpRight,
+  Fingerprint,
+  UserRound,
   FolderKanban,
   PlayCircle,
   ShieldCheck,
@@ -89,64 +95,45 @@ export default function ProfilePage() {
 
   return (
     <AccountShell page="profile">
-        <section className="profile-summary">
-          <div className="profile-identity">
-            <span className="profile-avatar" aria-hidden>{user?.initials ?? "—"}</span>
-            <div className="min-w-0">
-              <h1 className="profile-name">{user?.displayName ?? "Loading…"}</h1>
-              {user && user.displayName !== user.email && <p className="profile-email">{user.email}</p>}
-              <p className="profile-membership">{isAdmin ? "Platform administrator · " : ""}Member since {user ? formatWhen(user.created_at) : "—"}</p>
-            </div>
+      <div className="profile-page-intro"><p>YOUR ACCOUNT</p><span>A home for your workspace identity.</span></div>
+      <div className="profile-premium-grid">
+        <ProfileIdentityCard>
+          <div className="profile-card-top"><span>CodeForge</span><span className="profile-card-edition">{isAdmin ? "ADMINISTRATOR" : "WORKSPACE MEMBER"}</span></div>
+          <div className="profile-card-art" aria-hidden><span /><span /><span /><span className="profile-card-monogram">{user?.initials ?? "—"}</span></div>
+          <div className="profile-card-info">
+            <span className="profile-card-caption">WORKSPACE IDENTITY</span>
+            <h1 className="profile-name">{user?.displayName ?? "Loading…"}</h1>
+            {user && user.displayName !== user.email && <p className="profile-email">{user.email}</p>}
+            <p className="profile-membership">{isAdmin ? "Platform administrator · " : ""}Member since {user ? formatWhen(user.created_at) : "—"}</p>
           </div>
-            <dl aria-label="Activity summary" aria-busy={activityLoading} className="cf-identity-metrics grid border-t border-border sm:grid-cols-3">
-              <ProfileMetric
-                icon={isAdmin ? Users : FolderKanban}
-                label={isAdmin ? "platform users" : "projects"}
-                value={activityValue(isAdmin ? adminTotals?.users : totals?.projects)}
-              />
-              <ProfileMetric
-                icon={PlayCircle}
-                label="total runs"
-                value={activityValue(isAdmin ? adminTotals?.runs : totals?.runs)}
-                bordered
-              />
-              <ProfileMetric
-                icon={ShieldCheck}
-                label={isAdmin ? "platform success" : "success rate"}
-                value={activityLoading ? "…" : isAdmin ? platformSuccessRate : successRate}
-                bordered
-              />
+          <div className="profile-card-bottom"><span><span className={user?.email_verified ? "profile-verified-dot" : "profile-pending-dot"} />{!user ? "Loading account" : user.email_verified ? "Email verified" : "Email not verified"}</span><Fingerprint size={22} strokeWidth={1.25} aria-hidden /></div>
+        </ProfileIdentityCard>
+        <div className="profile-premium-content">
+          <ProfilePanel className="profile-activity-panel" delay={0.07}>
+            <div className="profile-panel-heading"><div><span className="profile-kicker">THE BIG PICTURE</span><h2>{isAdmin ? "Platform activity" : "Your activity"}</h2></div><Link href={isAdmin ? "/admin" : "/projects"} className="profile-text-link">{isAdmin ? "Control centre" : "Workspace"}<ArrowUpRight size={14} aria-hidden /></Link></div>
+            <dl aria-label="Activity summary" aria-busy={activityLoading} className="profile-premium-metrics">
+              <ProfileMetric icon={isAdmin ? Users : FolderKanban} label={isAdmin ? "platform users" : "projects"} value={activityValue(isAdmin ? adminTotals?.users : totals?.projects)} />
+              <ProfileMetric icon={PlayCircle} label="total runs" value={activityValue(isAdmin ? adminTotals?.runs : totals?.runs)} bordered />
+              <ProfileMetric icon={ShieldCheck} label={isAdmin ? "platform success" : "success rate"} value={activityLoading ? "…" : isAdmin ? platformSuccessRate : successRate} bordered />
             </dl>
-        </section>
-
-        {error && (
-          <Notice className="mt-5"><div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="min-w-0 flex-1">{error}</p>
-            <Button variant="outline" size="sm" onClick={() => void load(isAdmin)}>
-              Retry activity
-            </Button>
-          </div></Notice>
-        )}
-
-        <div className="profile-details mt-8">
-          <section className="rounded-3xl border border-border bg-surface">
-            <div className="border-b border-rule px-6 py-5">
-              <h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
-                {isAdmin ? "Administrator identity" : "Personal details"}
-              </h2>
-            </div>
-            <dl className="px-6">
+            {error && <Notice className="mt-5"><div className="flex flex-wrap items-center justify-between gap-3"><p className="min-w-0 flex-1">{error}</p><Button variant="outline" size="sm" onClick={() => void load(isAdmin)}>Retry activity</Button></div></Notice>}
+          </ProfilePanel>
+          <ProfilePanel delay={0.14}>
+            <div className="profile-panel-heading"><div><span className="profile-kicker">ACCOUNT INFORMATION</span><h2>{isAdmin ? "Administrator identity" : "Personal details"}</h2></div><UserRound size={19} strokeWidth={1.5} className="text-fg-muted" aria-hidden /></div>
+            <dl className="profile-premium-details">
               <DetailRow label="First name" value={user?.first_name || "—"} />
               <DetailRow label="Last name" value={user?.last_name || "—"} />
               <DetailRow label="Email address" value={user?.email ?? "—"} mono />
-              {isAdmin ? <DetailRow label="Role" value="Platform administrator" /> : null}
+              {isAdmin && <DetailRow label="Role" value="Platform administrator" />}
               <DetailRow label="Two-factor" value={user ? user.totp_enabled ? "On" : "Off" : "—"} last />
-
             </dl>
-          </section>
-
-
+          </ProfilePanel>
+          <ProfilePanel className="profile-security-panel" delay={0.21}>
+            <div className="profile-security-icon"><Fingerprint size={24} strokeWidth={1.5} aria-hidden /></div>
+            <div className="min-w-0 flex-1"><span className="profile-kicker">ACCOUNT PROTECTION</span><h2>{!user ? "Checking sign-in protection" : user.totp_enabled ? "Two-factor is enabled" : "Add another layer of protection"}</h2><p>{user?.totp_enabled ? "Manage your authenticator and recovery options." : "Use an authenticator code alongside your password."}</p><Link href="/profile/settings/2fa" className="profile-text-link">Manage two-factor<ArrowUpRight size={14} aria-hidden /></Link></div>
+          </ProfilePanel>
         </div>
+      </div>
 
     </AccountShell>
   );

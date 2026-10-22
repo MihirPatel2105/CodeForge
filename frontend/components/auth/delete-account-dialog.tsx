@@ -1,5 +1,7 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
+import { DeletionDialog } from "@/components/ui/deletion-dialog";
 import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,7 +40,7 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
 
   async function handleDelete(e: React.FormEvent) {
     e.preventDefault();
-    if (!armed) return;
+    if (!armed || deleting) return;
 
     setDeleting(true);
     setError(null);
@@ -54,38 +56,14 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-fg/25 p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-account-title"
-      // Clicking the backdrop closes; clicking the panel must not, or every click
-      // inside the form would dismiss it.
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[440px] rounded-lg border border-border-strong bg-surface p-7"
-      >
-        <span className="font-mono text-[10.5px] font-[600] uppercase tracking-[0.16em] text-danger">
-          [ permanent ]
-        </span>
-        <h2
-          id="delete-account-title"
-          className="font-display mt-4 text-[22px] font-[600] leading-[1.25] tracking-[-0.035em] text-fg"
-        >
-          Delete your account
-        </h2>
-        <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">
-          This removes <span className="font-mono text-[13px] text-fg">{email}</span> along
-          with every project, run and generated file it owns. Nothing is archived, and
-          this cannot be undone.
-        </p>
-
-        <form className="mt-6 flex flex-col gap-4" onSubmit={handleDelete}>
-          <div className="flex flex-col gap-[6px]">
+    <DeletionDialog open onClose={onClose} busy={deleting} title="Delete your account"
+      description="Permanently close your account and remove everything you have built in this workspace."
+      target={email} targetLabel="Account to delete" impact="All your projects, runs, and generated files will be removed. This cannot be undone.">
+        <form onSubmit={handleDelete}>
+          <div className="cf-deletion-fields">
+          <div className="cf-deletion-field">
             <Label htmlFor="delete_password" className={LABEL}>
-              CONFIRM YOUR PASSWORD
+              Confirm your password
             </Label>
             <Input
               id="delete_password"
@@ -93,20 +71,22 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
               autoComplete="current-password"
               autoFocus
               required
+              disabled={deleting}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={FIELD}
             />
           </div>
 
-          <div className="flex flex-col gap-[6px]">
+          <div className="cf-deletion-field">
             <Label htmlFor="delete_confirmation" className={LABEL}>
-              TYPE {DELETE_CONFIRMATION} TO CONFIRM
+              Type {DELETE_CONFIRMATION} to confirm
             </Label>
             <Input
               id="delete_confirmation"
               autoComplete="off"
               required
+              disabled={deleting}
               placeholder={DELETE_CONFIRMATION}
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
@@ -120,27 +100,20 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
             </Notice>
           )}
 
-          <div className="mt-1 flex flex-wrap gap-3">
+          </div>
+          <div className="cf-deletion-actions">
+            <Button type="button" variant="outline" onClick={onClose} disabled={deleting}>Cancel</Button>
             <Button
               type="submit"
               disabled={!armed || deleting}
-              className="h-11 flex-1 rounded-lg bg-danger font-mono text-[12px] font-[600] uppercase tracking-[0.12em] text-surface hover:bg-danger/90 disabled:opacity-45"
+              className="cf-deletion-submit"
             >
-              {deleting ? "Deleting…" : "Delete account"}
+              <Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete account"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={deleting}
-              className="h-11 rounded-lg px-6 font-mono text-[12px] font-[600] uppercase tracking-[0.12em]"
-            >
-              Cancel
-            </Button>
+
           </div>
         </form>
-      </div>
-    </div>
+    </DeletionDialog>
   );
 }
 

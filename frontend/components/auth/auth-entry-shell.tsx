@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { AuthEntryProof } from "@/components/auth/auth-entry-proof";
+import { AuthAtmosphere } from "@/components/auth/auth-atmosphere";
 import "./auth-entry.css";
 
 export function AuthEntryShell({ children, label, proof = "product", entrance = false, shared = false, compact = false, formRef }: {
@@ -16,8 +17,9 @@ export function AuthEntryShell({ children, label, proof = "product", entrance = 
 }) {
   return (
     <div className={`pa-auth${entrance ? " pa-auth-entrance" : ""}${shared ? " pa-auth-shared" : ""}${compact ? " pa-auth-fit" : ""}`}>
+      <AuthAtmosphere />
       <header className="pa-header">
-        <Link href="/" aria-label="CodeForge home"><LogoLockup className="h-9 w-auto" /></Link>
+        <Link href="/" aria-label="CodeForge home"><LogoLockup variant="dark" className="h-9 w-auto" /></Link>
         <Link href="/" className="pa-back"><ArrowLeft size={16} aria-hidden /><span>Home</span></Link>
       </header>
       <main className="pa-stage">

@@ -10,7 +10,7 @@ test("footer tech text responds to the pointer and restores static text for redu
   await expect(canvas).toHaveAttribute("data-ready", "true");
   await expect(wordmark.locator(".cf-footer-tech-fallback")).toHaveCSS("visibility", "hidden");
   const before = await canvas.evaluate((node: HTMLCanvasElement) => node.toDataURL());
-  await canvas.hover({ position: { x: 220, y: 80 } });
+  await canvas.hover();
   await expect.poll(() => canvas.evaluate((node: HTMLCanvasElement) => node.toDataURL())).not.toBe(before);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(canvas).toHaveCount(0);

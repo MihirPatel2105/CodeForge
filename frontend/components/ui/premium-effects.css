@@ -1,0 +1,42 @@
+/* React Bits product adaptations; attribution: docs/vendor/react-bits-product-effects.md. */
+.cf-spotlight, .cf-specular { position: relative; isolation: isolate; }
+.cf-spotlight::after, .cf-specular::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 180ms ease; z-index: 2; }
+.cf-spotlight::after { background: radial-gradient(240px circle at var(--light-x, 50%) var(--light-y, 50%), color-mix(in srgb, var(--accent) 10%, transparent), transparent 75%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent); }
+.cf-specular::after { background: radial-gradient(100px circle at var(--light-x, 50%) var(--light-y, 0%), #ffffff38, transparent 75%); box-shadow: inset 0 1px 0 #ffffff52, inset 0 0 0 1px #ffffff18; }
+.cf-specular:focus-visible::after, .cf-spotlight:focus-visible::after, .cf-spotlight:focus-within::after { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .cf-spotlight:hover::after, .cf-specular:not(:disabled):hover::after { opacity: 1; } }
+.cf-blur-word { display: inline-block; animation: cf-word-resolve 650ms cubic-bezier(.22,1,.36,1) both; }
+.cf-blur-word:nth-of-type(2) { animation-delay: 65ms; }
+.cf-blur-word:nth-of-type(3) { animation-delay: 130ms; }
+.cf-blur-word:nth-of-type(4) { animation-delay: 195ms; }
+.cf-blur-word:nth-of-type(5) { animation-delay: 260ms; }
+@keyframes cf-word-resolve { from { opacity: 0; filter: blur(7px); transform: translateY(8px); } to { opacity: 1; filter: blur(0); transform: none; } }
+.cf-gradual-frame { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+.cf-gradual-viewport { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.cf-gradual-edge { position: absolute; z-index: 3; inset-inline: 0; height: 12px; pointer-events: none; opacity: 0; transition: opacity 160ms; }
+.cf-gradual-top { top: 0; }
+.cf-gradual-bottom { bottom: 0; transform: rotate(180deg); }
+.cf-gradual-frame[data-top="true"] > .cf-gradual-top, .cf-gradual-frame[data-bottom="true"] > .cf-gradual-bottom { opacity: 1; }
+.cf-gradual-edge span { position: absolute; inset: 0; backdrop-filter: blur(1px); mask-image: linear-gradient(to bottom, #000, transparent); }
+.cf-gradual-edge span:nth-child(2) { height: 65%; backdrop-filter: blur(2px); }
+.cf-gradual-edge span:nth-child(3) { height: 30%; backdrop-filter: blur(3px); }
+.cf-command-option.cf-animated-option { isolation: isolate; background: transparent; }
+.cf-command-selection { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; background: var(--surface-2); }
+.cf-step-indicator { position: absolute; inset-inline: 16px; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); pointer-events: none; }
+.cf-step-indicator[data-state="failed"] { background: var(--danger); }
+.cf-step-indicator[data-state="done"] { background: var(--ok); }
+@media (prefers-reduced-motion: reduce) {
+  .cf-blur-word { animation: none; }
+  .cf-spotlight::after { display: none; }
+  .cf-specular::after, .cf-gradual-edge { transition: none; }
+  .cf-specular::after { background: none; }
+}
+
+/* React Bits micro interactions use CodeForge's existing focus and surface tokens. */
+.cf-verification-code:focus-within [data-active] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cf-stage-thought > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.cf-stage-thought:not([data-working]) i { animation: none; }
+.cf-stage-thought [data-open] { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  .cf-stage-thought *, .cf-agent-status-mark *, .cf-response-segments *, .cf-verification-code * { animation: none !important; transition-duration: 0s !important; }
+}

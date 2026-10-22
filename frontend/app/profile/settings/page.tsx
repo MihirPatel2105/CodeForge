@@ -1,5 +1,7 @@
 "use client";
 
+import "@/components/account/settings-premium.css";
+import { SettingsPanel, SettingsRail } from "@/components/account/settings-premium";
 import { SecurityHighlightList, SettingsNavigation } from "@/components/account/account-enhancements";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
@@ -101,38 +103,20 @@ export default function SettingsPage() {
           Back to profile
         </Link>
 
-        <section className="cf-account-hero relative mt-4 overflow-hidden rounded-3xl border border-border bg-surface px-6 py-8 sm:px-8 md:px-10 md:py-9">
-          <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-lg border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
-                <ShieldCheck className="h-3 w-3" aria-hidden />
-                {user?.is_admin ? "Administrator security" : "Account security"}
-              </span>
-              <h1 className="font-display mt-4 text-[32px] font-[650] leading-none tracking-[-0.055em] text-fg md:text-[42px]">
-                {user?.is_admin ? "Admin settings" : "Settings"}
-              </h1>
-              <p className="mt-3 max-w-[58ch] text-[14px] leading-[1.65] text-fg-muted">
-                {user?.is_admin
-                  ? "Manage operator access, sign-in methods, and active sessions."
-                  : "Manage your sign-in methods, active sessions, and account."}
-              </p>
-            </div>
-
-            <div className="min-w-0 rounded-3xl border border-border bg-surface/80 px-4 py-3 backdrop-blur-sm">
-              <span className={LABEL}>Signed in as</span>
-              <p className="mt-1.5 max-w-[28rem] break-all text-[13px] font-[600] text-fg">
-                {user?.email ?? (accountError ? "Account temporarily unavailable" : "Loading account…")}
-              </p>
-            </div>
+        <header className="settings-premium-hero">
+          <div><span className="settings-hero-eyebrow"><ShieldCheck size={13} aria-hidden />{user?.is_admin ? "ADMINISTRATOR SECURITY" : "YOUR ACCOUNT, UNDER CONTROL"}</span>
+            <h1>{user?.is_admin ? "Admin settings" : "Settings"}</h1>
+            <p>{user?.is_admin ? "Manage operator access, sign-in methods, and active sessions." : "Fine-tune how you sign in, stay protected, and manage your account."}</p>
           </div>
-        </section>
+          <div className="settings-account-pass"><div className="settings-account-monogram" aria-hidden>{user?.initials ?? "—"}</div><div className="min-w-0"><span>Signed in as</span><p>{user?.email ?? (accountError ? "Account temporarily unavailable" : "Loading account…")}</p><small>{!user ? "Checking account" : user.totp_enabled ? "Two-factor enabled" : "Two-factor not enabled"}</small></div><Fingerprint size={24} strokeWidth={1.25} aria-hidden /></div>
+        </header>
 
         <div className="cf-settings-layout mt-6">
-        <SettingsNavigation />
+        <SettingsRail><SettingsNavigation /></SettingsRail>
 
         <div className="min-w-0">
         {user?.is_admin ? (
-          <section className="mt-6 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/55">
+          <SettingsPanel className="mt-6 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/55">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="flex items-start gap-4 px-6 py-6 md:px-7">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
@@ -168,7 +152,7 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-          </section>
+          </SettingsPanel>
         ) : null}
 
         <SectionHeading
@@ -179,7 +163,7 @@ export default function SettingsPage() {
         />
 
         {user ? (
-          <section
+          <SettingsPanel
             aria-label="Sign-in methods"
             className="mt-4 overflow-hidden rounded-3xl border border-border bg-surface"
           >
@@ -219,7 +203,7 @@ export default function SettingsPage() {
                 highlighted
               />
             </SecurityHighlightList>
-          </section>
+          </SettingsPanel>
         ) : null}
 
         <SectionHeading
@@ -230,7 +214,7 @@ export default function SettingsPage() {
         />
 
         <div className="mt-4 grid items-start gap-5 xl:grid-cols-2">
-          <section className="rounded-3xl border border-border bg-surface">
+          <SettingsPanel className="rounded-3xl border border-border bg-surface">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <Laptop className="h-4 w-4 text-accent" aria-hidden />
@@ -273,9 +257,9 @@ export default function SettingsPage() {
                 {sessionError}
               </Notice>
             )}
-          </section>
+          </SettingsPanel>
 
-          <section className="rounded-3xl border border-border bg-surface">
+          <SettingsPanel className="rounded-3xl border border-border bg-surface">
             <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <MonitorSmartphone
@@ -295,7 +279,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <DeviceList />
-          </section>
+          </SettingsPanel>
         </div>
 
         <SectionHeading
@@ -309,7 +293,7 @@ export default function SettingsPage() {
           }
         />
 
-        <section
+        <SettingsPanel
           className={
             user?.is_admin
               ? "mt-4 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/35"
@@ -366,13 +350,13 @@ export default function SettingsPage() {
               <Button
                 onClick={() => setConfirming(true)}
                 disabled={!user}
-                className="h-11 shrink-0 rounded-xl bg-danger px-6 text-[13px] font-[650] text-surface hover:bg-danger/90"
+                className="cf-delete-trigger"
               >
-                Delete account
+                <Trash2 size={14} aria-hidden />Delete account
               </Button>
             )}
           </div>
-        </section>
+        </SettingsPanel>
         </div>
         </div>
 
@@ -399,7 +383,7 @@ function SectionHeading({
   description: string;
 }) {
   return (
-    <div id={id} className="mt-9 flex scroll-mt-24 flex-col gap-2 border-b border-rule pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+    <div id={id} className="settings-section-heading mt-9 flex scroll-mt-24 flex-col gap-2 border-b border-rule pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
       <div>
         <span className="text-[12px] font-[650] text-accent">
           {eyebrow}

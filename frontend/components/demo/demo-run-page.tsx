@@ -223,7 +223,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           <RunStory snapshot={snapshot} />
           <div className="cf-pipeline-viewport">
             <div className="min-w-0">
-              <PipelineStrip key={demo.slug} agents={snapshot.agents} lastLoop={snapshot.lastLoop} />
+              <PipelineStrip key={demo.slug} agents={snapshot.agents} lastLoop={snapshot.lastLoop} activity={snapshot.timeline} playbackTime={Date.parse(demo.events[eventIndex].at)} />
             </div>
           </div>
         </section>

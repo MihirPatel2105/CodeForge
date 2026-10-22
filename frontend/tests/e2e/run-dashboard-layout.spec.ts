@@ -35,6 +35,8 @@ test("stage inspection stays stable while live execution advances", async ({ pag
   await page.goto(`/runs/${runId}`);
   const details = page.getByRole("region", { name: "Selected stage details" });
   await expect(page.locator('[data-stage="coder"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-stage="coder"]')).toHaveAttribute("aria-current", "step");
+  await expect(page.locator('[data-stage="coder"] .cf-step-indicator')).toHaveCount(1);
   await expect(details).toContainText("Writes the application code");
   await page.getByRole("button", { name: "Inspect Architect, idle", exact: true }).click();
   await expect(details).toContainText("This stage has not started yet.");
@@ -43,8 +45,11 @@ test("stage inspection stays stable while live execution advances", async ({ pag
   release();
   await expect(page.locator('[data-stage="reviewer"]')).toHaveAttribute("data-state", "working");
   await expect(page.locator('[data-stage="pm"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-stage="pm"] .cf-step-indicator')).toHaveCount(1);
+  await expect(page.locator('[data-stage="reviewer"]')).toHaveAttribute("aria-current", "step");
   await page.getByRole("button", { name: "Follow active stage", exact: true }).click();
   await expect(page.locator('[data-stage="reviewer"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-stage="reviewer"] .cf-step-indicator')).toHaveCount(1);
   await expect(details).toContainText("Checks the code against a fixed checklist");
   await page.getByRole("button", { name: "Inspect Coder, done", exact: true }).click();
   await expect(details).toContainText("sample/coder-model");

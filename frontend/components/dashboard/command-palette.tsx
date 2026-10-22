@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+import { GradualScroll } from "@/components/ui/premium-effects";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowUpRight, BookOpen, CornerDownLeft, Folder, FolderOpen, LayoutGrid, Search, Settings2, ShieldCheck, TerminalSquare, UserRound } from "lucide-react";
@@ -34,6 +37,7 @@ function score(entry: Entry, query: string) {
 
 export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter();
+  const reduced = useMotionPreference();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -135,24 +139,25 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
               setSelected(results.length ? (activeIndex + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length : 0);
             } else if (event.key === "Enter" && activeEntry) { event.preventDefault(); execute(activeEntry); }
           }}>
-      <div className="cf-command-results" data-lenis-prevent>
+      <GradualScroll className="cf-command-results">
         <div id={listId} role="listbox" aria-label="Commands and projects" aria-busy={loading}>
           {results.map((entry, index) => {
             const Icon = entry.icon;
-            return <div key={entry.id}>
+            return <motion.div key={entry.id} initial={reduced ? false : { opacity: 0, transform: "translateY(4px)" }} animate={{ opacity: 1, transform: "none" }} transition={{ duration: reduced ? 0 : .18, delay: reduced ? 0 : Math.min(index * .018, .1) }}>
               {(index === 0 || results[index - 1].group !== entry.group) && <div className="cf-command-group" aria-hidden>{entry.group === "Workspace" ? "Quick actions" : entry.group}</div>}
-              <div id={`${listId}-${entry.id}`} role="option" aria-selected={index === activeIndex} className="cf-command-option" onPointerMove={() => setSelected(index)} onMouseDown={event => event.preventDefault()} onClick={() => execute(entry)}>
+              <div id={`${listId}-${entry.id}`} role="option" aria-selected={index === activeIndex} className="cf-command-option cf-animated-option" onPointerMove={() => setSelected(index)} onMouseDown={event => event.preventDefault()} onClick={() => execute(entry)}>
+                {index === activeIndex && <motion.span aria-hidden="true" className="cf-command-selection" layoutId={`${listId}-selection`} transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 40 }} />}
                 <span className="cf-command-icon"><Icon size={19} strokeWidth={1.65} aria-hidden /></span>
                 <span className="cf-command-copy"><span className="cf-command-label">{entry.label}</span><span className="cf-command-detail">{entry.detail}</span></span>
                 <span className="cf-command-enter" aria-hidden><CornerDownLeft size={15} /></span>
               </div>
-            </div>;
+            </motion.div>;
           })}
         </div>
         {!results.length && <div className="cf-command-empty"><span className="cf-command-empty-icon"><Search size={24} strokeWidth={1.5} /></span><p>No matches found</p><span>Try a project name or an action like “settings”.</span><button onClick={() => { setQuery(""); setSelected(0); input.current?.focus(); }}>Clear search</button></div>}
         {loading && <p className="cf-command-notice" role="status"><Folder size={14} aria-hidden /> Finding your projects…</p>}
         {failed && <div className="cf-command-notice" role="status">Projects couldn&apos;t load. <button onClick={() => setAttempt(value => value + 1)}>Retry</button></div>}
-      </div>
+      </GradualScroll>
     </SearchModal>
   </Dialog>;
 }

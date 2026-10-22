@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "motion/react";
+import { useMotionPreference } from "@/lib/use-motion-preference";
+
 import { RunStatusFilter } from "./run-status-filter";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
@@ -22,13 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DeletionDialog } from "@/components/ui/deletion-dialog";
 import { tone, RUN_STATUS_META } from "@/lib/tone";
 import { formatElapsed, formatWhen } from "@/lib/format";
 import { runStats } from "@/lib/run-stats";
@@ -65,6 +62,7 @@ export function ProjectDetail({
   onLoadMore?: () => void;
 }) {
   const router = useRouter();
+  const reduced = useMotionPreference();
   const [prompt, setPrompt] = useState("");
   const [ragEnabled, setRagEnabled] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -242,8 +240,9 @@ export function ProjectDetail({
 
             <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><RunStatusFilter value={outcome} onChange={value => onFilter?.(query, value)} /></div>
             {filtering && <p role="status" className="px-5 py-2 text-sm text-fg-muted">Searching runs…</p>}
+            <div className="cf-run-history-scroll max-h-[min(60dvh,560px)] overflow-y-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent" data-lenis-prevent role="region" aria-label="Run history list" tabIndex={0}>
             <div
-              className="cf-run-history-grid hidden items-center gap-x-4 border-b border-border bg-bg/45 px-5 py-[11px] md:grid md:px-6"
+              className="cf-run-history-grid sticky top-0 z-10 hidden items-center gap-x-4 border-b border-border bg-bg px-5 py-[11px] md:grid md:px-6"
             >
               {["Prompt", "Outcome", "Loops", "Elapsed", "When", ""].map((h) => (
                 <span key={h} className={LABEL}>
@@ -255,7 +254,7 @@ export function ProjectDetail({
             {history.length === 0 ? (
               <Empty illustration={query || outcome ? "search" : "inbox"} className="cf-project-history-empty min-h-[330px]"><EmptyHeader><EmptyTitle>{query || outcome ? "No matching runs" : "No runs yet"}</EmptyTitle><EmptyDescription>{query || outcome ? "Try fewer outcomes or another search." : "Describe the API in the composer and start the agent workflow."}</EmptyDescription></EmptyHeader>{(query || outcome) && <EmptyContent><Button variant="outline" onClick={() => onFilter?.("", "")}>Clear run filters</Button></EmptyContent>}</Empty>
             ) : (
-              history.map((run) => {
+              history.map((run, index) => {
                 const meta = RUN_STATUS_META[run.status] ?? {
                   label: run.status,
                   tone: "neutral" as const,
@@ -263,7 +262,7 @@ export function ProjectDetail({
                 const elapsedMs =
                   new Date(run.updated_at).getTime() - new Date(run.created_at).getTime();
                 return (
-                  <div key={run.id}
+                  <motion.div key={run.id} initial={reduced ? false : { opacity: 0, transform: "translateY(5px)" }} animate={{ opacity: 1, transform: "none" }} transition={{ duration: reduced ? 0 : .22, delay: reduced ? 0 : Math.min(index * .025, .12) }}
                     className="cf-run-history-grid group relative grid gap-x-4 gap-y-4 border-b border-border px-5 py-5 transition-colors last:border-b-0 hover:bg-accent-soft/35 md:items-center md:gap-y-0 md:px-6 md:py-4"
                   >
                     <Link href={`/runs/${run.id}`} aria-label={`Open run: ${run.prompt}`} className="absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent" />
@@ -309,19 +308,20 @@ export function ProjectDetail({
                       {formatWhen(run.created_at)}
                     </RunDatum>
                     <ArrowRight className="hidden h-4 w-4 text-fg-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent md:block" aria-hidden />
-                  </div>
+                  </motion.div>
                 );
               })
             )}
             {moreError && <Notice>{moreError}</Notice>}
             {nextCursor && <div className="border-t border-border px-5 py-4"><Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>{loadingMore ? "Loading…" : "Load more runs"}</Button></div>}
+            </div>
           </section>
         </div>
 
         {/* Deleting sits at the very bottom, well past the things you came here to do.
             It is irreversible and takes the run history and stored code with it, so it
             should never be the thing your hand lands on. */}
-        <section className="mt-14 flex flex-wrap items-center justify-between gap-5 rounded-xl border border-danger-bd/70 bg-danger-soft/35 px-5 py-5 md:px-6">
+        <section className="cf-delete-zone mt-14 flex flex-wrap items-center justify-between gap-5 px-5 py-5 md:px-6">
           <div className="flex items-start gap-3.5">
             <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-danger-bd bg-surface text-danger">
               <Trash2 className="h-4 w-4" aria-hidden />
@@ -340,9 +340,9 @@ export function ProjectDetail({
           <button
             type="button"
             onClick={() => setDeleteOpen(true)}
-            className="shrink-0 rounded-xl border border-danger-bd bg-surface px-5 py-[11px] text-[13px] font-[650] text-danger transition-colors hover:bg-danger-soft"
+            className="cf-delete-trigger"
           >
-            Delete project
+            <Trash2 size={14} aria-hidden />Delete project
           </button>
         </section>
 
@@ -398,54 +398,19 @@ function DeleteProjectDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-xl border-danger-bd p-0 shadow-[0_30px_90px_rgba(22,24,28,0.22)]">
-        <div className="border-b border-danger-bd bg-danger-soft px-6 py-5">
-          <DialogHeader>
-            <span className={cn(LABEL, "text-danger")}>destructive action</span>
-            <DialogTitle className="font-display mt-2 text-[22px] tracking-[-0.04em]">
-              Delete this project?
-            </DialogTitle>
-          </DialogHeader>
-        </div>
-        <div className="flex flex-col gap-4 px-6 py-5">
-          <p className="text-[14px] leading-[1.6] text-fg-muted">
-            <span className="font-[600] text-fg">{project.name}</span> and{" "}
-            {runCount === 0
-              ? "everything stored against it"
-              : `its ${runCount} ${runCount === 1 ? "run" : "runs"}, including the generated code and test output`}{" "}
-            will be permanently removed. There is no undo.
-          </p>
-          <div className="flex flex-col gap-[6px]">
-            <label htmlFor="confirm-project" className={LABEL}>
-              Type <span className="text-fg">{project.name}</span> to confirm
-            </label>
-            <Input
-              id="confirm-project"
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-              autoComplete="off"
-              className="h-11 rounded-lg border-border-strong bg-surface text-[14.5px] focus-visible:border-fg focus-visible:ring-0"
-            />
-          </div>
-          {error && (
-            <Notice>
-              {error}
-            </Notice>
-          )}
-        </div>
-        <DialogFooter className="border-t border-rule px-6 py-5">
-          <Button
-            type="button"
-            onClick={handleDelete}
-            disabled={!matches || deleting}
-            className="bg-danger text-surface hover:bg-danger disabled:opacity-45"
-          >
-            {deleting ? "Deleting…" : "Delete project"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DeletionDialog open={open} onClose={() => { onOpenChange(false); setConfirmation(""); setError(null); }} busy={deleting}
+      title="Delete this project?" description="Permanently remove this project and the work stored with it."
+      target={project.name} targetLabel="Project to delete"
+      impact={runCount === 0 ? "Every generated file stored with this project will be removed. There is no undo." : `${runCount} ${runCount === 1 ? "run" : "runs"}, generated code, and test output will be removed. There is no undo.`}>
+      <div className="cf-deletion-fields"><div className="cf-deletion-field">
+        <label htmlFor="confirm-project">Type <strong>{project.name}</strong> to confirm</label>
+        <Input id="confirm-project" value={confirmation} onChange={e => setConfirmation(e.target.value)} autoComplete="off" disabled={deleting} />
+      </div>{error && <Notice>{error}</Notice>}</div>
+      <div className="cf-deletion-actions">
+        <Button type="button" variant="outline" onClick={() => { onOpenChange(false); setConfirmation(""); setError(null); }} disabled={deleting}>Cancel</Button>
+        <Button type="button" onClick={handleDelete} disabled={!matches || deleting} className="cf-deletion-submit"><Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete project"}</Button>
+      </div>
+    </DeletionDialog>
   );
 }
 

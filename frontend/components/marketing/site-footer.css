@@ -38,7 +38,7 @@
 
 .cf-footer-tech { position: relative; }
 .cf-footer-tech-fallback { pointer-events: none; }
-.cf-footer-tech-canvas { position: absolute; inset: 4px 0 12px; opacity: 0; }
+.cf-footer-tech-canvas { position: absolute; inset: calc(4px - .4em) 0 calc(12px - .4em); opacity: 0; }
 .cf-footer-tech:has(canvas[data-ready="true"]) .cf-footer-tech-canvas { opacity: 1; }
 .cf-footer-tech:has(canvas[data-ready="true"]) .cf-footer-tech-fallback { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {

@@ -2,6 +2,8 @@
 
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, RotateCcw } from "lucide-react";
+import { StageActivity } from "./stage-activity";
+import type { TimelineEntryData } from "./timeline-entry";
 import { AgentCard, type AgentCardData } from "./agent-card";
 import { LoopBand } from "./loop-band";
 import { PIPELINE_STAGES, type PipelineStageId } from "@/lib/pipeline";
@@ -19,6 +21,8 @@ const FIRING_MS = 1800;
 export interface PipelineStripProps {
   agents: Record<PipelineStageId, AgentSnapshot>;
   lastLoop: LoopSnapshot | null;
+  activity?: readonly TimelineEntryData[];
+  playbackTime?: number;
 }
 
 /**
@@ -27,7 +31,7 @@ export interface PipelineStripProps {
  * (docs/UI_BRIEF.md §10) — everything else is subordinate to whether a viewer can see
  * work travel backwards to the Coder and understand why.
  */
-export function PipelineStrip({ agents, lastLoop }: PipelineStripProps) {
+export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }: PipelineStripProps) {
   const [firing, setFiring] = useState(false);
   const [inspected, setInspected] = useState<PipelineStageId | null>(null);
   const detailId = useId();
@@ -37,6 +41,8 @@ export function PipelineStrip({ agents, lastLoop }: PipelineStripProps) {
     ?? PIPELINE_STAGES[0];
   const selected = PIPELINE_STAGES.find(stage => stage.id === inspected) ?? active;
   const selectedSnapshot = agents[selected.id];
+  const recentActivity = activity.flatMap(entry => entry.kind === "message" && entry.agent === selected.name
+    && entry.variant !== "failed" && entry.variant !== "rejected" ? [entry.text] : []).slice(-3);
   // Fires once per distinct loop, not once per render: `lastLoop` is a stable object
   // reference across re-renders until a *new* loop.iteration event replaces it, so
   // comparing its timestamp (rather than object identity) is what makes this correct
@@ -87,7 +93,7 @@ export function PipelineStrip({ agents, lastLoop }: PipelineStripProps) {
           };
           return (
             <Fragment key={stage.id}>
-              <AgentCard data={data} selected={selected.id === stage.id} controls={detailId} onSelect={() => setInspected(stage.id)} />
+              <AgentCard data={data} selected={selected.id === stage.id} controls={detailId} indicatorId={`${detailId}-step`} onSelect={() => setInspected(stage.id)} />
               {i < PIPELINE_STAGES.length - 1 && (
                 <div className="cf-pipeline-arrow flex w-[30px] shrink-0 items-center justify-center" aria-hidden>
                   <ArrowRight
@@ -108,7 +114,7 @@ export function PipelineStrip({ agents, lastLoop }: PipelineStripProps) {
       <div className="cf-pipeline-loop-compact"><RotateCcw size={14} aria-hidden /><span>{lastLoop ? `${lastLoop.trigger === "reviewer" ? "Reviewer" : "Sandbox"} → Coder · ${chipText}` : "Review or failed tests can return work to the Coder."}</span></div>
       <section id={detailId} className="cf-agent-detail" aria-label="Selected stage details">
         <div className="cf-agent-detail-heading"><span>{selected.name} <span>· Stage {selected.index}</span></span><div><span>{inspected ? "Inspecting a stage" : "Following the workflow"}</span>{inspected && <Button variant="ghost" size="sm" onClick={() => setInspected(null)}>Follow active stage</Button>}</div></div>
-        <div className="cf-agent-detail-body"><div><h3>{selected.job}</h3><p className={selectedSnapshot.state === "failed" ? "text-danger" : undefined}>{selectedSnapshot.summary ?? (selectedSnapshot.state === "idle" ? "This stage has not started yet." : selectedSnapshot.state === "working" ? "Work is in progress. Output will appear as the stage updates." : selectedSnapshot.state === "stopped" ? "This stage was interrupted before it finished." : "Stage complete. Inspect its output in the evidence below.")}</p></div>
+        <div className="cf-agent-detail-body"><div><h3>{selected.job}</h3><StageActivity key={`${selected.id}-${selectedSnapshot.iteration}`} name={selected.name} snapshot={selectedSnapshot} activity={recentActivity} playbackTime={playbackTime} /></div>
           {(selectedSnapshot.model || selectedSnapshot.durationMs != null || selectedSnapshot.iteration > 0) && <dl>{selectedSnapshot.model && <div><dt>{selected.id === "sandbox" ? "Runtime image" : "Model"}</dt><dd>{selectedSnapshot.model}</dd></div>}{selectedSnapshot.durationMs != null && <div><dt>Duration</dt><dd>{formatDuration(selectedSnapshot.durationMs)}</dd></div>}{selectedSnapshot.iteration > 0 && <div><dt>Pass</dt><dd>{selectedSnapshot.iteration + 1}</dd></div>}</dl>}
         </div>
       </section>
