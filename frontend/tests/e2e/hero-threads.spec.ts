@@ -20,6 +20,13 @@ for (const width of [1440, 390]) {
     await expect(page.locator(".cf-site-header .cf-logo-lockup")).toHaveCSS("filter", "none");
     await expect(page.locator(".lp-hero .threads-layer")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Your idea.");
+    const coverage = await page.locator(".lp-hero").evaluate(hero => {
+      const backdrop = hero.querySelector(".ascii-layer")!.getBoundingClientRect();
+      const bounds = hero.getBoundingClientRect();
+      return { gap: bounds.bottom - backdrop.bottom, widthGap: bounds.width - backdrop.width };
+    });
+    expect(Math.abs(coverage.gap)).toBeLessThan(1);
+    expect(Math.abs(coverage.widthGap)).toBeLessThan(1);
     const action = page.locator(".lp-hero").getByRole("link", { name: "Build your first API" });
     await expect(action).toBeVisible();
     await action.click({ trial: true });
