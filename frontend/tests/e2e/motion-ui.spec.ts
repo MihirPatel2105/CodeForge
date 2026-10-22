@@ -1,5 +1,18 @@
 import { expect, test } from "@playwright/test";
 
+// These tests exercise DOM interactions and Motion transitions. The real WebGL
+// background has dedicated coverage in hero-threads.spec.ts; software rendering
+// it here can starve input and animation frames on GitHub's CPU-only runners.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type, ...args) {
+      if (type === "webgl2") return null;
+      return original.call(this, type, ...args);
+    } as typeof original;
+  });
+});
+
 test("all sections are available before scrolling and reduced motion stays still", async ({ page }) => {
   await page.goto("/");
 
