@@ -79,8 +79,12 @@ test("homepage repair sequence plays once and supports pause, replay, and reduce
   await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible({ timeout: 5000 });
   await expect(current).toHaveText("Coder");
   await pipeline.getByRole("button", { name: "Pause walkthrough" }).click();
+  await expect(pipeline.getByRole("button", { name: "Play walkthrough" })).toBeVisible();
+  // A slow runner may advance while Playwright scrolls to and clicks Pause.
+  // Assert the state at the completed pause, rather than the earlier Coder state.
+  const pausedStage = await active.getByRole("heading").textContent();
   await page.waitForTimeout(2500); // Longer than the repair step's 2200ms timer.
-  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
+  await expect(active.getByRole("heading")).toHaveText(pausedStage!);
   await pipeline.getByRole("button", { name: "Play walkthrough" }).click();
   const replay = pipeline.getByRole("button", { name: "Replay walkthrough" });
   await expect(replay).toBeVisible({ timeout: 15000 });
