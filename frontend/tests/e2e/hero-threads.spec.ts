@@ -17,17 +17,33 @@ for (const width of [1440, 390]) {
     const ascii = page.locator(".hero-ascii");
     await expect(ascii).toHaveAttribute("data-ready", "true");
     await expect(page.locator(".cf-site-header-bar")).toHaveCSS("background-color", /(?:rgba\(0, 0, 0, 0\)|color\(srgb 0 0 0 \/ 0\))/);
-    await expect(page.locator(".cf-site-header .cf-logo-lockup")).toHaveCSS("filter", "invert(1)");
+    await expect(page.locator(".cf-site-header .cf-logo-lockup")).toHaveCSS("filter", "none");
     await expect(page.locator(".lp-hero .threads-layer")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Your idea.");
     const action = page.locator(".lp-hero").getByRole("link", { name: "Build your first API" });
     await expect(action).toBeVisible();
     await action.click({ trial: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    await page.getByRole("button", { name: "Pause background", exact: true }).click();
-    await expect(ascii).toHaveAttribute("data-motion", "static");
-    await page.getByRole("button", { name: "Background paused", exact: true }).click();
-    await expect(ascii).toHaveAttribute("data-motion", "animated");
+    await expect(page.getByRole("button", { name: /Pause background|Background paused/ })).toHaveCount(0);
+    await expect(page.locator('.cf-site-header-bar a[href="/signup"]')).toHaveCSS("background-color", "rgb(23, 23, 23)");
+    await action.hover();
+    await page.waitForTimeout(400); // Let the shared 360ms hover transition finish.
+    const contrast = await action.evaluate(node => {
+      const style = getComputedStyle(node);
+      const ctx = document.createElement("canvas").getContext("2d")!;
+      const luminance = (color: string) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, 1, 1);
+        const rgb = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => {
+          const value = channel / 255;
+          return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+        });
+        return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2];
+      };
+      const foreground = luminance(style.color), background = luminance(style.backgroundColor);
+      return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+    });
+    expect(contrast).toBeGreaterThanOrEqual(4.5);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(ascii).toHaveAttribute("data-motion", "static");
     // No further GPU draw calls should run after reduced motion has settled.
