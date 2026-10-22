@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import "./landing-atmosphere.css";
 import { useMotionPreference } from "@/lib/use-motion-preference";
-import { ConstellationBackground } from "./constellation-background";
+import dynamic from "next/dynamic";
+
+const ThreadsBackground = dynamic(() => import("./threads-background").then(module => module.ThreadsBackground), { ssr: false });
 import { motion, useScroll, useTransform, type MotionStyle, type MotionValue } from "motion/react";
 
 export function LandingAtmosphere({ children }: { children: ReactNode }) {
@@ -34,7 +36,7 @@ export function LandingAtmosphere({ children }: { children: ReactNode }) {
   return (
     <motion.div ref={root} className="cf-landing-atmosphere cf-constellation" style={style}>
       {children}
-      {hero && createPortal(<motion.div className="constellation-layer" style={{ y: reducedMotion ? 0 : backgroundY, opacity: backgroundOpacity }}><ConstellationBackground /></motion.div>, hero)}
+      {hero && createPortal(<motion.div className="threads-layer" aria-hidden="true" style={{ y: reducedMotion ? 0 : backgroundY, opacity: backgroundOpacity }}><ThreadsBackground /></motion.div>, hero)}
     </motion.div>
   );
 }

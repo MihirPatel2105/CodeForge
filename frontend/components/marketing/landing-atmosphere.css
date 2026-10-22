@@ -110,3 +110,29 @@
     translate: none; scale: none; filter: none;
   }
 }
+
+/* A quiet center keeps the hero copy separate from the flowing edge detail. */
+.threads-layer {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 760px;
+  pointer-events: none;
+  mask-image: linear-gradient(black 70%, transparent);
+}
+.threads-layer .hero-threads {
+  mask-image: radial-gradient(ellipse 40% 58% at 50% 42%, transparent 35%, black 100%);
+}
+.threads-layer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .3;
+  background: radial-gradient(ellipse at 0% 40%, #e8edf0, transparent 40%), radial-gradient(ellipse at 100% 45%, #e9edef, transparent 40%);
+}
+@media (max-width: 700px) {
+  .threads-layer { height: 640px; }
+  .threads-layer .hero-threads { opacity: .65; }
+}
+
+.hero-threads[data-ready="true"] .threads-fallback { display: none; }
