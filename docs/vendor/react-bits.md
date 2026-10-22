@@ -18,8 +18,10 @@ Demo: https://reactbits.dev/backgrounds/gradient-ascii
 Retrieved: 2026-10-22.
 
 `gradient-ascii.tsx` retains the native WebGL renderer with a live `paused` setting.
-The hero uses navy/blue, disables flicker and click effects, caps DPR at 1, and pauses
-for reduced motion or the visible Pause background control. The component already
+The hero uses the live demo Atmosphere defaults, including its original palette,
+decoding entrance, speed, flicker, and wave click effect. Rendering pauses for reduced
+motion or the visible Pause background control. The top bar is transparent over the
+hero and returns to a light background on scroll. The component already
 sleeps offscreen and when the tab is hidden. CSS supplies a dark gradient fallback.
 The dark styling and scroll fade apply only to the hero. Threads remains intact.
 

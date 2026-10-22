@@ -16,6 +16,8 @@ for (const width of [1440, 390]) {
     await page.goto("/");
     const ascii = page.locator(".hero-ascii");
     await expect(ascii).toHaveAttribute("data-ready", "true");
+    await expect(page.locator(".cf-site-header-bar")).toHaveCSS("background-color", /(?:rgba\(0, 0, 0, 0\)|color\(srgb 0 0 0 \/ 0\))/);
+    await expect(page.locator(".cf-site-header .cf-logo-lockup")).toHaveCSS("filter", "invert(1)");
     await expect(page.locator(".lp-hero .threads-layer")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Your idea.");
     const action = page.locator(".lp-hero").getByRole("link", { name: "Build your first API" });
@@ -54,6 +56,6 @@ test("hero has a static fallback without WebGL", async ({ page }) => {
   });
   await page.goto("/");
   await expect(page.locator(".hero-ascii")).toBeVisible();
-  await expect(page.locator(".ascii-layer")).toHaveCSS("background-color", "rgb(8, 13, 27)");
+  await expect(page.locator(".ascii-layer")).toHaveCSS("background-color", "rgb(14, 11, 23)");
   await expect(page.locator(".lp-hero").getByRole("link", { name: "Build your first API" })).toBeVisible();
 });
