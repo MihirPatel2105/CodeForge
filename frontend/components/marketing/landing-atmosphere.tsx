@@ -5,12 +5,15 @@ import { createPortal } from "react-dom";
 import "./landing-atmosphere.css";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import dynamic from "next/dynamic";
+import { Pause, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const ThreadsBackground = dynamic(() => import("./threads-background").then(module => module.ThreadsBackground), { ssr: false });
+const AsciiBackground = dynamic(() => import("./ascii-background").then(module => module.AsciiBackground), { ssr: false });
 import { motion, useScroll, useTransform, type MotionStyle, type MotionValue } from "motion/react";
 
 export function LandingAtmosphere({ children }: { children: ReactNode }) {
   const reducedMotion = useMotionPreference();
+  const [paused, setPaused] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const [hero, setHero] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -34,9 +37,12 @@ export function LandingAtmosphere({ children }: { children: ReactNode }) {
   };
 
   return (
-    <motion.div ref={root} className="cf-landing-atmosphere cf-constellation" style={style}>
+    <motion.div ref={root} className="cf-landing-atmosphere cf-constellation cf-gradient-ascii" style={style}>
       {children}
-      {hero && createPortal(<motion.div className="threads-layer" aria-hidden="true" style={{ y: reducedMotion ? 0 : backgroundY, opacity: backgroundOpacity }}><ThreadsBackground /></motion.div>, hero)}
+      {hero && createPortal(<motion.div className="ascii-layer" aria-hidden="true" style={{ y: reducedMotion ? 0 : backgroundY, opacity: backgroundOpacity }}><AsciiBackground paused={paused || reducedMotion} /></motion.div>, hero)}
+      {hero && createPortal(<Button className="ascii-motion-control" variant="ghost" size="sm" disabled={reducedMotion} aria-pressed={paused || reducedMotion} onClick={() => setPaused(value => !value)}>
+        {paused || reducedMotion ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}{paused || reducedMotion ? "Background paused" : "Pause background"}
+      </Button>, hero)}
     </motion.div>
   );
 }

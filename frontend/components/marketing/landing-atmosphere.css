@@ -136,3 +136,27 @@
 }
 
 .hero-threads[data-ready="true"] .threads-fallback { display: none; }
+
+/* The dark ASCII treatment is confined to the opening hero, not the page theme. */
+.cf-gradient-ascii .lp-hero { background: #fcfcfb; }
+.cf-gradient-ascii .lp-hero::before {
+  content: ""; position: absolute; z-index: -2; inset: 0 0 auto; height: 920px;
+  background: linear-gradient(#080d1b 0%, #080d1b 65%, #fcfcfb 100%);
+  opacity: var(--relief-opacity, 1); pointer-events: none;
+}
+.cf-gradient-ascii .cf-site-header-bar { background: #fcfcfb; }
+.ascii-layer { background: #080d1b; position: absolute; z-index: -1; inset: 0 0 auto; height: 780px; pointer-events: none; overflow: hidden; mask-image: linear-gradient(black 70%, transparent); }
+.hero-ascii { background: radial-gradient(ellipse at 70% 50%, #183b7780, transparent 65%); }
+.ascii-layer::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 45% 55% at 50% 35%, #080d1bcc, transparent); }
+.cf-gradient-ascii .lp-hero > h1 { color: color-mix(in srgb, #f7f9ff calc(var(--relief-opacity, 1) * 100%), #171717); }
+.cf-gradient-ascii .lp-hero > :is(.lp-intro, .lp-lead) { color: color-mix(in srgb, #bfc9df calc(var(--relief-opacity, 1) * 100%), #606060); }
+.cf-gradient-ascii .lp-hero > .lp-actions .lp-button { background: color-mix(in srgb, #f1f5ff calc(var(--relief-opacity, 1) * 100%), #171717); color: color-mix(in srgb, #111827 calc(var(--relief-opacity, 1) * 100%), white); }
+.cf-gradient-ascii .lp-hero > .lp-actions .lp-text-link { color: color-mix(in srgb, #e5ecff calc(var(--relief-opacity, 1) * 100%), #171717); }
+.cf-gradient-ascii .lp-hero > .lp-actions :is(a,button):focus-visible { outline-color: #91b1ff; }
+.cf-gradient-ascii .ascii-motion-control { position: absolute; top: 82px; right: 24px; z-index: 2; font-size: 11px; color: #c7d3ee; background: #0c1528cc; border: 1px solid #ffffff20; }
+.cf-gradient-ascii .ascii-motion-control:hover { background: #1b2945; color: white; }
+@media (max-width: 700px) {
+  .cf-gradient-ascii .lp-hero::before { height: 840px; }
+  .ascii-layer { height: 700px; }
+  .cf-gradient-ascii .ascii-motion-control { top: 73px; right: 14px; font-size: 10px; min-height: 30px; }
+}
