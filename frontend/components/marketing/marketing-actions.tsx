@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FooterTechText } from "./footer-tech-text";
 import { useEffect, useRef, useState } from "react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import "./site-footer.css";
@@ -127,7 +128,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="cf-footer-wordmark" aria-hidden="true">CodeForge</div>
+        <FooterTechText />
 
         <div className="mt-6 flex flex-col gap-2 border-t border-rule pt-6 text-[12px] text-fg-faint sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>

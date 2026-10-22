@@ -56,3 +56,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+# React Bits Tech Text
+
+Source: https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/TextAnimations/TechText/TechText.tsx
+Demo: https://reactbits.dev/text-animations/tech-text
+Retrieved: 2026-10-22. Covered by the upstream license above.
+
+Used in `frontend/components/marketing/tech-text.tsx`, with a footer wrapper in
+`footer-tech-text.tsx`. Adaptations fit the existing wordmark footprint, expose
+first-paint readiness for a text fallback, and pause rendering in hidden tabs.
+The wrapper disables animation for reduced motion. Automatic sweeping, dragging,
+and click kicks are disabled; pointer interaction reveals dashed letters and guides.

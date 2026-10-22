@@ -40,26 +40,37 @@
 @media (max-width: 400px) { .pa-stage { padding: 16px 16px 32px; }.pa-header { padding-inline: 16px; }.pa-form { padding: 28px 20px; border-radius: 24px; }.pa-build { padding: 24px 20px; }.pa-form h1 { font-size: 32px; }.pa-example-prompt { font-size: 20px; }.pa-build-bottom { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { .pa-auth *, .pa-auth *::before, .pa-auth *::after { animation: none !important; transition: none !important; } }
 
-/* Sign-in and signup share the public pages' soft, staggered entrance. */
+/* A staggered story resolves beside a softly settling form. */
 @keyframes pa-story-enter {
-  from { opacity: 0; transform: translateY(28px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 @keyframes pa-card-enter {
-  from { opacity: .25; transform: translateY(36px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(24px) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .pa-auth-entrance .pa-story-copy > * {
-    animation: pa-story-enter 1000ms var(--pa-ease) backwards;
+  .pa-auth .pa-story-copy > *,
+  .pa-auth .pa-story > :is(.pa-build, .pa-security-note) {
+    animation: pa-story-enter 850ms cubic-bezier(.22,1,.36,1) backwards;
   }
-  .pa-auth-entrance .pa-story-copy > :nth-child(2) { animation-delay: 70ms; }
-  .pa-auth-entrance .pa-story-copy > :nth-child(3) { animation-delay: 140ms; }
-  .pa-auth-entrance .pa-build {
-    animation: pa-story-enter 1200ms var(--pa-ease) 210ms backwards;
+  .pa-auth .pa-story-copy h2 { animation-delay: 70ms; }
+  .pa-auth .pa-story-lead { animation-delay: 140ms; }
+  .pa-auth .pa-story > :is(.pa-build, .pa-security-note) { animation-delay: 210ms; }
+  .pa-auth:not(.pa-auth-shared) .pa-form {
+    animation: pa-card-enter 850ms cubic-bezier(.22,1,.36,1) 60ms backwards;
   }
-  .pa-auth-entrance .pa-form {
-    animation: pa-card-enter 1200ms var(--pa-ease) 210ms backwards;
+}
+/* Clip entrance travel without creating a nested scroll container. */
+.pa-auth { overflow-x: clip; }
+@media (max-width: 800px) {
+  @keyframes pa-story-enter {
+    from { opacity: 0; transform: translateX(-16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes pa-card-enter {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 }
 
@@ -210,4 +221,50 @@
 }
 @media (min-width: 801px) and (max-width: 1100px) {
   .pa-auth-fit .pa-stage { grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 40px; }
+}
+
+/* A quiet story backdrop fades away before the account form. */
+.pa-auth {
+  position: relative;
+  isolation: isolate;
+  --pa-story-tint: #d8d5ce;
+  --pa-story-dot: rgb(100 92 78 / 25%);
+  --pa-card-shadow: 0 2px 5px rgb(52 44 31 / 3%), 0 16px 40px -16px rgb(52 44 31 / 16%);
+}
+.dark .pa-auth {
+  --pa-story-tint: #141310;
+  --pa-story-dot: rgb(210 202 185 / 15%);
+  --pa-card-shadow: 0 2px 5px rgb(0 0 0 / 12%), 0 18px 44px -16px rgb(0 0 0 / 45%);
+}
+.pa-auth::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 58%;
+  pointer-events: none;
+  background-color: var(--pa-story-tint);
+  background-image: radial-gradient(circle, var(--pa-story-dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to right, #000 45%, transparent 100%);
+}
+.pa-story :is(.pa-build, .pa-security-note) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--pa-card-shadow);
+}
+.pa-auth .pa-form {
+  box-shadow: var(--pa-card-shadow);
+}
+.pa-auth .pa-header {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+@media (max-width: 800px) {
+  .pa-auth::before { display: none; }
+}
+@media (forced-colors: active) {
+  .pa-auth::before { display: none; }
 }

@@ -52,10 +52,10 @@ function AuthTransitionFrame({ pathname, children }: { pathname: string; childre
     const height = Math.max(contentHeight, parseFloat(style.minHeight) || 0);
     // Keep perspective identical at both endpoints; interpolating it to `none`
     // makes Motion shrink the perspective distance and magnify the whole card.
-    const end = !switching ? "translateY(0px)" : compact
+    const end = !switching ? "translateX(0px) scale(1)" : compact
       ? "translateX(0px)"
       : "perspective(1200px) rotateY(0deg) translateX(0px)";
-    const start = !switching ? "translateY(12px)" : compact
+    const start = !switching ? `translateX(${compact ? 16 : 24}px) scale(${compact ? 1 : 0.985})` : compact
       ? `translateX(${direction * 12}px)`
       : `perspective(1200px) rotateY(${direction * 8}deg) translateX(${direction * 14}px)`;
     if (switching && !reduce && previousHeight.current !== null) card.style.height = `${previousHeight.current}px`;
@@ -64,7 +64,7 @@ function AuthTransitionFrame({ pathname, children }: { pathname: string; childre
       opacity: reduce ? 1 : [0, 1],
       transform: reduce ? "none" : [start, end],
       ...(switching && previousHeight.current !== null ? { height: [previousHeight.current, height] } : {}),
-    }, { duration: reduce ? 0 : 0.42, ease: motionEase });
+    }, { duration: reduce ? 0 : switching ? 0.42 : 0.85, delay: !switching && !reduce ? 0.06 : 0, ease: switching ? motionEase : [0.22, 1, 0.36, 1] });
     playback.current = controls;
     void (async () => {
       await controls;

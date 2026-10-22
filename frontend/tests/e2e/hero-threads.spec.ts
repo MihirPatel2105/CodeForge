@@ -35,7 +35,7 @@ for (const width of [1440, 390]) {
     await expect(page.locator('.cf-site-header-bar a[href="/signup"]')).toHaveCSS("background-color", "rgb(23, 23, 23)");
     await action.hover();
     await page.waitForTimeout(400); // Let the shared 360ms hover transition finish.
-    const contrast = await action.evaluate(node => {
+    await expect.poll(() => action.evaluate(node => {
       const style = getComputedStyle(node);
       const ctx = document.createElement("canvas").getContext("2d")!;
       const luminance = (color: string) => {
@@ -49,8 +49,7 @@ for (const width of [1440, 390]) {
       };
       const foreground = luminance(style.color), background = luminance(style.backgroundColor);
       return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
-    });
-    expect(contrast).toBeGreaterThanOrEqual(4.5);
+    })).toBeGreaterThanOrEqual(4.5);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(ascii).toHaveAttribute("data-motion", "static");
     // No further GPU draw calls should run after reduced motion has settled.

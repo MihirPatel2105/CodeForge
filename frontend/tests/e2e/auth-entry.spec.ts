@@ -43,7 +43,7 @@ test("auth routes keep the story and card mounted while swapping forms in both d
   await expect(page.getByLabel("First name")).toBeFocused();
   await expect(story).toHaveAttribute("data-persist-check", "story");
   await expect(card).toHaveAttribute("data-persist-check", "card");
-  await expect(story.getByRole("heading", { name: "Your next idea starts here." })).toHaveCSS("animation-name", "none");
+  await expect.poll(() => story.evaluate(element => element.getAnimations({ subtree: true }).filter(animation => animation.playState === "running").length)).toBe(0);
   const after = await story.boundingBox();
   expect(after?.x).toBe(before?.x);
   expect(after?.y).toBe(before?.y);
