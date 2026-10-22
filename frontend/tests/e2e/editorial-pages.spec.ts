@@ -42,12 +42,14 @@ for (const route of ["about", "how-it-works"]) {
 test("public pages reuse homepage typography and primary controls", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { color: s.color, background: s.backgroundColor, radius: s.borderRadius, font: s.fontFamily }; });
+  const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { radius: s.borderRadius, font: s.fontFamily }; });
   const control = await readStyle();
   const family = await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily);
   for (const route of ["about", "how-it-works"]) {
     await page.goto(`/${route}`);
     expect(await readStyle()).toEqual(control);
+    await expect(page.locator(".lp-button").first()).toHaveCSS("background-color", "rgb(23, 23, 23)");
+    await expect(page.locator(".lp-button").first()).toHaveCSS("color", "rgb(255, 255, 255)");
     expect(await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily)).toBe(family);
   }
 });

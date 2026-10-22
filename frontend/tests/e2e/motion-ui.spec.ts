@@ -67,15 +67,21 @@ test("homepage preview grows without moving subsequent sections and resets for r
 });
 
 test("homepage repair sequence plays once and supports pause, replay, and reduced motion", async ({ page }) => {
-  await page.clock.install();
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const pipeline = page.locator(".lp-pipeline-content");
   await pipeline.scrollIntoViewIfNeeded();
+  // Settle real scrolling and intersection delivery before controlling timers.
+  await expect.poll(() => pipeline.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return Math.max(0, Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0)) / rect.height;
+  })).toBeGreaterThan(0.25);
+  await page.clock.install();
   const active = pipeline.locator(".lp-pipeline-stages > li[aria-current=step]");
   await expect.poll(async () => {
     await page.clock.runFor(1200);
-    return pipeline.locator(".lp-feedback-route > span[data-current=true]").first().textContent().catch(() => "");
+    return pipeline.evaluate(el => el.querySelector(".lp-feedback-route > span[data-current=true]")?.textContent ?? "");
   }, { intervals: [50], timeout: 15000 }).toBe("Reviewer");
   await page.clock.runFor(2200);
   await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible();
