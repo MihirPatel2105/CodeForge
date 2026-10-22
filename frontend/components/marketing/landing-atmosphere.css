@@ -121,7 +121,7 @@
   mask-image: linear-gradient(black 70%, transparent);
 }
 .threads-layer .hero-threads {
-  mask-image: radial-gradient(ellipse 46% 66% at 50% 42%, transparent 38%, black 100%);
+  mask-image: radial-gradient(ellipse 40% 58% at 50% 42%, transparent 35%, black 100%);
 }
 .threads-layer::before {
   content: "";
@@ -132,7 +132,7 @@
 }
 @media (max-width: 700px) {
   .threads-layer { height: 640px; }
-  .threads-layer .hero-threads { opacity: .6; mask-image: radial-gradient(ellipse 65% 65% at 50% 40%, transparent 35%, black 100%); }
+  .threads-layer .hero-threads { opacity: .65; }
 }
 
 .hero-threads[data-ready="true"] .threads-fallback { display: none; }
