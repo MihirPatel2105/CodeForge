@@ -187,7 +187,10 @@ export default function PublishApiPage() {
 
         <header className="cf-api-intro mt-5 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Publish your API</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Publish your API</h1>
+              <span className="rounded-full border border-accent-bd bg-accent-soft px-2.5 py-1 text-[11px] font-[700] uppercase tracking-wide text-accent">Beta</span>
+            </div>
             <p className="mt-1 max-w-[68ch] text-[14px] leading-6 text-fg-muted">Connect another app with a hosted URL and a private key.</p>
           </div>
           {deployment && !loading && <RunFlowLink href={`/runs/${id}/try`} className="group inline-flex items-center gap-1.5 text-[13px] font-[650] text-accent hover:underline">Test inside CodeForge <ExternalLink className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden /></RunFlowLink>}

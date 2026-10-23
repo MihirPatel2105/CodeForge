@@ -95,7 +95,10 @@ export default function UseApiPage() {
           </MotionLink>
           <MotionLink {...cardMotion} href={`/runs/${id}/publish`} className="cf-use-option-card group rounded-3xl border border-border bg-surface p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
             <span className="cf-use-card-top"><Radio aria-hidden /><span>02 / Connect an app</span></span>
-            <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Publish API</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-[19px] font-[650] text-fg">Publish API</h2>
+              <span className="rounded-full border border-accent-bd bg-accent-soft px-2 py-0.5 text-[10px] font-[700] uppercase tracking-wide text-accent">Beta</span>
+            </div>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>
           </MotionLink>
