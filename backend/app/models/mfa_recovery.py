@@ -11,6 +11,8 @@ from pymongo import ASCENDING, IndexModel
 class MfaRecovery(Document):
     user_id: str
     status: Literal[
+        "inviting",
+        "invited",
         "pending",
         "sending",
         "approved",

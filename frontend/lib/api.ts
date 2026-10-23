@@ -146,9 +146,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  requestMfaRecovery: (email: string) => request<{ message: string }>("/auth/mfa-recovery/request", { method: "POST", body: JSON.stringify({ email }) }),
+  requestMfaRecovery: (email: string, invite_token: string) => request<{ message: string }>("/auth/mfa-recovery/request", { method: "POST", body: JSON.stringify({ email, invite_token }) }),
   verifyMfaRecovery: (token: string, password: string, recovery_code: string) => request<{ setup_token: string; secret: string; provisioning_uri: string }>("/auth/mfa-recovery/verify", { method: "POST", body: JSON.stringify({ token, password, recovery_code }) }),
   completeMfaRecovery: (setup_token: string, code: string) => request<{ codes: string[]; message: string }>("/auth/mfa-recovery/complete", { method: "POST", body: JSON.stringify({ setup_token, code }) }),
+  inviteMfaRecovery: (email: string, current_password: string, reason: string) => request<{ message: string }>("/admin/mfa-recovery/invite", { method: "POST", body: JSON.stringify({ email, current_password, reason }) }),
   adminMfaRecovery: () => request<{ items: { id: string; email: string; created_at: string }[] }>("/admin/mfa-recovery"),
   reviewMfaRecovery: (id: string, approve: boolean, current_password: string, reason: string) => request<{ message: string }>(`/admin/mfa-recovery/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ approve, current_password, reason }) }),
   adminAccess: () => request<{ allowed: boolean; expires_at: string | null }>("/auth/admin-access"),

@@ -51,9 +51,34 @@ def recovery_case(client, registered_user, strong_auth_user, totp_code, monkeypa
     }
 
 
+def invite(client, case):
+    result = client.post(
+        "/admin/mfa-recovery/invite",
+        headers=case["operator"]["headers"],
+        json={
+            "email": "recover@example.com",
+            "current_password": case["operator"]["password"],
+            "reason": "Reviewed support email",
+        },
+    )
+    assert result.status_code == 200, result.text
+    mail = case["emails"][-1]
+    case["invite_token"] = mail["text"].split("/recover-2fa/request/")[1].split()[0]
+    assert (
+        client.get("/admin/mfa-recovery", headers=case["operator"]["headers"]).json()["items"] == []
+    )
+    return case["invite_token"]
+
+
+def submit(client, case):
+    token = invite(client, case)
+    return client.post(
+        "/auth/mfa-recovery/request", json={"email": "recover@example.com", "invite_token": token}
+    )
+
+
 def approve(client, case):
-    requested = client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"})
-    assert requested.status_code == 200
+    assert submit(client, case).status_code == 200
     entries = client.get("/admin/mfa-recovery", headers=case["operator"]["headers"])
     assert entries.status_code == 200
     request_id = entries.json()["items"][0]["id"]
@@ -67,7 +92,11 @@ def approve(client, case):
         },
     )
     assert result.status_code == 200, result.text
-    mail = next(item for item in case["emails"] if "subject" in item)
+    mail = next(
+        item
+        for item in case["emails"]
+        if item.get("subject") == "Recover your CodeForge authenticator"
+    )
     assert mail["to"] == "recover@example.com"
     return mail["text"].split("/recover-2fa/")[1].split()[0], request_id
 
@@ -151,15 +180,25 @@ def test_complete_recovery_revokes_sessions_links_and_old_codes(
 
 
 def test_request_is_neutral_deduplicated_and_admin_protected(client, recovery_case, database):
+    assert (
+        client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"}).status_code
+        == 422
+    )
+    token = invite(client, recovery_case)
     expected = client.post(
-        "/auth/mfa-recovery/request", json={"email": "unknown@example.com"}
+        "/auth/mfa-recovery/request", json={"email": "unknown@example.com", "invite_token": token}
     ).json()
+    assert database.mfa_recoveries.find_one({})["status"] == "invited"
     for _ in range(2):
         assert (
-            client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"}).json()
+            client.post(
+                "/auth/mfa-recovery/request",
+                json={"email": "recover@example.com", "invite_token": token},
+            ).json()
             == expected
         )
     assert database.mfa_recoveries.count_documents({}) == 1
+    assert database.mfa_recoveries.find_one({})["status"] == "pending"
     assert client.get("/admin/mfa-recovery").status_code == 401
     assert client.get("/admin/mfa-recovery", headers=recovery_case["headers"]).status_code == 403
 
@@ -223,7 +262,10 @@ def test_link_attempt_limit_and_direct_recovery_bypasses(client, recovery_case, 
 def test_repeated_request_preserves_approved_link(client, recovery_case, database):
     token, _ = approve(client, recovery_case)
     before = database.mfa_recoveries.find_one({"user_id": recovery_case["id"]})
-    client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"})
+    client.post(
+        "/auth/mfa-recovery/request",
+        json={"email": "recover@example.com", "invite_token": recovery_case["invite_token"]},
+    )
     after = database.mfa_recoveries.find_one({"user_id": recovery_case["id"]})
     assert before["token_hash"] == after["token_hash"]
     assert verify(client, recovery_case, token).status_code == 200
@@ -231,25 +273,29 @@ def test_repeated_request_preserves_approved_link(client, recovery_case, databas
 
 def test_admin_password_rejection_and_own_recovery_are_guarded(client, recovery_case, database):
     case = recovery_case
-    client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"})
+    submit(client, case)
     entry = database.mfa_recoveries.find_one({"user_id": case["id"]})
     path = f"/admin/mfa-recovery/{entry['_id']}/review"
     body = {"approve": True, "current_password": "incorrect", "reason": "Review request"}
     assert client.post(path, headers=case["operator"]["headers"], json=body).status_code == 401
-    assert not any("subject" in item for item in case["emails"])
+    assert not any(
+        item.get("subject") == "Recover your CodeForge authenticator" for item in case["emails"]
+    )
     body.update(approve=False, current_password=case["operator"]["password"])
     assert client.post(path, headers=case["operator"]["headers"], json=body).status_code == 200
     assert database.mfa_recoveries.find_one({"_id": entry["_id"]})["status"] == "rejected"
-    assert not any("subject" in item for item in case["emails"])
-    client.post("/auth/mfa-recovery/request", json={"email": case["operator"]["email"]})
-    own_id = decode_access_token(case["operator"]["token"])["sub"]
-    own = database.mfa_recoveries.find_one({"user_id": own_id})
-    body["approve"] = True
+    assert not any(
+        item.get("subject") == "Recover your CodeForge authenticator" for item in case["emails"]
+    )
     assert (
         client.post(
-            f"/admin/mfa-recovery/{own['_id']}/review",
+            "/admin/mfa-recovery/invite",
             headers=case["operator"]["headers"],
-            json=body,
+            json={
+                "email": case["operator"]["email"],
+                "current_password": case["operator"]["password"],
+                "reason": "Review own recovery",
+            },
         ).status_code
         == 409
     )
@@ -263,9 +309,9 @@ def test_failed_email_delivery_invalidates_link_and_keeps_request_reviewable(
     async def fail(**kwargs):
         raise EmailDeliveryError("Unavailable")
 
-    monkeypatch.setattr("app.api.mfa_recovery.send_email", fail)
     case = recovery_case
-    client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"})
+    submit(client, case)
+    monkeypatch.setattr("app.api.mfa_recovery.send_email", fail)
     entry = database.mfa_recoveries.find_one({"user_id": case["id"]})
     result = client.post(
         f"/admin/mfa-recovery/{entry['_id']}/review",
@@ -328,9 +374,90 @@ def test_password_reset_version_allows_a_new_request_without_waiting(
         {"_id": ObjectId(recovery_case["id"])}, {"$inc": {"token_version": 1}}
     )
     assert verify(client, recovery_case, token).status_code == 401
-    assert (
-        client.post("/auth/mfa-recovery/request", json={"email": "recover@example.com"}).status_code
-        == 200
-    )
+    assert submit(client, recovery_case).status_code == 200
     stored = database.mfa_recoveries.find_one({"user_id": recovery_case["id"]})
     assert stored["status"] == "pending" and stored["token_hash"] is None
+
+
+@pytest.mark.parametrize("failure", ["expired", "wrong_token", "wrong_email"])
+def test_invitation_cannot_queue_invalid_submission(client, recovery_case, database, failure):
+    token = invite(client, recovery_case)
+    assert verify(client, recovery_case, token).status_code == 401
+    email = "recover@example.com"
+    if failure == "expired":
+        database.mfa_recoveries.update_one(
+            {}, {"$set": {"expires_at": datetime.now(UTC) - timedelta(minutes=1)}}
+        )
+    elif failure == "wrong_token":
+        token = "x" * 32
+    else:
+        email = recovery_case["operator"]["email"]
+    assert (
+        client.post(
+            "/auth/mfa-recovery/request", json={"email": email, "invite_token": token}
+        ).status_code
+        == 200
+    )
+    assert database.mfa_recoveries.count_documents({"status": "pending"}) == 0
+
+
+def test_active_invitation_is_not_replaced(client, recovery_case, database):
+    token = invite(client, recovery_case)
+    response = client.post(
+        "/admin/mfa-recovery/invite",
+        headers=recovery_case["operator"]["headers"],
+        json={
+            "email": "recover@example.com",
+            "current_password": recovery_case["operator"]["password"],
+            "reason": "Repeated review",
+        },
+    )
+    assert response.status_code == 409
+    assert (
+        client.post(
+            "/auth/mfa-recovery/request",
+            json={"email": "recover@example.com", "invite_token": token},
+        ).status_code
+        == 200
+    )
+    assert database.mfa_recoveries.find_one({})["status"] == "pending"
+
+
+def test_invitation_requires_admin_password_and_failed_delivery_allows_retry(
+    client, recovery_case, monkeypatch, database
+):
+    from app.core.email import EmailDeliveryError
+
+    case = recovery_case
+    body = {
+        "email": "recover@example.com",
+        "current_password": "incorrect",
+        "reason": "Support reviewed",
+    }
+    assert client.post("/admin/mfa-recovery/invite", json=body).status_code == 401
+    assert (
+        client.post("/admin/mfa-recovery/invite", headers=case["headers"], json=body).status_code
+        == 403
+    )
+    assert (
+        client.post(
+            "/admin/mfa-recovery/invite", headers=case["operator"]["headers"], json=body
+        ).status_code
+        == 401
+    )
+    assert database.mfa_recoveries.count_documents({}) == 0
+
+    async def fail(**kwargs):
+        raise EmailDeliveryError("Unavailable")
+
+    with monkeypatch.context() as patch:
+        patch.setattr("app.api.mfa_recovery.send_email", fail)
+        body["current_password"] = case["operator"]["password"]
+        result = client.post(
+            "/admin/mfa-recovery/invite", headers=case["operator"]["headers"], json=body
+        )
+        assert result.status_code == 502
+        stored = database.mfa_recoveries.find_one({})
+        assert stored["status"] == "rejected" and stored["token_hash"] is None
+    invite(client, case)
+    assert database.admin_audit_logs.count_documents({"action": "mfa_recovery.invited"}) == 1

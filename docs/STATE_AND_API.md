@@ -460,10 +460,19 @@ It is a deterministic companion, separate from the API's sandbox test verdict.
 
 ### Admin-approved lost-authenticator recovery
 
-- `POST /auth/mfa-recovery/request` accepts an email and always returns the same neutral
-  confirmation. Eligible verified, non-suspended TOTP accounts get one pending request
-  for 24 hours; repeat requests cannot invalidate links or resend admin notifications.
-  A changed account token version allows a new request because all older links are invalid.
+- Users first describe their issue through `/contact` or email `codeforge.sdlc@gmail.com`.
+  Staff manually review that message before initiating recovery.
+- `POST /admin/mfa-recovery/invite` accepts the registered `email`, administrator
+  `current_password`, and review `reason`. Recent strong admin authentication and
+  password confirmation are required. It sends a single-use, account-bound, 24-hour
+  invitation to `/recover-2fa/request/{token}`. Invitations do not enter the pending
+  queue and cannot unlock accounts. Raw tokens are stored only as hashes, never
+  returned to the admin. Active invitations/requests cannot be replaced; expired,
+  rejected, completed, or token-version-invalidated entries can be retried.
+- `POST /auth/mfa-recovery/request` requires `email` and `invite_token`. Only a matching,
+  unexpired staff invitation can atomically become a pending 24-hour request.
+  Responses remain neutral for mismatched, expired, or reused invitations; these
+  submissions cannot create requests or resend admin notifications.
 - `GET /admin/mfa-recovery` lists up to 50 pending requests. Recent strong administrator
   authentication is required for this and the review endpoint. No raw link token or
   recovery code is exposed to administrators.
@@ -494,6 +503,7 @@ It is a deterministic companion, separate from the API's sandbox test verdict.
   administrator write and reauthentication limits also apply. Account deletion removes
   its recovery request. Users without a saved recovery code cannot use this flow.
 
-The new user pages are `/recover-2fa` and `/recover-2fa/{token}`; the admin queue is
+The user pages are `/recover-2fa` (support instructions), `/recover-2fa/request/{token}`
+(invitation submission), and `/recover-2fa/{token}` (approved recovery); the admin queue is
 `/admin/recovery`. SMTP and the public HTTPS `APP_BASE_URL` must be configured in
 production. No support email alone authorizes a reset or substitutes for user proof.

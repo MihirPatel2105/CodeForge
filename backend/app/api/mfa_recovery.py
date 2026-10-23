@@ -52,10 +52,17 @@ GENERIC = (
 
 class RecoveryRequest(BaseModel):
     email: EmailStr
+    invite_token: str = Field(min_length=20, max_length=128)
 
 
 class RecoveryReview(BaseModel):
     approve: bool
+    current_password: str = Field(min_length=1, max_length=256)
+    reason: str = Field(min_length=3, max_length=240)
+
+
+class RecoveryInvite(BaseModel):
+    email: EmailStr
     current_password: str = Field(min_length=1, max_length=256)
     reason: str = Field(min_length=3, max_length=240)
 
@@ -115,37 +122,124 @@ async def eligible(user_id: str, version: int) -> User:
     return user
 
 
+@router.post("/admin/mfa-recovery/invite", response_model=RecoveryMessage)
+async def invite_recovery(payload: RecoveryInvite, admin: AdminUser, request: Request) -> dict:
+    await check_reauthentication_limit(request, str(admin.id))
+    if len(payload.reason.strip()) < 3 or not verify_password(
+        payload.current_password, admin.hashed_password
+    ):
+        raise AuthError("Confirm your password and provide a review reason.")
+    user = await User.find_one(User.email == str(payload.email).strip().lower())
+    if user is None:
+        raise NotFoundError("Account not found")
+    if str(user.id) == str(admin.id):
+        raise ConflictError("An administrator cannot initiate their own recovery.")
+    user = await eligible(str(user.id), user.token_version)
+    collection = MfaRecovery.get_pymongo_collection()
+    # A second click or staff member cannot invalidate a live invitation/recovery.
+    try:
+        entry = await collection.find_one_and_update(
+            {
+                "user_id": str(user.id),
+                "$or": [
+                    {"expires_at": {"$lte": now()}},
+                    {"token_version": {"$ne": user.token_version}},
+                    {"status": {"$in": ["rejected", "completed"]}},
+                ],
+            },
+            {
+                "$set": {
+                    "status": "inviting",
+                    "token_hash": None,
+                    "secret_encrypted": None,
+                    "token_version": user.token_version,
+                    "attempts": 0,
+                    "created_at": now(),
+                    "expires_at": now() + timedelta(hours=24),
+                }
+            },
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+    except DuplicateKeyError:
+        raise ConflictError("An active recovery invitation or request already exists.") from None
+    token = generate_reset_token()
+    await collection.update_one(
+        {"_id": entry["_id"], "status": "inviting"},
+        {"$set": {"status": "invited", "token_hash": hash_reset_token(token)}},
+    )
+    url = f"{settings.app_base_url}/recover-2fa/request/{token}"
+    try:
+        await send_email(
+            to=user.email,
+            subject="Request recovery review · CodeForge",
+            text=(
+                "We reviewed your support message about a lost authenticator. "
+                f"Open {url} and enter your registered email to submit a recovery review request. "
+                "This invitation expires in 24 hours and does not recover or unlock your account. "
+                "Never email us your password or recovery codes."
+            ),
+            html=_shell(
+                eyebrow="Recovery support",
+                heading="Request a recovery review.",
+                rows=_prose(
+                    "We reviewed your support message about a lost authenticator. "
+                    "Open the form below and enter your registered email. "
+                    "Your submitted request will then appear in our admin review queue."
+                )
+                + _button_row(href=url, label="Request recovery review")
+                + _footnote(
+                    "This invitation expires in 24 hours and works once. "
+                    "It does not unlock your account. If you did not contact support, "
+                    "ignore it. Never email anyone your password or recovery codes."
+                ),
+            ),
+        )
+    except Exception:
+        await collection.update_one(
+            {"_id": entry["_id"], "status": "invited"},
+            {"$set": {"status": "rejected", "token_hash": None}},
+        )
+        raise
+    await AdminAuditLog(
+        admin_user_id=str(admin.id),
+        admin_email=admin.email,
+        action="mfa_recovery.invited",
+        target_type="user",
+        target_id=str(user.id),
+        reason=payload.reason.strip(),
+    ).insert()
+    return {
+        "message": (
+            "Review invitation sent to the registered email. "
+            "The request appears after the user submits it."
+        )
+    }
+
+
 @router.post("/auth/mfa-recovery/request", response_model=RecoveryMessage)
 async def request_recovery(payload: RecoveryRequest, background: BackgroundTasks) -> dict:
     user = await User.find_one(User.email == str(payload.email).strip().lower())
     if user and user.email_verified and user.totp_enabled and not user.is_suspended:
-        collection = MfaRecovery.get_pymongo_collection()
-        # An unauthenticated repeat cannot invalidate an approved link or spam staff.
-        try:
-            created = await collection.find_one_and_update(
-                {
-                    "user_id": str(user.id),
-                    "$or": [
-                        {"expires_at": {"$lte": now()}},
-                        {"token_version": {"$ne": user.token_version}},
-                    ],
-                },
-                {
-                    "$set": {
-                        "status": "pending",
-                        "token_hash": None,
-                        "secret_encrypted": None,
-                        "token_version": user.token_version,
-                        "attempts": 0,
-                        "created_at": now(),
-                        "expires_at": now() + timedelta(hours=24),
-                    }
-                },
-                upsert=True,
-                return_document=ReturnDocument.AFTER,
-            )
-        except DuplicateKeyError:
-            created = None
+        # The registered email must match the account bound to the staff-issued invite.
+        created = await MfaRecovery.get_pymongo_collection().find_one_and_update(
+            {
+                "user_id": str(user.id),
+                "status": "invited",
+                "token_hash": hash_reset_token(payload.invite_token),
+                "token_version": user.token_version,
+                "expires_at": {"$gt": now()},
+            },
+            {
+                "$set": {
+                    "status": "pending",
+                    "token_hash": None,
+                    "created_at": now(),
+                    "expires_at": now() + timedelta(hours=24),
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
         if created and settings.admin_email:
             background.add_task(
                 _send_quietly,
@@ -154,8 +248,8 @@ async def request_recovery(payload: RecoveryRequest, background: BackgroundTasks
                 to=settings.admin_email,
                 title="MFA recovery requested",
                 detail=(
-                    f"Review the MFA recovery request for {user.email} in "
-                    f"{settings.app_base_url}/admin/recovery. "
+                    f"The invited user {user.email} submitted a recovery request. "
+                    f"Review it in {settings.app_base_url}/admin/recovery. "
                     "Never request their password or recovery codes by email."
                 ),
             )

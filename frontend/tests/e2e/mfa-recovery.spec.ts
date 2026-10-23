@@ -6,12 +6,14 @@ for (const width of [1440, 375]) {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.route("**/api/backend/**", route => route.fulfill({ status: 401, json: {} }));
     await page.route("**/api/backend/auth/mfa-recovery/request", async route => {
-      expect(route.request().postDataJSON()).toEqual({ email: "member@example.com" });
+      expect(route.request().postDataJSON()).toEqual({ email: "member@example.com", invite_token: "invitation-preview-token" });
       await route.fulfill({ json: { message: "Request received" } });
     });
     await page.goto("/recover-2fa");
-    await page.getByLabel("Email", { exact: true }).fill("member@example.com");
-    await page.getByRole("button", { name: "Request recovery review" }).click();
+    await expect(page.getByRole("link", { name: /Contact/i }).first()).toBeVisible();
+    await page.goto("/recover-2fa/request/invitation-preview-token");
+    await page.getByLabel("Registered email", { exact: true }).fill("member@example.com");
+    await page.getByRole("button", { name: "Submit recovery review request" }).click();
     await expect(page.getByRole("heading", { name: "Request received" })).toBeVisible();
     const token = "email-token-for-recovery-preview-only";
     const setupToken = "restricted-setup-token-preview-only";
@@ -49,9 +51,21 @@ test("admin must confirm password and reason before sending the recovery email",
     reviewed = true;
     await route.fulfill({ json: { message: "Recovery email sent to the registered address." } });
   });
+  await page.route("**/api/backend/admin/mfa-recovery/invite", async route => {
+    expect(route.request().postDataJSON()).toEqual({ email: "member@example.com", current_password: "AdminPassword123", reason: "Reviewed support email" });
+    await route.fulfill({ json: { message: "Review invitation sent." } });
+  });
   await page.goto("/admin/recovery");
+  const invitation = page.getByRole("button", { name: "Send review invitation", exact: true });
+  await expect(invitation).toBeDisabled();
+  await page.getByLabel("User’s registered email").fill("member@example.com");
+  await page.getByLabel("Support review notes").fill("Reviewed support email");
+  await page.getByLabel("Confirm admin password").fill("AdminPassword123");
+  await invitation.click();
+  await expect(page.getByText("Review invitation sent.", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Confirm admin password")).toHaveValue("");
   await page.getByRole("button", { name: "Review request", exact: true }).click();
-  const approve = page.getByRole("button", { name: "Approve & send link" });
+  const approve = page.getByRole("button", { name: "Approve & send recovery link" });
   await expect(approve).toBeDisabled();
   await page.getByLabel("Review reason").fill("Reviewed recovery request");
   await page.getByLabel("Your admin password").fill("AdminPassword123");
