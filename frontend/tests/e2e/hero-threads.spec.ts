@@ -29,6 +29,9 @@ for (const width of [1440, 390]) {
     expect(Math.abs(coverage.widthGap)).toBeLessThan(1);
     const action = page.locator(".lp-hero").getByRole("link", { name: "Build your first API" });
     await expect(action).toBeVisible();
+    // Finish the entrance before scrolling to the action; its translated position
+    // otherwise changes the scroll-dependent background and button palette.
+    await expect(page.locator(".lp-actions")).toHaveCSS("transform", /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
     await action.click({ trial: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await expect(page.getByRole("button", { name: /Pause background|Background paused/ })).toHaveCount(0);

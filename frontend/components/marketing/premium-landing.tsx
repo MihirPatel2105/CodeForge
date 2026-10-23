@@ -41,9 +41,9 @@ export function PremiumLanding() {
   const demo = DEMO_RUNS[example];
   const start = user ? "/projects" : "/signup";
   const entrance = (delay: number) => ({
-    initial: { opacity: 0, transform: "translateY(16px)" },
+    initial: { opacity: 0, transform: "translateY(12px)" },
     animate: { opacity: 1, transform: "none" },
-    transition: reducedMotion ? { duration: 0, delay: 0 } : { duration: 0.9, delay, ease: [0.22, 0.68, 0.25, 1] as const },
+    transition: reducedMotion ? { duration: 0, delay: 0 } : { duration: 1.5, delay, ease: [0.22, 0.61, 0.36, 1] as const },
   });
 
   const reveal = {
@@ -60,10 +60,10 @@ export function PremiumLanding() {
       <LandingScrollNav />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
-          <motion.p {...entrance(0)} className="lp-intro">Five agents. One API. You in control.</motion.p>
+          <motion.p {...entrance(0.12)} className="lp-intro">Five agents. One API. You in control.</motion.p>
           <BlurHeadline />
-          <motion.p {...entrance(0.16)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
-          <motion.div {...entrance(0.24)} className="lp-actions">
+          <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
+          <motion.div {...entrance(0.7)} className="lp-actions">
             <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
           </motion.div>

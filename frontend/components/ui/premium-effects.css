@@ -5,12 +5,12 @@
 .cf-specular::after { background: radial-gradient(100px circle at var(--light-x, 50%) var(--light-y, 0%), #ffffff38, transparent 75%); box-shadow: inset 0 1px 0 #ffffff52, inset 0 0 0 1px #ffffff18; }
 .cf-specular:focus-visible::after, .cf-spotlight:focus-visible::after, .cf-spotlight:focus-within::after { opacity: 1; }
 @media (hover: hover) and (pointer: fine) { .cf-spotlight:hover::after, .cf-specular:not(:disabled):hover::after { opacity: 1; } }
-.cf-blur-word { display: inline-block; animation: cf-word-resolve 650ms cubic-bezier(.22,1,.36,1) both; }
-.cf-blur-word:nth-of-type(2) { animation-delay: 65ms; }
-.cf-blur-word:nth-of-type(3) { animation-delay: 130ms; }
-.cf-blur-word:nth-of-type(4) { animation-delay: 195ms; }
-.cf-blur-word:nth-of-type(5) { animation-delay: 260ms; }
-@keyframes cf-word-resolve { from { opacity: 0; filter: blur(7px); transform: translateY(8px); } to { opacity: 1; filter: blur(0); transform: none; } }
+.cf-blur-word { display: inline-block; animation: cf-word-resolve 1500ms cubic-bezier(.22,.61,.36,1) 200ms both; }
+.cf-blur-word:nth-of-type(2) { animation-delay: 280ms; }
+.cf-blur-word:nth-of-type(3) { animation-delay: 360ms; }
+.cf-blur-word:nth-of-type(4) { animation-delay: 440ms; }
+.cf-blur-word:nth-of-type(5) { animation-delay: 520ms; }
+@keyframes cf-word-resolve { from { opacity: 0; filter: blur(4px); transform: translateY(10px); } to { opacity: 1; filter: blur(0); transform: none; } }
 .cf-gradual-frame { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .cf-gradual-viewport { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .cf-gradual-edge { position: absolute; z-index: 3; inset-inline: 0; height: 12px; pointer-events: none; opacity: 0; transition: opacity 160ms; }
