@@ -68,7 +68,12 @@ test("standard playback control pauses and resumes the real walkthrough", async 
   await expect(pause).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.getByRole("button", { name: "Replay walkthrough" })).toBeDisabled();
-  await expect(page.locator(".cf-flip-word").first()).toHaveCSS("transform", "none");
+  const headline = page.getByRole("heading", { name: "Your idea. A working API.", exact: true });
+  await expect(headline).toBeVisible();
+  const word = headline.locator(".cf-blur-word").first();
+  await expect(word).toHaveCSS("animation-name", "none");
+  await expect(word).toHaveCSS("opacity", "1");
+  await expect(word).toHaveCSS("filter", "none");
 });
 
 test("share sheet copies and shares only the address and downloads a local QR", async ({ page }) => {

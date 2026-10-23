@@ -112,7 +112,16 @@ test("reduced motion displays final values and disables decorative movement", as
   await expect(strip).toBeVisible();
   await expect.poll(() => strip.evaluate(el => el.getAnimations().filter(animation => animation.playState === "running").length)).toBe(0);
   await page.goto(`/projects/${project.id}`);
-  await expect(page.locator(".vui-generate-sheen")).toHaveCSS("animation-name", "none");
+  const start = page.getByRole("button", { name: "Start run", exact: true });
+  await expect(start).toBeVisible();
+  await page.getByLabel("Describe the API").fill("Build a books API");
+  await expect(start).toBeEnabled();
+  await start.hover();
+  const highlight = await start.evaluate(el => {
+    const style = getComputedStyle(el, "::after");
+    return { background: style.backgroundImage, transition: style.transitionDuration, animation: style.animationName };
+  });
+  expect(highlight).toEqual({ background: "none", transition: "0s", animation: "none" });
   await page.goto("/");
   await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
   await expect(page.locator(".vui-footer-word")).toHaveCount(0);
