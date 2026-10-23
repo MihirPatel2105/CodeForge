@@ -35,16 +35,16 @@ class EmailDeliveryError(CodeForgeError):
 # --------------------------------------------------------------------------- #
 # Email clients cannot use the app's CSS variables. Keep this snapshot aligned with
 # the light palette in `frontend/app/globals.css`.
-_BG = "#f7f8fb"  # --bg
+_BG = "#f8f8f8"  # --bg
 _SURFACE = "#ffffff"  # --surface
-_SURFACE_2 = "#f3f5f9"  # --surface-2
-_FG = "#172033"  # --fg
-_FG_MUTED = "#526073"  # --fg-muted
-_FG_FAINT = "#657285"  # --fg-faint
-_RULE = "#e2e7ef"  # --rule
-_BORDER_STRONG = "#cbd4e1"  # --border-strong
-_ACCENT_SOFT = "#edf3ff"  # --accent-soft
-_ACCENT_BORDER = "#b8ccff"  # --accent-bd
+_SURFACE_2 = "#f4f4f4"  # --surface-2
+_FG = "#171717"  # --fg
+_FG_MUTED = "#575757"  # --fg-muted
+_FG_FAINT = "#6b6b6b"  # --fg-faint
+_RULE = "#e5e5e5"  # --rule
+_BORDER_STRONG = "#cccccc"  # --border-strong
+_ACCENT_SOFT = "#f1f1f1"  # --accent-soft
+_ACCENT_BORDER = "#c9c9c9"  # --accent-bd
 
 _MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace"
 _SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -70,7 +70,7 @@ _RADIUS = "16px"
 # the copy sent to a different account disappears. So "the logo works, I can see it" is
 # consistent with every recipient outside the sending account receiving nothing at all.
 #
-_BRAND = "#2457d6"
+_BRAND = "#171717"
 _BRAND_LOCKUP_FALLBACK_URL = (
     "https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/"
     "frontend/public/brand/codeforge-lockup-light-v2.png"
@@ -101,31 +101,32 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:{_BG};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:{_BG};padding:36px 16px;">
+       style="background:{_BG};padding:40px 12px;">
   <tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-           style="max-width:520px;background:{_SURFACE};border:1px solid {_RULE};
-                  border-radius:20px;">
-      <tr><td style="padding:28px 32px 0 32px;">
+           style="max-width:560px;background:{_SURFACE};border:1px solid {_RULE};
+                  border-radius:24px;box-shadow:0 12px 40px -20px #00000026;">
+      <tr><td style="padding:24px 24px 24px 24px;border-bottom:1px solid {_RULE};">
         <a href="{html_escape(settings.app_base_url, quote=True)}" style="display:inline-block;text-decoration:none;">
-          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="190" height="47"
-               style="display:block;width:190px;height:auto;border:0;outline:none;text-decoration:none;">
+          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="170" height="42"
+               style="display:block;width:170px;height:auto;border:0;outline:none;text-decoration:none;">
         </a>
       </td></tr>
 
-      <tr><td style="padding:31px 32px 0 32px;font-family:{_SANS};font-size:13px;
-                     font-weight:650;color:{_BRAND};">{html_escape(eyebrow.capitalize())}</td></tr>
+      <tr><td style="padding:28px 24px 0 24px;font-family:{_SANS};font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+                     font-weight:650;color:{_FG_MUTED};">{html_escape(eyebrow.capitalize())}</td></tr>
 
-      <tr><td style="padding:11px 32px 0 32px;font-family:{_SANS};font-size:27px;
-                     font-weight:700;line-height:1.2;letter-spacing:-0.04em;color:{_FG};">
+      <tr><td style="padding:12px 24px 0 24px;font-family:{_SANS};font-size:30px;
+                     font-weight:700;line-height:1.18;letter-spacing:-0.04em;color:{_FG};">
         {html_escape(heading)}
       </td></tr>
 
 {rows}
 
-      <tr><td style="padding:28px 32px 30px 32px;font-family:{_SANS};font-size:11px;
+      <tr><td style="padding:28px 24px 30px 24px;font-family:{_SANS};font-size:11px;
                      line-height:1.5;color:{_FG_FAINT};">
-        CodeForge &nbsp;&middot;&nbsp; Your API workspace
+        <strong style="font-weight:600;color:{_FG};">CodeForge</strong><br>
+        Five agents. One API. You in control.
       </td></tr>
 
     </table>
@@ -136,7 +137,7 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
 
 
 def _prose(text: str, *, top: int = 12) -> str:
-    return f"""      <tr><td style="padding:{top}px 32px 0 32px;font-family:{_SANS};font-size:15px;
+    return f"""      <tr><td style="padding:{top}px 24px 0 24px;font-family:{_SANS};font-size:15px;
                      line-height:1.65;color:{_FG_MUTED};">
         {text}
       </td></tr>"""
@@ -144,11 +145,11 @@ def _prose(text: str, *, top: int = 12) -> str:
 
 def _footnote(text: str) -> str:
     """A rule, then small print — the same closing device the marketing pages use."""
-    return f"""      <tr><td style="padding:27px 32px 0 32px;">
+    return f"""      <tr><td style="padding:27px 24px 0 24px;">
         <div style="border-top:1px solid {_RULE};"></div>
       </td></tr>
 
-      <tr><td style="padding:15px 32px 0 32px;font-family:{_SANS};font-size:12.5px;
+      <tr><td style="padding:15px 24px 0 24px;font-family:{_SANS};font-size:12.5px;
                      line-height:1.6;color:{_FG_MUTED};">
         {text}
       </td></tr>"""
@@ -159,17 +160,17 @@ def _verification_rows(*, code: str, minutes: int) -> str:
     # and retype, and a button-shaped thing invites a click that does nothing.
     return f"""{_prose("Enter this code to finish creating your account.")}
 
-      <tr><td style="padding:22px 32px 0 32px;">
+      <tr><td style="padding:22px 24px 0 24px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                style="border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
                       background:{_ACCENT_SOFT};">
           <tr><td align="center" style="padding:20px 12px;font-family:{_MONO};
-                     font-size:30px;font-weight:700;letter-spacing:0.22em;
+                     font-size:32px;font-weight:700;letter-spacing:0.18em;
                      color:{_FG};">{html_escape(code)}</td></tr>
         </table>
       </td></tr>
 
-      <tr><td style="padding:13px 32px 0 32px;font-family:{_SANS};font-size:13px;
+      <tr><td style="padding:13px 24px 0 24px;font-family:{_SANS};font-size:13px;
                      color:{_FG_MUTED};">Expires in {minutes} minutes</td></tr>
 
 {
@@ -182,7 +183,7 @@ def _verification_rows(*, code: str, minutes: int) -> str:
 
 def _step_row(index: str, label: str, detail: str) -> str:
     """One numbered step in the welcome message."""
-    return f"""      <tr><td style="padding:0 32px;">
+    return f"""      <tr><td style="padding:0 24px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                style="border-top:1px solid {_RULE};">
           <tr>
@@ -201,11 +202,11 @@ def _step_row(index: str, label: str, detail: str) -> str:
 
 def _button_row(*, href: str, label: str, top: int = 22) -> str:
     """A clear primary action for links back into the product."""
-    return f"""      <tr><td style="padding:{top}px 32px 0 32px;">
+    return f"""      <tr><td style="padding:{top}px 24px 0 24px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-          <tr><td style="background:{_FG};border-radius:12px;">
+          <tr><td style="background:{_FG};border-radius:999px;">
             <a href="{html_escape(href, quote=True)}"
-               style="display:inline-block;padding:14px 23px;font-family:{_SANS};
+               style="display:inline-block;padding:15px 26px;font-family:{_SANS};
                       font-size:14px;font-weight:650;color:{_SURFACE};text-decoration:none;">
               {label}
             </a>
@@ -225,10 +226,10 @@ def _reset_password_rows(*, reset_url: str, minutes: int) -> str:
 
 {_button_row(href=reset_url, label="Reset password")}
 
-      <tr><td style="padding:14px 32px 0 32px;font-family:{_SANS};font-size:13px;
+      <tr><td style="padding:14px 24px 0 24px;font-family:{_SANS};font-size:13px;
                      color:{_FG_MUTED};">Expires in {minutes} minutes &middot; Single use</td></tr>
 
-      <tr><td style="padding:18px 32px 0 32px;font-family:{_SANS};font-size:12.5px;
+      <tr><td style="padding:18px 24px 0 24px;font-family:{_SANS};font-size:12.5px;
                      line-height:1.6;color:{_FG_FAINT};">
         If the button does not work, paste this into your browser:<br>
         <a href="{safe_url}" style="color:{_BRAND};word-break:break-all;">{safe_url}</a>
@@ -284,7 +285,7 @@ def _security_rows(*, when: str, body: str, warning: str) -> str:
     """
     return f"""{_prose(html_escape(body))}
 
-      <tr><td style="padding:20px 32px 0 32px;">
+      <tr><td style="padding:20px 24px 0 24px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                style="border:1px solid {_RULE};border-radius:{_RADIUS};
                       background:{_SURFACE_2};">
@@ -572,7 +573,7 @@ def _quote_block(text: str, *, top: int = 16) -> str:
     escaping lives here rather than at each call site.
     """
     body = html_escape(text).replace("\n", "<br>")
-    return f"""      <tr><td style="padding:{top}px 32px 0 32px;">
+    return f"""      <tr><td style="padding:{top}px 24px 0 24px;">
         <div style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
                     background:{_SURFACE_2};padding:16px 18px;font-family:{_SANS};font-size:14px;
                     line-height:1.65;color:{_FG};">{body}</div>
@@ -581,7 +582,7 @@ def _quote_block(text: str, *, top: int = 16) -> str:
 
 def _notice(text: str) -> str:
     """A quiet tinted panel for something reassuring rather than actionable."""
-    return f"""      <tr><td style="padding:16px 32px 0 32px;">
+    return f"""      <tr><td style="padding:16px 24px 0 24px;">
         <div style="background:{_ACCENT_SOFT};border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
                     padding:14px 16px;font-family:{_SANS};font-size:13.5px;
                     line-height:1.6;color:{_FG_MUTED};">{text}</div>
@@ -606,7 +607,7 @@ def _contact_rows(*, name: str, email: str, phone: str, message: str, when: str)
         for label, value in details
     )
 
-    return f"""      <tr><td style="padding:20px 32px 0 32px;">
+    return f"""      <tr><td style="padding:20px 24px 0 24px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
 {rows}
         </table>
