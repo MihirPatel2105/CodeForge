@@ -259,7 +259,9 @@ for (const width of [1440, 375, 320]) {
     await page.goto(`/runs/${run.id}/use`);
     await expect(page.getByRole("link", { name: /Open tester/ })).toHaveAttribute("href", `/runs/${run.id}/try`);
     await expect(page.getByRole("link", { name: /Open publish guide/ })).toHaveAttribute("href", `/runs/${run.id}/publish`);
-    await expect(page.getByRole("button", { name: "Download project" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download API only", exact: true })).toBeVisible();
+    await page.getByRole("checkbox", { name: /Include Admin UI/ }).check();
+    await expect(page.getByRole("button", { name: "Download API + Admin UI", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.screenshot({ path: `/tmp/codeforge-use-refined-${width}.png`, fullPage: true });
   });

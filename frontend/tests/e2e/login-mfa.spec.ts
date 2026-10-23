@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { NextRequest } from "next/server";
+import { POST } from "../../app/api/backend/[...path]/route";
 
 const USER = {
   id: "507f1f77bcf86cd799439012",
@@ -20,19 +22,32 @@ const ADMIN = {
   is_admin: true,
 };
 
-test("development proxy accepts the requested LAN origin and rejects a foreign origin", async ({ request }) => {
+test("development proxy accepts the requested LAN origin and rejects a foreign origin", async () => {
+  const saved = { ...process.env };
+  const originalFetch = globalThis.fetch;
   const host = "192.168.31.7:3001";
-  const sameOrigin = await request.post("/api/backend/health", {
-    headers: { Host: host, Origin: `http://${host}` },
-    data: {},
-  });
-  expect(sameOrigin.status()).toBe(405);
-
-  const foreignOrigin = await request.post("/api/backend/health", {
-    headers: { Host: host, Origin: "http://evil.example" },
-    data: {},
-  });
-  expect(foreignOrigin.status()).toBe(403);
+  let forwarded = 0;
+  // Exercise development origin handling independently of the production test server
+  // and any locally running backend. Production configuration stays fail-closed.
+  process.env = { ...saved, NODE_ENV: "development", CODEFORGE_API_INTERNAL_URL: "http://backend.example" };
+  delete process.env.CODEFORGE_FRONTEND_ORIGIN;
+  delete process.env.VERCEL;
+  globalThis.fetch = async () => { forwarded += 1; return new Response("{}", { status: 405 }); };
+  try {
+    const sameOrigin = await POST(new NextRequest("http://localhost:3001/api/backend/health", {
+      method: "POST", headers: { Host: host, Origin: `http://${host}` },
+    }));
+    expect(sameOrigin.status).toBe(405);
+    expect(forwarded).toBe(1);
+    const foreignOrigin = await POST(new NextRequest("http://localhost:3001/api/backend/health", {
+      method: "POST", headers: { Host: host, Origin: "http://evil.example" },
+    }));
+    expect(foreignOrigin.status).toBe(403);
+    expect(forwarded).toBe(1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    process.env = saved;
+  }
 });
 
 test("password sign-in sends a device ID when randomUUID is unavailable", async ({ page }) => {
