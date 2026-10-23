@@ -17,7 +17,7 @@ test("publishing requires Beta acknowledgement and cancellation sends no request
   await page.getByRole("button", { name: "Publish API", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Publish API — Beta" });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText("Public API hosting is in Beta");
+  await expect(dialog).toContainText("API publishing is in Beta");
   expect(publications).toBe(0);
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).toHaveCount(0);

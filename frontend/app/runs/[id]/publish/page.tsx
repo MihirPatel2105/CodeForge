@@ -262,7 +262,7 @@ export default function PublishApiPage() {
           <section className="mt-6 rounded-3xl border border-border bg-surface p-6 sm:p-8" aria-labelledby="publish-status-heading">
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
-              <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
+              <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">CodeForge hosts your API and provides a URL and a one-time API key. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
               <Button className="group mt-5" onClick={() => { setError(null); setConfirmAction("publish"); }} disabled={busy}><ActionIcon kind="publish" />Publish API</Button>
             </div>
           </section>
@@ -279,7 +279,7 @@ export default function PublishApiPage() {
           </div>
           <DialogDescription className="px-6 text-[14px] leading-6 text-fg-muted">
             {confirmAction === "publish"
-              ? "Public API hosting is in Beta. Availability and behavior may change. Use it for testing and demos, rather than production-critical apps. Your CodeForge backend and Docker host must stay online for the API to remain available."
+              ? "API publishing is in Beta. You may experience temporary interruptions or changes while we improve this feature."
               : confirmAction === "unpublish"
               ? "Your published URL will stop working and its hosted data will be permanently deleted. This cannot be undone."
               : "The current key will stop working immediately. Update any apps using it with the new key, which will be shown only once."}
