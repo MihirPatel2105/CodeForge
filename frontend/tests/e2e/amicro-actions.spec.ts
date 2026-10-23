@@ -21,7 +21,7 @@ test("download morph follows real pending/failure/success and never hover", asyn
     return fail ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ contentType: "application/zip", body: "test archive" });
   });
   await page.goto(`/runs/${id}/use`);
-  const button = page.getByRole("button", { name: "Download project", exact: true });
+  const button = page.getByRole("button", { name: "Download API only", exact: true });
   await button.hover();
   await expect(button.locator("[data-action-icon]")).toHaveAttribute("data-action-state", "idle");
   await button.click();
