@@ -248,11 +248,9 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     )
     assert "data:image" not in html
     assert "cid:" not in html
-    assert (
-        'src="https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/'
-        'frontend/public/brand/codeforge-lockup-light-v2.png"'
-    ) in html
-    assert 'alt="CodeForge"' in html
+    assert "raw.githubusercontent.com" not in html
+    assert "<img " not in html
+    assert "CodeForge</span>" in html
 
     monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
     deployed_html = _shell(eyebrow="test", heading="Test", rows="")
