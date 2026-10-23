@@ -42,6 +42,7 @@ export default function UseApiPage() {
   const [downloadState, setDownloadState] = useState<"idle" | "pending" | "started">("idle");
   const downloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [includeAdminUi, setIncludeAdminUi] = useState(false);
 
   useEffect(() => {
     if (!sessionLoading && !user) router.replace("/login");
@@ -56,7 +57,7 @@ export default function UseApiPage() {
     setDownloadState("pending");
     setDownloadError(null);
     try {
-      await downloadLatestFileTree(id);
+      await downloadLatestFileTree(id, includeAdminUi);
       setDownloadState("started");
       toast.success("Download started.");
       downloadTimer.current = setTimeout(() => setDownloadState("idle"), 2400);
@@ -103,8 +104,12 @@ export default function UseApiPage() {
             <h2 className="mt-3 font-display text-[19px] font-[650] text-fg">Download source</h2>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a runnable ZIP with a README, Docker setup, and tests.</p>
             <p className="mt-3 text-[11px] leading-5 text-fg-muted">After unzipping, follow the README to run Docker Compose and open the API docs.</p>
+            <label className="mt-4 flex items-start gap-2 text-[12px] leading-5 text-fg">
+              <input type="checkbox" checked={includeAdminUi} disabled={downloadState === "pending"} onChange={event => { setIncludeAdminUi(event.target.checked); setDownloadState("idle"); }} className="mt-1 size-4 accent-accent" />
+              <span><strong>Include Admin UI</strong><span className="block text-fg-muted">React dashboard with searchable tables and add, edit, and delete forms. Run it locally using ADMIN_UI.md.</span></span>
+            </label>
             <button type="button" onClick={() => void download()} disabled={downloadState === "pending"} aria-busy={downloadState === "pending"} className="group mt-4 inline-flex min-w-[136px] items-center gap-1 rounded-lg text-[12px] font-[700] text-accent transition-colors hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50">
-              {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : "Download project"} <ActionIcon kind="download" state={downloadState === "started" ? "success" : downloadState} />
+              {downloadState === "pending" ? "Downloading…" : downloadState === "started" ? "Download started" : includeAdminUi ? "Download API + Admin UI" : "Download API only"} <ActionIcon kind="download" state={downloadState === "started" ? "success" : downloadState} />
             </button>
             <span role="status" className="sr-only">{downloadState === "started" ? "Project download started." : ""}</span>
           </motion.div>

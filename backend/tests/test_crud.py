@@ -294,6 +294,47 @@ def test_artifact_download_uses_project_name(client, registered_user, project):
     assert 'filename="book-api.zip"' in response.headers["content-disposition"]
 
 
+def test_admin_ui_download_is_optional_and_owned(client, registered_user, project, other_user):
+    import io
+    import zipfile
+
+    from gridfs import GridFSBucket
+
+    source = io.BytesIO()
+    with zipfile.ZipFile(source, "w") as archive:
+        archive.writestr("main.py", "# generated source\n")
+    original = source.getvalue()
+    run_id = client.post(
+        "/runs",
+        json={"project_id": project["id"], "prompt": "books api"},
+        headers=registered_user["headers"],
+    ).json()["run_id"]
+    with MongoClient(settings.mongo_uri) as mongo:
+        bucket = GridFSBucket(mongo[settings.mongo_db], bucket_name="artifacts")
+        file_id = bucket.upload_from_stream(
+            "source.zip",
+            original,
+            metadata={"run_id": run_id, "kind": "file_tree", "iteration": 0},
+        )
+    url = f"/runs/{run_id}/artifacts/{file_id}"
+    plain = client.get(url, headers=registered_user["headers"])
+    assert plain.status_code == 200
+    with zipfile.ZipFile(io.BytesIO(plain.content)) as archive:
+        assert "ADMIN_UI.md" not in archive.namelist()
+    response = client.get(url + "?include_admin_ui=true", headers=registered_user["headers"])
+    assert response.status_code == 200
+    assert 'filename="book-api-with-admin-ui.zip"' in response.headers["content-disposition"]
+    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+        assert "admin-ui/app/page.jsx" in archive.namelist()
+        assert archive.read("main.py") == b"# generated source\n"
+    assert (
+        client.get(url + "?include_admin_ui=true", headers=other_user["headers"]).status_code == 404
+    )
+    with MongoClient(settings.mongo_uri) as mongo:
+        bucket = GridFSBucket(mongo[settings.mongo_db], bucket_name="artifacts")
+        assert bucket.open_download_stream(file_id).read() == original
+
+
 def test_project_run_history(client, registered_user, project):
     for prompt in ("books api", "tasks api"):
         client.post(

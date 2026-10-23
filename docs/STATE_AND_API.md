@@ -442,3 +442,17 @@ and intersect with the existing literal prompt search and cursor. Invalid status
 return 422. When both forms are supplied, `outcomes` takes precedence over legacy
 `outcome`. Omitting them returns every outcome. Ownership and unfiltered project
 statistics remain unchanged.
+
+### Optional Admin UI download
+
+`GET /runs/{run_id}/artifacts/{file_id}?include_admin_ui=true` adds an editable React
+collection manager to file-tree ZIP downloads. Run and artifact ownership checks
+remain required. The default is API-only; other artifact kinds are unchanged.
+Packaging adds `admin-ui/`, `compose.admin.yaml`, and `ADMIN_UI.md` without changing
+stored artifacts or generated API files. Users run the API and UI together with
+`docker compose -f compose.yaml -f compose.admin.yaml up --build`.
+
+The UI reads the generated API's OpenAPI schema at runtime, supports collection
+lists and matching CRUD routes, and sends requests through a same-origin nginx
+proxy. Its local port binds to loopback; the optional UI has no generated auth.
+It is a deterministic companion, separate from the API's sandbox test verdict.

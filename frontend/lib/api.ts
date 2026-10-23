@@ -364,8 +364,9 @@ export async function downloadArtifact(
   runId: string,
   fileId: string,
   filename: string,
+  includeAdminUi = false,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/runs/${runId}/artifacts/${fileId}`);
+  const res = await fetch(`${API_BASE_URL}/runs/${runId}/artifacts/${fileId}${includeAdminUi ? "?include_admin_ui=true" : ""}`);
   if (!res.ok) throw new ApiError(res.status, "download_failed", "Couldn't download the artifact.");
 
   const blob = await res.blob();
@@ -402,12 +403,13 @@ async function downloadAuthenticated(path: string, filename: string): Promise<vo
 }
 
 /** The most recent generated-code archive for a run — what "Download code" saves. */
-export async function downloadLatestFileTree(runId: string): Promise<void> {
+export async function downloadLatestFileTree(runId: string, includeAdminUi = false): Promise<void> {
   const { artifacts } = await api.listRunArtifacts(runId);
   const fileTrees = artifacts.filter((a) => a.kind === "file_tree");
   if (fileTrees.length === 0) {
     throw new ApiError(404, "no_artifacts", "No generated code has been saved for this run yet.");
   }
   const latest = fileTrees.reduce((a, b) => (b.iteration > a.iteration ? b : a));
-  await downloadArtifact(runId, latest.file_id, latest.filename);
+  const filename = includeAdminUi ? latest.filename.replace(/\.zip$/i, "-with-admin-ui.zip") : latest.filename;
+  await downloadArtifact(runId, latest.file_id, filename, includeAdminUi);
 }

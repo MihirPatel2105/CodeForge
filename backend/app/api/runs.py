@@ -308,7 +308,9 @@ async def get_run_artifacts(run_id: str, user: CurrentUser) -> ArtifactListRespo
 
 
 @router.get("/runs/{run_id}/artifacts/{file_id}")
-async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) -> Response:
+async def download_run_artifact(
+    run_id: str, file_id: str, user: CurrentUser, include_admin_ui: bool = False
+) -> Response:
     """Download one artifact.
 
     Ownership is checked against the run, not the file: a GridFS id must not be a way to
@@ -323,19 +325,17 @@ async def download_run_artifact(run_id: str, file_id: str, user: CurrentUser) ->
         raise NotFoundError("Artifact not found")
 
     payload = await read_artifact(file_id)
+    filename = artifact_download_filename(project.name, match.kind, match.iteration)
     if match.kind == "file_tree":
         from app.db.download_package import add_run_guide
 
-        payload = add_run_guide(payload)
+        payload = add_run_guide(payload, include_admin_ui=include_admin_ui)
+        if include_admin_ui:
+            filename = filename.removesuffix(".zip") + "-with-admin-ui.zip"
     return Response(
         content=payload,
         media_type="application/octet-stream",
-        headers={
-            "Content-Disposition": (
-                'attachment; filename="'
-                f'{artifact_download_filename(project.name, match.kind, match.iteration)}"'
-            )
-        },
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

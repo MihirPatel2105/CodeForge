@@ -3,6 +3,7 @@
 import ast
 import io
 import zipfile
+from pathlib import Path
 
 REQUIREMENTS = """fastapi==0.115.6
 email-validator==2.2.0
@@ -103,7 +104,46 @@ URL and key from your server.
 """
 
 
-def add_run_guide(payload: bytes) -> bytes:
+ADMIN_COMPOSE = """services:
+  admin:
+    build: ./admin-ui
+    ports:
+      - "127.0.0.1:${ADMIN_PORT:-3000}:80"
+    depends_on:
+      - api
+"""
+
+ADMIN_README = """# Manage your collection
+
+1. Install and open Docker Desktop.
+2. In this folder run:
+   `docker compose -f compose.yaml -f compose.admin.yaml up --build`
+3. Open http://localhost:3000 to manage your records using forms and tables.
+
+The UI discovers collections from the running API's OpenAPI schema. It supports
+top-level collection routes with GET list responses (an array, or an object with
+an items, results, or data array), POST creation, and matching /{id} routes for
+editing and deletion. Unsupported operations stay available in the API docs.
+Search filters the records currently loaded; use Previous/Next to browse APIs
+that declare offset/skip plus limit pagination. Required query filters appear
+above the table. Nested objects and arrays use JSON fields.
+
+The UI sends requests to the API through its own container, so no CORS setup or
+API key is needed. This is a local, single-user interface without authentication.
+It binds to your computer's loopback address. Keep it local; adding public access
+requires authentication. MongoDB data uses the API's existing Docker volume.
+
+Set ADMIN_PORT in .env if port 3000 is occupied. Stop with Ctrl-C and run
+`docker compose -f compose.yaml -f compose.admin.yaml down`.
+Your API-only instructions remain in README.md.
+
+The editable React source is in admin-ui/app and admin-ui/lib. No extra AI call
+is used to generate this UI. The API's sandbox tests cover the API; they do not
+certify every form or workflow in this optional interface.
+"""
+
+
+def add_run_guide(payload: bytes, *, include_admin_ui: bool = False) -> bytes:
     """Enrich old and new file-tree zips without changing their stored evidence."""
     source = io.BytesIO(payload)
     try:
@@ -130,6 +170,14 @@ def add_run_guide(payload: bytes) -> bytes:
             except (SyntaxError, UnicodeDecodeError):
                 pass
             readme = README
+            if include_admin_ui:
+                readme = readme.replace(
+                    "# Your generated API\n",
+                    "# Your generated API\n\n"
+                    "This package includes an optional React collection manager. "
+                    "Follow **ADMIN_UI.md** to start the API and UI together.\n",
+                    1,
+                )
             if routes:
                 readme += "\n## Endpoints\n\n" + "\n".join(routes) + "\n"
             output = io.BytesIO()
@@ -145,6 +193,17 @@ def add_run_guide(payload: bytes) -> bytes:
                     "start.sh": START,
                     ".dockerignore": "__pycache__\n.pytest_cache\n.venv\n.env\n",
                 }
+                if include_admin_ui:
+                    template = Path(__file__).resolve().parents[1] / "templates" / "admin_ui"
+                    additions.update(
+                        {
+                            "admin-ui/" + file.relative_to(template).as_posix(): file.read_text()
+                            for file in sorted(template.rglob("*"))
+                            if file.is_file()
+                        }
+                    )
+                    additions["compose.admin.yaml"] = ADMIN_COMPOSE
+                    additions["ADMIN_UI.md"] = ADMIN_README
                 existing = set(original.namelist())
                 for name, content in additions.items():
                     if name not in existing:
