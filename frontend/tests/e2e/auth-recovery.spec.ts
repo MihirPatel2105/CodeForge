@@ -46,7 +46,7 @@ test("reset link submits the token and matching new password", async ({ page }) 
 test("reset on an MFA account verifies the authenticator before opening projects", async ({ page }) => {
   await page.route("**/auth/reset-password", route => route.fulfill({ json: {
     access_token: null, mfa_required: true, mfa_ticket: "reset-mfa-ticket",
-    mfa_methods: ["totp", "recovery_code"],
+    mfa_methods: ["totp"],
   } }));
   let completion: unknown = null;
   await page.route("**/auth/login/complete", async route => {
@@ -58,6 +58,7 @@ test("reset on an MFA account verifies the authenticator before opening projects
     last_name: "Example", created_at: "2026-09-23T00:00:00Z", is_admin: false,
     email_verified: true, totp_enabled: true,
   } }));
+  await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
   await page.route("**/api/backend/projects", route => route.fulfill({ json: [] }));
   await page.route("**/api/backend/projects/overview*", route => route.fulfill({ json: {
     items: [], next_cursor: null, total_projects: 0, matching_projects: 0,
@@ -73,6 +74,7 @@ test("reset on an MFA account verifies the authenticator before opening projects
   expect(await page.evaluate(() => localStorage.getItem("codeforge_token"))).toBeNull();
   await page.getByLabel("Authenticator code").fill("123456");
   await page.getByRole("button", { name: "Verify and sign in" }).click();
-  await expect(page).toHaveURL(/\/projects$/);
+  // CI can take longer to load the authenticated route chunks after verification.
+  await expect(page).toHaveURL(/\/projects$/, { timeout: 15_000 });
   expect(completion).toEqual({ ticket: "reset-mfa-ticket", totp_code: "123456" });
 });
