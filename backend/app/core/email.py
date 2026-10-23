@@ -71,17 +71,14 @@ _RADIUS = "16px"
 # consistent with every recipient outside the sending account receiving nothing at all.
 #
 _BRAND = "#171717"
-_BRAND_LOCKUP_FALLBACK_URL = (
-    "https://raw.githubusercontent.com/MihirPatel2105/CodeForge/main/"
-    "frontend/public/brand/codeforge-lockup-light-v2.png"
-)
 
 
-def _brand_lockup_url() -> str:
+def _brand_lockup_url() -> str | None:
     base_url = settings.app_base_url.rstrip("/")
     if base_url.startswith("https://"):
         return f"{base_url}/brand/codeforge-lockup-light-v2.png"
-    return _BRAND_LOCKUP_FALLBACK_URL
+    # Mail clients cannot fetch localhost or assets in the private GitHub repo.
+    return None
 
 
 def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
@@ -95,6 +92,14 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
     flexbox and grid, and Outlook renders through Word — so this is deliberately the
     layout technique the rest of the codebase would never use.
     """
+    logo_url = _brand_lockup_url()
+    brand = (
+        f'<img src="{html_escape(logo_url, quote=True)}" alt="CodeForge" width="170" height="42" '
+        'style="display:block;width:170px;height:auto;border:0;outline:none;text-decoration:none;">'
+        if logo_url
+        else f'<span style="font-family:{_SANS};font-size:26px;font-weight:800;'
+        f'letter-spacing:-0.05em;color:{_FG};">CodeForge</span>'
+    )
     return f"""\
 <!doctype html>
 <html lang="en">
@@ -108,8 +113,7 @@ def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
                   border-radius:24px;box-shadow:0 12px 40px -20px #00000026;">
       <tr><td style="padding:24px 24px 24px 24px;border-bottom:1px solid {_RULE};">
         <a href="{html_escape(settings.app_base_url, quote=True)}" style="display:inline-block;text-decoration:none;">
-          <img src="{html_escape(_brand_lockup_url(), quote=True)}" alt="CodeForge" width="170" height="42"
-               style="display:block;width:170px;height:auto;border:0;outline:none;text-decoration:none;">
+          {brand}
         </a>
       </td></tr>
 
