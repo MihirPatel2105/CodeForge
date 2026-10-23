@@ -370,3 +370,36 @@ def test_open_endpoint_stream_stops_after_real_account_revocation(mode):
             await disconnect()
 
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("terminal", [False, True])
+def test_idle_stream_recovers_persisted_tail_without_next_live_event(monkeypatch, terminal):
+    import app.api.stream as stream_module
+
+    monkeypatch.setattr(stream_module, "RECONCILE_SECONDS", 0.01)
+
+    async def scenario(run_id):
+        await bus.emit(run_id, ev.RunStarted(run_id=run_id, prompt="books"))
+        gen = _event_stream(FakeRequest(), run_id, 0)
+        assert "id: 1\n" in await anext(gen)
+        pending = asyncio.create_task(anext(gen))
+        # Simulate an event persisted after initial replay, with no queue delivery
+        # and no subsequent live event to trigger the existing gap repair.
+        event = ev.RunCompleted(status="succeeded") if terminal else ev.AgentStarted(agent="coder")
+        await bus._append_to_run(run_id, Envelope(2, event))
+        frame = await asyncio.wait_for(pending, timeout=1)
+        assert "id: 2\n" in frame
+        assert ("run.completed" if terminal else "agent.started") in frame
+        if terminal:
+            with pytest.raises(StopAsyncIteration):
+                await anext(gen)
+        else:
+            # No duplicate replay: only a new event may follow the repaired one.
+            await bus._append_to_run(
+                run_id, Envelope(3, ev.AgentMessage(agent="coder", text="working"))
+            )
+            assert "id: 3\n" in await asyncio.wait_for(anext(gen), timeout=1)
+        await gen.aclose()
+        assert bus.subscriber_count(run_id) == 0
+
+    asyncio.run(_with_run(scenario))

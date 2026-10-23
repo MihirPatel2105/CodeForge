@@ -25,6 +25,7 @@ router = APIRouter(tags=["stream"])
 #: Proxies close a stream that goes quiet. A run can easily spend 90 seconds inside one
 #: agent, so the heartbeat has to be well under any sane idle timeout.
 HEARTBEAT_SECONDS = 15
+RECONCILE_SECONDS = 2
 
 
 def _frame(envelope) -> str:
@@ -57,6 +58,7 @@ async def _event_stream(
     # than lost between the two.
     queue = bus.subscribe(run_id)
     sent = last_event_id
+    heartbeat_at = asyncio.get_running_loop().time() + HEARTBEAT_SECONDS
 
     try:
         if authorize is not None and not await authorize():
@@ -73,11 +75,30 @@ async def _event_stream(
             if await request.is_disconnected():
                 break
             try:
-                envelope = await asyncio.wait_for(queue.get(), timeout=HEARTBEAT_SECONDS)
+                envelope = await asyncio.wait_for(
+                    queue.get(),
+                    timeout=min(
+                        RECONCILE_SECONDS, max(0, heartbeat_at - asyncio.get_running_loop().time())
+                    ),
+                )
             except TimeoutError:
                 if authorize is not None and not await authorize():
                     return
-                yield HEARTBEAT
+                # A missed final event (for example Coder starting after approval)
+                # has no later queue item to trigger gap repair. Reconcile while idle.
+                for missed in await _replay_latest_attempt(run_id, sent):
+                    if authorize is not None and not await authorize():
+                        return
+                    if missed.id <= sent:
+                        continue
+                    sent = missed.id
+                    yield _frame(missed)
+                    if _terminal(missed):
+                        return
+                now = asyncio.get_running_loop().time()
+                if now >= heartbeat_at:
+                    yield HEARTBEAT
+                    heartbeat_at = now + HEARTBEAT_SECONDS
                 continue
 
             if authorize is not None and not await authorize():

@@ -218,7 +218,9 @@ Conventions
 ## 4. SSE event contract
 
 `GET /runs/{id}/stream`, `text/event-stream`. Every event carries a monotonic `id` so the client
-can reconnect with `Last-Event-ID` and replay.
+can reconnect with `Last-Event-ID` and replay. While idle, the stream reconciles saved
+events every two seconds so a missed live notification does not leave an agent appearing
+idle until refresh. Heartbeat comments retain their 15-second cadence.
 
 ```
 event: run.started
