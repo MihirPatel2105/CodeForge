@@ -73,3 +73,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Scroll Reveal
+
+Retrieved: 2026-10-23. [Upstream source](https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/TextAnimations/ScrollReveal/ScrollReveal.tsx), [demo](https://reactbits.dev/text-animations/scroll-reveal).
+
+Landing section headings use the upstream default fade/scrub mapping: word opacity
+0.1 to 1, blur 4px to 0, rotation 3deg to 0, scrub span 0.5 and stagger 0.05.
+The existing Motion scroll observer replaces GSAP ScrollTrigger; no dependency is added.
+Headings retain accessible names and line breaks. Reduced motion removes all effects;
+server-rendered text remains readable before JavaScript initializes.

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { ScrollReveal } from "@/components/ui/react-bits/scroll-reveal";
 import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
@@ -78,12 +79,12 @@ export function PremiumLanding() {
         <section className="lp-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
-          <motion.div {...reveal} className="lp-section-intro"><h2 id="team-title">Five specialists.<br />One real sandbox.</h2><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>
+          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>
           <AgentBentoGrid agents={agents} />
         </section>
 
         <section id="repair-loop" className="lp-loop-section" aria-labelledby="loop-title">
-          <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><RotateCcw size={34} strokeWidth={1.4} aria-hidden /><h2 id="loop-title">The first draft<br />is just the start.</h2><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<ArrowRight size={18} aria-hidden /></Link></motion.div>
+          <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><RotateCcw size={34} strokeWidth={1.4} aria-hidden /><ScrollReveal id="loop-title">{"The first draft\nis just the start."}</ScrollReveal><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<ArrowRight size={18} aria-hidden /></Link></motion.div>
             <div className="lp-loop-visual" aria-label="Example repair: Reviewer finds a missing response model, Coder adds it, then tests pass">
               <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0 }} className="lp-finding"><span><ShieldCheck size={18} aria-hidden />Reviewer</span><p>Update route needs a response model.</p><span className="lp-loop-state">Sent back for repair</span></motion.div>
               <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0.15 }} className="lp-return-path"><RotateCcw size={18} aria-hidden /><span>Feedback becomes the next change</span></motion.div>
@@ -93,14 +94,14 @@ export function PremiumLanding() {
           </div>
         </section>
 
-        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><motion.div {...reveal} className="lp-section-intro"><h2 id="control-title">AI does the work.<br />You call the shots.</h2><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
+        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="control-title">{"AI does the work.\nYou call the shots."}</ScrollReveal><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
           { title: "Approve before it builds.", description: "Review the requirements and architecture before the agents move forward.", icon: ShieldCheck, content: "Your run pauses at two checkpoints. Read the requirements first, then inspect the system design. Approve or request changes before implementation continues. These are decisions you make during the real run." },
           { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
           { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
         ]} /></section>
 
-        <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><h2 id="faq-title">A little more clarity.</h2><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
-        <motion.section {...reveal} id="start-building" className="lp-closing"><h2>What will you build?</h2><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
+        <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><ScrollReveal id="faq-title">{"A little more clarity."}</ScrollReveal><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
+        <motion.section {...reveal} id="start-building" className="lp-closing"><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
       </main>
       <SiteFooter />
     </div>

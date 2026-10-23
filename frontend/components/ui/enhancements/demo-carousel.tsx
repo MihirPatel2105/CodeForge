@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, FileCode2 } from "lucide-react";
 import { DEMO_RUNS } from "@/lib/demo-runs";
 import { Button } from "@/components/ui/button";
 import { useMotionPreference } from "@/lib/use-motion-preference";
+import { ScrollReveal } from "@/components/ui/react-bits/scroll-reveal";
 import { AnimatedArrow } from "./animated-icons";
 
 export function DemoCarousel() {
@@ -34,7 +35,7 @@ export function DemoCarousel() {
     list.scrollTo({ left: card.offsetLeft - first.offsetLeft, behavior: reduced ? "instant" : "smooth" });
   }
   return <div className="cf-demo-gallery" role="region" aria-roledescription="carousel" aria-label="Example APIs">
-    <div className="cf-demo-gallery-heading"><div><p>Explore the examples</p><h2>See what a finished API looks like.</h2></div>
+    <div className="cf-demo-gallery-heading"><div><p>Explore the examples</p><ScrollReveal>See what a finished API looks like.</ScrollReveal></div>
       <div className="flex gap-2"><Button variant="outline" size="icon" aria-label="Previous API example" disabled={active === 0} onClick={() => go(active - 1)}><ChevronLeft /></Button>
         <Button variant="outline" size="icon" aria-label="Next API example" disabled={active === DEMO_RUNS.length - 1} onClick={() => go(active + 1)}><ChevronRight /></Button></div></div>
     <div ref={viewport} className="cf-demo-slides" tabIndex={0} aria-label="Swipe through API examples"
