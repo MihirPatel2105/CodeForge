@@ -18,6 +18,7 @@ from app.api.auth import router as auth_router
 from app.api.contact import router as contact_router
 from app.api.deployments import router as deployments_router
 from app.api.health import router as health_router
+from app.api.mfa_recovery import router as mfa_recovery_router
 from app.api.passkeys import router as passkeys_router
 from app.api.preview import router as preview_router
 from app.api.projects import router as projects_router
@@ -220,6 +221,7 @@ def create_app() -> FastAPI:
     from app.core.body_limit import BodyLimitMiddleware
 
     app.add_middleware(BodyLimitMiddleware)
+    app.include_router(mfa_recovery_router)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(passkeys_router)

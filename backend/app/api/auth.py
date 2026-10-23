@@ -357,8 +357,6 @@ async def login(
     methods: list[str] = []
     if user.totp_enabled:
         methods.append("totp")
-        if await RecoveryCode.find_one(RecoveryCode.user_id == str(user.id)) is not None:
-            methods.append("recovery_code")
     if passkey is not None:
         methods.append("passkey")
 
@@ -479,25 +477,13 @@ async def complete_password_login(
     if attempted is None:
         raise RateLimitError("Too many verification attempts. Sign in again.")
     if using_recovery:
-        code_hash = hash_recovery_code(payload.recovery_code or "")
-        consumed = (
-            await RecoveryCode.get_pymongo_collection().find_one_and_delete(
-                {"user_id": str(user.id), "code_hash": code_hash}
-            )
-            if code_hash
-            else None
-        )
-        if consumed is None:
-            await _record_failed_login(user, background)
-            raise AuthError("The recovery code is not correct")
-    elif not await consume_totp(payload.totp_code or "", user):
+        raise AuthError("Use the approved account recovery link to use a recovery code.")
+    if not await consume_totp(payload.totp_code or "", user):
         await _record_failed_login(user, background)
         raise AuthError("The two-factor code is not correct")
     await consume_password_mfa_ticket(payload.ticket, user)
     return TokenResponse(
-        access_token=await finish_login(
-            user, background, request, strong_auth=payload.recovery_code is None
-        )
+        access_token=await finish_login(user, background, request, strong_auth=True)
     )
 
 
@@ -599,17 +585,8 @@ async def disable_totp(
     if (payload.code is None) == (payload.recovery_code is None):
         raise AuthError("Choose one verification method.")
     if payload.recovery_code is not None:
-        code_hash = hash_recovery_code(payload.recovery_code)
-        consumed = (
-            await RecoveryCode.get_pymongo_collection().find_one_and_delete(
-                {"user_id": str(user.id), "code_hash": code_hash}
-            )
-            if code_hash
-            else None
-        )
-        if consumed is None:
-            raise AuthError("The recovery code is not correct")
-    elif not await consume_totp(payload.code or "", user):
+        raise AuthError("Use the approved account recovery link to replace a lost authenticator.")
+    if not await consume_totp(payload.code or "", user):
         raise AuthError("The two-factor code is not correct")
     user = await update_user(
         user, {"totp_enabled": False, "totp_secret_encrypted": None}, revoke=True
@@ -710,8 +687,6 @@ async def reset_password(
     methods = []
     if user.totp_enabled:
         methods.append("totp")
-        if await RecoveryCode.find_one(RecoveryCode.user_id == str(user.id)) is not None:
-            methods.append("recovery_code")
     return await login_result(user, methods, background, request)
 
 

@@ -173,13 +173,18 @@ def test_all_admin_routes_use_central_server_guard():
 
     from app.api.admin import router as admin_router
     from app.api.admin_operations import router as operations_router
+    from app.api.mfa_recovery import router as recovery_router
 
-    routes = [*admin_router.routes, *operations_router.routes]
+    routes = [
+        *admin_router.routes,
+        *operations_router.routes,
+        *(route for route in recovery_router.routes if route.path.startswith("/admin/")),
+    ]
     assert routes
     assert all(has_guard(route.dependant) for route in routes)
 
 
-def test_recovery_login_keeps_account_access_but_cannot_unlock_admin(client, operator, totp_code):
+def test_recovery_code_cannot_bypass_approved_recovery_for_admin(client, operator, totp_code):
     claims = decode_access_token(operator["token"])
     user = db().users.find_one({"_id": ObjectId(claims["sub"])})
     secret = decrypt_totp_secret(user["totp_secret_encrypted"])
@@ -198,10 +203,8 @@ def test_recovery_login_keeps_account_access_but_cannot_unlock_admin(client, ope
     response = client.post(
         "/auth/login/complete", json={"ticket": ticket, "recovery_code": codes.json()["codes"][0]}
     )
-    assert response.status_code == 200
-    headers = {"Authorization": f"Bearer {response.json()['access_token']}"}
-    assert client.get("/auth/me", headers=headers).status_code == 200
-    assert client.get("/admin/overview", headers=headers).status_code == 403
+    assert response.status_code == 401
+    assert "access_token" not in response.json()
 
 
 def test_admin_csv_neutralizes_user_controlled_formulas():

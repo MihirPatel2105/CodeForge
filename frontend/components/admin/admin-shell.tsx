@@ -29,6 +29,7 @@ const NAV = [
   { href: "/admin/runs", label: "Runs", icon: Workflow, exact: false },
   { href: "/admin/deployments", label: "API hosting", icon: Globe, exact: false },
   { href: "/admin/incidents", label: "Incidents", icon: ShieldAlert, exact: false },
+  { href: "/admin/recovery", label: "Account recovery", icon: ShieldAlert, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
   { href: "/admin/quality", label: "Quality", icon: BarChart3, exact: false },
   { href: "/admin/monitoring", label: "Monitoring", icon: TrendingUp, exact: false },

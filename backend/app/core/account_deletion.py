@@ -10,6 +10,7 @@ from app.models import (
     Deployment,
     Device,
     LoginSession,
+    MfaRecovery,
     PasskeyChallenge,
     PasskeyCredential,
     PasswordResetToken,
@@ -58,6 +59,7 @@ async def delete_user_account(user: User) -> AccountDeletionResult:
     await LoginSession.find(LoginSession.user_id == user_id).delete()
     await PasskeyChallenge.find(PasskeyChallenge.user_id == user_id).delete()
     await PasskeyCredential.find(PasskeyCredential.user_id == user_id).delete()
+    await MfaRecovery.find(MfaRecovery.user_id == user_id).delete()
     await RecoveryCode.find(RecoveryCode.user_id == user_id).delete()
     await Device.find(Device.user_id == user_id).delete()
     await PendingSignup.find(PendingSignup.email == user.email).delete()

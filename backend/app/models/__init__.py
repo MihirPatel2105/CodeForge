@@ -3,6 +3,7 @@ from app.models.admin_incident import AdminIncident
 from app.models.deployment import Deployment
 from app.models.device import Device
 from app.models.login_session import LoginSession
+from app.models.mfa_recovery import MfaRecovery
 from app.models.passkey import PasskeyChallenge, PasskeyCredential
 from app.models.password_reset import PasswordResetToken
 from app.models.pending_signup import PendingSignup
@@ -16,6 +17,7 @@ from app.models.user import User
 # Registered with Beanie on startup; keep this list in sync with the Documents above.
 DOCUMENT_MODELS = [
     User,
+    MfaRecovery,
     PendingSignup,
     PasswordResetToken,
     RevokedToken,
@@ -49,4 +51,5 @@ __all__ = [
     "Run",
     "SignInAlert",
     "User",
+    "MfaRecovery",
 ]

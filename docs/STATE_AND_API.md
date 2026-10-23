@@ -192,7 +192,7 @@ Conventions
   `POST /auth/reset-password` returns the same `LoginResponse` shape as password login:
   accounts with TOTP receive `mfa_required`, a five-minute `mfa_ticket`, and available
   `mfa_methods`, with no access token until `/auth/login/complete` verifies an authenticator
-  or unused recovery code. The password and existing-session revocation take effect immediately.
+  code. The password and existing-session revocation take effect immediately.
   Accounts without TOTP retain the existing direct-session recovery behavior.
   TOTP codes are consumed atomically per account and secret across login, enrollment,
   disable, recovery-code regeneration, and passkey management. Accepted time steps cannot
@@ -456,3 +456,44 @@ The UI reads the generated API's OpenAPI schema at runtime, supports collection
 lists and matching CRUD routes, and sends requests through a same-origin nginx
 proxy. Its local port binds to loopback; the optional UI has no generated auth.
 It is a deterministic companion, separate from the API's sandbox test verdict.
+
+
+### Admin-approved lost-authenticator recovery
+
+- `POST /auth/mfa-recovery/request` accepts an email and always returns the same neutral
+  confirmation. Eligible verified, non-suspended TOTP accounts get one pending request
+  for 24 hours; repeat requests cannot invalidate links or resend admin notifications.
+  A changed account token version allows a new request because all older links are invalid.
+- `GET /admin/mfa-recovery` lists up to 50 pending requests. Recent strong administrator
+  authentication is required for this and the review endpoint. No raw link token or
+  recovery code is exposed to administrators.
+- `POST /admin/mfa-recovery/{id}/review` accepts `approve`, `current_password`, and a
+  review `reason`. Approval sends a random, hashed-at-rest, 15-minute link to the
+  account's registered email. Rejection sends no link. Decisions are audited; an
+  administrator cannot approve their own request. Failed delivery invalidates the
+  generated link and returns the request to pending for a retry.
+- `POST /auth/mfa-recovery/verify` accepts `token`, `password`, and `recovery_code`.
+  Password and an unused hashed recovery code must match the account named by the
+  approved link. The recovery code and link are consumed atomically/through guarded
+  claims. Success returns only a restricted `setup_token`, new authenticator `secret`,
+  and `provisioning_uri`; it never grants a login session or disables TOTP.
+- `POST /auth/mfa-recovery/complete` accepts `setup_token` and a six-digit code from
+  the new authenticator. The guarded account update replaces the old authenticator,
+  invalidates existing sessions, login challenges and password-reset links, and returns
+  eight fresh backup codes. A security email is queued. Sign-in must happen separately
+  with the new authenticator. The accepted setup time step cannot be reused for login.
+- Both link phases expire at the original 15-minute deadline and allow at most five
+  proof attempts each. Account token-version changes and suspension invalidate recovery.
+  All sensitive responses use `Cache-Control: no-store`; the recovery UI disables
+  referrers/indexing and keeps setup secrets only in component memory.
+- Recovery codes no longer grant direct access through `/auth/login/complete` or
+  `/auth/totp/disable`, including after password reset. They are used only through
+  the approved email-link recovery flow. Authenticator and registered passkey login
+  continue unchanged. Existing enrolled passkeys are retained.
+- Redis limits: request 5/hour/IP, verify 10/10 minutes/IP, complete 10/10 minutes/IP;
+  administrator write and reauthentication limits also apply. Account deletion removes
+  its recovery request. Users without a saved recovery code cannot use this flow.
+
+The new user pages are `/recover-2fa` and `/recover-2fa/{token}`; the admin queue is
+`/admin/recovery`. SMTP and the public HTTPS `APP_BASE_URL` must be configured in
+production. No support email alone authorizes a reset or substitutes for user proof.

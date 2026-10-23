@@ -2,6 +2,7 @@
 
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
 import { ArrowLeft, Fingerprint, KeyRound, LoaderCircle } from "lucide-react";
@@ -151,6 +152,7 @@ export default function VerifyLoginPage() {
 
           {error ? <Notice className="mt-5">{error}</Notice> : null}
           {notice ? <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">{notice}</p> : null}
+          <Link href="/recover-2fa" className="mt-6 block text-sm underline">Lost your authenticator? Request recovery</Link>
           <button type="button" onClick={startAgain} disabled={busy} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"><ArrowLeft className="h-4 w-4" aria-hidden /> Start sign-in again</button>
     </AuthEntryShell>
   );

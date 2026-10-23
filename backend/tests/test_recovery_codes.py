@@ -31,11 +31,13 @@ def _ticket(client, user) -> str:
         json={"email": user["email"], "password": user["password"]},
     )
     assert response.status_code == 200
-    assert "recovery_code" in response.json()["mfa_methods"]
+    assert "recovery_code" not in response.json()["mfa_methods"]
     return response.json()["mfa_ticket"]
 
 
-def test_codes_are_hashed_and_single_use(client, registered_user, totp_code) -> None:
+def test_codes_are_hashed_and_cannot_bypass_approved_recovery(
+    client, registered_user, totp_code
+) -> None:
     _, codes = _enable(client, registered_user, totp_code)
     assert len(codes) == len(set(codes)) == 8
     with MongoClient(settings.mongo_uri) as mongo:
@@ -47,8 +49,7 @@ def test_codes_are_hashed_and_single_use(client, registered_user, totp_code) -> 
         "/auth/login/complete",
         json={"ticket": _ticket(client, registered_user), "recovery_code": codes[0]},
     )
-    assert used.status_code == 200
-    assert used.json()["access_token"]
+    assert used.status_code == 401
     replay = client.post(
         "/auth/login/complete",
         json={"ticket": _ticket(client, registered_user), "recovery_code": codes[0]},
@@ -58,7 +59,7 @@ def test_codes_are_hashed_and_single_use(client, registered_user, totp_code) -> 
         "/auth/login/complete",
         json={"ticket": _ticket(client, registered_user), "recovery_code": codes[1]},
     )
-    assert next_code.status_code == 200
+    assert next_code.status_code == 401
 
 
 def test_regeneration_invalidates_previous_codes(client, registered_user, totp_code) -> None:
@@ -93,7 +94,7 @@ def test_regeneration_invalidates_previous_codes(client, registered_user, totp_c
             "/auth/login/complete",
             json={"ticket": _ticket(client, registered_user), "recovery_code": new_codes[0]},
         ).status_code
-        == 200
+        == 401
     )
 
 
@@ -112,7 +113,7 @@ def test_disabling_totp_revokes_recovery_codes(client, registered_user, totp_cod
         assert mongo[settings.mongo_db].recovery_codes.count_documents({}) == 0
 
 
-def test_lost_authenticator_can_be_replaced_with_recovery_code(
+def test_lost_authenticator_requires_approved_recovery_instead_of_disable(
     client, registered_user, totp_code
 ) -> None:
     _, codes = _enable(client, registered_user, totp_code)
@@ -130,15 +131,6 @@ def test_lost_authenticator_can_be_replaced_with_recovery_code(
         json={"current_password": registered_user["password"], "recovery_code": codes[0]},
         headers=registered_user["headers"],
     )
-    assert disabled.status_code == 200
-    fresh_headers = {"Authorization": f"Bearer {disabled.json()['access_token']}"}
-    assert (
-        client.post(
-            "/auth/totp/setup",
-            json={"current_password": registered_user["password"]},
-            headers=fresh_headers,
-        ).status_code
-        == 200
-    )
+    assert disabled.status_code == 401
     with MongoClient(settings.mongo_uri) as mongo:
-        assert mongo[settings.mongo_db].recovery_codes.count_documents({}) == 0
+        assert mongo[settings.mongo_db].recovery_codes.count_documents({}) == 8

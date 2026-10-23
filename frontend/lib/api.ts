@@ -146,6 +146,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  requestMfaRecovery: (email: string) => request<{ message: string }>("/auth/mfa-recovery/request", { method: "POST", body: JSON.stringify({ email }) }),
+  verifyMfaRecovery: (token: string, password: string, recovery_code: string) => request<{ setup_token: string; secret: string; provisioning_uri: string }>("/auth/mfa-recovery/verify", { method: "POST", body: JSON.stringify({ token, password, recovery_code }) }),
+  completeMfaRecovery: (setup_token: string, code: string) => request<{ codes: string[]; message: string }>("/auth/mfa-recovery/complete", { method: "POST", body: JSON.stringify({ setup_token, code }) }),
+  adminMfaRecovery: () => request<{ items: { id: string; email: string; created_at: string }[] }>("/admin/mfa-recovery"),
+  reviewMfaRecovery: (id: string, approve: boolean, current_password: string, reason: string) => request<{ message: string }>(`/admin/mfa-recovery/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ approve, current_password, reason }) }),
   adminAccess: () => request<{ allowed: boolean; expires_at: string | null }>("/auth/admin-access"),
   register: (payload: RegisterRequest) =>
     request<RegisterResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) }),
@@ -194,10 +199,6 @@ export const api = {
     request<TokenResponse>("/auth/login/complete", {
       method: "POST", body: JSON.stringify({ ticket, totp_code: totpCode }),
     }),
-  completeRecoveryLogin: (ticket: string, recoveryCode: string) =>
-    request<TokenResponse>("/auth/login/complete", {
-      method: "POST", body: JSON.stringify({ ticket, recovery_code: recoveryCode }),
-    }),
   passkeys: () => request<PasskeyInfo[]>("/auth/passkeys"),
   passkeyRegistrationOptions: (currentPassword: string, totpCode?: string) =>
     request<PasskeyOptions<PublicKeyCredentialCreationOptionsJSON>>("/auth/passkeys/register/options", {
@@ -234,10 +235,10 @@ export const api = {
     request<{ codes: string[] }>("/auth/recovery-codes/regenerate", {
       method: "POST", body: JSON.stringify({ current_password: currentPassword, totp_code: totpCode }),
     }),
-  disableTotp: (currentPassword: string, code: string, recovery = false) =>
+  disableTotp: (currentPassword: string, code: string) =>
     request<TokenResponse>("/auth/totp/disable", {
       method: "POST",
-      body: JSON.stringify(recovery ? { current_password: currentPassword, recovery_code: code } : { current_password: currentPassword, code }),
+      body: JSON.stringify({ current_password: currentPassword, code }),
     }),
 
   sendContactMessage: (payload: ContactRequest) =>

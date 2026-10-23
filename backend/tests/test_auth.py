@@ -108,7 +108,7 @@ def test_normal_user_can_enable_totp_and_login_in_two_steps(client, registered_u
     assert password_only.status_code == 200
     assert password_only.json()["mfa_required"] is True
     assert password_only.json()["access_token"] is None
-    assert password_only.json()["mfa_methods"] == ["totp", "recovery_code"]
+    assert password_only.json()["mfa_methods"] == ["totp"]
     ticket = password_only.json()["mfa_ticket"]
     assert ticket
 

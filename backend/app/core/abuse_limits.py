@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 # Attempts per window, counted before the route runs. Existing per-account lockout and
 # one-time challenge checks still apply after these coarse client limits.
 LIMITS: dict[str, tuple[int, int]] = {
+    "/auth/mfa-recovery/request": (5, 3600),
+    "/auth/mfa-recovery/verify": (10, 600),
+    "/auth/mfa-recovery/complete": (10, 600),
     "/auth/register": (10, 3600),
     "/auth/verify-email": (20, 600),
     "/auth/resend-code": (10, 3600),

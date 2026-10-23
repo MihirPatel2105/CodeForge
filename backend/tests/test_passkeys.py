@@ -244,7 +244,7 @@ def test_passkey_login_skips_totp_and_password_mfa_offers_both(
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert password_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
+    assert password_login["mfa_methods"] == ["totp", "passkey"]
     ticket = password_login["mfa_ticket"]
     mfa_options = client.post("/auth/passkeys/mfa/options", json={"ticket": ticket}).json()
     completed = client.post(
@@ -304,7 +304,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert code_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
+    assert code_login["mfa_methods"] == ["totp", "passkey"]
     code_session = client.post(
         "/auth/login/complete",
         json={
@@ -327,7 +327,7 @@ def test_admin_password_login_can_finish_with_code_or_passkey(
         "/auth/login",
         json={"email": registered_user["email"], "password": registered_user["password"]},
     ).json()
-    assert passkey_login["mfa_methods"] == ["totp", "recovery_code", "passkey"]
+    assert passkey_login["mfa_methods"] == ["totp", "passkey"]
     passkey_options = client.post(
         "/auth/passkeys/mfa/options",
         json={"ticket": passkey_login["mfa_ticket"]},

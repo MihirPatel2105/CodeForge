@@ -47,7 +47,7 @@ def test_enrollment_ends_all_old_sessions_and_returns_working_replacement(
     assert len(enabled["codes"]) == 8
 
 
-@pytest.mark.parametrize("method", ["totp", "recovery_code"])
+@pytest.mark.parametrize("method", ["totp"])
 def test_reset_requires_mfa_before_session(client, registered_user, totp_code, monkeypatch, method):
     secret, _, enabled = _enable(client, registered_user, totp_code)
     links = []
@@ -65,7 +65,7 @@ def test_reset_requires_mfa_before_session(client, registered_user, totp_code, m
     result = reset.json()
     assert result["access_token"] is None
     assert result["mfa_required"] is True
-    assert result["mfa_methods"] == ["totp", "recovery_code"]
+    assert result["mfa_methods"] == ["totp"]
     assert client.get("/auth/me", headers=_headers(enabled["access_token"])).status_code == 401
     assert client.get("/auth/me", headers=_headers(result["mfa_ticket"])).status_code == 401
     assert (
