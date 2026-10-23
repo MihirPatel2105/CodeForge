@@ -27,7 +27,7 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
   return (
     <ResizablePanelGroup orientation="vertical" className="cf-evidence-workbench" style={{ height: 960 }}>
       <ResizablePanel id="code-evidence" defaultSize="60%" minSize="360px">
-      <div ref={codeRef} className="cf-workbench-editor" role="region" aria-label="Generated code">{code}</div>
+      <div ref={codeRef} className="cf-workbench-editor" data-lenis-prevent role="region" aria-label="Generated code">{code}</div>
       </ResizablePanel>
       <ResizableHandle withHandle aria-label="Resize code and execution panels" />
       <ResizablePanel id="execution-evidence" minSize="250px">
@@ -44,10 +44,10 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
               <span aria-hidden />{result ? `${result.passed}/${result.total} tests passed` : "Tests pending"}
             </span>
           </div>
-          {problems && <TabsContent value="problems" hidden={view !== "problems"} keepMounted className="cf-workbench-console-panel">{problems}</TabsContent>}
-          <TabsContent value="timeline" hidden={view !== "timeline"} keepMounted className="cf-workbench-console-panel">{timeline}</TabsContent>
-          <TabsContent value="terminal" hidden={view !== "terminal"} keepMounted className="cf-workbench-console-panel">{terminal}</TabsContent>
-          <TabsContent value="tests" hidden={view !== "tests"} keepMounted className="cf-workbench-console-panel">{tests}</TabsContent>
+          {problems && <TabsContent value="problems" hidden={view !== "problems"} keepMounted className="cf-workbench-console-panel" data-lenis-prevent>{problems}</TabsContent>}
+          <TabsContent value="timeline" hidden={view !== "timeline"} keepMounted className="cf-workbench-console-panel" data-lenis-prevent>{timeline}</TabsContent>
+          <TabsContent value="terminal" hidden={view !== "terminal"} keepMounted className="cf-workbench-console-panel" data-lenis-prevent>{terminal}</TabsContent>
+          <TabsContent value="tests" hidden={view !== "tests"} keepMounted className="cf-workbench-console-panel" data-lenis-prevent>{tests}</TabsContent>
         </Tabs>
       </section>
       </ResizablePanel>

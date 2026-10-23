@@ -319,3 +319,6 @@
 .cf-evidence-workbench .cf-workbench-console { height:100%; border-top:0; }
 .cf-evidence-workbench .cf-workbench-console > [data-slot=tabs] { height:100%; }
 .cf-evidence-workbench .cf-workbench-console-panel { min-height:0; height:auto; flex:1; }
+
+/* Keep native wheel/touch scrolling inside each evidence pane at its boundaries. */
+.cf-evidence-workbench :is([data-slot="scroll-area-viewport"], .cf-run-scroll, .cf-workbench-console-panel) { overscroll-behavior: contain; }

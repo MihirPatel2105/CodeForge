@@ -127,3 +127,26 @@ test("demo controls wait for client code before accepting a mobile Skip click", 
   await skip.click();
   await expect(page.getByRole("status", { name: "Test summary" })).toContainText("8/8 tests passed");
 });
+
+
+test("evidence panels contain wheel scrolling at both boundaries", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/demo/library");
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
+  const workbench = page.locator(".cf-evidence-workbench");
+  const code = workbench.locator('.cf-run-scroll [data-slot="scroll-area-viewport"]');
+  const timeline = workbench.getByRole("log", { name: "Live timeline" });
+  for (const pane of [code, timeline]) {
+    await pane.scrollIntoViewIfNeeded();
+    await expect(pane).toHaveCSS("overscroll-behavior", "contain");
+    for (const bottom of [false, true]) {
+      await pane.evaluate((el, end) => { el.scrollTop = end ? el.scrollHeight : 0; }, bottom);
+      await pane.hover();
+      await page.waitForTimeout(300);
+      const before = await page.evaluate(() => window.scrollY);
+      await page.mouse.wheel(0, bottom ? 700 : -700);
+      await page.waitForTimeout(400);
+      expect(Math.abs(await page.evaluate(() => window.scrollY) - before)).toBeLessThan(2);
+    }
+  }
+});
