@@ -135,6 +135,7 @@ test("a user can publish an API and see its one-time key", async ({ page }) => {
   await page.goto(`/runs/${runId}/publish`);
   await expect(page).toHaveURL(new RegExp(`/runs/${runId}/publish$`));
   await page.getByRole("button", { name: "Publish API" }).click();
+  await page.getByRole("button", { name: "Continue and publish", exact: true }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Show key" }).click();
   await expect(page.getByText("cf_live_abc123", { exact: true })).toBeVisible();

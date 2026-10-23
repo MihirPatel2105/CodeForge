@@ -39,7 +39,7 @@ export default function PublishApiPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [confirmAction, setConfirmAction] = useState<"rotate" | "unpublish" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"publish" | "rotate" | "unpublish" | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +94,7 @@ export default function PublishApiPage() {
       setHealth(null);
       setApiKey(created.api_key);
       setShowKey(false);
+      setConfirmAction(null);
       toast.success(created.status === "active" ? "API published." : "Your API is starting.");
       return true;
     } catch (err) {
@@ -262,7 +263,7 @@ export default function PublishApiPage() {
             <div>
               <h2 id="publish-status-heading" className="font-display text-[22px] font-[650] text-fg">Ready to connect your app?</h2>
               <p className="mt-2 max-w-[65ch] text-[13px] leading-6 text-fg-muted">Publishing creates a stable URL and a one-time API key. Your CodeForge backend and Docker host must stay online. Limits: 1 published API per account, 2 published APIs across this server, and 60 requests per minute for each API. If your account already has an API, unpublish it first. If both hosting slots are occupied, wait for a slot to become available.</p>
-              <StatefulButton className="mt-5" actionKind="publish" label="Publish API" pendingLabel="Publishing…" successLabel="Published" onAction={publish} disabled={busy} />
+              <Button className="group mt-5" onClick={() => { setError(null); setConfirmAction("publish"); }} disabled={busy}><ActionIcon kind="publish" />Publish API</Button>
             </div>
           </section>
         )}
@@ -272,12 +273,14 @@ export default function PublishApiPage() {
           <div className={`border-b px-6 py-5 ${confirmAction === "unpublish" ? "border-danger-bd bg-danger-soft" : "border-border bg-bg"}`}>
             <DialogHeader>
               <DialogTitle className="font-display text-[22px] tracking-[-0.04em] text-fg">
-                {confirmAction === "unpublish" ? "Unpublish this API?" : "Rotate your API key?"}
+                {confirmAction === "publish" ? "Publish API — Beta" : confirmAction === "unpublish" ? "Unpublish this API?" : "Rotate your API key?"}
               </DialogTitle>
             </DialogHeader>
           </div>
           <DialogDescription className="px-6 text-[14px] leading-6 text-fg-muted">
-            {confirmAction === "unpublish"
+            {confirmAction === "publish"
+              ? "Public API hosting is in Beta. Availability and behavior may change. Use it for testing and demos, rather than production-critical apps. Your CodeForge backend and Docker host must stay online for the API to remain available."
+              : confirmAction === "unpublish"
               ? "Your published URL will stop working and its hosted data will be permanently deleted. This cannot be undone."
               : "The current key will stop working immediately. Update any apps using it with the new key, which will be shown only once."}
           </DialogDescription>
@@ -287,10 +290,11 @@ export default function PublishApiPage() {
             <Button
               type="button"
               variant={confirmAction === "unpublish" ? "destructive" : "default"}
-              onClick={() => void (confirmAction === "unpublish" ? unpublish() : rotateKey())}
+              onClick={() => void (confirmAction === "publish" ? publish() : confirmAction === "unpublish" ? unpublish() : rotateKey())}
               disabled={busy}
             >
-              {busy ? "Working…" : confirmAction === "unpublish" ? "Unpublish and delete data" : "Rotate key"}
+              {confirmAction === "publish" && <ActionIcon kind="publish" state={busy ? "pending" : "idle"} />}
+              {busy ? (confirmAction === "publish" ? "Publishing…" : "Working…") : confirmAction === "publish" ? "Continue and publish" : confirmAction === "unpublish" ? "Unpublish and delete data" : "Rotate key"}
             </Button>
           </DialogFooter>
         </DialogContent>

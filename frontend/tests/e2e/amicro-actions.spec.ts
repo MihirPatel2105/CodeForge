@@ -52,11 +52,13 @@ test("publish cloud reflects pending and failure without claiming success", asyn
   await publish.hover();
   await expect(publish.locator("[data-action-icon]")).toHaveAttribute("data-action-state", "idle");
   await publish.click();
-  await expect(publish.locator("[data-action-icon]")).toHaveAttribute("data-action-state", "pending");
-  await expect(publish).toBeDisabled();
+  const confirm = page.getByRole("button", { name: "Continue and publish", exact: true });
+  await confirm.click();
+  await expect(page.getByRole("button", { name: "Publishing…", exact: true }).locator("[data-action-icon]")).toHaveAttribute("data-action-state", "pending");
+  await expect(page.getByRole("button", { name: "Publishing…", exact: true })).toBeDisabled();
   release();
-  await expect(publish).toBeEnabled();
-  await expect(publish.locator("[data-action-icon]")).toHaveAttribute("data-action-state", "idle");
+  await expect(confirm).toBeEnabled();
+  await expect(confirm.locator("[data-action-icon]")).toHaveAttribute("data-action-state", "idle");
 });
 
 test("reload icon follows connection check and respects reduced motion", async ({ page }) => {
