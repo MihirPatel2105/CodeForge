@@ -8,7 +8,9 @@ async function setup(page: Page) {
   await page.route("**/api/backend/**", route => route.fulfill({ status: 404, json: {} }));
   await page.route("**/api/backend/auth/me", route => route.fulfill({ json: user }));
   await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [approval, completed] }));
-  await page.goto("/");
+  // Exercise the shared inbox without the homepage's unrelated WebGL workload.
+  // Homepage anchoring remains covered by the explicit scrolling cases below.
+  await page.goto("/faq");
   await page.getByRole("button", { name: /Run updates/ }).click();
 }
 test("Arc inbox filters, expands, persists read state and protects approvals", async ({ page }) => {
