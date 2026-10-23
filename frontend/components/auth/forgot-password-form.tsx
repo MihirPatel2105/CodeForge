@@ -52,7 +52,6 @@ export function ForgotPasswordForm() {
 
   return (
     <AuthEntryShell label={sent ? "Reset link requested" : "Request a password reset"} proof="recovery" compact>
-          <Link href="/recover-2fa" className="mb-5 block text-sm underline">Lost your authenticator? Recover 2FA access</Link>
           {sent ? (
             <>
               <span className="grid h-12 w-12 place-items-center rounded-2xl border border-ok-bd bg-ok-soft text-ok">
@@ -129,6 +128,12 @@ export function ForgotPasswordForm() {
               </form>
             </>
           )}
+
+          <details className="mt-6 rounded-xl border border-border bg-surface-2/40 px-4 text-[13px] text-fg-muted">
+            <summary className="cursor-pointer rounded-md py-3 font-[600] focus-visible:outline-2 focus-visible:outline-accent">Need help with 2FA?</summary>
+            <p className="pb-3 text-[12px] leading-5">If you lost your authenticator, request an administrator review. You will still need your password and a saved recovery code.</p>
+            <Link href="/recover-2fa" className="mb-4 inline-flex min-h-11 items-center font-[650] text-fg underline underline-offset-4">Recover authenticator access</Link>
+          </details>
 
           <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">
             Remembered it? <Link href="/login" className="font-[700] text-accent hover:underline hover:underline-offset-4">Sign in</Link>
