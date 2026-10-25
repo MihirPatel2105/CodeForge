@@ -13,6 +13,7 @@ import "./landing-showcase.css";
 import "./ostack-landing.css";
 import { ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
+import { HeroLightRays } from "./hero-light-rays";
 import { LandingProductPreview } from "./landing-product-preview";
 import { BuildProcess } from "./build-process";
 import { SiteFooter } from "./marketing-actions";
@@ -60,7 +61,8 @@ export function PremiumLanding() {
       <a className="lp-skip" href="#landing-content">Skip to content</a>
       <SiteHeader />
       <main id="landing-content">
-        <section id="overview" className="lp-hero" aria-labelledby="landing-title">
+        <section id="overview" className="lp-hero lp-hero-dark" aria-labelledby="landing-title">
+          <HeroLightRays />
           <motion.div className="lp-hero-copy" style={{ transform: reducedMotion ? "none" : heroTransform, opacity: reducedMotion ? 1 : heroOpacity }}>
             <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>
             <BlurHeadline />

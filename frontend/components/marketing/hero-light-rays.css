@@ -1,0 +1,18 @@
+.cf-ostack .lp-hero-dark { isolation: isolate; background: #07090f; color: #f8faff; padding-top: 76px; }
+.cf-hero-rays { position: absolute; z-index: -1; inset: 0 0 auto; height: min(100%, 940px); pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 50% -20%, #566eaa38, transparent 65%); mask-image: linear-gradient(#000 65%, transparent); }
+.cf-hero-rays::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 48%, #07090f55, transparent 70%); }
+.cf-hero-rays .light-rays { position: absolute; inset: 0; }
+.cf-hero-rays .light-rays__canvas { display: block; width: 100%; height: 100%; }
+.cf-ostack .lp-hero-dark .lp-hero-copy { position: relative; }
+.cf-ostack .lp-hero-dark .lp-intro { color: #c3cbdc; background: #ffffff06; border: 1px solid #ffffff14; box-shadow: inset 0 1px 0 #ffffff08; }
+.cf-ostack .lp-hero-dark .ol-hero-mark { color: #b9ceff; background: #b9ceff12; }
+.cf-ostack .lp-hero-dark h1 { color: #f8faff; text-shadow: 0 2px 28px #07090f88; }
+.cf-ostack .lp-hero-dark .lp-lead { color: #b6bed0; }
+.cf-ostack .lp-hero-dark .lp-button { background: #f3f6ff; color: #111722; box-shadow: inset 0 1px 0 #fff, 0 4px 28px #9ab6ff14; }
+.cf-ostack .lp-hero-dark .lp-button:hover { background: #fff; box-shadow: 0 6px 32px #9ab6ff26; }
+.cf-ostack .lp-hero-dark .lp-text-link { color: #d0d7e6; }
+.cf-ostack .lp-hero-dark .lp-text-link:hover { background: #ffffff0a; }
+.cf-ostack .lp-hero-dark .ol-product-stage { color: #171717; }
+.cf-ostack .lp-hero-dark .ol-product-shell { box-shadow: 0 30px 80px -24px #0008; }
+.cf-ostack .lp-hero-dark :is(a,button):focus-visible { outline-color: #b9ceff; }
+@media(max-width:700px) { .cf-ostack .lp-hero-dark { padding-top: 52px; }.cf-hero-rays { height: 680px; } }

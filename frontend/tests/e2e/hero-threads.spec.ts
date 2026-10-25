@@ -13,7 +13,7 @@ for (const width of [1440, 390, 320]) {
       const shape = await button.evaluate(element => ({ radius: parseFloat(getComputedStyle(element).borderRadius), height: element.getBoundingClientRect().height }));
       expect(shape.radius).toBeGreaterThanOrEqual(shape.height / 2);
     }
-    await expect(page.locator(".lp-hero")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+    await expect(page.locator(".lp-hero")).toHaveCSS("background-color", "rgb(7, 9, 15)");
     await expect(page.locator(".ol-product-workspace")).toBeVisible();
     await expect(page.locator(".ol-product-outcome")).toContainText("Tests + execution logs");
     const action = page.locator(".lp-actions").getByRole("link", { name: "Build your first API", exact: true });
@@ -77,4 +77,19 @@ test("hero copy follows smooth scrolling and respects reduced motion", async ({ 
   await page.mouse.wheel(0, 320);
   await expect(copy).toHaveCSS("transform", "none");
   await expect(copy).toHaveCSS("opacity", "1");
+});
+
+test("live hero rays yield to reduced motion and retain the static fallback", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const rays = page.locator(".cf-hero-rays");
+  await expect(rays).toHaveAttribute("aria-hidden", "true");
+  await expect(rays).toHaveCSS("pointer-events", "none");
+  await expect(rays.locator("canvas")).toHaveCount(1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(rays.locator("canvas")).toHaveCount(0);
+  await expect(rays).toHaveCSS("background-image", /radial-gradient/);
+  await expect(page.locator(".lp-hero h1")).toHaveCSS("color", "rgb(248, 250, 255)");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(rays.locator("canvas")).toHaveCount(1);
 });
