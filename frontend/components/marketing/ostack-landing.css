@@ -74,12 +74,14 @@
 .cf-ostack .ol-process { padding-top: 50px; padding-bottom: 120px; }
 .ol-process-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; }
 .ol-process-nav { position: sticky; top: 130px; display: flex; flex-direction: column; gap: 8px; }
-.ol-process-button { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0; height: auto; padding: 24px; white-space: normal; text-align: left; border-radius: 16px; background: transparent; color: #171717; }
+.ol-process-button { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 0; height: auto; padding: 24px; white-space: normal; text-align: left; border-radius: 16px; background: transparent; color: #171717; transition: background-color 360ms var(--lp-ease-out), box-shadow 360ms var(--lp-ease-out); }
 .ol-process-button > span:first-child { display: flex; justify-content: space-between; gap: 20px; width: 100%; font-size: 19px; font-weight: 600; letter-spacing: -.03em; }
 .ol-process-button small { font: 10px var(--lp-mono); font-weight: 500; }
-.ol-process-button .ol-process-description { display: none; margin-top: 20px; font-size: 13px; line-height: 1.8; font-weight: 400; color: #6d6e75; }
+.ol-process-reveal { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 420ms cubic-bezier(.22,.61,.36,1), opacity 280ms ease; }
+.ol-process-button .ol-process-description { display: block; min-height: 0; overflow: hidden; font-size: 13px; line-height: 1.8; font-weight: 400; color: #6d6e75; }
+.ol-process-description > span { display: block; padding-top: 20px; }
 .ol-process-button[aria-current=step] { background: #fff; box-shadow: 0 10px 40px #2226350c; }
-.ol-process-button[aria-current=step] .ol-process-description { display: block; }
+.ol-process-button[aria-current=step] .ol-process-reveal { grid-template-rows: 1fr; opacity: 1; }
 .ol-process-demo { display: flex; align-items: center; gap: 14px; padding: 20px 24px; min-height: 44px; font-size: 12px; }
 .ol-process-panels { display: flex; flex-direction: column; gap: 32px; }
 .ol-process-panel { display: flex; flex-direction: column; min-width: 0; padding: 44px; background: #f4f4f6; border-radius: 22px; scroll-margin-top: 130px; }
@@ -127,7 +129,7 @@
   .cf-ostack .ol-process { padding-top: 30px; padding-bottom: 64px; }.ol-section-heading { margin-bottom: 36px; }.ol-process-layout { display: block; }.ol-process-nav { display: none; }.ol-process-panels { gap: 18px; }.ol-process-panel { padding: 26px 20px; scroll-margin-top: 90px; }.ol-process-panel h3 { font-size: 26px; margin-bottom: 20px; }.ol-process-artifact { min-height: 240px; }.ol-prompt-card { transform: none; padding: 22px; }.ol-prompt-card p { font-size: 19px; }.ol-process-mobile-detail { display: block; margin-top: 22px; font-size: 12px; line-height: 1.8; color: #71727c; }.ol-process-artifact .lp-preview-checkpoint { flex-wrap: wrap; }.ol-process-artifact .lp-preview-document { padding-inline: 12px; }
   .cf-ostack .lp-loop-section { margin-inline: 0; }.cf-ostack .lp-loop-inner { padding-inline: 24px; }.cf-ostack .lp-closing { margin-top: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .ol-tech-track { animation: none; }.ol-product-shell,.ol-prompt-card { transform: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ol-process-button,.ol-process-reveal { transition: none; }.ol-tech-track { animation: none; }.ol-product-shell,.ol-prompt-card { transform: none !important; } }
 /* Each artifact keeps its actual example content while using a distinct visual treatment. */
 .cf-ostack .vui-agent-card:nth-child(1) .vui-agent-artifact { background: #fff; }
 .cf-ostack .vui-agent-card:nth-child(1) .vui-agent-artifact li:first-child { font: 550 30px/1.3 var(--lp-font); letter-spacing: -.04em; margin-bottom: 16px; color: #2c303c; }

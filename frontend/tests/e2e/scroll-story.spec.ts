@@ -33,3 +33,33 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 1280, height: 72
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
   });
 }
+
+test("process descriptions interpolate open and closed, and reduced motion settles immediately", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const process = page.locator("#build-story");
+  await process.getByRole("button", { name: "01 Describe", exact: true }).click();
+  await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("opacity", "1");
+  const result = await process.evaluate(async element => {
+    const buttons = element.querySelectorAll<HTMLButtonElement>(".ol-process-button");
+    const first = buttons[0].querySelector<HTMLElement>(".ol-process-reveal")!;
+    const second = buttons[1].querySelector<HTMLElement>(".ol-process-reveal")!;
+    const initial = first.getBoundingClientRect().height;
+    const samples: { first: number; second: number }[] = [];
+    buttons[1].click();
+    await new Promise<void>(resolve => {
+      const start = performance.now();
+      function frame() {
+        samples.push({ first: first.getBoundingClientRect().height, second: second.getBoundingClientRect().height });
+        if (performance.now() - start < 650) requestAnimationFrame(frame); else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+    return { initial, samples, final: second.getBoundingClientRect().height };
+  });
+  expect(result.samples.some(sample => sample.first > 0 && sample.first < result.initial - 1)).toBe(true);
+  expect(result.samples.some(sample => sample.second > 0 && sample.second < result.final - 1)).toBe(true);
+  await expect(process.getByRole("button", { name: "02 Plan", exact: true })).toHaveAttribute("aria-current", "step");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("transition-duration", "0s");
+});
