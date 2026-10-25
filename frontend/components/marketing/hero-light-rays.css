@@ -1,4 +1,4 @@
-.cf-ostack .lp-hero-dark { isolation: isolate; background: #07090f; color: #f8faff; padding-top: 76px; }
+.cf-ostack .lp-hero-dark { isolation: isolate; background-color: #07090f; background-image: linear-gradient(180deg, #07090f 0%, #11151f 24%, #39414f 47%, #8e95a0 68%, #dde0e5 87%, #fff 100%); background-size: 100% clamp(260px, 30vw, 440px); background-position: center bottom; background-repeat: no-repeat; color: #f8faff; padding-top: 76px; }
 .cf-hero-rays { position: absolute; z-index: -1; inset: 0 0 auto; height: min(100%, 940px); pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 0% 0%, #566eaa38, transparent 65%); mask-image: linear-gradient(#000 65%, transparent); }
 .cf-hero-rays::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 48%, #07090f55, transparent 70%); }
 .cf-hero-rays .side-rays { position: absolute; inset: 0; }
@@ -13,7 +13,7 @@
 .cf-ostack .lp-hero-dark .lp-text-link { color: #d0d7e6; }
 .cf-ostack .lp-hero-dark .lp-text-link:hover { background: #ffffff0a; }
 .cf-ostack .lp-hero-dark .ol-product-stage { color: #171717; }
-.cf-ostack .lp-hero-dark .ol-product-shell { box-shadow: 0 30px 80px -24px #0008; }
+.cf-ostack .lp-hero-dark .ol-product-shell { box-shadow: 0 24px 70px -36px #18223840; }
 .cf-ostack .lp-hero-dark :is(a,button):focus-visible { outline-color: #b9ceff; }
 @media(max-width:700px) { .cf-ostack .lp-hero-dark { padding-top: 52px; }.cf-hero-rays { height: 680px; } }
 .cf-ostack:has(> [data-hero-overlay]) .lp-hero-dark { padding-top: 140px; }

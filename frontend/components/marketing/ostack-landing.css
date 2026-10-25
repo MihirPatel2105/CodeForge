@@ -9,10 +9,6 @@
 .cf-ostack .lp-button { border-radius: 100px; min-height: 50px; padding: 13px 22px; font-size: 14px; background: #171717; color: #fff; }
 .cf-ostack .lp-text-link { font-size: 13px; color: #5e6069; font-weight: 500; }
 .ol-product-stage { position: relative; isolation: isolate; width: min(100%,1120px); max-width: 1120px; margin: 20px auto 0; padding: 66px 56px 0; text-align: left; }
-.ol-product-mat { position: absolute; z-index: -1; inset: 0 8px 48px; border-radius: 80px 80px 120px 120px / 80px 80px 100px 100px; border: 1px solid #ffffff16; background: radial-gradient(ellipse at 16% -15%, #a8b9ef30, transparent 57%), radial-gradient(ellipse at 105% 30%, #344b9838, transparent 64%), linear-gradient(145deg, #2b2f3b, #1b1e28 60%, #222a40); box-shadow: inset 0 1px 0 #ffffff14, inset 0 -30px 65px #080c181f; transform: none; overflow: hidden; pointer-events: none; }
-.ol-product-mat::before { content: ""; position: absolute; inset: 0; opacity: .3; background: repeating-linear-gradient(0deg, #ffffff06 0, #ffffff06 1px, transparent 1px, transparent 3px); }
-.ol-product-mat > span { position: absolute; width: 115%; height: 190%; top: -85%; left: -38%; border: 1px solid #d6dffa13; border-radius: 50%; transform: rotate(-22deg); background: transparent; }
-.ol-product-mat > span:last-child { width: 125%; height: 190%; top: -35%; left: auto; right: -65%; border-color: #9caee51a; transform: rotate(22deg); background: transparent; }
 .ol-product-shell { background: #fff; padding: 10px; border: 1px solid #e5e5e8; border-radius: 24px; box-shadow: 0 40px 75px -45px #1c243e66; transform-origin: center; }
 .ol-product-toolbar { display: flex; align-items: center; gap: 9px; padding: 15px 18px 22px; font-size: 12px; color: #33343b; }
 .ol-product-toolbar > span:last-child { margin-left: auto; font-size: 10px; color: #888990; }
@@ -117,12 +113,12 @@
 @media (max-width: 1100px) { .ol-process-layout { gap: 32px; }.ol-process-panel { padding: 28px; } }
 @media (max-width: 850px) {
   .cf-ostack .lp-team .vui-agent-card,.cf-ostack .lp-team .vui-agent-card:nth-child(4),.cf-ostack .lp-team .vui-agent-card:nth-child(5),.cf-ostack .lp-team .vui-agent-card:last-child { grid-column: span 6; }
-  .ol-product-stage { padding: 42px 24px 0; }.ol-product-mat { bottom: 40px; }
+  .ol-product-stage { padding: 42px 24px 0; }
   .ol-product-workspace { grid-template-columns: .85fr 1.15fr; }.ol-product-brief { padding: 22px; }.ol-product-brief h2 { font-size: 26px; }.ol-product-code { padding: 18px; }
 }
 @media (max-width: 700px) {
   .cf-ostack .lp-hero { padding: 44px 20px 0; }.cf-ostack .lp-intro { font-size: 10px; margin-bottom: 24px; }.cf-ostack .lp-hero h1 { font-size: clamp(38px,10vw,52px); }.cf-ostack .lp-lead { font-size: 15px; max-width: 340px; margin-top: 22px; }.cf-ostack .lp-actions { flex-direction: column; gap: 6px; margin-top: 24px; }
-  .ol-product-stage { margin-top: 32px; padding: 22px 0 0; }.ol-product-mat { display: none; }.ol-product-shell { padding: 6px; border-radius: 15px; }.ol-product-toolbar { padding: 10px 8px 15px; font-size: 10px; gap: 5px; }.ol-product-toolbar > span:last-child { font-size: 7px; max-width: 135px; text-align: right; }.ol-window-dots { margin-right: 4px; gap: 3px; }.ol-window-dots i { width: 4px; height: 4px; }
+  .ol-product-stage { margin-top: 32px; padding: 22px 0 0; }.ol-product-shell { padding: 6px; border-radius: 15px; }.ol-product-toolbar { padding: 10px 8px 15px; font-size: 10px; gap: 5px; }.ol-product-toolbar > span:last-child { font-size: 7px; max-width: 135px; text-align: right; }.ol-window-dots { margin-right: 4px; gap: 3px; }.ol-window-dots i { width: 4px; height: 4px; }
   .ol-product-workspace { grid-template-columns: 1fr; }.ol-product-brief { padding: 24px; }.ol-product-brief h2 { font-size: 28px; }.ol-product-brief h2 br { display: none; }.ol-product-brief p { max-width: none; font-size: 12px; }.ol-brief-checks { flex-direction: row; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; font-size: 8px; }.ol-product-code { padding: 18px; }.ol-product-code .lp-preview-code { font-size: 9px; }.ol-product-foot { padding: 12px 6px 6px; font-size: 8px; }
   .ol-technology { padding: 48px 20px 40px; }.ol-technology > p { font-size: 12px; }.ol-tech-group { gap: 44px; padding-right: 44px; }.ol-tech-group span { font-size: 21px; }
   .cf-ostack .lp-section { padding-inline: 20px; }.cf-ostack .lp-team { padding-top: 36px; padding-bottom: 64px; }.cf-ostack .lp-team .lp-section-intro { margin-bottom: 32px; }.cf-ostack .lp-team .lp-section-intro > p { font-size: 13px; }.cf-ostack .lp-team .vui-agent-grid { grid-template-columns: 1fr; gap: 18px; }.cf-ostack .lp-team .vui-agent-card,.cf-ostack .lp-team .vui-agent-card:nth-child(4),.cf-ostack .lp-team .vui-agent-card:nth-child(5),.cf-ostack .lp-team .vui-agent-card:last-child { grid-column: auto; padding: 24px; }.cf-ostack .lp-team .vui-agent-artifact { min-height: 190px; }

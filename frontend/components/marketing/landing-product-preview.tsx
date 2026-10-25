@@ -15,7 +15,6 @@ export function LandingProductPreview() {
   const transform = useTransform(scrollYProgress, [0, 1], ["perspective(1800px) rotateX(12deg) scale(.93)", "perspective(1800px) rotateX(0deg) scale(1)"]);
 
   return <div className="ol-product-stage lp-product-scroll" ref={root}>
-    <div className="ol-product-mat" aria-hidden="true"><span /><span /></div>
     <motion.div className="ol-product-shell lp-product-scale" style={{ transform: reduced ? "none" : transform }}>
       <div className="ol-product-toolbar"><span className="ol-window-dots" aria-hidden><i /><i /><i /></span><Code2 size={16} aria-hidden /><strong>CodeForge</strong><span>Personal Library / Recorded example</span></div>
       <div className="ol-product-workspace">
