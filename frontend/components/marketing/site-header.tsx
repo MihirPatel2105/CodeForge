@@ -23,10 +23,34 @@ const MotionLink = motion.create(Link);
 export function SiteHeader({ workspace = false, heroOverlay = false }: { workspace?: boolean; heroOverlay?: boolean }) {
   const header = useRef<HTMLElement>(null);
   useEffect(() => {
-    const update = () => header.current?.toggleAttribute("data-scrolled", window.scrollY > (heroOverlay ? 180 : 16));
-    update();
+    const element = header.current;
+    const hero = heroOverlay ? document.getElementById("overview") : null;
+    let heroEnd = 0;
+    const update = () => {
+      if (!element) return;
+      if (!hero) {
+        element.toggleAttribute("data-scrolled", window.scrollY > 16);
+        return;
+      }
+      // Blend only while the dark-to-white boundary passes through the header.
+      const progress = Math.min(1, Math.max(0, (window.scrollY + 64 - heroEnd) / 64));
+      element.style.setProperty("--hero-header-progress", String(progress));
+      element.toggleAttribute("data-scrolled", progress >= 0.5);
+    };
+    const measure = () => {
+      heroEnd = hero ? hero.getBoundingClientRect().bottom + window.scrollY : 0;
+      update();
+    };
+    const observer = hero ? new ResizeObserver(measure) : null;
+    if (hero) observer?.observe(hero);
+    measure();
     window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", measure);
+    };
   }, [heroOverlay]);
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
@@ -35,7 +59,7 @@ export function SiteHeader({ workspace = false, heroOverlay = false }: { workspa
   return (
     <>
     <header ref={header} data-hero-overlay={heroOverlay || undefined} className="cf-site-header sticky top-0 z-20 h-16">
-      <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
+      <div className="cf-site-header-bar border border-transparent border-b-rule">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
         <MotionLink {...pressMotion}
           href="/"

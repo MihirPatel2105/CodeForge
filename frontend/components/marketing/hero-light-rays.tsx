@@ -24,9 +24,10 @@ export function HeroLightRays() {
         haze={0.15}
         atmosphere={0.25}
         opacity={0.9}
-        followMouse={false}
-        cursorShadow={false}
-        clickPulse={false}
+        followMouse
+        mouseInfluence={0.1}
+        cursorShadow
+        clickPulse
         maxDevicePixelRatio={1}
       />}
     </div>

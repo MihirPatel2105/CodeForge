@@ -94,20 +94,51 @@ test("live hero rays yield to reduced motion and retain the static fallback", as
   await expect(rays.locator("canvas")).toHaveCount(1);
 });
 
-test("hero header is transparent at the top and restores its surface in both scroll directions", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+for (const width of [1440, 390]) {
+  test(`hero header follows the dark-to-white boundary in both directions at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const header = page.locator("header.cf-site-header");
+    const surface = header.locator(".cf-site-header-bar");
+    const opacity = () => surface.evaluate(element => getComputedStyle(element, "::before").opacity);
+    await expect(surface).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(surface).toHaveCSS("backdrop-filter", "none");
+    await expect.poll(opacity).toBe("0");
+    await expect(header).toHaveCSS("height", "64px");
+    const heroEnd = await page.locator("#overview").evaluate(element => element.getBoundingClientRect().bottom + window.scrollY);
+    await page.evaluate(() => window.scrollTo(0, 350));
+    await expect(header).not.toHaveAttribute("data-scrolled");
+    await expect.poll(opacity).toBe("0");
+    await page.evaluate(end => window.scrollTo(0, end - 32), heroEnd);
+    await expect.poll(async () => Number(await opacity())).toBeGreaterThan(0.4);
+    await expect.poll(async () => Number(await opacity())).toBeLessThan(0.6);
+    await page.evaluate(end => window.scrollTo(0, end + 100), heroEnd);
+    await expect.poll(opacity).toBe("1");
+    await expect(header).toHaveAttribute("data-scrolled", "");
+    await page.evaluate(() => window.scrollTo(0, 200));
+    await expect.poll(opacity).toBe("0");
+    await expect(header).not.toHaveAttribute("data-scrolled");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.getByRole("link", { name: "How CodeForge works", exact: true }).click();
+    await expect(page.locator("header.cf-site-header")).not.toHaveAttribute("data-hero-overlay");
+  });
+}
+
+test("header surface eases through intermediate opacity when crossing the hero boundary", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const header = page.locator("header.cf-site-header");
-  const surface = header.locator(".cf-site-header-bar");
-  await expect(surface).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await expect(header.locator('.cf-header-start')).toHaveCSS("color", "rgb(17, 23, 34)");
-  await expect(header).toHaveCSS("height", "64px");
-  await page.mouse.wheel(0, 350);
-  await expect(header).toHaveAttribute("data-scrolled", "");
-  await expect(surface).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await page.mouse.wheel(0, -1000);
-  await expect(header).not.toHaveAttribute("data-scrolled");
-  await expect(surface).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await page.getByRole("link", { name: "How CodeForge works", exact: true }).click();
-  await expect(page.locator("header.cf-site-header")).not.toHaveAttribute("data-hero-overlay");
+  const samples = await page.locator(".cf-site-header-bar").evaluate(async element => {
+    const hero = document.getElementById("overview")!;
+    window.scrollTo(0, hero.getBoundingClientRect().bottom + window.scrollY + 100);
+    const values: number[] = [];
+    const start = performance.now();
+    while (performance.now() - start < 650) {
+      await new Promise(requestAnimationFrame);
+      values.push(Number(getComputedStyle(element, "::before").opacity));
+    }
+    return values;
+  });
+  expect(samples.some(value => value > 0.05 && value < 0.95)).toBe(true);
+  await expect.poll(() => page.locator(".cf-site-header-bar").evaluate(element => Number(getComputedStyle(element, "::before").opacity))).toBe(1);
 });
