@@ -17,31 +17,21 @@ async function session(page: Page) {
 }
 
 for (const width of [1440, 375]) {
-  test(`public components support keyboard, focus restoration and ${width}px layout`, async ({ page }) => {
+  test(`agent cards and FAQ support keyboard and ${width}px layout`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
     await page.goto("/");
     await expect(page.locator(".vui-agent-card")).toHaveCount(6);
-    const trigger = page.getByRole("button", { name: /Approve before it builds/ });
-    for (const card of await page.locator(".vui-feature-card").all()) {
-      await expect(card).toHaveCSS("flex-direction", "column");
+    await expect(page.locator("#control")).toHaveCount(0);
+    for (const card of await page.locator(".vui-agent-card").all()) {
       const bounds = await card.boundingBox();
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
     }
-    await trigger.scrollIntoViewIfNeeded();
-    await trigger.focus();
-    await page.keyboard.press("Enter");
-    const dialog = page.getByRole("dialog", { name: "Approve before it builds." });
-    await expect(dialog).toBeVisible();
-    await page.keyboard.press("Tab");
-    await expect.poll(() => dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
-    await page.keyboard.press("Escape");
-    await expect(dialog).toHaveCount(0);
-    await expect(trigger).toBeFocused();
     const faq = page.getByRole("button", { name: "What can I build?", exact: true });
-    await faq.click();
+    await faq.focus();
+    await page.keyboard.press("Enter");
     await expect(faq).toHaveAttribute("aria-expanded", "true");
     await page.getByRole("button", { name: "Do I get to approve the plan?", exact: true }).click();
     await expect(faq).toHaveAttribute("aria-expanded", "true");
@@ -138,9 +128,9 @@ test("FAQ page and dark footer retain readable content and links", async ({ page
   await question.scrollIntoViewIfNeeded();
   await page.screenshot({ path: "/tmp/codeforge-vengeance-faq-dark.png" });
   await page.goto("/");
-  await page.locator(".vui-feature-grid").scrollIntoViewIfNeeded();
-  await expect(page.locator(".vui-feature-card").first()).toHaveCSS("flex-direction", "column");
-  await page.screenshot({ path: "/tmp/codeforge-vengeance-features-dark.png" });
+  await page.locator("#example-apis").scrollIntoViewIfNeeded();
+  await expect(page.locator(".cf-demo-slide")).toHaveCount(3);
+  await page.screenshot({ path: "/tmp/codeforge-vengeance-examples-dark.png" });
   const footer = page.getByRole("contentinfo");
   await expect(footer).toHaveClass(/cf-invert/);
   await expect(footer.getByRole("link", { name: "FAQ", exact: true })).toHaveAttribute("href", "/faq");

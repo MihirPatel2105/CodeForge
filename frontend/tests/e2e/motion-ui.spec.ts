@@ -31,9 +31,9 @@ test("all sections are available before scrolling and reduced motion stays still
   await expect(page.locator(".lp-repair")).toHaveCSS("opacity", "1");
   await expect(page.locator(".lp-repair")).toHaveCSS("transform", "none");
   await expect(stack.getByRole("heading", { name: "A clear plan. Before the code." })).toBeVisible();
-  await expect(stack.getByText("Requested change → Coder", { exact: true })).toBeVisible();
+  await expect(stack.getByText("Requirements match", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 720 });
-  await expect(stack.getByText("Failures can trigger another repair", { exact: true })).toBeVisible();
+  await expect(stack.getByText("Failure cases", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -92,7 +92,7 @@ test("homepage product preview leads into the split build process", async ({ pag
   await page.keyboard.press("Enter");
   await expect(page.locator("#cf-story-title")).toBeInViewport();
   await expect(page.getByRole("navigation", { name: "Walkthrough chapters" }).getByRole("button")).toHaveCount(4);
-  await expect(page.locator("#build-story").getByRole("link", { name: "Build your first API", exact: true })).toHaveAttribute("href", "/signup");
+  await expect(page.locator("#build-story").getByRole("link", { name: "Inspect this result", exact: true })).toHaveAttribute("href", "/demo/library");
 });
 
 test("all agent cards remain readable when motion preference changes", async ({ page }) => {

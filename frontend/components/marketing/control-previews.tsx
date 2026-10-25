@@ -1,4 +1,18 @@
 import { Check, FileCode2, GitBranch, ShieldCheck } from "lucide-react";
+import { DEMO_RUNS } from "@/lib/demo-runs";
+import { tokenizePythonLine } from "@/lib/python-highlight";
+
+const library = DEMO_RUNS[0];
+
+export function ModelPreview() {
+  return <span className="lp-code-preview"><span className="lp-preview-toolbar"><FileCode2 size={13} />models.py<span>Data model</span></span><span className="lp-preview-code lp-model-code">{library.finalFiles["models.py"].trimEnd().split("\n").map((line, index) => <span key={index}><i>{String(index + 1).padStart(2, "0")}</i>{tokenizePythonLine(line).map((token, tokenIndex) => <span key={tokenIndex} data-token={token.cls ?? undefined}>{token.text}</span>)}</span>)}</span></span>;
+}
+
+export function FilesPreview() {
+  const files = [...Object.entries(library.finalFiles), [library.testFile.path, library.testFile.content]];
+  const labels: Record<string, string> = { "main.py": "Application routes", "models.py": "Stored data", "schemas.py": "Input and output validation", "database.py": "Database connection", [library.testFile.path]: "Generated tests" };
+  return <span className="lp-files-preview"><span className="lp-files-heading"><FileCode2 size={16} />Application workspace<span>Library example</span></span><span className="lp-files-list">{files.map(([path, content]) => <span className="lp-files-row" key={path}><FileCode2 size={17} /><span><strong>{path}</strong><small>{labels[path] ?? "Application file"}</small></span><span>{content.trimEnd().split("\n").length} lines</span></span>)}</span></span>;
+}
 
 export function ApprovalPreview() {
   return <span className="lp-approval-preview">

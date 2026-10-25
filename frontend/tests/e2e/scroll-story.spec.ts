@@ -29,7 +29,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 1280, height: 72
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(viewport.width);
     }
-    await expect(page.locator("#build-story").getByRole("link", { name: "Build your first API", exact: true })).toHaveAttribute("href", "/signup");
+    await expect(page.locator("#build-story").getByRole("link", { name: "Inspect this result", exact: true })).toHaveAttribute("href", "/demo/library");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
   });
 }

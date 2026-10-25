@@ -6,13 +6,11 @@ import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
 import { AgentBentoGrid } from "@/components/ui/vengeance/agent-bento-grid";
-import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-grid";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
 import "./landing-showcase.css";
 import "./ostack-landing.css";
-import { ApprovalPreview, CodePreview, OutcomePreview } from "./control-previews";
 import { ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
 import { LandingProductPreview } from "./landing-product-preview";
@@ -21,12 +19,12 @@ import { SiteFooter } from "./marketing-actions";
 import { useCurrentUser } from "@/lib/use-current-user";
 
 const agents = [
-  { name: "PM", verb: "Your idea. Made specific.", detail: "Turn a prompt into a focused set of requirements, so every agent builds toward the same goal.", icon: Layers3, artifact: "Library requirements", lines: ["Entity: Book", "Fields: title, author, ISBN, genre, read", "Create, list, update, and delete books", "Checkpoint: your approval"], note: "You approve the requirements" },
-  { name: "Architect", verb: "A clear plan. Before the code.", detail: "See the routes, data models, and structure. Approve the design before your API takes shape.", icon: Layers3, artifact: "Library API", lines: ["POST /books", "GET /books", "GET /books/{id}", "PATCH /books/{id}", "DELETE /books/{id}"], note: "You approve the design", model: "title, author, ISBN, genre, read" },
-  { name: "Coder", verb: "The plan becomes working code.", detail: "Generate the routes, models, and application files from your approved design. Inspect the files as the work happens.", icon: Code2, artifact: "Generated files", lines: ["main.py — application routes", "models.py — stored data", "schemas.py — validation", "database.py — database connection", "requirements.txt — dependencies"], note: "Built from the approved plan" },
-  { name: "Reviewer", verb: "A second look. A stronger API.", detail: "Review the implementation against the plan. When blocking changes are needed, the feedback goes back to the Coder.", icon: ShieldCheck, artifact: "Example review", lines: ["Check the update route", "Add an explicit response model", "Return a validated BookOut response", "Requested change → Coder"], note: "Feedback can trigger a repair" },
-  { name: "Tester", verb: "Turn the plan into test cases.", detail: "Write tests for the routes, validation, and expected behavior. The Sandbox then executes them against the generated API.", icon: Terminal, artifact: "Example test coverage", lines: ["Create a book", "Read the collection", "Update the book", "Delete the book", "Reject invalid input"], note: "Failures can trigger another repair" },
-  { name: "Sandbox", verb: "Run it. See what holds up.", detail: "Execute the generated API and tests in an isolated environment. Failures can return to the Coder for another repair.", icon: Terminal, artifact: "Illustrative test result", lines: ["Application starts", "Create / read / update / delete", "Invalid input rejected", "Tests passed → inspect your API"], note: "Actual results determine the run outcome" },
+  { name: "PM", verb: "Your idea. Made specific.", detail: "Defines the scope and expected behavior.", icon: Layers3, artifact: "Requirements", lines: ["Entities and fields", "Supported operations", "Acceptance criteria"], note: "Your approval before design" },
+  { name: "Architect", verb: "A clear plan. Before the code.", detail: "Maps the routes, data models, and application structure.", icon: Layers3, artifact: "API design", lines: ["Routes and methods", "Data models", "Project structure"], note: "Your approval before implementation" },
+  { name: "Coder", verb: "The plan becomes working code.", detail: "Implements the approved design.", icon: Code2, artifact: "Application", lines: ["Routes and handlers", "Validation schemas", "Database connection"] },
+  { name: "Reviewer", verb: "A second look. A stronger API.", detail: "Checks the implementation against the plan.", icon: ShieldCheck, artifact: "Review checklist", lines: ["Requirements match", "Code quality", "Blocking findings"] },
+  { name: "Tester", verb: "Turn the plan into test cases.", detail: "Writes checks for expected behavior and edge cases.", icon: Terminal, artifact: "Test coverage", lines: ["Route behavior", "Input validation", "Failure cases"] },
+  { name: "Sandbox", verb: "Run it. See what holds up.", detail: "Executes the application and captures the real output.", icon: Terminal, artifact: "Isolated execution", lines: ["Start the application", "Run the generated tests", "Capture logs and results"] },
 ];
 const questions = [
   { title: "What can I build?", answer: "CodeForge focuses on CRUD REST APIs: applications that create, read, update, and delete data. Start with a library, inventory, support ticket system, or a similar data-driven API." },
@@ -71,12 +69,12 @@ export function PremiumLanding() {
         <section className="ol-technology" aria-label="Built with open-source tools"><p>Real tools. Working together behind your API.</p><div className="ol-tech-track">{[0, 1].map(copy => <div className="ol-tech-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>{["Python", "FastAPI", "MongoDB", "LangGraph", "Docker", "pytest"].map(tool => <span key={tool}>{tool}</span>)}</div>)}</div></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
-          <span className="lp-section-label">How it works</span>
-          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>From a plain-English brief to files you can inspect.<br />Meet the team that moves your build forward.</p></motion.div>
+          <span className="lp-section-label">Meet the team</span>
+          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>A clear responsibility for every role.</p></motion.div>
           <AgentBentoGrid agents={agents} />
         </section>
 
-        <BuildProcess startHref={start} />
+        <BuildProcess />
 
         <section id="repair-loop" className="lp-loop-section" aria-labelledby="loop-title">
           <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><span className="lp-section-label"><RotateCcw size={15} strokeWidth={1.5} aria-hidden /> Built to take a second look</span><ScrollReveal id="loop-title">{"The first draft\nis just the start."}</ScrollReveal><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<span><ArrowRight size={18} aria-hidden /></span></Link><div className="lp-loop-sequence" aria-label="Review, repair, recheck"><span>01 Review</span><span>02 Repair</span><span>03 Recheck</span></div></motion.div>
@@ -89,12 +87,6 @@ export function PremiumLanding() {
             </div>
           </div>
         </section>
-
-        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><span className="lp-section-label">Inside the product</span><motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="control-title">{"AI does the work.\nYou call the shots."}</ScrollReveal><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
-          { title: "Approve before it builds.", description: "Review the requirements and architecture before the agents move forward.", icon: ShieldCheck, preview: <ApprovalPreview />, content: "Your run pauses at two checkpoints. Read the requirements first, then inspect the system design. Approve or request changes before implementation continues. These are decisions you make during the real run." },
-          { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, preview: <CodePreview />, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
-          { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, preview: <OutcomePreview />, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
-        ]} /><p className="lp-preview-caption">Illustrative screens from the Library example. Each run reports its own result.</p></section>
 
         <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
