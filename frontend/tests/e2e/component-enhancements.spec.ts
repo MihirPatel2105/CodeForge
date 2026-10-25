@@ -38,12 +38,18 @@ test("demo carousel supports keyboard, arrows and native horizontal scrolling", 
   await page.goto("/");
   const region = page.getByRole("region", { name: "Example APIs" });
   const slides = page.getByLabel("Swipe through API examples");
+  const library = region.getByRole("group", { name: "1 of 3: Library", exact: true });
+  await expect(library.getByLabel("Library example generated code")).toContainText("response_model=BookOut");
+  await expect(library.locator(".cf-demo-test-result")).toContainText("8 passed in 1.42s");
+  await expect(library.locator(".cf-demo-facts")).toContainText("5 generated files");
   await slides.scrollIntoViewIfNeeded();
   await slides.focus();
   await page.keyboard.press("ArrowRight");
   await expect(region.getByText("Example 2 of 3")).toBeVisible();
+  await expect(region.getByRole("group", { name: "2 of 3: Inventory", exact: true }).locator(".cf-demo-test-result")).toContainText("10 passed in 1.68s");
   await page.getByRole("button", { name: "Next API example" }).click();
   await expect(region.getByText("Example 3 of 3")).toBeVisible();
+  await expect(region.getByRole("group", { name: "3 of 3: Support", exact: true }).locator(".cf-demo-test-result")).toContainText("12 passed in 1.91s");
   await expect(page.getByRole("button", { name: "Next API example" })).toBeDisabled();
   await page.getByRole("button", { name: "Previous API example" }).click();
   await expect(region.getByText("Example 2 of 3")).toBeVisible();
