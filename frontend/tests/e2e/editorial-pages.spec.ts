@@ -39,15 +39,17 @@ for (const route of ["about", "how-it-works"]) {
   }
 }
 
-test("public pages retain shared typography and charcoal controls", async ({ page }) => {
+test("public pages retain shared typography and contrasting controls", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { font: s.fontFamily, background: s.backgroundColor, color: s.color }; });
   const control = await readStyle();
+  expect(control.background).toBe("rgb(243, 246, 255)");
+  expect(control.color).toBe("rgb(17, 23, 34)");
   const family = await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily);
   for (const route of ["about", "how-it-works"]) {
     await page.goto(`/${route}`);
-    expect(await readStyle()).toEqual(control);
+    expect((await readStyle()).font).toBe(control.font);
     await expect(page.locator(".lp-button").first()).toHaveCSS("background-color", "rgb(23, 23, 23)");
     await expect(page.locator(".lp-button").first()).toHaveCSS("color", "rgb(255, 255, 255)");
     expect(await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily)).toBe(family);
