@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import "./site-header.css";
+
 import { MobileNavigation } from "@/components/ui/enhancements/mobile-navigation";
 import { motion } from "motion/react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -18,13 +21,20 @@ const MotionLink = motion.create(Link);
 
 /** Public site header. The brand and account actions stay clear of the page content. */
 export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
+  const header = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const update = () => header.current?.toggleAttribute("data-scrolled", window.scrollY > 16);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
   const { user, loading, error } = useSession();
   return (
     <>
-    <header className="cf-site-header sticky top-0 z-20 h-16">
+    <header ref={header} className="cf-site-header sticky top-0 z-20 h-16">
       <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
         <MotionLink {...pressMotion}
@@ -35,7 +45,7 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
           <LogoLockup className="h-auto max-h-9 w-[147px] max-w-full" />
         </MotionLink>
 
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+        <div className="cf-header-actions flex shrink-0 items-center gap-1 sm:gap-3">
           {error ? (
             <span className="text-[13px] text-fg-muted">Account unavailable</span>
           ) : loading ? (
@@ -72,7 +82,7 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
               </MotionLink>
               <MotionLink {...pressMotion}
                 href="/signup"
-                className="inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color] hover:bg-accent/90 sm:px-4"
+                className="cf-header-start inline-flex h-10 items-center rounded-full bg-accent px-3 text-[13px] font-[650] text-surface transition-[background-color] hover:bg-accent/90 sm:px-4"
               >
                 <span className="hidden min-[380px]:inline">Get started</span>
                 <span className="min-[380px]:hidden">Start</span>
