@@ -18,3 +18,22 @@
 @media(max-width:700px) { .cf-ostack .lp-hero-dark { padding-top: 52px; }.cf-hero-rays { height: 680px; } }
 .cf-ostack:has(> [data-hero-overlay]) .lp-hero-dark { padding-top: 140px; }
 @media(max-width:700px) { .cf-ostack:has(> [data-hero-overlay]) .lp-hero-dark { padding-top: 116px; } }
+
+/* A single beam drives these highlights; the content itself remains sharp. */
+.cf-ostack .lp-hero-dark .cf-blur-word[data-ray-reflection] {
+ background-image: radial-gradient(180px 120px at var(--reflection-x,0px) 50%, #fff 0%, #f4f8ff 32%, #dce5f4 74%, #d4dfef 100%);
+ background-clip: text; -webkit-background-clip: text;
+ color: transparent; text-shadow: none;
+}
+.cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection] { position: relative; }
+.cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection]::before {
+ content: ""; position: absolute; z-index: 2; inset: 0; padding: 1px; border-radius: inherit; pointer-events: none;
+ background: radial-gradient(240px 160px at var(--reflection-x,0px) 0%, #d4e5ff, #a8c5ff77 38%, transparent 78%);
+ mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+ mask-composite: exclude;
+ opacity: var(--reflection-strength,0);
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-ostack .lp-hero-dark .cf-blur-word[data-ray-reflection] { background: none; color: #f8faff; }
+ .cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection]::before { display: none; }
+}

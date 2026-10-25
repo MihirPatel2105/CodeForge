@@ -2,7 +2,7 @@
 
 Source: https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/Backgrounds/SideRays/SideRays.tsx
 
-Adaptation: local stylesheet, top-left origin, CodeForge blue palette, reduced-motion fallback, and pixel-ratio cap. Animation and pointer interaction use upstream defaults.
+Adaptation: local stylesheet, top-left origin, CodeForge blue palette, reduced-motion fallback, and pixel-ratio cap. Animation and pointer interaction use upstream defaults. An optional frame callback coordinates decorative hero reflections with the rendered beam direction.
 
 MIT + Commons Clause License Condition v1.0
 

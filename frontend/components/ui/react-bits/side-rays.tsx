@@ -7,6 +7,8 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 type Origin = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'right' | 'left';
 
 export interface SideRaysProps {
+  /** Reports the rendered beam direction for coordinated surface highlights. */
+  onLightFrame?: (heading: number, focus: number, reveal: number) => void;
   rayColor1?: string;
   rayColor2?: string;
   blend?: number;
@@ -257,6 +259,7 @@ const link = (gl: WebGL2RenderingContext): Program | null => {
 };
 
 const SideRays = ({
+  onLightFrame,
   rayColor1 = '#FFC46B',
   rayColor2 = '#96c8ff',
   blend = 0.6,
@@ -307,6 +310,8 @@ const SideRays = ({
     opacity: clamp(opacity, 0, 1),
     maxRatio: clamp(maxDevicePixelRatio, 0.5, 3)
   };
+  const frameCallback = useRef(onLightFrame);
+  frameCallback.current = onLightFrame;
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
 
@@ -419,6 +424,12 @@ const SideRays = ({
       gl.uniform3f(u.uFocus, focus.angle, Math.max(0.06, s.spread * 0.25), focus.strength * 1.4);
       gl.uniform1f(u.uSway, reduced ? 0 : 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (frameCallback.current) {
+        let heading = (s.frame.side ? 3.42 : -2.48) + s.tilt + aim.value + 0.035 * Math.sin(time * 0.21) * (reduced ? 0 : 1);
+        if (s.frame.flipX) heading = Math.PI - heading;
+        if (s.frame.flipY) heading = -heading;
+        frameCallback.current(heading, focus.strength, 1 - Math.pow(1 - reveal, 3));
+      }
 
       const settling =
         Math.abs(target - aim.value) > 1e-4 ||
