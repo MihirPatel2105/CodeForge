@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { ScrollReveal } from "@/components/ui/react-bits/scroll-reveal";
 import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
@@ -36,6 +36,10 @@ const questions = [
 export function PremiumLanding() {
   const user = useCurrentUser();
   const reducedMotion = useMotionPreference();
+  const { scrollY } = useScroll();
+  // Lenis already smooths the page position; follow it without adding a second spring.
+  const heroTransform = useTransform(scrollY, [0, 600], ["translateY(0px)", "translateY(-48px)"]);
+  const heroOpacity = useTransform(scrollY, [0, 240, 600], [1, 1, 0]);
   const start = user ? "/projects" : "/signup";
   const entrance = (delay: number) => ({
     initial: { opacity: 0, transform: "translateY(12px)" },
@@ -57,12 +61,14 @@ export function PremiumLanding() {
       <SiteHeader />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
-          <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>
-          <BlurHeadline />
-          <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
-          <motion.div {...entrance(0.7)} className="lp-actions">
-            <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
-            <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
+          <motion.div className="lp-hero-copy" style={{ transform: reducedMotion ? "none" : heroTransform, opacity: reducedMotion ? 1 : heroOpacity }}>
+            <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>
+            <BlurHeadline />
+            <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
+            <motion.div {...entrance(0.7)} className="lp-actions">
+              <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
+              <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
+            </motion.div>
           </motion.div>
           <LandingProductPreview />
         </section>

@@ -22,12 +22,33 @@ export function BuildProcess() {
   useEffect(() => {
     const sections = root.current?.querySelectorAll<HTMLElement>("[data-process-step]");
     if (!sections) return;
-    const observer = new IntersectionObserver(entries => {
-      const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => Math.abs(a.boundingClientRect.top - innerHeight * .25) - Math.abs(b.boundingClientRect.top - innerHeight * .25));
-      if (visible[0]) setActive(Number((visible[0].target as HTMLElement).dataset.processStep));
-    }, { rootMargin: "-20% 0px -35% 0px", threshold: 0 });
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      let nearest = 0;
+      let distance = Infinity;
+      // Compare every panel: observer entries include only visibility changes, not all visible panels.
+      for (const section of sections) {
+        const delta = Math.abs(section.getBoundingClientRect().top - window.innerHeight * .25);
+        if (delta < distance) {
+          nearest = Number(section.dataset.processStep);
+          distance = delta;
+        }
+      }
+      setActive(nearest);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const observer = new ResizeObserver(schedule);
     sections.forEach(section => observer.observe(section));
-    return () => observer.disconnect();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    schedule();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   return <section ref={root} className="ol-process lp-section" id="build-story" aria-labelledby="cf-story-title">

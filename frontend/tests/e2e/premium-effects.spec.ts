@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 
 test("headline remains accessible and resolves immediately when motion is reduced", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your idea. A working API.", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Great ideas deserve to work.", exact: true })).toBeVisible();
   const word = page.locator(".cf-blur-word").last();
   await expect(word).toHaveCSS("opacity", "1");
   await expect(word).toHaveCSS("filter", "blur(0px)");

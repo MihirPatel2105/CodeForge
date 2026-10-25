@@ -15,10 +15,10 @@ export function pointerLight(event: PointerEvent<HTMLElement>) {
 
 export function BlurHeadline() {
   return <h1 id="landing-title" className="cf-blur-headline">
-    <span className="sr-only">Your idea. A working API.</span>
+    <span className="sr-only">Great ideas deserve to work.</span>
     <span aria-hidden="true">
-      <span className="cf-blur-word">Your</span>{" "}<span className="cf-blur-word">idea.</span><br />
-      <span className="cf-blur-word">A</span>{" "}<span className="cf-blur-word">working</span>{" "}<span className="cf-blur-word">API.</span>
+      <span className="cf-blur-word">Great</span>{" "}<span className="cf-blur-word">ideas</span><br />
+      <span className="cf-blur-word">deserve</span>{" "}<span className="cf-blur-word">to</span>{" "}<span className="cf-blur-word">work.</span>
     </span>
   </h1>;
 }

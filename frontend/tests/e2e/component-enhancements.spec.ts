@@ -69,7 +69,7 @@ test("homepage teaser stays readable with reduced motion", async ({ page }) => {
   await expect(page.getByRole("button", { name: /^(Pause|Play|Replay) walkthrough$/ })).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".lp-product-scale")).toHaveCSS("transform", "none");
-  const headline = page.getByRole("heading", { name: "Your idea. A working API.", exact: true });
+  const headline = page.getByRole("heading", { name: "Great ideas deserve to work.", exact: true });
   await expect(headline).toBeVisible();
   const word = headline.locator(".cf-blur-word").first();
   await expect(word).toHaveCSS("animation-name", "none");

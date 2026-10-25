@@ -34,3 +34,22 @@ for (const variant of ["mobile", "short", "reduced"] as const) {
     if (variant === "mobile") await page.screenshot({ path: "/tmp/codeforge-footer-mobile.png", fullPage: true });
   });
 }
+
+for (const path of ["/", "/about"]) test(`refresh keeps the page opaque above the reveal footer on ${path}`, async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(path);
+  await page.reload();
+  await expect(page.getByRole("contentinfo")).toHaveAttribute("data-reveal", "true");
+  const cover = await page.locator("main").evaluate(element => {
+    // Rewind any active opacity entrance so the check catches a one-frame flash too.
+    for (const animation of element.getAnimations()) {
+      const effect = animation.effect;
+      if (effect instanceof KeyframeEffect && effect.getKeyframes().some(frame => frame.opacity != null)) {
+        animation.pause();
+        animation.currentTime = 0;
+      }
+    }
+    return getComputedStyle(element).opacity;
+  });
+  expect(cover).toBe("1");
+});

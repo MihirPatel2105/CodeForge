@@ -15,7 +15,9 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
 
     const animations: Array<{ stop: () => void }> = [];
     const main = document.querySelector("main");
-    if (main) {
+    // The reveal footer sits behind main; fading its opaque cover exposes the footer on load.
+    const hasRevealFooter = main?.parentElement?.querySelector(":scope > .cf-site-footer");
+    if (main && !hasRevealFooter) {
       animations.push(animate(main, { opacity: [0.8, 1] }, motionTransition));
     }
 

@@ -6,7 +6,7 @@ for (const width of [1440, 390, 320]) {
     page.on("pageerror", error => errors.push(error.message));
     await page.setViewportSize({ width, height: 1000 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: "Your idea. A working API.", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Great ideas deserve to work.", exact: true })).toBeVisible();
     await expect(page.locator(".ol-announcement, .ol-desktop-nav")).toHaveCount(0);
     await expect(page.locator(".cf-site-header")).toHaveCSS("height", "64px");
     for (const button of await page.locator('.lp-button, .cf-site-header a[href="/signup"]').all()) {
@@ -59,4 +59,22 @@ test("signed-in header keeps CodeForge account actions and capsule Projects butt
   expect(shape.radius).toBeGreaterThanOrEqual(shape.height / 2);
   await expect(header.getByRole("button", { name: "Open command palette" })).toBeVisible();
   await expect(header.getByRole("navigation", { name: "Main navigation" })).toHaveCount(0);
+});
+
+test("hero copy follows smooth scrolling and respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const copy = page.locator(".lp-hero-copy");
+  await expect(page.locator("html")).toHaveClass(/lenis/);
+  await expect(copy).toHaveCSS("opacity", "1");
+  await page.mouse.move(600, 250);
+  await page.mouse.wheel(0, 320);
+  await expect.poll(() => copy.evaluate(element => new DOMMatrixReadOnly(getComputedStyle(element).transform).m42)).toBeLessThan(-10);
+  await page.mouse.wheel(0, -1000);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(2);
+  await expect(copy).toHaveCSS("opacity", "1");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.mouse.wheel(0, 320);
+  await expect(copy).toHaveCSS("transform", "none");
+  await expect(copy).toHaveCSS("opacity", "1");
 });

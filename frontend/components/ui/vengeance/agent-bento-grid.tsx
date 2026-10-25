@@ -2,7 +2,6 @@
 
 // Adapted from Vengeance UI's agent workspace cards. MIT license: docs/vendor/vengeance-ui.md.
 import { motion } from "motion/react";
-import { pointerLight } from "@/components/ui/premium-effects";
 import type { LucideIcon } from "lucide-react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 
@@ -12,7 +11,7 @@ export function AgentBentoGrid({ agents }: { agents: Agent[] }) {
   return (
     <div className="vui-agent-grid">
       {agents.map((agent, index) => (
-        <motion.article key={agent.name} className="vui-agent-card cf-spotlight" onPointerMove={pointerLight}
+        <motion.article key={agent.name} className="vui-agent-card"
           initial={false} animate={reduced ? { transform: "none" } : undefined}
           whileHover={reduced ? undefined : { transform: "translateY(-3px)" }} transition={{ duration: reduced ? 0 : 0.2 }}>
           <div className="vui-agent-top"><span className="vui-agent-icon"><agent.icon size={21} aria-hidden /></span><span>0{index + 1} / {agent.name}</span></div>
