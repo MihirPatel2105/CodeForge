@@ -1,8 +1,8 @@
 .cf-ostack .lp-hero-dark { isolation: isolate; background: #07090f; color: #f8faff; padding-top: 76px; }
-.cf-hero-rays { position: absolute; z-index: -1; inset: 0 0 auto; height: min(100%, 940px); pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 50% -20%, #566eaa38, transparent 65%); mask-image: linear-gradient(#000 65%, transparent); }
+.cf-hero-rays { position: absolute; z-index: -1; inset: 0 0 auto; height: min(100%, 940px); pointer-events: none; overflow: hidden; background: radial-gradient(ellipse at 0% 0%, #566eaa38, transparent 65%); mask-image: linear-gradient(#000 65%, transparent); }
 .cf-hero-rays::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 48%, #07090f55, transparent 70%); }
-.cf-hero-rays .light-rays { position: absolute; inset: 0; }
-.cf-hero-rays .light-rays__canvas { display: block; width: 100%; height: 100%; }
+.cf-hero-rays .side-rays { position: absolute; inset: 0; }
+.cf-hero-rays .side-rays__canvas { display: block; width: 100%; height: 100%; }
 .cf-ostack .lp-hero-dark .lp-hero-copy { position: relative; }
 .cf-ostack .lp-hero-dark .lp-intro { color: #c3cbdc; background: #ffffff06; border: 1px solid #ffffff14; box-shadow: inset 0 1px 0 #ffffff08; }
 .cf-ostack .lp-hero-dark .ol-hero-mark { color: #b9ceff; background: #b9ceff12; }
