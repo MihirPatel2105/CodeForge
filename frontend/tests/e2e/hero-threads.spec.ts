@@ -16,6 +16,18 @@ for (const width of [1440, 390]) {
     await page.goto("/");
     const ascii = page.locator(".hero-ascii");
     await expect(ascii).toHaveAttribute("data-ready", "true");
+    // Prove the real WebGL render, then stop continuous software-GPU work before
+    // the DOM checks. On CPU-only CI it otherwise consumes their timeout budget.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(ascii).toHaveAttribute("data-motion", "static");
+    // No further GPU draw calls should run after reduced motion has settled.
+    const canvas = ascii.locator("canvas");
+    await page.waitForTimeout(150);
+    const still = await canvas.getAttribute("data-draws");
+    expect(Number(still)).toBeGreaterThan(0);
+    await page.mouse.move(20, 250);
+    await page.waitForTimeout(150);
+    await expect(canvas).toHaveAttribute("data-draws", still!);
     await expect(page.locator(".cf-site-header-bar")).toHaveCSS("background-color", /(?:rgba\(0, 0, 0, 0\)|color\(srgb 0 0 0 \/ 0\))/);
     await expect(page.locator(".cf-site-header .cf-logo-lockup")).toHaveCSS("filter", "none");
     await expect(page.locator(".lp-hero .threads-layer")).toHaveCount(0);
@@ -55,16 +67,6 @@ for (const width of [1440, 390]) {
       const foreground = luminance(style.color), background = luminance(style.backgroundColor);
       return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
     })).toBeGreaterThanOrEqual(4.5);
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await expect(ascii).toHaveAttribute("data-motion", "static");
-    // No further GPU draw calls should run after reduced motion has settled.
-    const canvas = ascii.locator("canvas");
-    await page.waitForTimeout(150);
-    const still = await canvas.getAttribute("data-draws");
-    expect(Number(still)).toBeGreaterThan(0);
-    await page.mouse.move(20, 250);
-    await page.waitForTimeout(150);
-    await expect(canvas).toHaveAttribute("data-draws", still!);
     await page.screenshot({ path: `/tmp/codeforge-ascii-${width}.png` });
     await page.locator("#how").scrollIntoViewIfNeeded();
     await expect.poll(() => page.locator(".ascii-layer").evaluate(node => Number(getComputedStyle(node).opacity))).toBe(0);
