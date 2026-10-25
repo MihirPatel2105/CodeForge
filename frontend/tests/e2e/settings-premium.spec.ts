@@ -12,10 +12,19 @@ for (const variant of ["desktop", "mobile", "dark", "reduced", "admin"] as const
     } }));
     await page.route("**/api/backend/auth/devices", route => route.fulfill({ json: [] }));
     await page.goto("/profile/settings");
-    if (variant === "dark") await page.evaluate(() => document.documentElement.classList.add("dark"));
     await expect(page.getByRole("heading", { level: 1, name: variant === "admin" ? "Admin settings" : "Settings" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Change password", exact: true })).toHaveAttribute("href", "/profile/settings/password");
     await expect(page.getByRole("link", { name: "Manage passkeys", exact: true })).toHaveAttribute("href", "/profile/settings/passkeys");
+    // The app forces light mode here; apply dark styling after hydration to check its fallback palette.
+    if (variant === "dark") {
+      await page.evaluate(() => document.documentElement.classList.add("dark"));
+      expect(await page.locator(".account-workspace").evaluate(element => {
+        const shared = getComputedStyle(document.documentElement);
+        const account = getComputedStyle(element);
+        return account.getPropertyValue("--accent").trim() === shared.getPropertyValue("--accent").trim()
+          && account.getPropertyValue("--bg").trim() === shared.getPropertyValue("--bg").trim();
+      })).toBe(true);
+    }
     await page.screenshot({ path: `/tmp/codeforge-settings-premium-${variant}.png`, fullPage: true, animations: "disabled" });
     const rail = page.getByRole("navigation", { name: "Settings sections" });
     for (const [label, id] of [["Sessions and devices", "sessions"], ["Account", "account"], ["Sign-in methods", "sign-in-methods"], ["Account", "account"]]) {

@@ -10,14 +10,12 @@ import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
-import { useState } from "react";
-import { ArrowRight, Check, ChevronDown, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { LandingScrollNav } from "./landing-scroll-nav";
 import { SiteHeader } from "./site-header";
 import { ProductScrollPreview } from "./product-scroll-preview";
-import { PipelineWalkthrough } from "./pipeline-walkthrough";
+import { ScrollStory } from "./scroll-story";
 import { SiteFooter } from "./marketing-actions";
-import { DEMO_RUNS } from "@/lib/demo-runs";
 import { useCurrentUser } from "@/lib/use-current-user";
 
 const agents = [
@@ -38,8 +36,6 @@ const questions = [
 export function PremiumLanding() {
   const user = useCurrentUser();
   const reducedMotion = useMotionPreference();
-  const [example, setExample] = useState(0);
-  const demo = DEMO_RUNS[example];
   const start = user ? "/projects" : "/signup";
   const entrance = (delay: number) => ({
     initial: { opacity: 0, transform: "translateY(12px)" },
@@ -69,14 +65,17 @@ export function PremiumLanding() {
             <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
           </motion.div>
           <ProductScrollPreview>
-            <div className="lp-product lp-pipeline">
-              <PipelineWalkthrough key={demo.slug} demo={demo} example={example} onExampleChange={setExample} />
-            </div>
+            <Link href="#build-story" className="lp-product lp-brief-preview" aria-label="Follow the Library build">
+              <div className="lp-brief-icon"><Code2 size={24} strokeWidth={1.4} aria-hidden /></div>
+              <div className="lp-brief-copy"><span>Personal Library · Example brief</span><p>“An API for my books, authors, and reading list.”</p></div>
+              <span className="lp-brief-follow">Follow this build<span><ArrowDown size={16} aria-hidden /></span></span>
+            </Link>
           </ProductScrollPreview>
-          <a className="lp-explore" href="#how">Meet your build team<ChevronDown size={17} aria-hidden /></a>
         </section>
 
-        <section className="lp-section" aria-label="Explore example APIs"><DemoCarousel /></section>
+        <ScrollStory startHref={start} />
+
+        <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
           <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>

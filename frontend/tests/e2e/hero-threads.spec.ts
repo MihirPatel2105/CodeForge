@@ -23,10 +23,12 @@ for (const width of [1440, 390]) {
     const coverage = await page.locator(".lp-hero").evaluate(hero => {
       const backdrop = hero.querySelector(".ascii-layer")!.getBoundingClientRect();
       const bounds = hero.getBoundingClientRect();
-      return { gap: bounds.bottom - backdrop.bottom, widthGap: bounds.width - backdrop.width };
+      return { gap: bounds.bottom - backdrop.bottom, widthGap: bounds.width - backdrop.width, height: bounds.height, viewportHeight: window.innerHeight, mask: getComputedStyle(hero.querySelector(".ascii-layer")!).maskImage };
     });
     expect(Math.abs(coverage.gap)).toBeLessThan(1);
     expect(Math.abs(coverage.widthGap)).toBeLessThan(1);
+    expect(coverage.height).toBeGreaterThanOrEqual(coverage.viewportHeight);
+    expect(coverage.mask).toBe("none");
     const action = page.locator(".lp-hero").getByRole("link", { name: "Build your first API" });
     await expect(action).toBeVisible();
     // Finish the entrance before scrolling to the action; its translated position

@@ -1,39 +1,3 @@
-.cf-account .account-main--settings { --settings-shadow:0 2px 3px color-mix(in srgb,var(--fg) 2%,transparent),0 14px 30px -24px color-mix(in srgb,var(--fg) 18%,transparent); }
-.cf-account .account-main--settings > a:first-child { font-size:11px; }
-.settings-premium-hero { display:flex; justify-content:space-between; align-items:center; gap:32px; padding:24px 0 32px; border-bottom:1px solid var(--border); }
-.settings-hero-eyebrow { display:flex; align-items:center; gap:8px; color:var(--fg-muted); font-size:9px; font-weight:600; letter-spacing:.13em; }
-.settings-premium-hero h1 { margin-top:14px; font-size:38px; letter-spacing:-.045em; font-weight:600; line-height:1.15; }
-.settings-premium-hero > div > p { max-width:46ch; color:var(--fg-muted); font-size:12px; line-height:1.8; margin-top:12px; }
-.settings-account-pass { display:flex; align-items:center; gap:14px; min-width:0; max-width:380px; padding:22px; border:1px solid #454545; border-radius:18px; color:#f5f5f5; background:linear-gradient(135deg,#363636,#1c1c1c); box-shadow:0 12px 25px -18px rgb(0 0 0 / 45%); }
-.settings-account-monogram { display:grid; place-items:center; width:42px; height:42px; flex-shrink:0; background:#414141; border:1px solid #5a5a5a; border-radius:13px; font-size:14px; letter-spacing:-.04em; }
-.settings-account-pass span { color:#aaa; font-size:9px; }
-.settings-account-pass p { overflow-wrap:anywhere; font-size:12px; margin-top:5px; }
-.settings-account-pass small { display:block; margin-top:8px; color:#bbb; font-size:9px; }
-.settings-account-pass > svg { flex-shrink:0; margin-left:6px; color:#999; }
-.cf-account .account-main--settings .cf-settings-layout { display:grid; grid-template-columns:188px minmax(0,1fr); gap:36px; margin-top:28px; align-items:start; }
-.settings-premium-rail { position:sticky; top:94px; padding-top:8px; min-width:0; }
-.settings-rail-label { font-size:8px; font-weight:600; letter-spacing:.15em; color:var(--fg-faint); padding:0 12px; margin-bottom:16px; }
-.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav { display:flex; flex-direction:column; gap:6px; border:0; padding:0; margin:0; }
-.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { border:0; border-radius:8px; padding:14px 12px; font-size:11px; font-weight:500; transform:translateX(var(--settings-shift,0px)); transition:transform 280ms cubic-bezier(.22,1,.36,1),color 200ms; }
-.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a[aria-current="location"] { color:var(--fg); font-weight:600; }
-.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a > span { border-radius:8px; }
-.settings-rail-note { margin:28px 12px 0; padding-top:22px; border-top:1px solid var(--border); color:var(--fg-faint); font-size:11px; line-height:1.8; }
-.cf-account .account-main--settings .settings-section-heading { border-bottom:0; padding-bottom:0; margin-top:36px; gap:14px; align-items:flex-start; }
-.cf-account .account-main--settings .settings-section-heading:first-child { margin-top:0; }
-.settings-section-heading > div > span { font-size:8px; letter-spacing:.13em; text-transform:uppercase; color:var(--fg-muted); }
-.cf-account .account-main--settings .settings-section-heading h2 { font-size:21px; font-weight:600; letter-spacing:-.035em; margin-top:6px; }
-.settings-section-heading > p { font-size:11px; line-height:1.7; max-width:32ch; }
-.cf-account .account-main--settings .settings-premium-panel { border-radius:18px; border-color:var(--border); box-shadow:var(--settings-shadow); background:var(--bg); animation:settings-settle 650ms cubic-bezier(.22,1,.36,1) both; }
-.settings-premium-panel > .settings-panel-surface { padding:0; border-radius:inherit; background:transparent; }
-.cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { padding:24px; gap:20px; }
-.cf-account .account-main--settings .settings-premium-panel h3 { font-size:17px; font-weight:600; letter-spacing:-.03em; }
-.cf-account .account-main--settings .settings-premium-panel p { font-size:12px; line-height:1.7; }
-.cf-account .account-main--settings .settings-premium-panel li p { max-width:44ch; font-size:11px; }
-.cf-account .account-main--settings .settings-premium-panel li > div > span { width:38px; height:38px; border-radius:12px; }
-.cf-account .account-main--settings .settings-premium-panel li a { border-radius:9px; font-size:10px; font-weight:550; height:36px; }
-.cf-account .account-main--settings .settings-premium-panel button { font-size:11px; border-radius:9px; }
-.cf-account .account-main--settings .settings-premium-panel .text-danger { color:var(--danger); }
-.cf-account .account-main--settings .settings-premium-panel:has(.text-danger) { border-color:var(--danger-bd); }
 /* Match the dedicated security pages to the main settings surfaces. */
 .cf-security-settings { background:var(--surface); }
 .cf-security-settings main { max-width:1120px; }
@@ -42,38 +6,6 @@
 .cf-security-settings nav[aria-label="Security settings"] { padding:8px; border:1px solid var(--border); border-radius:14px; background:var(--bg); gap:4px; }
 .cf-security-settings nav[aria-label="Security settings"] a { border:0; border-radius:9px; font-size:12px; font-weight:550; }
 .cf-security-settings main > div.mt-7 section { border-radius:18px; box-shadow:0 12px 28px -25px color-mix(in srgb,var(--fg) 18%,transparent); }
-@keyframes settings-settle { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-@media(max-width:1100px) {
- .settings-premium-hero { gap:24px; }
- .cf-account .account-main--settings .cf-settings-layout { grid-template-columns:160px minmax(0,1fr); gap:24px; }
- .settings-section-heading { flex-direction:column; }
- .settings-section-heading > p { max-width:55ch; }
- .cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { flex-direction:column; align-items:flex-start; }
- .cf-account .account-main--settings .settings-premium-panel li a { align-self:flex-start; }
-}
-@media(max-width:760px) {
- .settings-premium-hero { flex-direction:column; align-items:stretch; padding-top:16px; gap:22px; }
- .settings-account-pass { max-width:none; padding:18px; }
- .settings-premium-hero h1 { font-size:32px; }
- .cf-account .account-main--settings .cf-settings-layout { display:block; margin-top:20px; }
- .settings-premium-rail { position:static; padding-top:0; margin-bottom:24px; }
- .settings-rail-label,.settings-rail-note { display:none; }
- .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav { flex-direction:row; flex-wrap:wrap; gap:4px; }
- .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { padding:10px; font-size:10px; transform:none; }
- .cf-account .account-main--settings .settings-section-heading { margin-top:28px; }
- .cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { padding:20px; }
- .cf-security-settings nav[aria-label="Security settings"] a { padding-inline:12px; font-size:11px; }
-}
-@media(prefers-reduced-motion:reduce) {
- .cf-account .account-main--settings .settings-premium-panel { animation:none; }
- .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { transform:none; transition:none; }
-}
-
-/* The outer rail is sticky; its links must stay in their own normal flow. */
-.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav {
-  position: static;
-  top: auto;
-}
 /* Override the older full-width account hero's zero horizontal padding. */
 .cf-account.cf-security-settings > main > header.cf-account-hero {
   display: grid;
@@ -100,4 +32,63 @@
     gap: 14px;
   }
   .cf-account.cf-security-settings > main > header.cf-account-hero > span { width: 38px; height: 38px; }
+}
+
+.settings-premium-hero { display:flex; justify-content:space-between; align-items:center; gap:32px; padding:20px 0 36px; border-bottom:1px solid var(--border); }
+.settings-hero-eyebrow { display:flex; align-items:center; gap:7px; color:var(--fg-muted); font-size:13px; }
+.settings-premium-hero h1 { margin-top:10px; font-size:40px; letter-spacing:-.04em; font-weight:600; line-height:1.15; }
+.settings-premium-hero > div > p { max-width:48ch; color:var(--fg-muted); font-size:15px; line-height:1.6; margin-top:12px; }
+.settings-account-pass { display:flex; align-items:center; gap:14px; min-width:0; max-width:350px; padding:18px 20px; border:1px solid var(--border); border-radius:16px; color:var(--fg); background:var(--surface); }
+.settings-account-monogram { display:grid; place-items:center; width:48px; height:48px; flex-shrink:0; color:var(--surface); background:var(--accent); border-radius:50%; font-size:17px; }
+.settings-account-pass span { color:var(--fg-muted); font-size:12px; }
+.settings-account-pass p { overflow-wrap:anywhere; font-size:14px; margin-top:3px; }
+.settings-account-pass small { display:block; margin-top:6px; color:var(--fg-muted); font-size:12px; }
+.settings-account-pass > svg { display:none; }
+.cf-account .account-main--settings .cf-settings-layout { display:grid; grid-template-columns:210px minmax(0,1fr); gap:40px; margin-top:32px; align-items:start; }
+.settings-premium-rail { position:sticky; top:94px; padding-top:8px; min-width:0; }
+.settings-rail-label { font-size:18px; font-weight:600; letter-spacing:-.02em; color:var(--fg); padding:0 14px; margin-bottom:16px; }
+.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav { position:static; display:flex; flex-direction:column; gap:4px; border:0; padding:0; margin:0; }
+.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { border:0; border-radius:10px; padding:13px 14px; font-size:13px; font-weight:400; line-height:1.4; }
+.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a[aria-current="location"] { color:var(--accent); font-weight:500; }
+.cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a > span { border-radius:10px; background:var(--accent-soft); }
+.settings-rail-note { margin:24px 14px 0; padding-top:20px; border-top:1px solid var(--border); color:var(--fg-muted); font-size:12px; line-height:1.7; }
+.cf-account .account-main--settings .settings-section-heading { flex-direction:column; align-items:flex-start; border:0; padding-bottom:0; margin-top:36px; gap:8px; }
+.cf-account .account-main--settings .settings-section-heading:first-child { margin-top:0; }
+.settings-section-heading > div > span { display:none; }
+.cf-account .account-main--settings .settings-section-heading h2 { font-size:24px; font-weight:600; letter-spacing:-.025em; margin-top:0; }
+.settings-section-heading > p { font-size:14px; line-height:1.6; max-width:60ch; }
+.cf-account .account-main--settings .settings-premium-panel { border-radius:18px; border:1px solid var(--border); box-shadow:0 1px 2px rgb(0 0 0 / 2%); background:var(--surface); animation:settings-settle 200ms ease-out both; }
+.settings-premium-panel > .settings-panel-surface { padding:0; border-radius:inherit; }
+.cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { padding:24px; gap:20px; }
+.cf-account .account-main--settings .settings-premium-panel h3 { font-size:17px; font-weight:600; letter-spacing:-.02em; }
+.cf-account .account-main--settings .settings-premium-panel p { font-size:13px; line-height:1.6; }
+.cf-account .account-main--settings .settings-premium-panel li > div > div > span:first-child { font-size:12px; font-weight:400; color:var(--fg-muted); }
+.cf-account .account-main--settings .settings-premium-panel li > div > span { width:36px; height:36px; border:0; color:var(--accent); border-radius:10px; background:var(--accent-soft); }
+.cf-account .account-main--settings .settings-premium-panel li > a { border:0; padding:0; color:var(--accent); font-size:13px; font-weight:400; min-height:44px; background:transparent; }
+.cf-account .account-main--settings .settings-premium-panel li > a:hover { text-decoration:underline; }
+.cf-account .account-main--settings .settings-premium-panel button { font-size:12px; border-radius:999px; min-height:40px; }
+.cf-account .account-main--settings .settings-premium-panel .text-danger { color:var(--danger); }
+.cf-account .account-main--settings .settings-premium-panel:has(.text-danger) { border-color:var(--danger-bd); }
+@keyframes settings-settle { from { opacity:0; } to { opacity:1; } }
+@media(max-width:1100px) {
+ .settings-premium-hero { gap:24px; }
+ .cf-account .account-main--settings .cf-settings-layout { grid-template-columns:190px minmax(0,1fr); gap:24px; }
+ .cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { flex-direction:column; align-items:flex-start; gap:10px; }
+ .cf-account .account-main--settings .settings-premium-panel li > a { margin-left:52px; }
+}
+@media(max-width:760px) {
+ .settings-premium-hero { flex-direction:column; align-items:stretch; padding-top:16px; gap:24px; }
+ .settings-account-pass { max-width:none; }
+ .settings-premium-hero h1 { font-size:34px; }
+ .cf-account .account-main--settings .cf-settings-layout { display:block; margin-top:24px; }
+ .settings-premium-rail { position:static; padding:0; margin-bottom:28px; }
+ .settings-rail-label,.settings-rail-note { display:none; }
+ .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav { flex-direction:row; flex-wrap:wrap; gap:4px; }
+ .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { padding:10px; font-size:12px; min-height:44px; }
+ .cf-account .account-main--settings .settings-section-heading h2 { font-size:22px; }
+ .cf-account .account-main--settings .settings-premium-panel[aria-label="Sign-in methods"] li { padding:20px; }
+ .cf-security-settings nav[aria-label="Security settings"] a { padding-inline:12px; font-size:11px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-account .account-main--settings .settings-premium-panel { animation:none; }
 }

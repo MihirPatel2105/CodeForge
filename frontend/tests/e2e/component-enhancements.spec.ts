@@ -56,18 +56,13 @@ test("demo carousel supports keyboard, arrows and native horizontal scrolling", 
   await expect(page).toHaveURL(/\/demo\/library$/);
 });
 
-test("standard playback control pauses and resumes the real walkthrough", async ({ page }) => {
+test("homepage teaser stays readable with reduced motion", async ({ page }) => {
   await page.goto("/");
-  const pause = page.getByRole("button", { name: "Pause walkthrough" });
-  await pause.scrollIntoViewIfNeeded();
-  await pause.click();
-  const play = page.getByRole("button", { name: "Play walkthrough" });
-  await expect(play).toBeVisible();
-  await expect(play).toBeEnabled();
-  await play.click();
-  await expect(pause).toBeVisible();
+  const teaser = page.getByRole("link", { name: "Follow the Library build", exact: true });
+  await expect(teaser).toBeVisible();
+  await expect(page.getByRole("button", { name: /^(Pause|Play|Replay) walkthrough$/ })).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.getByRole("button", { name: "Replay walkthrough" })).toBeDisabled();
+  await expect(page.locator(".lp-product-scale")).toHaveCSS("transform", "none");
   const headline = page.getByRole("heading", { name: "Your idea. A working API.", exact: true });
   await expect(headline).toBeVisible();
   const word = headline.locator(".cf-blur-word").first();

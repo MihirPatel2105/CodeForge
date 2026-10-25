@@ -104,7 +104,7 @@ export default function SettingsPage() {
         </Link>
 
         <header className="settings-premium-hero">
-          <div><span className="settings-hero-eyebrow"><ShieldCheck size={13} aria-hidden />{user?.is_admin ? "ADMINISTRATOR SECURITY" : "YOUR ACCOUNT, UNDER CONTROL"}</span>
+          <div><span className="settings-hero-eyebrow"><ShieldCheck size={13} aria-hidden />{user?.is_admin ? "Administrator account" : "CodeForge Account"}</span>
             <h1>{user?.is_admin ? "Admin settings" : "Settings"}</h1>
             <p>{user?.is_admin ? "Manage operator access, sign-in methods, and active sessions." : "Fine-tune how you sign in, stay protected, and manage your account."}</p>
           </div>

@@ -55,10 +55,8 @@ test("homepage preview grows without moving subsequent sections and resets for r
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const preview = page.locator(".lp-product-scale");
-  const pause = page.getByRole("button", { name: "Pause walkthrough" });
   await expect(preview).toBeVisible();
   await expect.poll(() => page.locator(".lp-hero > .lp-actions").evaluate(element => getComputedStyle(element).opacity)).toBe("1");
-  if (await pause.isVisible()) await pause.click();
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeLessThan(1090);
   const before = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
@@ -72,41 +70,28 @@ test("homepage preview grows without moving subsequent sections and resets for r
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("transform", "none");
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("opacity", "1");
   await expect(page.locator(".lp-hero > .lp-actions")).toHaveCSS("transform", "none");
-  await expect(page.getByRole("button", { name: "Replay walkthrough" })).toBeDisabled();
   await page.setViewportSize({ width: 320, height: 720 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(preview).toHaveCSS("transform", "none");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
 
-test("homepage repair sequence plays once and supports pause, replay, and reduced motion", async ({ page }) => {
+test("homepage teaser leads directly into the single build walkthrough", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const pipeline = page.locator(".lp-pipeline-content");
-  await pipeline.scrollIntoViewIfNeeded();
-  const active = pipeline.locator(".lp-pipeline-stages > li[aria-current=step]");
-  const current = pipeline.locator(".lp-feedback-route > span[data-current=true]");
-  // Keep real browser time: the shader and scroll observers also use animation frames.
-  await expect(current).toHaveText("Reviewer", { timeout: 15000 });
-  await expect(active.getByRole("heading", { name: "Coder", exact: true })).toBeVisible({ timeout: 5000 });
-  await expect(current).toHaveText("Coder");
-  await pipeline.getByRole("button", { name: "Pause walkthrough" }).click();
-  await expect(pipeline.getByRole("button", { name: "Play walkthrough" })).toBeVisible();
-  // A slow runner may advance while Playwright scrolls to and clicks Pause.
-  // Assert the state at the completed pause, rather than the earlier Coder state.
-  const pausedStage = await active.getByRole("heading").textContent();
-  await page.waitForTimeout(2500); // Longer than the repair step's 2200ms timer.
-  await expect(active.getByRole("heading")).toHaveText(pausedStage!);
-  await pipeline.getByRole("button", { name: "Play walkthrough" }).click();
-  const replay = pipeline.getByRole("button", { name: "Replay walkthrough" });
-  await expect(replay).toBeVisible({ timeout: 15000 });
-  await page.waitForTimeout(1500);
-  await expect(replay).toBeVisible();
-  await replay.click();
-  await expect(active.getByRole("heading", { name: "PM", exact: true })).toBeVisible();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(pipeline.getByText(/Tests passed/)).toBeVisible();
+  const teaser = page.getByRole("link", { name: "Follow the Library build", exact: true });
+  await expect(teaser).toHaveAttribute("href", "#build-story");
+  await expect(page.locator(".lp-pipeline-content")).toHaveCount(0);
+  const order = await page.evaluate(() => {
+    const hero = document.getElementById("overview")!;
+    return [hero.nextElementSibling?.id, hero.nextElementSibling?.nextElementSibling?.getAttribute("aria-label")];
+  });
+  expect(order).toEqual(["build-story", "Explore example APIs"]);
+  await teaser.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#cf-story-title")).toBeInViewport();
+  await expect(page.getByRole("navigation", { name: "Landing page sections" }).getByRole("link", { name: "Build walkthrough", exact: true })).toHaveAttribute("aria-current", "location");
+  await expect(page.locator("#build-story").getByRole("link", { name: "Build your first API", exact: true })).toHaveAttribute("href", "/signup");
 });
 
 test("all agent cards remain readable when motion preference changes", async ({ page }) => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, useScroll } from "motion/react";
 
 const sections = [
-  ["overview", "Overview"], ["how", "Agents"], ["repair-loop", "Repair loop"],
+  ["overview", "Overview"], ["build-story", "Build walkthrough"], ["how", "Agents"], ["repair-loop", "Repair loop"],
   ["control", "Your control"], ["questions", "FAQ"], ["start-building", "Start building"],
 ] as const;
 

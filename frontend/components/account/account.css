@@ -73,3 +73,24 @@
 /* The section indicator supplies its own background. */
 .account-main .cf-settings-nav a { background: transparent; }
 .account-main .cf-settings-nav a[aria-current="location"] { color: var(--fg); }
+
+/* Keep the account layout on CodeForge's shared colour tokens. */
+.account-workspace {
+  background: var(--bg);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+.account-workspace .font-display { font-family: inherit; }
+.account-workspace .account-frame { max-width: 1120px; }
+.account-workspace .account-tabs { align-items:center; gap:8px; padding-block:18px; margin-top:0; }
+.account-workspace .account-tabs a { padding:9px 18px; font-size:13px; font-weight:500; border-radius:999px; }
+.account-workspace .account-tabs a[aria-current=page] { background:var(--surface); box-shadow:0 1px 4px rgb(0 0 0 / 6%); }
+.account-workspace .account-tabs a[aria-current=page]::after { display:none; }
+.account-workspace .account-main { padding-top:40px; padding-bottom:80px; }
+@media(max-width:760px) {
+  .account-workspace .account-main { padding-block:28px 48px; }
+  .account-workspace .account-tabs { padding-block:12px; }
+}
+@media(prefers-contrast:more) {
+  .account-workspace { --border:var(--fg-muted); --rule:var(--fg-muted); }
+}

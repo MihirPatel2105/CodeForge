@@ -107,6 +107,24 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 .lp-product-scroll { position: relative; width: 100%; max-width: 1100px; margin: 56px auto 0; overflow-anchor: none; }
 .lp-product-scale { width: 100%; transform-origin: top center; }
 .lp-product-scale > .lp-product { width: 100%; margin: 0; animation: none; }
+.lp-product-scale > .lp-brief-preview { display: flex; align-items: center; gap: 24px; padding: 28px 32px; text-decoration: none; box-shadow: 0 20px 50px -40px var(--lp-muted); border-radius: 22px; }
+.lp-brief-icon { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; color: var(--lp-muted); background: var(--lp-paper-secondary); }
+.lp-brief-copy { flex: 1; min-width: 0; }
+.lp-brief-copy > span { color: var(--lp-muted); font-size: 11px; }
+.lp-brief-copy p { margin: 8px 0 0; color: var(--lp-ink); font-size: clamp(17px,1.5vw,21px); letter-spacing: -.025em; line-height: 1.45; }
+.lp-brief-follow { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 550; color: var(--lp-ink); flex-shrink: 0; }
+.lp-brief-follow svg { transition: transform 240ms var(--lp-ease-out); }
+.lp-brief-preview:hover .lp-brief-follow svg { transform: translateY(3px); }
+.cf-landing-atmosphere .lp-hero:has(.lp-brief-preview) { padding-bottom: 64px; }
+.lp-examples-section { padding-top: 72px; padding-bottom: 64px; }
+@media (max-width: 600px) {
+  .lp-product-scale > .lp-brief-preview { flex-wrap: wrap; gap: 14px; padding: 22px; border-radius: 18px; }
+  .lp-brief-icon { width: 36px; height: 36px; border-radius: 10px; }
+  .lp-brief-copy { flex-basis: calc(100% - 50px); }
+  .lp-brief-follow { width: 100%; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--lp-rule); }
+  .cf-landing-atmosphere .lp-hero:has(.lp-brief-preview) { padding-bottom: 36px; }
+  .lp-examples-section { padding-block: 44px; }
+}
 @media (max-width: 600px) { .lp-product-scroll { margin-top: 32px; }.lp-product-scroll .lp-example-switch button { min-height: 48px; } }
 @media (max-width: 600px), (prefers-reduced-motion: reduce) { .lp-product-scale { transform: none !important; } }
 @media (prefers-reduced-motion: reduce) { .lp-hero > :is(.lp-intro,h1,.lp-lead,.lp-actions,.lp-product-scroll) { opacity: 1 !important; transform: none !important; } }
