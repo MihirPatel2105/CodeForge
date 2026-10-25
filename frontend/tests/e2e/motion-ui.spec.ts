@@ -29,6 +29,9 @@ test("all sections are available before scrolling and reduced motion stays still
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(stack.locator(".vui-agent-card")).toHaveCount(6);
+  // Reduced motion must expose even the repair panel below the viewport.
+  await expect(page.locator(".lp-repair")).toHaveCSS("opacity", "1");
+  await expect(page.locator(".lp-repair")).toHaveCSS("transform", "none");
   await expect(stack.getByRole("heading", { name: "A clear plan. Before the code." })).toBeVisible();
   await expect(stack.getByText("Requested change → Coder", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 720 });

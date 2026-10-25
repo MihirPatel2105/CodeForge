@@ -10,6 +10,8 @@ import { ExpandableBentoGrid } from "@/components/ui/vengeance/expandable-bento-
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
+import "./landing-showcase.css";
+import { ApprovalPreview, CodePreview, OutcomePreview } from "./control-previews";
 import { ArrowDown, ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { LandingScrollNav } from "./landing-scroll-nav";
 import { SiteHeader } from "./site-header";
@@ -45,6 +47,7 @@ export function PremiumLanding() {
 
   const reveal = {
     initial: { opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 18 },
+    animate: reducedMotion ? { opacity: 1, y: 0 } : undefined,
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, amount: 0.15 },
     transition: { duration: reducedMotion ? 0 : 0.55 },
@@ -78,29 +81,31 @@ export function PremiumLanding() {
         <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
-          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>Explore each stage of the same API.<br />From your first idea to the final test.</p></motion.div>
+          <span className="lp-section-label">The team behind your API / 01—06</span>
+          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>Every role has a purpose.<br />Every handoff leaves something to inspect.</p></motion.div>
           <AgentBentoGrid agents={agents} />
         </section>
 
         <section id="repair-loop" className="lp-loop-section" aria-labelledby="loop-title">
-          <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><RotateCcw size={34} strokeWidth={1.4} aria-hidden /><ScrollReveal id="loop-title">{"The first draft\nis just the start."}</ScrollReveal><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<ArrowRight size={18} aria-hidden /></Link></motion.div>
+          <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><span className="lp-section-label"><RotateCcw size={15} strokeWidth={1.5} aria-hidden /> Built to take a second look</span><ScrollReveal id="loop-title">{"The first draft\nis just the start."}</ScrollReveal><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<span><ArrowRight size={18} aria-hidden /></span></Link><div className="lp-loop-sequence" aria-label="Review, repair, recheck"><span>01 Review</span><span>02 Repair</span><span>03 Recheck</span></div></motion.div>
             <div className="lp-loop-visual" aria-label="Example repair: Reviewer finds a missing response model, Coder adds it, then tests pass">
-              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0 }} className="lp-finding"><span><ShieldCheck size={18} aria-hidden />Reviewer</span><p>Update route needs a response model.</p><span className="lp-loop-state">Sent back for repair</span></motion.div>
-              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0.15 }} className="lp-return-path"><RotateCcw size={18} aria-hidden /><span>Feedback becomes the next change</span></motion.div>
-              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0.3 }} className="lp-repair"><span><Code2 size={18} aria-hidden />Coder</span><code>response_model=BookOut</code><div><Check size={17} aria-hidden />Fix reviewed. Tests passed.</div></motion.div>
+              <div className="lp-loop-workspace-head"><span className="lp-preview-dots" aria-hidden><i /><i /><i /></span><span>Library API / Review loop</span><span>Pass 02</span></div>
+              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0 }} className="lp-finding"><span><ShieldCheck size={18} aria-hidden />Reviewer<span className="lp-review-badge">Change requested</span></span><p>Update route needs a response model.</p><span className="lp-loop-state">Sent back for repair</span></motion.div>
+              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: reducedMotion ? 0 : 0.15 }} className="lp-return-path"><RotateCcw size={18} aria-hidden /><span>Feedback becomes the next change</span></motion.div>
+              <motion.div {...reveal} transition={{ duration: reducedMotion ? 0 : 0.55, delay: reducedMotion ? 0 : 0.3 }} className="lp-repair"><span><Code2 size={18} aria-hidden />Coder<span className="lp-repair-file">main.py</span></span><div className="lp-repair-diff"><span>− @app.patch(&quot;/books/{"{id}"}&quot;)</span><code>+ response_model=BookOut</code></div><div><Check size={17} aria-hidden />Fix reviewed. Tests passed.</div></motion.div>
               <p className="lp-loop-caption">Illustrative repair from the Library demo. Runs can also stop at their retry limit.</p>
             </div>
           </div>
         </section>
 
-        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="control-title">{"AI does the work.\nYou call the shots."}</ScrollReveal><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
-          { title: "Approve before it builds.", description: "Review the requirements and architecture before the agents move forward.", icon: ShieldCheck, content: "Your run pauses at two checkpoints. Read the requirements first, then inspect the system design. Approve or request changes before implementation continues. These are decisions you make during the real run." },
-          { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
-          { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
-        ]} /></section>
+        <section id="control" className="lp-control lp-section" aria-labelledby="control-title"><span className="lp-section-label">Inside the product</span><motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="control-title">{"AI does the work.\nYou call the shots."}</ScrollReveal><p>Keep the decisions that matter.<br />Leave the repetitive work to the agents.</p></motion.div><ExpandableBentoGrid items={[
+          { title: "Approve before it builds.", description: "Review the requirements and architecture before the agents move forward.", icon: ShieldCheck, preview: <ApprovalPreview />, content: "Your run pauses at two checkpoints. Read the requirements first, then inspect the system design. Approve or request changes before implementation continues. These are decisions you make during the real run." },
+          { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, preview: <CodePreview />, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
+          { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, preview: <OutcomePreview />, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
+        ]} /><p className="lp-preview-caption">Illustrative screens from the Library example. Each run reports its own result.</p></section>
 
         <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><ScrollReveal id="faq-title">{"A little more clarity."}</ScrollReveal><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
-        <motion.section {...reveal} id="start-building" className="lp-closing"><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
+        <motion.section {...reveal} id="start-building" className="lp-closing"><span className="lp-section-label">From an idea to something you can inspect</span><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
       </main>
       <SiteFooter />
     </div>

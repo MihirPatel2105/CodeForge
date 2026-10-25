@@ -2,11 +2,12 @@
 
 // Adapted from Vengeance UI. MIT license: docs/vendor/vengeance-ui.md.
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-type Feature = { title: string; description: string; content: string; icon: LucideIcon };
+type Feature = { title: string; description: string; content: string; icon: LucideIcon; preview?: ReactNode };
 export function ExpandableBentoGrid({ items }: { items: Feature[] }) {
   return (
     <div className="vui-feature-grid">
@@ -14,6 +15,7 @@ export function ExpandableBentoGrid({ items }: { items: Feature[] }) {
         <Dialog key={item.title}>
           <DialogTrigger render={<Button variant="ghost" className="vui-feature-card" />}>
             <span className="vui-feature-top"><item.icon size={26} strokeWidth={1.5} aria-hidden /><ArrowUpRight size={18} aria-hidden /></span>
+            {item.preview && <span className="vui-feature-preview" aria-hidden="true">{item.preview}</span>}
             <span className="vui-feature-title">{item.title}</span>
             <span className="vui-feature-description">{item.description}</span>
             <span className="vui-feature-more">Explore details</span>
