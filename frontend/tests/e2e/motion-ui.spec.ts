@@ -57,7 +57,7 @@ test("homepage preview grows without moving subsequent sections and resets for r
   await page.goto("/");
   const preview = page.locator(".lp-product-scale");
   await expect(preview).toBeVisible();
-  await expect.poll(() => page.locator(".lp-hero > .lp-actions").evaluate(element => getComputedStyle(element).opacity)).toBe("1");
+  await expect.poll(() => page.locator(".lp-hero .lp-actions").evaluate(element => getComputedStyle(element).opacity)).toBe("1");
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeLessThan(1090);
   const before = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
@@ -70,7 +70,7 @@ test("homepage preview grows without moving subsequent sections and resets for r
   await expect(preview).toHaveCSS("transform", "none");
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("transform", "none");
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("opacity", "1");
-  await expect(page.locator(".lp-hero > .lp-actions")).toHaveCSS("transform", "none");
+  await expect(page.locator(".lp-hero .lp-actions")).toHaveCSS("transform", "none");
   await page.setViewportSize({ width: 320, height: 720 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(preview).toHaveCSS("transform", "none");
