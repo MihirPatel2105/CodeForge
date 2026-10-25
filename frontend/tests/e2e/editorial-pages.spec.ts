@@ -39,10 +39,10 @@ for (const route of ["about", "how-it-works"]) {
   }
 }
 
-test("public pages reuse homepage typography and primary controls", async ({ page }) => {
+test("public pages retain shared typography and charcoal controls", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { radius: s.borderRadius, font: s.fontFamily }; });
+  const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { font: s.fontFamily, background: s.backgroundColor, color: s.color }; });
   const control = await readStyle();
   const family = await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily);
   for (const route of ["about", "how-it-works"]) {

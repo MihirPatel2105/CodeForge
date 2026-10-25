@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// These tests exercise DOM interactions and Motion transitions. The real WebGL
-// background has dedicated coverage in hero-threads.spec.ts; software rendering
-// it here can starve input and animation frames on GitHub's CPU-only runners.
+// These tests exercise DOM interactions and Motion transitions without requiring WebGL.
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
@@ -79,7 +77,7 @@ test("homepage preview grows without moving subsequent sections and resets for r
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
 
-test("homepage teaser leads directly into the single build walkthrough", async ({ page }) => {
+test("homepage product preview leads into the split build process", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   const teaser = page.getByRole("link", { name: "Follow the Library build", exact: true });
@@ -87,13 +85,13 @@ test("homepage teaser leads directly into the single build walkthrough", async (
   await expect(page.locator(".lp-pipeline-content")).toHaveCount(0);
   const order = await page.evaluate(() => {
     const hero = document.getElementById("overview")!;
-    return [hero.nextElementSibling?.id, hero.nextElementSibling?.nextElementSibling?.getAttribute("aria-label")];
+    return [hero.nextElementSibling?.className, hero.nextElementSibling?.nextElementSibling?.id];
   });
-  expect(order).toEqual(["build-story", "Explore example APIs"]);
+  expect(order).toEqual(["ol-technology", "how"]);
   await teaser.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#cf-story-title")).toBeInViewport();
-  await expect(page.getByRole("navigation", { name: "Landing page sections" }).getByRole("link", { name: "Build walkthrough", exact: true })).toHaveAttribute("aria-current", "location");
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works", exact: true })).toHaveAttribute("href", "#build-story");
   await expect(page.locator("#build-story").getByRole("link", { name: "Build your first API", exact: true })).toHaveAttribute("href", "/signup");
 });
 

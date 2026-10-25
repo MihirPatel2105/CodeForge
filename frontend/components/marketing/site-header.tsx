@@ -14,10 +14,12 @@ import { AttentionInbox } from "@/components/dashboard/attention-inbox";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 
+import { followLandingSection } from "./landing-navigation";
+
 const MotionLink = motion.create(Link);
 
 /** Public site header. The brand and account actions stay clear of the page content. */
-export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
+export function SiteHeader({ workspace = false, landing = false }: { workspace?: boolean; landing?: boolean }) {
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
@@ -35,6 +37,7 @@ export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
           <LogoLockup className="h-auto max-h-9 w-[147px] max-w-full" />
         </MotionLink>
 
+        {landing && <nav className="ol-desktop-nav" aria-label="Main navigation"><Link href="#overview" onClick={event => followLandingSection(event, reducedMotion)}>Home</Link><Link href="#how" onClick={event => followLandingSection(event, reducedMotion)}>Features</Link><Link href="#build-story" onClick={event => followLandingSection(event, reducedMotion)}>How it works</Link><Link href="/about">About</Link><Link href="#questions" onClick={event => followLandingSection(event, reducedMotion)}>FAQ</Link><Link href="/contact">Contact</Link></nav>}
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           {error ? (
             <span className="text-[13px] text-fg-muted">Account unavailable</span>

@@ -11,12 +11,12 @@ import { useMotionPreference } from "@/lib/use-motion-preference";
 import Link from "next/link";
 import "./premium-landing.css";
 import "./landing-showcase.css";
+import "./ostack-landing.css";
 import { ApprovalPreview, CodePreview, OutcomePreview } from "./control-previews";
-import { ArrowDown, ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
-import { LandingScrollNav } from "./landing-scroll-nav";
+import { ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
 import { SiteHeader } from "./site-header";
-import { ProductScrollPreview } from "./product-scroll-preview";
-import { ScrollStory } from "./scroll-story";
+import { LandingProductPreview } from "./landing-product-preview";
+import { BuildProcess } from "./build-process";
 import { SiteFooter } from "./marketing-actions";
 import { useCurrentUser } from "@/lib/use-current-user";
 
@@ -54,37 +54,30 @@ export function PremiumLanding() {
   };
 
   return (
-    <div className="cf-premium">
+    <div className="cf-premium cf-ostack">
       <a className="lp-skip" href="#landing-content">Skip to content</a>
-      <SiteHeader />
-      <LandingScrollNav />
+      <div className="ol-announcement"><span>Explore</span>A real build, from prompt to test.<Link href="/demo/library">Watch the Library demo<ArrowRight size={13} aria-hidden /></Link></div>
+      <SiteHeader landing />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
-          <motion.p {...entrance(0.12)} className="lp-intro">Five agents. One API. You in control.</motion.p>
+          <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>
           <BlurHeadline />
           <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
           <motion.div {...entrance(0.7)} className="lp-actions">
             <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
             <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
           </motion.div>
-          <ProductScrollPreview>
-            <Link href="#build-story" className="lp-product lp-brief-preview" aria-label="Follow the Library build">
-              <div className="lp-brief-icon"><Code2 size={24} strokeWidth={1.4} aria-hidden /></div>
-              <div className="lp-brief-copy"><span>Personal Library · Example brief</span><p>“An API for my books, authors, and reading list.”</p></div>
-              <span className="lp-brief-follow">Follow this build<span><ArrowDown size={16} aria-hidden /></span></span>
-            </Link>
-          </ProductScrollPreview>
+          <LandingProductPreview />
         </section>
-
-        <ScrollStory startHref={start} />
-
-        <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
+        <section className="ol-technology" aria-label="Built with open-source tools"><p>Real tools. Working together behind your API.</p><div className="ol-tech-track">{[0, 1].map(copy => <div className="ol-tech-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>{["Python", "FastAPI", "MongoDB", "LangGraph", "Docker", "pytest"].map(tool => <span key={tool}>{tool}</span>)}</div>)}</div></section>
 
         <section className="lp-team lp-section" id="how" aria-labelledby="team-title">
-          <span className="lp-section-label">The team behind your API / 01—06</span>
-          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>Every role has a purpose.<br />Every handoff leaves something to inspect.</p></motion.div>
+          <span className="lp-section-label">How it works</span>
+          <motion.div {...reveal} className="lp-section-intro"><ScrollReveal id="team-title">{"Five specialists.\nOne real sandbox."}</ScrollReveal><p>From a plain-English brief to files you can inspect.<br />Meet the team that moves your build forward.</p></motion.div>
           <AgentBentoGrid agents={agents} />
         </section>
+
+        <BuildProcess startHref={start} />
 
         <section id="repair-loop" className="lp-loop-section" aria-labelledby="loop-title">
           <div className="lp-loop-inner"><motion.div {...reveal} className="lp-loop-copy"><span className="lp-section-label"><RotateCcw size={15} strokeWidth={1.5} aria-hidden /> Built to take a second look</span><ScrollReveal id="loop-title">{"The first draft\nis just the start."}</ScrollReveal><p>A review finds an issue. A test catches a failure. The feedback returns to the Coder, and the next version gets another check.</p><Link href="/how-it-works" className="lp-light-link">See how the loop works<span><ArrowRight size={18} aria-hidden /></span></Link><div className="lp-loop-sequence" aria-label="Review, repair, recheck"><span>01 Review</span><span>02 Repair</span><span>03 Recheck</span></div></motion.div>
@@ -103,6 +96,8 @@ export function PremiumLanding() {
           { title: "See inside the process.", description: "Follow agent decisions, inspect generated files, and read the review feedback.", icon: Code2, preview: <CodePreview />, content: "The live timeline shows agent activity and repair loops. Open the generated files to inspect code, compare available versions, and follow Problems links when a trustworthy file and line are recorded." },
           { title: "Get the actual outcome.", description: "Tests run in an isolated sandbox. See the output and download the artifacts.", icon: Terminal, preview: <OutcomePreview />, content: "Inspect passed and failed tests along with the generated files. A run can stop at its repair limit or fail because a service is unavailable. CodeForge reports that result so you can decide what to do next; it does not treat every completed attempt as a working API." },
         ]} /><p className="lp-preview-caption">Illustrative screens from the Library example. Each run reports its own result.</p></section>
+
+        <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><ScrollReveal id="faq-title">{"A little more clarity."}</ScrollReveal><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
         <motion.section {...reveal} id="start-building" className="lp-closing"><span className="lp-section-label">From an idea to something you can inspect</span><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>

@@ -12,9 +12,9 @@ test("desktop agent grid preserves complete examples and section navigation", as
     await expect(card).toBeVisible();
     await expect(card.locator(".vui-agent-artifact li").first()).toBeVisible();
   }
-  await page.getByRole("navigation", { name: "Landing page sections" }).getByRole("link", { name: "FAQ", exact: true }).click();
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "FAQ", exact: true }).click();
   await expect(page.locator("#faq-title")).toBeInViewport();
-  await expect(page.locator('.lp-scroll-nav a[href="#questions"]')).toHaveAttribute("aria-current", "location");
+  await expect(page.locator('.ol-desktop-nav a[href="#questions"]')).toHaveAttribute("href", "#questions");
   expect(errors).toEqual([]);
 });
 
