@@ -91,7 +91,7 @@ test("homepage product preview leads into the split build process", async ({ pag
   await teaser.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#cf-story-title")).toBeInViewport();
-  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works", exact: true })).toHaveAttribute("href", "#build-story");
+  await expect(page.getByRole("navigation", { name: "Walkthrough chapters" }).getByRole("button")).toHaveCount(4);
   await expect(page.locator("#build-story").getByRole("link", { name: "Build your first API", exact: true })).toHaveAttribute("href", "/signup");
 });
 

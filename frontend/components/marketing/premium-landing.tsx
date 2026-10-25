@@ -56,8 +56,7 @@ export function PremiumLanding() {
   return (
     <div className="cf-premium cf-ostack">
       <a className="lp-skip" href="#landing-content">Skip to content</a>
-      <div className="ol-announcement"><span>Explore</span>A real build, from prompt to test.<Link href="/demo/library">Watch the Library demo<ArrowRight size={13} aria-hidden /></Link></div>
-      <SiteHeader landing />
+      <SiteHeader />
       <main id="landing-content">
         <section id="overview" className="lp-hero" aria-labelledby="landing-title">
           <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>

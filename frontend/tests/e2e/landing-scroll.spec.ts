@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("desktop agent grid preserves complete examples and section navigation", async ({ page }) => {
+test("desktop agent grid preserves complete examples and a reachable FAQ", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -12,9 +12,9 @@ test("desktop agent grid preserves complete examples and section navigation", as
     await expect(card).toBeVisible();
     await expect(card.locator(".vui-agent-artifact li").first()).toBeVisible();
   }
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "FAQ", exact: true }).click();
+  await page.locator("#questions").scrollIntoViewIfNeeded();
   await expect(page.locator("#faq-title")).toBeInViewport();
-  await expect(page.locator('.ol-desktop-nav a[href="#questions"]')).toHaveAttribute("href", "#questions");
+
   expect(errors).toEqual([]);
 });
 

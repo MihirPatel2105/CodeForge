@@ -1,15 +1,5 @@
 /* Ostack's composition and pacing, expressed through CodeForge's existing palette. */
 .cf-ostack { --ol-blue: #1e3fd8; --ol-ink: #171717; --ol-muted: #66666b; --ol-surface: #f5f5f6; background: #fff; color: var(--ol-ink); }
-.ol-announcement { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 42px; padding: 9px 20px; background: #f0f2fa; color: #444b64; font-size: 12px; font-weight: 500; }
-.ol-announcement > span { padding: 3px 9px; border-radius: 4px; background: #e0e5f5; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
-.ol-announcement a { display: inline-flex; align-items: center; gap: 7px; border-left: 1px solid #ced3e4; padding-left: 16px; }
-.cf-ostack .cf-site-header { height: 86px; }
-.cf-ostack .cf-site-header-bar { background: #ffffffef; border-bottom-color: #ececee; backdrop-filter: blur(12px); }
-.cf-ostack .cf-site-header-bar > div { height: 86px; max-width: 1440px; padding-inline: 40px; }
-.ol-desktop-nav { display: flex; align-items: center; gap: 28px; font-size: 13px; font-weight: 550; }
-.ol-desktop-nav a { padding-block: 12px; transition: color 180ms var(--lp-ease-out); }
-.ol-desktop-nav a:hover { color: var(--ol-blue); }
-.cf-ostack .cf-site-header-bar a[href='/signup'],.cf-ostack .cf-header-projects { border-radius: 9px; min-height: 46px; padding-inline: 20px; background: #171717; color: #fff; }
 .cf-ostack .lp-hero { position: relative; padding: 60px 32px 0; min-height: 0; background: #fff; color: #171717; overflow: hidden; }
 .cf-ostack .lp-intro { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 25px; padding: 7px 16px 7px 8px; border-radius: 40px; box-shadow: 0 9px 28px -12px #20263130; color: #52535c; background: #fff; font-size: 12px; font-weight: 500; }
 .ol-hero-mark { display: grid; place-items: center; height: 24px; width: 24px; border-radius: 50%; background: #e9edff; color: #1e3fd8; }
@@ -17,7 +7,7 @@
 .cf-ostack .lp-hero .cf-blur-word:nth-of-type(4) { color: #1e3fd8; }
 .cf-ostack .lp-lead { max-width: 690px; font-size: 18px; line-height: 1.7; margin-top: 24px; color: #55565b; }
 .cf-ostack .lp-actions { margin-top: 28px; gap: 26px; }
-.cf-ostack .lp-button { border-radius: 9px; min-height: 50px; padding: 13px 22px; font-size: 14px; background: #171717; color: #fff; }
+.cf-ostack .lp-button { border-radius: 100px; min-height: 50px; padding: 13px 22px; font-size: 14px; background: #171717; color: #fff; }
 .cf-ostack .lp-text-link { font-size: 13px; color: #5e6069; font-weight: 500; }
 .ol-product-stage { position: relative; isolation: isolate; width: min(100%,1120px); max-width: 1120px; margin: 20px auto 0; padding: 66px 56px 0; text-align: left; }
 .ol-product-mat { position: absolute; z-index: -1; inset: 0 0 65px; border-radius: 60px 60px 90px 90px; background: #222633; transform: perspective(900px) rotateX(8deg); overflow: hidden; }
@@ -122,15 +112,13 @@
 .cf-ostack .lp-control .vui-feature-description { color: #707079; }
 .cf-ostack .lp-closing { border-radius: 0; max-width: none; background: #f1f1f4; }
 .cf-ostack .lp-closing .lp-button { background: #171717; }
-@media (max-width: 1100px) { .ol-desktop-nav { display: none; } .ol-process-layout { gap: 32px; }.ol-process-panel { padding: 28px; } }
+@media (max-width: 1100px) { .ol-process-layout { gap: 32px; }.ol-process-panel { padding: 28px; } }
 @media (max-width: 850px) {
   .cf-ostack .lp-team .vui-agent-card,.cf-ostack .lp-team .vui-agent-card:nth-child(4),.cf-ostack .lp-team .vui-agent-card:nth-child(5),.cf-ostack .lp-team .vui-agent-card:last-child { grid-column: span 6; }
   .ol-product-stage { padding: 42px 24px 0; }.ol-product-mat { bottom: 40px; }
   .ol-product-workspace { grid-template-columns: .85fr 1.15fr; }.ol-product-brief { padding: 22px; }.ol-product-brief h2 { font-size: 26px; }.ol-product-code { padding: 18px; }
 }
 @media (max-width: 700px) {
-  .ol-announcement { font-size: 10px; gap: 9px; min-height: 36px; }.ol-announcement > span { display: none; }.ol-announcement a { font-size: 9px; padding-left: 9px; }
-  .cf-ostack .cf-site-header,.cf-ostack .cf-site-header-bar > div { height: 68px; }.cf-ostack .cf-site-header-bar > div { padding-inline: 20px; }.cf-ostack .cf-site-header-bar a[href='/signup'] { min-height: 40px; padding-inline: 14px; }
   .cf-ostack .lp-hero { padding: 44px 20px 0; }.cf-ostack .lp-intro { font-size: 10px; margin-bottom: 24px; }.cf-ostack .lp-hero h1 { font-size: clamp(38px,10vw,52px); }.cf-ostack .lp-lead { font-size: 15px; max-width: 340px; margin-top: 22px; }.cf-ostack .lp-actions { flex-direction: column; gap: 6px; margin-top: 24px; }
   .ol-product-stage { margin-top: 32px; padding: 22px 0 0; }.ol-product-mat { display: none; }.ol-product-shell { padding: 6px; border-radius: 15px; }.ol-product-toolbar { padding: 10px 8px 15px; font-size: 10px; gap: 5px; }.ol-product-toolbar > span:last-child { font-size: 7px; max-width: 135px; text-align: right; }.ol-window-dots { margin-right: 4px; gap: 3px; }.ol-window-dots i { width: 4px; height: 4px; }
   .ol-product-workspace { grid-template-columns: 1fr; }.ol-product-brief { padding: 24px; }.ol-product-brief h2 { font-size: 28px; }.ol-product-brief h2 br { display: none; }.ol-product-brief p { max-width: none; font-size: 12px; }.ol-brief-checks { flex-direction: row; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; font-size: 8px; }.ol-product-code { padding: 18px; }.ol-product-code .lp-preview-code { font-size: 9px; }.ol-product-foot { padding: 12px 6px 6px; font-size: 8px; }
@@ -139,7 +127,7 @@
   .cf-ostack .ol-process { padding-top: 30px; padding-bottom: 64px; }.ol-section-heading { margin-bottom: 36px; }.ol-process-layout { display: block; }.ol-process-nav { display: none; }.ol-process-panels { gap: 18px; }.ol-process-panel { padding: 26px 20px; scroll-margin-top: 90px; }.ol-process-panel h3 { font-size: 26px; margin-bottom: 20px; }.ol-process-artifact { min-height: 240px; }.ol-prompt-card { transform: none; padding: 22px; }.ol-prompt-card p { font-size: 19px; }.ol-process-mobile-detail { display: block; margin-top: 22px; font-size: 12px; line-height: 1.8; color: #71727c; }.ol-process-artifact .lp-preview-checkpoint { flex-wrap: wrap; }.ol-process-artifact .lp-preview-document { padding-inline: 12px; }
   .cf-ostack .lp-loop-section { margin-inline: 0; }.cf-ostack .lp-loop-inner { padding-inline: 24px; }.cf-ostack .lp-closing { margin-top: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .ol-tech-track { animation: none; }.ol-product-shell,.ol-prompt-card { transform: none !important; }.ol-desktop-nav a { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .ol-tech-track { animation: none; }.ol-product-shell,.ol-prompt-card { transform: none !important; } }
 /* Each artifact keeps its actual example content while using a distinct visual treatment. */
 .cf-ostack .vui-agent-card:nth-child(1) .vui-agent-artifact { background: #fff; }
 .cf-ostack .vui-agent-card:nth-child(1) .vui-agent-artifact li:first-child { font: 550 30px/1.3 var(--lp-font); letter-spacing: -.04em; margin-bottom: 16px; color: #2c303c; }
