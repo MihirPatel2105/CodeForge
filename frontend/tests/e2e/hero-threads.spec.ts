@@ -95,7 +95,7 @@ test("live hero rays yield to reduced motion and retain the static fallback", as
 });
 
 for (const width of [1440, 390]) {
-  test(`hero header follows the dark-to-white boundary in both directions at ${width}px`, async ({ page }) => {
+  test(`hero header follows the white preview boundary in both directions at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
@@ -106,14 +106,14 @@ for (const width of [1440, 390]) {
     await expect(surface).toHaveCSS("backdrop-filter", "none");
     await expect.poll(opacity).toBe("0");
     await expect(header).toHaveCSS("height", "64px");
-    const heroEnd = await page.locator("#overview").evaluate(element => element.getBoundingClientRect().bottom + window.scrollY);
+    const previewStart = await page.locator(".ol-product-stage").evaluate(element => element.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(element).paddingTop));
     await page.evaluate(() => window.scrollTo(0, 350));
     await expect(header).not.toHaveAttribute("data-scrolled");
     await expect.poll(opacity).toBe("0");
-    await page.evaluate(end => window.scrollTo(0, end - 32), heroEnd);
+    await page.evaluate(end => window.scrollTo(0, end - 32), previewStart);
     await expect.poll(async () => Number(await opacity())).toBeGreaterThan(0.4);
     await expect.poll(async () => Number(await opacity())).toBeLessThan(0.6);
-    await page.evaluate(end => window.scrollTo(0, end + 100), heroEnd);
+    await page.evaluate(end => window.scrollTo(0, end + 100), previewStart);
     await expect.poll(opacity).toBe("1");
     await expect(header).toHaveAttribute("data-scrolled", "");
     await page.evaluate(() => window.scrollTo(0, 200));
@@ -125,12 +125,12 @@ for (const width of [1440, 390]) {
   });
 }
 
-test("header surface eases through intermediate opacity when crossing the hero boundary", async ({ page }) => {
+test("header surface eases through intermediate opacity when crossing the preview boundary", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const samples = await page.locator(".cf-site-header-bar").evaluate(async element => {
-    const hero = document.getElementById("overview")!;
-    window.scrollTo(0, hero.getBoundingClientRect().bottom + window.scrollY + 100);
+    const preview = document.querySelector(".ol-product-stage")!;
+    window.scrollTo(0, preview.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(preview).paddingTop) + 100);
     const values: number[] = [];
     const start = performance.now();
     while (performance.now() - start < 650) {

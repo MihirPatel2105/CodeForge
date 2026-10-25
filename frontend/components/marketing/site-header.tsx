@@ -25,24 +25,28 @@ export function SiteHeader({ workspace = false, heroOverlay = false }: { workspa
   useEffect(() => {
     const element = header.current;
     const hero = heroOverlay ? document.getElementById("overview") : null;
-    let heroEnd = 0;
+    const preview = hero?.querySelector<HTMLElement>(".ol-product-stage");
+    let surfaceStart = 0;
     const update = () => {
       if (!element) return;
       if (!hero) {
         element.toggleAttribute("data-scrolled", window.scrollY > 16);
         return;
       }
-      // Blend only while the dark-to-white boundary passes through the header.
-      const progress = Math.min(1, Math.max(0, (window.scrollY + 64 - heroEnd) / 64));
+      // Blend as the white preview reaches the header; its stage stays untransformed.
+      const progress = Math.min(1, Math.max(0, (window.scrollY + 64 - surfaceStart) / 64));
       element.style.setProperty("--hero-header-progress", String(progress));
       element.toggleAttribute("data-scrolled", progress >= 0.5);
     };
     const measure = () => {
-      heroEnd = hero ? hero.getBoundingClientRect().bottom + window.scrollY : 0;
+      surfaceStart = preview
+        ? preview.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(preview).paddingTop)
+        : hero ? hero.getBoundingClientRect().bottom + window.scrollY : 0;
       update();
     };
     const observer = hero ? new ResizeObserver(measure) : null;
     if (hero) observer?.observe(hero);
+    if (preview) observer?.observe(preview);
     measure();
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", measure);
