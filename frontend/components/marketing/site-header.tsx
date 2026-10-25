@@ -20,21 +20,21 @@ import { LogoLockup } from "@/components/brand/logo-lockup";
 const MotionLink = motion.create(Link);
 
 /** Public site header. The brand and account actions stay clear of the page content. */
-export function SiteHeader({ workspace = false }: { workspace?: boolean }) {
+export function SiteHeader({ workspace = false, heroOverlay = false }: { workspace?: boolean; heroOverlay?: boolean }) {
   const header = useRef<HTMLElement>(null);
   useEffect(() => {
-    const update = () => header.current?.toggleAttribute("data-scrolled", window.scrollY > 16);
+    const update = () => header.current?.toggleAttribute("data-scrolled", window.scrollY > (heroOverlay ? 180 : 16));
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, []);
+  }, [heroOverlay]);
   const reducedMotion = useMotionPreference();
   const pressMotion = { whileTap: reducedMotion ? undefined : { scale: 0.98 }, animate: reducedMotion ? { scale: 1 } : undefined, transition: reducedMotion ? { duration: 0 } : motionSpring };
   const pathname = usePathname();
   const { user, loading, error } = useSession();
   return (
     <>
-    <header ref={header} className="cf-site-header sticky top-0 z-20 h-16">
+    <header ref={header} data-hero-overlay={heroOverlay || undefined} className="cf-site-header sticky top-0 z-20 h-16">
       <div className="cf-site-header-bar border border-transparent border-b-rule bg-surface/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1536px] items-center justify-between gap-3 px-4 sm:px-6 md:px-10 lg:px-14">
         <MotionLink {...pressMotion}

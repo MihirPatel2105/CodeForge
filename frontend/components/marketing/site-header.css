@@ -18,3 +18,16 @@ header.cf-site-header[data-scrolled] .cf-site-header-bar { background: color-mix
 @media(prefers-reduced-motion:reduce) {
  header.cf-site-header .cf-site-header-bar,.cf-site-header .cf-header-actions :is(a,button) { transition: none; }
 }
+
+/* The landing header overlays the dark hero until the first copy scrolls away. */
+header.cf-site-header[data-hero-overlay] { margin-bottom: -64px; }
+header.cf-site-header[data-hero-overlay]:not([data-scrolled]) .cf-site-header-bar {
+ --fg: #f4f7ff; --fg-muted: #c3cbdc; --surface: #10141e; --surface-2: #222836;
+ --border: #ffffff26; --border-strong: #ffffff50;
+ background: transparent; border-bottom-color: transparent; box-shadow: none;
+ backdrop-filter: none; -webkit-backdrop-filter: none; color: var(--fg);
+}
+header.cf-site-header[data-hero-overlay]:not([data-scrolled]) .cf-logo-lockup { filter: brightness(0) invert(1); }
+header.cf-site-header[data-hero-overlay]:not([data-scrolled]) :is(.cf-header-projects,.cf-header-start) { background: #f3f6ff; color: #111722; }
+header.cf-site-header[data-hero-overlay]:not([data-scrolled]) a[href="/login"] { color: #e1e7f3; }
+header.cf-site-header[data-hero-overlay]:not([data-scrolled]) :is(a,button):focus-visible { outline-color: #b9ceff; }

@@ -93,3 +93,21 @@ test("live hero rays yield to reduced motion and retain the static fallback", as
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(rays.locator("canvas")).toHaveCount(1);
 });
+
+test("hero header is transparent at the top and restores its surface in both scroll directions", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const header = page.locator("header.cf-site-header");
+  const surface = header.locator(".cf-site-header-bar");
+  await expect(surface).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(header.locator('.cf-header-start')).toHaveCSS("color", "rgb(17, 23, 34)");
+  await expect(header).toHaveCSS("height", "64px");
+  await page.mouse.wheel(0, 350);
+  await expect(header).toHaveAttribute("data-scrolled", "");
+  await expect(surface).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await page.mouse.wheel(0, -1000);
+  await expect(header).not.toHaveAttribute("data-scrolled");
+  await expect(surface).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await page.getByRole("link", { name: "How CodeForge works", exact: true }).click();
+  await expect(page.locator("header.cf-site-header")).not.toHaveAttribute("data-hero-overlay");
+});

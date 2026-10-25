@@ -59,7 +59,7 @@ export function PremiumLanding() {
   return (
     <div className="cf-premium cf-ostack">
       <a className="lp-skip" href="#landing-content">Skip to content</a>
-      <SiteHeader />
+      <SiteHeader heroOverlay />
       <main id="landing-content">
         <section id="overview" className="lp-hero lp-hero-dark" aria-labelledby="landing-title">
           <HeroLightRays />

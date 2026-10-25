@@ -16,3 +16,5 @@
 .cf-ostack .lp-hero-dark .ol-product-shell { box-shadow: 0 30px 80px -24px #0008; }
 .cf-ostack .lp-hero-dark :is(a,button):focus-visible { outline-color: #b9ceff; }
 @media(max-width:700px) { .cf-ostack .lp-hero-dark { padding-top: 52px; }.cf-hero-rays { height: 680px; } }
+.cf-ostack:has(> [data-hero-overlay]) .lp-hero-dark { padding-top: 140px; }
+@media(max-width:700px) { .cf-ostack:has(> [data-hero-overlay]) .lp-hero-dark { padding-top: 116px; } }
