@@ -322,3 +322,29 @@
 
 /* Keep native wheel/touch scrolling inside each evidence pane at its boundaries. */
 .cf-evidence-workbench :is([data-slot="scroll-area-viewport"], .cf-run-scroll, .cf-workbench-console-panel) { overscroll-behavior: contain; }
+
+/* Shared visual language; execution state, editor geometry, and logs stay intact. */
+.cf-run-page { font-family: var(--font-ui); }
+.cf-run-page main :is(h1,h2,h3,h4), .cf-run-page .cf-build-metrics dd { font-family: var(--font-ui); letter-spacing: -.035em; }
+.cf-run-page .cf-run-summary {
+ border-radius: 24px;
+ background: radial-gradient(ellipse at 0% 0%,#566eaa0c,transparent 65%),var(--surface);
+ box-shadow: 0 8px 28px -24px #18223835;
+}
+.cf-run-page .cf-run-request { font-weight: 550; line-height: 1.6; }
+.cf-run-page .cf-build-metrics { border-radius: 18px; background: var(--surface); }
+.cf-run-page .cf-run-pipeline { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223835; }
+.cf-run-page .cf-agent-step { border-radius: 18px; }
+.cf-run-page .cf-agent-detail { border-radius: 18px; }
+.cf-run-page [data-slot="button"],
+.cf-approval-dialog .cf-approval-actions [data-slot="button"] { border-radius: 100px; }
+.cf-run-page .cf-api-intro {
+ border: 1px solid var(--border); border-radius: 24px; padding: 28px;
+ background: radial-gradient(ellipse at 0% 0%,#566eaa0c,transparent 65%),var(--surface);
+}
+.cf-run-page .cf-api-intro h1 { font-size: clamp(28px,3vw,40px); font-weight: 650; letter-spacing: -.05em; line-height: 1.15; }
+.cf-run-page :is(.cf-use-option-card,.cf-use-runtime) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223830; }
+.cf-run-page .cf-use-option-card h2 { font-weight: 650; }
+@media(max-width:639px) {
+ .cf-run-page .cf-api-intro { padding: 22px 20px; }
+}

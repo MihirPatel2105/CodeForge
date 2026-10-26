@@ -1,6 +1,7 @@
 "use client";
 
-import { pointerLight } from "@/components/ui/premium-effects";
+import "@/components/dashboard/workspace-design.css";
+
 
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
 import { AnimatedArrow } from "@/components/ui/enhancements/animated-icons";
@@ -308,8 +309,7 @@ function ProjectCard({ project }: { project: ProjectRow }) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      onPointerMove={pointerLight}
-      className="cf-project-card cf-spotlight group relative flex min-h-[280px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="cf-project-card group relative flex min-h-[280px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
 
@@ -491,7 +491,7 @@ function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectRe
   }
 
   return (
-    <DialogContent className="rounded-xl border-border p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)]">
+    <DialogContent className="cf-workspace-dialog rounded-xl border-border p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)]">
       <div className="border-b border-rule bg-surface-2 px-6 py-5">
         <DialogHeader>
           <span className={LABEL}>create workspace</span>

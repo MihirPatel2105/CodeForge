@@ -31,7 +31,7 @@ export function ProjectSettings({ project, onSaved }: { project: ProjectResponse
     }
     finally { setBusy(false); }
   }
-  return <><Button variant="outline" className="mt-4" onClick={() => { setName(project.name); setDescription(project.description); setOpen(true); }}>Manage project{project.archived ? " · Archived" : ""}</Button>
+  return <><Button variant="outline" className="cf-manage-project mt-4" onClick={() => { setName(project.name); setDescription(project.description); setOpen(true); }}>Manage project{project.archived ? " · Archived" : ""}</Button>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Manage project</DialogTitle></DialogHeader>
       <label className="text-sm">Project name<Input value={name} maxLength={120} onChange={e => setName(e.target.value)} /></label>
       <label className="text-sm">Description<Textarea value={description} maxLength={2000} onChange={e => setDescription(e.target.value)} /></label>

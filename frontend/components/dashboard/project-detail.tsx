@@ -1,5 +1,7 @@
 "use client";
 
+import "./workspace-design.css";
+
 import { motion } from "motion/react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 

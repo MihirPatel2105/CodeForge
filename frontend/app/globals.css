@@ -134,7 +134,8 @@
   --border: #e5e5e5;
   --border-strong: #cccccc;
 
-  --accent: #171717;
+  --action-ink: #07090f;
+  --accent: var(--action-ink);
   --accent-soft: #f1f1f1;
   --accent-bd: #c9c9c9;
 

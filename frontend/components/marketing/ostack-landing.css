@@ -6,7 +6,7 @@
 .cf-ostack .lp-hero h1 { font-size: clamp(44px,5vw,72px); font-weight: 650; line-height: 1.1; letter-spacing: -.055em; }
 .cf-ostack .lp-lead { max-width: 690px; font-size: 18px; line-height: 1.7; margin-top: 24px; color: #55565b; }
 .cf-ostack .lp-actions { margin-top: 28px; gap: 26px; }
-.cf-ostack .lp-button { border-radius: 100px; min-height: 50px; padding: 13px 22px; font-size: 14px; background: #171717; color: #fff; }
+.cf-ostack .lp-button { border-radius: 100px; min-height: 50px; padding: 13px 22px; font-size: 14px; background: var(--action-ink, #07090f); color: #fff; }
 .cf-ostack .lp-text-link { font-size: 13px; color: #5e6069; font-weight: 500; }
 .ol-product-stage { position: relative; isolation: isolate; width: min(100%,1120px); max-width: 1120px; margin: 20px auto 0; padding: 66px 56px 0; text-align: left; }
 .ol-product-shell { background: #fff; padding: 10px; border: 1px solid #e5e5e8; border-radius: 24px; box-shadow: 0 40px 75px -45px #1c243e66; transform-origin: center; }
@@ -108,7 +108,7 @@
 .cf-ostack .lp-control .vui-feature-top,.cf-ostack .lp-control .vui-feature-more { color: #4d5266; }
 .cf-ostack .lp-control .vui-feature-description { color: #707079; }
 .cf-ostack .lp-closing { border-radius: 0; max-width: none; background: #f1f1f4; }
-.cf-ostack .lp-closing .lp-button { background: #171717; }
+.cf-ostack .lp-closing .lp-button { background: var(--action-ink, #07090f); }
 @media (max-width: 1100px) { .ol-process-layout { gap: 32px; }.ol-process-panel { padding: 28px; } }
 @media (max-width: 850px) {
   .cf-ostack .lp-team .vui-agent-card,.cf-ostack .lp-team .vui-agent-card:nth-child(4),.cf-ostack .lp-team .vui-agent-card:nth-child(5),.cf-ostack .lp-team .vui-agent-card:last-child { grid-column: span 6; }
@@ -196,3 +196,13 @@
  .ol-tech-group { min-width: 0; width: 100%; flex-wrap: wrap; justify-content: center; gap: 24px; padding-right: 0; }
  .ol-tech-group[aria-hidden="true"] { display: none; }
 }
+
+/* Finish the white page with the inverse of the hero's gradual transition. */
+.cf-ostack .lp-closing { background: #fff; padding-inline: 24px; padding-bottom: 0; }
+.cf-ostack .lp-closing::after {
+ content: ""; display: block; height: clamp(180px,20vw,280px);
+ margin: 72px -24px 0;
+ background: linear-gradient(180deg,#fff 0%,#edf0f5 20%,#a5acb9 44%,#434c5f 68%,#141b29 86%,#07090f 100%);
+ pointer-events: none;
+}
+@media(max-width:600px) { .cf-ostack .lp-closing::after { height: 180px; margin-top: 48px; } }

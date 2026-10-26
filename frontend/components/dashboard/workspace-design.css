@@ -1,0 +1,61 @@
+/* Carry the public hero's typography and surface hierarchy into a working UI. */
+:is(.cf-projects,.cf-project-detail) { font-family: var(--font-ui); }
+:is(.cf-projects,.cf-project-detail) main :is(h1,h2,h3,dd),
+.cf-workspace-dialog [data-slot="dialog-title"] { font-family: var(--font-ui); }
+.cf-projects .cf-projects-intro,
+.cf-project-detail .cf-project-detail-hero > div:first-child {
+ --fg: #f8faff; --fg-muted: #b6bed0; --fg-faint: #98a4bc;
+ --accent: #f3f6ff; --surface: #111722; --bg: #07090f;
+ --border: #ffffff20; --border-strong: #ffffff40;
+ background: radial-gradient(ellipse at 0% 0%,#566eaa48,transparent 70%),#07090f;
+ border-color: #ffffff14;
+ color: #f8faff;
+}
+.cf-projects .cf-projects-intro { border-radius: 28px; padding: 36px; }
+:is(.cf-projects,.cf-project-detail) main h1 { font-size: clamp(36px,4vw,54px); font-weight: 650; line-height: 1.1; letter-spacing: -.055em; }
+.cf-projects .cf-projects-intro .cf-project-action { background: #f3f6ff; color: #111722; box-shadow: inset 0 1px 0 #fff,0 4px 28px #9ab6ff14; }
+.cf-projects .cf-projects-intro .cf-project-action:hover { background: #fff; }
+:is(.cf-projects,.cf-project-detail) main button:not([role="switch"]):not([role="checkbox"]):not(.cf-project-new),
+.cf-workspace-dialog button[type="submit"] { border-radius: 100px; }
+.cf-projects .cf-workspace-summary { margin-top: 20px; border-radius: 22px; box-shadow: 0 8px 28px -24px #18223830; }
+.cf-projects .cf-workspace-summary dd { font-weight: 650; }
+.cf-projects [role="group"][aria-label="Project view"] { gap: 6px; }
+.cf-projects [role="group"][aria-label="Project view"] button { min-height: 40px; padding-inline: 18px; }
+.cf-projects #project-search { border-radius: 100px; background: var(--surface); }
+.cf-projects .cf-project-card { border-radius: 24px; box-shadow: 0 6px 24px -20px #18223824; transition: border-color 180ms ease,box-shadow 220ms ease; }
+.cf-projects .cf-project-card:hover { border-color: var(--border-strong); box-shadow: 0 16px 36px -24px #18223850; }
+.cf-projects .cf-project-card h3 { font-size: 24px; font-weight: 650; letter-spacing: -.04em; }
+.cf-projects .cf-project-card > span:first-child { height: 1px; }
+.cf-projects .cf-project-new { border-radius: 24px; background: var(--surface); }
+.cf-project-detail .cf-project-detail-hero { border-radius: 28px; overflow: hidden; }
+.cf-project-detail .cf-project-detail-hero > div:first-child { padding: 30px 36px; border-radius: 28px 28px 0 0; }
+.cf-project-detail .cf-project-detail-stats { background: var(--surface); }
+.cf-project-detail :is(.cf-prompt-stage,.cf-project-workspace > section) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223835; }
+.cf-project-detail .cf-project-composer-head { background: color-mix(in srgb,var(--surface) 70%,var(--bg)); }
+.cf-project-detail .cf-project-composer-head h2 { font-size: 22px; font-weight: 650; letter-spacing: -.04em; }
+.cf-project-detail #prompt { background: var(--surface); border-radius: 16px; line-height: 1.7; }
+.cf-project-detail #prompt:focus-visible { border-color: var(--fg-muted); box-shadow: 0 0 0 3px color-mix(in srgb,var(--fg) 7%,transparent); }
+.cf-project-detail .vui-generate { border-radius: 100px; min-height: 50px; }
+.cf-workspace-dialog { border-radius: 24px; overflow: hidden; }
+.cf-workspace-dialog > div:first-child { background: var(--surface); }
+@media(max-width:639px) {
+ .cf-projects .cf-projects-intro { padding: 28px 24px; border-radius: 24px; }
+ .cf-projects .cf-projects-intro .cf-project-action { width: 100%; justify-content: center; }
+ .cf-projects .cf-projects-intro > div { width: 100%; }
+ .cf-project-detail .cf-project-composer-head h2 { font-size: 20px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-projects .cf-project-card { transition: none; }
+}
+
+/* The management action sits on a dark surface, including its interactive states. */
+.cf-project-detail .cf-project-detail-hero .cf-manage-project {
+ background: #ffffff06; color: #f8faff; border-color: #ffffff30;
+}
+.cf-project-detail .cf-project-detail-hero .cf-manage-project:is(:hover,:focus-visible) {
+ background: #202938; color: #f8faff; border-color: #ffffff60;
+}
+.cf-project-detail .cf-project-detail-hero .cf-manage-project:focus-visible {
+ outline: 2px solid #b9ceff; outline-offset: 3px;
+}
+.cf-project-detail .cf-project-detail-hero .cf-manage-project:active { background: #2a3548; }

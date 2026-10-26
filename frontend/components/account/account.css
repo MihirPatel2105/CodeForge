@@ -94,3 +94,27 @@
 @media(prefers-contrast:more) {
   .account-workspace { --border:var(--fg-muted); --rule:var(--fg-muted); }
 }
+
+/* Match the public pages through type and surfaces, keeping account forms familiar. */
+.account-workspace { font-family: var(--font-ui); }
+.account-workspace main :is(h1,h2,h3), .account-workspace .profile-page-intro p { font-family: var(--font-ui); }
+.account-workspace .account-tabs { gap: 8px; border-bottom: 0; }
+.account-workspace .account-tabs a { padding: 10px 18px; border-radius: 100px; background: var(--surface-2); font-size: 13px; }
+.account-workspace .account-tabs a[aria-current="page"] { background: var(--accent); color: var(--surface); }
+.account-workspace .account-tabs a[aria-current="page"]::after { display: none; }
+.account-workspace :is(.profile-page-intro,.settings-premium-hero) {
+ padding: 28px 32px; border: 0; border-radius: 24px;
+ background: radial-gradient(ellipse at 0% 0%,#566eaa48,transparent 70%),#07090f;
+}
+.account-workspace .profile-page-intro p,
+.account-workspace .settings-premium-hero h1 { color: #f8faff; font-weight: 650; letter-spacing: -.045em; }
+.account-workspace .profile-page-intro > span,
+.account-workspace .settings-premium-hero > div > p,
+.account-workspace .settings-hero-eyebrow { color: #b6bed0; }
+.account-workspace .account-main :is(.profile-premium-panel,.settings-premium-panel) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223830; }
+.account-workspace .account-main [data-slot="button"]:not([role="switch"]):not([role="checkbox"]) { border-radius: 100px; }
+.account-workspace .settings-account-pass { border-radius: 18px; }
+@media(max-width:639px) {
+ .account-workspace :is(.profile-page-intro,.settings-premium-hero) { padding: 24px 20px; }
+ .account-workspace .profile-page-intro { align-items: flex-start; flex-direction: column; gap: 10px; }
+}

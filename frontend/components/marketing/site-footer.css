@@ -45,3 +45,26 @@
   .cf-footer-tech-canvas { display: none; }
   .cf-footer-tech .cf-footer-tech-fallback { visibility: visible; }
 }
+
+/* The hero's palette returns quietly at the end of the page. */
+footer.cf-site-footer.cf-invert {
+  --bg: #07090f;
+  --surface: #10141e;
+  --surface-2: #1a2130;
+  --fg: #f8faff;
+  --fg-muted: #b6bed0;
+  --fg-faint: #98a4bc;
+  --rule: #ffffff1a;
+  --border: #ffffff20;
+  background: #07090f;
+  border-top-color: #ffffff0d;
+}
+.cf-site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 0% 0%, #566eaa24, transparent 62%), radial-gradient(ellipse at 100% 100%, #1e3fd810, transparent 65%);
+}
+.cf-site-footer > div { position: relative; z-index: 1; }
+.cf-site-footer a:focus-visible { outline-color: #b9ceff; }
