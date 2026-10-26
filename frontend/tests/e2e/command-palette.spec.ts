@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => document.cookie = "codeforge_session_present=1; Path=/");
+  // Palette behavior does not require the hero GPU effect; its canvas has its own suite.
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type, ...args) {
+      if (type === "webgl2") return null;
+      return original.call(this, type, ...args);
+    } as typeof original;
+  });
   await page.route("**/api/backend/auth/me", route => route.fulfill({ json: {
     id: "palette-user", email: "user@example.com", first_name: "Alex", is_admin: false, email_verified: true,
   } }));
@@ -58,7 +66,7 @@ test("failed project loading keeps commands available and offers retry", async (
   await expect(page.getByText("Projects couldn't load.")).toHaveCount(0);
 });
 
-test("palette stays within the screen, traps focus and adapts to dark mode", async ({ page }) => {
+test("desktop palette stays centered and traps keyboard focus", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
@@ -78,16 +86,33 @@ test("palette stays within the screen, traps focus and adapts to dark mode", asy
     await page.keyboard.press("Tab");
     await expect.poll(() => dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
   }
-  await page.getByRole("combobox", { name: "Search commands and projects" }).focus();
+  expect(errors).toEqual([]);
+});
+
+test("open palette follows dark styling", async ({ page }) => {
+  await page.getByRole("button", { name: "Open command palette" }).click();
+  const dialog = page.getByRole("dialog", { name: "Go anywhere" });
+  await expect(page.getByRole("combobox", { name: "Search commands and projects" })).toBeFocused();
   await page.evaluate(() => document.documentElement.classList.add("dark"));
+  await expect(dialog).toHaveCSS("background-color", "rgb(0, 0, 0)");
+  await expect(dialog).toHaveCSS("color", "rgb(245, 245, 245)");
   await page.screenshot({ path: "/tmp/codeforge-command-palette-dark.png" });
+});
+
+test("open palette stays usable when resized from desktop to mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Open command palette" }).click();
+  const dialog = page.getByRole("dialog", { name: "Go anywhere" });
+  await expect(page.getByRole("option", { name: /Inventory API/ })).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.screenshot({ path: "/tmp/codeforge-command-palette-mobile.png" });
+  await expect(dialog).toBeVisible();
   const bounds = await dialog.boundingBox();
   expect(bounds!.x).toBeGreaterThanOrEqual(0);
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(375);
   expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(812);
-  expect(errors).toEqual([]);
+  await page.getByRole("combobox", { name: "Search commands and projects" }).fill("inventory");
+  await expect(page.getByRole("option", { name: /Inventory API/ })).toBeVisible();
+  await page.screenshot({ path: "/tmp/codeforge-command-palette-mobile.png" });
 });
 
 test("current run commands are available without exposing admin actions", async ({ page }) => {
