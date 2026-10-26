@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-for (const path of ["/", "/about"]) test(`desktop footer reveals beneath ${path} and keyboard focus uncovers links`, async ({ page }) => {
+for (const path of ["/", "/about", "/privacy", "/terms"]) test(`desktop footer reveals beneath ${path} and keyboard focus uncovers links`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route("**/api/backend/auth/me", route => route.fulfill({ status: 401, json: {} }));
   await page.goto(path);
@@ -8,6 +8,13 @@ for (const path of ["/", "/about"]) test(`desktop footer reveals beneath ${path}
   await expect(footer).toHaveAttribute("data-reveal", "true");
   const before = await footer.boundingBox();
   expect(before!.y + before!.height).toBeLessThanOrEqual(1001);
+  const main = await page.locator("main").boundingBox();
+  expect(main!.x).toBe(0);
+  expect(main!.width).toBe(1440);
+  // The reading column may be narrow; the sheet hiding the footer must span both edges.
+  for (const x of [8, 1432]) {
+    expect(await page.evaluate(x => Boolean(document.elementFromPoint(x, 300)?.closest("main")), x)).toBe(true);
+  }
   const total = await page.evaluate(() => document.documentElement.scrollHeight);
   await page.evaluate(top => window.scrollTo({ top, behavior: "instant" }), total - 1100);
   const partial = await footer.boundingBox();
@@ -35,7 +42,7 @@ for (const variant of ["mobile", "short", "reduced"] as const) {
   });
 }
 
-for (const path of ["/", "/about"]) test(`refresh keeps the page opaque above the reveal footer on ${path}`, async ({ page }) => {
+for (const path of ["/", "/about", "/privacy", "/terms"]) test(`refresh keeps the page opaque above the reveal footer on ${path}`, async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(path);
   await page.reload();

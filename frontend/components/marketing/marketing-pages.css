@@ -113,7 +113,8 @@
 .mk-contact-page main > section:nth-child(2) article { border:1px solid var(--rule); background:var(--surface-2); border-radius:24px; padding:30px; }
 .mk-contact-page main > section:nth-child(2) article h3 { font-size:21px; }
 
-.mk-legal-page main { max-width:960px; padding-block:80px 96px; }
+.mk-legal-page main { width:100%; max-width:none; background:var(--surface); }
+.mk-legal-page .mk-legal-reading { max-width:960px; margin-inline:auto; padding-block:80px 96px; }
 .mk-legal-page h1 { font-size:clamp(40px,5vw,64px); line-height:1.08; letter-spacing:-.055em; }
 .mk-legal-page nav { gap:10px; padding-block:22px; }
 .mk-legal-page nav a { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:100px; padding:9px 14px; }
@@ -155,7 +156,7 @@
  .mk-contact-page .mk-hero-copy > p { font-size:16px; }
  .mk-contact-page .cf-contact-form-stage { padding:24px; border-radius:24px; }
  .mk-contact-page main > section:nth-child(2) > div { padding-block:56px 24px; }
- .mk-legal-page main { padding-block:48px 64px; }
+ .mk-legal-page .mk-legal-reading { padding-block:48px 64px; }
 }
 @media(prefers-reduced-motion:reduce) {
  .mk-page :is(.mk-hero-copy,.ed-route-preview,.cf-contact-form-stage) { animation:none; }
