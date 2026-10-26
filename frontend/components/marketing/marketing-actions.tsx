@@ -59,7 +59,7 @@ export function SiteFooter() {
         window.scrollTo({ top: document.documentElement.scrollHeight - window.innerHeight, behavior: "instant" });
       }
     }}>
-      <div className="mx-auto w-full max-w-[1200px] px-6 pb-6 pt-10 md:px-10 lg:px-12">
+      <div className="mx-auto w-full max-w-[1536px] px-3 pb-6 pt-10 min-[601px]:px-4 sm:px-6 md:px-10 lg:px-14">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] lg:gap-x-14">
           <div className="col-span-2 border-b border-rule pb-9 md:col-span-3 lg:col-span-1 lg:border-0 lg:pb-0">
             <Link
