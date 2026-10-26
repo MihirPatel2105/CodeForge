@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "./marketing-pages.css";
 import { SiteHeader } from "./site-header";
 import { SiteFooter } from "./marketing-actions";
 import { CONTACT_EMAIL } from "@/lib/contact-details";
@@ -9,7 +10,7 @@ export function LegalPage({ title, intro, sections }: {
   sections: { title: string; body: string }[];
 }) {
   return (
-    <div className="min-h-screen bg-surface text-fg">
+    <div className="mk-legal-page min-h-screen bg-surface text-fg">
       <SiteHeader />
       <main className="mx-auto max-w-[860px] px-6 py-14 md:py-20">
         <p className="text-[13px] font-semibold text-accent">CodeForge · Last updated October 3, 2026</p>

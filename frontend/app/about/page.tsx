@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/marketing-actions";
 import { AboutProcessProof } from "@/components/marketing/about-process-proof";
@@ -20,17 +21,19 @@ const principles = [
 
 export default function AboutPage() {
   return (
-    <div className="cf-premium cf-premium-marketing cf-editorial-page ed-about-page">
-      <SiteHeader />
+    <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-about-page">
+      <SiteHeader heroOverlay />
       <main>
-        <section className="ed-hero ed-wrap ed-about-masthead">
-          <div className="ed-kicker">About CodeForge</div>
-          <div className="ed-about-lead">
-            <h1>Build with AI.<br />Know what<br />you’re shipping.</h1>
-            <div className="ed-hero-note"><p>Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result.</p><div className="lp-actions"><Link href="/demo/library" className="lp-button">Watch a run <ArrowRight size={16} aria-hidden /></Link><Link className="lp-text-link" href="/how-it-works">How CodeForge works <ArrowRight size={16} aria-hidden /></Link></div></div>
+        <MarketingHero>
+          <div className="ed-hero ed-wrap ed-about-masthead mk-hero-copy">
+            <div className="ed-kicker">About CodeForge</div>
+            <div className="ed-about-lead">
+              <h1>Build with AI.<br />Know what<br />you’re shipping.</h1>
+              <div className="ed-hero-note"><p>Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result.</p><div className="lp-actions"><Link href="/demo/library" className="lp-button">Watch a run <ArrowRight size={16} aria-hidden /></Link><Link className="lp-text-link" href="/how-it-works">How CodeForge works <ArrowRight size={16} aria-hidden /></Link></div></div>
+            </div>
+            <dl className="ed-facts"><div><dt>Specialized agents</dt><dd>05</dd></div><div><dt>Your approval checkpoints</dt><dd>02</dd></div><div><dt>Execution environment</dt><dd>Isolated sandbox</dd></div></dl>
           </div>
-          <dl className="ed-facts"><div><dt>Specialized agents</dt><dd>05</dd></div><div><dt>Your approval checkpoints</dt><dd>02</dd></div><div><dt>Execution environment</dt><dd>Isolated sandbox</dd></div></dl>
-        </section>
+        </MarketingHero>
 
         <section className="ed-section ed-tinted">
           <div className="ed-wrap ed-about-showcase">

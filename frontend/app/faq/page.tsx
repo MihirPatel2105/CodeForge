@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Box, CircleHelp, Clock3, Coins, MessageSquare, ShieldCheck } from "lucide-react";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/marketing-actions";
 import { FaqColumn } from "@/components/marketing/faq-column";
@@ -68,17 +69,17 @@ const QUICK_FACTS = [
 
 export default function FaqPage() {
   return (
-    <div className="cf-subpage cf-premium-marketing min-h-screen bg-surface">
-      <SiteHeader />
+    <div className="cf-subpage cf-premium-marketing mk-page mk-faq-page min-h-screen bg-surface">
+      <SiteHeader heroOverlay />
       <main>
-        <section className="cf-faq-stage">
-          <div className="cf-entrance-copy mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
+        <MarketingHero className="cf-faq-stage">
+          <div className="mk-hero-copy cf-entrance-copy mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
             <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
             <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
             <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>
             <Link href="#questions" className="cf-marketing-action cf-marketing-primary mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></Link>
           </div>
-          <dl className="cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
+          <dl className="mk-hero-copy cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
             {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
               <div key={label} className="text-center">
                 <Icon className="mx-auto size-5 text-accent" aria-hidden />
@@ -87,7 +88,7 @@ export default function FaqPage() {
               </div>
             ))}
           </dl>
-        </section>
+        </MarketingHero>
 
         <section id="questions" className="bg-bg">
           <div className="cf-faq-reading mx-auto w-full max-w-[960px] px-6 py-16 md:px-10 md:py-24">
@@ -96,7 +97,7 @@ export default function FaqPage() {
           </div>
         </section>
 
-        <section className="cf-invert cf-how-control border-b border-rule bg-bg">
+        <section className="mk-page-closing border-b border-rule bg-surface">
           <div className="mx-auto grid w-full max-w-[1536px] gap-10 px-6 py-16 md:px-10 lg:grid-cols-[1fr_auto] lg:items-center lg:px-14 lg:py-20">
             <div>
               <span className="text-[12px] font-[650] text-accent">Still uncertain?</span>

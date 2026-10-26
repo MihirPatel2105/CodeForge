@@ -50,8 +50,8 @@ test("public pages retain shared typography and contrasting controls", async ({ 
   for (const route of ["about", "how-it-works"]) {
     await page.goto(`/${route}`);
     expect((await readStyle()).font).toBe(control.font);
-    await expect(page.locator(".lp-button").first()).toHaveCSS("background-color", "rgb(23, 23, 23)");
-    await expect(page.locator(".lp-button").first()).toHaveCSS("color", "rgb(255, 255, 255)");
+    await expect(page.locator(".lp-button").first()).toHaveCSS("background-color", control.background);
+    await expect(page.locator(".lp-button").first()).toHaveCSS("color", control.color);
     expect(await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily)).toBe(family);
   }
 });
@@ -59,6 +59,12 @@ test("public pages retain shared typography and contrasting controls", async ({ 
 test("section colors span the page and stage disclosures animate in both directions", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
+  for (const route of ["faq", "contact", "about", "how-it-works"]) {
+    await page.goto(`/${route}`);
+    const fade = await page.locator(".mk-hero-fade").boundingBox();
+    expect(fade?.x).toBe(0);
+    expect(fade?.width).toBe(1440);
+  }
   for (const route of ["about", "how-it-works"]) {
     await page.goto(`/${route}`);
     for (const band of await page.locator("main > .ed-band").all()) {
@@ -84,3 +90,28 @@ test("section colors span the page and stage disclosures animate in both directi
   await summary.click();
   expect(await stage.evaluate(el => getComputedStyle(el, "::details-content").transitionDuration)).toBe("0s");
 });
+
+for (const width of [1440, 375]) {
+  test(`contact fields stay readable and contained in their light panel at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
+    await page.route("**/api/backend/auth/me", route => route.fulfill({ json: {
+      id: "contact-review", first_name: "Review", last_name: "Account", email: "review@example.test", is_admin: false,
+    } }));
+    await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
+    await page.goto("/contact");
+    const submit = page.getByRole("button", { name: "Send message", exact: true });
+    await expect(submit).toBeDisabled();
+    await page.getByLabel("Phone", { exact: true }).fill("1234567890");
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCSS("color", "rgb(23, 23, 23)");
+    await page.getByLabel("Message", { exact: true }).fill("The report details are readable on this screen.");
+    await expect(submit).toBeEnabled();
+    const panel = await page.locator(".cf-contact-form-stage").boundingBox();
+    const button = await submit.boundingBox();
+    expect(panel).not.toBeNull();
+    expect(button).not.toBeNull();
+    expect(button!.y + button!.height).toBeLessThan(panel!.y + panel!.height - 12);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  });
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDown, ArrowRight, ArrowUpRight, RotateCcw } from "lucide-react";
+import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/marketing-actions";
 import { HowRunRoute } from "@/components/marketing/how-run-route";
@@ -23,13 +24,15 @@ const stages = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="cf-premium cf-premium-marketing cf-editorial-page ed-how-page">
-      <SiteHeader />
+    <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-how-page">
+      <SiteHeader heroOverlay />
       <main>
-        <section className="ed-wrap ed-hero ed-process-hero">
-          <div className="ed-process-copy"><span className="ed-kicker">How CodeForge works</span><h1>From your idea<br />to a tested API.</h1><p>A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back.</p><div className="ed-actions"><Link href="#stages" className="lp-button">Follow the process <ArrowDown size={16} aria-hidden /></Link><Link href="/demo/library" className="lp-text-link">Open the demo <ArrowUpRight size={16} aria-hidden /></Link></div><span className="ed-small-note">Five agents. Two human checkpoints. One isolated sandbox.</span></div>
-          <div className="ed-route-preview"><HowRunRoute /></div>
-        </section>
+        <MarketingHero>
+          <div className="ed-wrap ed-hero ed-process-hero">
+            <div className="ed-process-copy mk-hero-copy"><span className="ed-kicker">How CodeForge works</span><h1>From your idea<br />to a tested API.</h1><p>A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back.</p><div className="ed-actions"><Link href="#stages" className="lp-button">Follow the process <ArrowDown size={16} aria-hidden /></Link><Link href="/demo/library" className="lp-text-link">Open the demo <ArrowUpRight size={16} aria-hidden /></Link></div><span className="ed-small-note">Five agents. Two human checkpoints. One isolated sandbox.</span></div>
+            <div className="ed-route-preview"><HowRunRoute /></div>
+          </div>
+        </MarketingHero>
 
         <nav className="ed-chapters ed-wrap" aria-label="Process chapters"><a href="#stages"><span>01</span> Meet the stages <ArrowDown size={14} aria-hidden /></a><a href="#evidence"><span>02</span> Inspect the result <ArrowDown size={14} aria-hidden /></a><a href="#technology"><span>03</span> Under the surface <ArrowDown size={14} aria-hidden /></a></nav>
 
