@@ -121,7 +121,14 @@ for (const width of [1440, 390]) {
     await expect(header).not.toHaveAttribute("data-scrolled");
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.getByRole("link", { name: "How CodeForge works", exact: true }).click();
-    await expect(page.locator("header.cf-site-header")).not.toHaveAttribute("data-hero-overlay");
+    await expect(page).toHaveURL(/\/how-it-works$/);
+    await expect(header).toHaveAttribute("data-hero-overlay", "true");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(opacity).toBe("0");
+    const processEnd = await page.locator("#overview").evaluate(element => element.getBoundingClientRect().bottom + scrollY);
+    await page.evaluate(end => window.scrollTo(0, end + 100), processEnd);
+    await expect.poll(opacity).toBe("1");
+    await expect(header).toHaveAttribute("data-scrolled", "");
   });
 }
 

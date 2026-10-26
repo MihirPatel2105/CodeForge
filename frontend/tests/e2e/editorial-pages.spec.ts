@@ -80,8 +80,11 @@ test("section colors span the page and stage disclosures animate in both directi
   await expect.poll(contentHeight).toBeGreaterThan(0);
   await expect.poll(() => stage.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
   const expanded = await contentHeight();
-  await summary.click();
-  const closing = await contentHeight();
+  // Activate and sample in one browser task; a CI round trip can outlast the transition.
+  const closing = await summary.evaluate(element => {
+    (element as HTMLElement).click();
+    return parseFloat(getComputedStyle(element.closest("details")!, "::details-content").height);
+  });
   expect(closing).toBeGreaterThan(0);
   // Chromium may round interpolated auto heights differently by a subpixel.
   expect(closing).toBeLessThanOrEqual(expanded + 1);

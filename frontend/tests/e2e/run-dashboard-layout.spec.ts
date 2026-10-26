@@ -3,6 +3,15 @@ import { expect, test } from "@playwright/test";
 const runId = "layout-run";
 const at = "2026-10-14T04:00:00Z";
 
+function textContrast(foreground: number[], background: number[]) {
+  const luminance = (rgb: number[]) => rgb.map(value => {
+    const channel = value / 255;
+    return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+  }).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+  const a = luminance(foreground), b = luminance(background);
+  return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+}
+
 test("stage inspection stays stable while live execution advances", async ({ page }) => {
   let release!: () => void;
   const nextStage = new Promise<void>(resolve => { release = resolve; });
@@ -78,6 +87,20 @@ for (const width of [1440, 1024, 375, 320]) {
     if (width === 1440) {
       await page.getByRole("button", { name: "Dark mode for agent dashboard", exact: true }).click();
       await expect(page.locator("html")).toHaveClass(/dark/);
+      for (const id of ["sandbox", "reviewer"]) {
+        const stage = page.locator(`[data-stage="${id}"]`);
+        await stage.click();
+        await expect(stage).toHaveAttribute("aria-pressed", "true");
+        const colors = await stage.evaluate(element => {
+          const numbers = (color: string) => Array.from(color.matchAll(/rgb\((\d+), (\d+), (\d+)\)/g), match => match.slice(1).map(Number));
+          return {
+            text: numbers(getComputedStyle(element.querySelector(".cf-agent-step-name")!).color)[0],
+            backgrounds: numbers(getComputedStyle(element).backgroundImage),
+          };
+        });
+        expect(colors.backgrounds.length).toBeGreaterThan(0);
+        for (const background of colors.backgrounds) expect(textContrast(colors.text, background)).toBeGreaterThanOrEqual(4.5);
+      }
       await page.screenshot({ path: "/tmp/codeforge-run-dashboard-dark.png", fullPage: true });
     }
   });
