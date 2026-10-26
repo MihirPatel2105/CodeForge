@@ -348,3 +348,97 @@
 @media(max-width:639px) {
  .cf-run-page .cf-api-intro { padding: 22px 20px; }
 }
+
+/* Hero-inspired framing, with a quiet light console for reading run activity. */
+.cf-run-page .cf-evidence-workbench {
+ border-radius:24px;
+ border-color:#293246;
+ box-shadow:0 24px 64px -38px #18223855,0 2px 8px #18223808;
+}
+.cf-run-page .cf-evidence-code {
+ --bg:#07090f;
+ --surface:#141b29;
+ --surface-2:#1d2738;
+ --fg:#f4f7ff;
+ --fg-muted:#b6c2d6;
+ --fg-faint:#8c9bb3;
+ --border:#ffffff18;
+ --border-strong:#ffffff35;
+ --rule:#ffffff12;
+ --accent:#c2d4ff;
+ --accent-bd:#adc8ff55;
+ --accent-soft:#a3bfff1a;
+ --code-bg:#0c1019;
+ --code-fg:#dce4f3;
+ --code-kw:#c3b5f4;
+ --code-str:#9ed8bf;
+ --code-com:#8c9bb3;
+ --code-fn:#b9ceff;
+ --code-num:#e8c594;
+ --ok:#9ed8bf;
+ --ok-soft:#69bd921a;
+ --danger:#ffb4b4;
+ --danger-soft:#ed777720;
+ --loop:#d6c0ff;
+ --loop-soft:#b69aef20;
+ color:var(--fg);
+ background:var(--bg);
+}
+.cf-run-page .cf-evidence-code .cf-file-rail {
+ background:radial-gradient(ellipse at 0 0,#536b9c20,transparent 70%),#101622;
+}
+.cf-run-page .cf-file-rail > div:first-child { min-height:64px; padding-inline:18px; }
+.cf-run-page .cf-evidence-code .cf-code-toolbar {
+ background:linear-gradient(110deg,#1d2739,#111722 75%);
+ padding:16px 22px;
+}
+.cf-run-page .cf-code-toolbar > div:first-child > span:last-child { font-size:11px; line-height:1.6; }
+.cf-run-page .cf-code-toolbar button { border-radius:100px; font-family:var(--font-ui); font-size:11px; }
+.cf-run-page .cf-code-toolbar button:hover { border-color:var(--border-strong); }
+.cf-run-page .cf-code-toolbar button[aria-pressed=true] { background:#dce7ff; color:#101622; }
+.cf-run-page .cf-evidence-code button:focus-visible { outline:2px solid #b9ceff; outline-offset:2px; }
+.cf-run-page .cf-evidence-code .cf-file-resizer { background:#101622; }
+.cf-run-page .cf-evidence-code .cf-file-resizer:hover { background:#34435f; }
+.cf-run-page .cf-file-rail li button[aria-pressed=true] { border-color:#b9ceff40; color:#e2ecff; }
+.cf-run-page .cf-file-rail li button[aria-pressed=true] > span[aria-hidden] { background:#243149; }
+.cf-run-page .cf-file-rail li button[data-motion-control] { padding-block:12px; }
+.cf-run-page .cf-evidence-code .cf-run-scroll { scrollbar-color:#40516b #0c1019; }
+.cf-run-page .cf-workbench-console-heading { background:var(--surface); padding-inline:22px; gap:14px; }
+.cf-run-page .cf-workbench-console-heading [data-slot=tabs-list] { gap:6px; }
+.cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger] {
+ height:34px; padding:0 13px; border-radius:100px; color:var(--fg-muted);
+ transition:background-color .2s,color .2s;
+}
+.cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger][data-active] { background:var(--action-ink); color:#f4f7ff; }
+.cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger]::after { display:none; }
+.cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger]:focus-visible { outline:2px solid var(--fg); outline-offset:3px; }
+.cf-run-page .cf-workbench-test-summary { font-size:11px; padding:7px 10px; border:1px solid var(--border); border-radius:100px; }
+.cf-run-page .cf-workbench-console-panel .cf-evidence-timeline > div:first-child { padding-top:16px; }
+.cf-run-page .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:16px 24px; gap:8px; }
+.cf-run-page .cf-timeline-message { position:relative; padding:14px 16px; column-gap:14px; flex-shrink:0; }
+.cf-run-page .cf-timeline-message > span:first-child { position:relative; box-shadow:0 0 0 4px var(--surface); z-index:1; }
+.cf-run-page .cf-timeline-message:not(:last-child)::after {
+ content:""; position:absolute; top:28px; bottom:-22px; left:19px;
+ width:1px; background:var(--rule); pointer-events:none;
+}
+.cf-run-page .cf-timeline-message p { font-size:13px; line-height:1.7; }
+.cf-run-page .cf-agent-step[aria-pressed=true] {
+ background:linear-gradient(140deg,#eef2fa,var(--surface));
+ border-color:#7e8da9;
+ box-shadow:0 5px 16px -10px #1c2b4a50;
+}
+.cf-run-page .cf-agent-step[aria-pressed=true] .cf-agent-step-icon { background:#172031; color:#f4f7ff; }
+.cf-run-page .cf-agent-detail-heading { background:var(--surface-2); }
+@media(max-width:639px) {
+ .cf-run-page .cf-evidence-workbench { border-radius:18px; }
+ .cf-run-page .cf-evidence-code .cf-code-toolbar { padding:12px 14px; }
+ .cf-run-page .cf-workbench-console-heading { padding-inline:12px; }
+ .cf-run-page .cf-workbench-console-heading [data-slot=tabs-list] { gap:2px; }
+ .cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger] { padding-inline:9px; font-size:11px; }
+ .cf-run-page .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:12px; }
+ .cf-run-page .cf-timeline-message { padding-inline:12px; column-gap:10px; }
+ .cf-run-page .cf-timeline-message:not(:last-child)::after { left:15px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger] { transition:none; }
+}

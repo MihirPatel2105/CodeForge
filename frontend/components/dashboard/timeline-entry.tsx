@@ -49,7 +49,7 @@ export function MessageEntry({ time, agent, text, variant = "default" }: Message
   return (
     <div
       className={cn(
-        "grid grid-cols-[12px_minmax(0,1fr)] gap-x-2.5 rounded-xl px-2.5 py-3",
+        "cf-timeline-message grid grid-cols-[12px_minmax(0,1fr)] gap-x-2.5 rounded-xl px-2.5 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         k.bg,
       )}
