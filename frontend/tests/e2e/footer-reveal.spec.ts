@@ -23,6 +23,10 @@ for (const path of ["/", "/about", "/privacy", "/terms"]) test(`desktop footer r
   await footer.getByRole("link", { name: "How it works", exact: true }).focus();
   await expect.poll(() => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - innerHeight - scrollY))).toBeLessThanOrEqual(1);
   await expect(footer.getByRole("navigation", { name: "Product links" })).toBeVisible();
+  for (const link of await footer.getByRole("navigation").getByRole("link").all()) {
+    await expect(link).toHaveCSS("border-top-width", "0px");
+    await expect(link).toHaveCSS("padding-left", "0px");
+  }
   await expect(footer.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   await page.screenshot({ path: "/tmp/codeforge-footer-desktop.png" });
 });

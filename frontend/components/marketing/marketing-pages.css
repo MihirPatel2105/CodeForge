@@ -116,9 +116,9 @@
 .mk-legal-page main { width:100%; max-width:none; background:var(--surface); }
 .mk-legal-page .mk-legal-reading { max-width:960px; margin-inline:auto; padding-block:80px 96px; }
 .mk-legal-page h1 { font-size:clamp(40px,5vw,64px); line-height:1.08; letter-spacing:-.055em; }
-.mk-legal-page nav { gap:10px; padding-block:22px; }
-.mk-legal-page nav a { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:100px; padding:9px 14px; }
-.mk-legal-page nav a:hover { background:var(--surface-2); }
+.mk-legal-page .mk-legal-reading nav { gap:10px; padding-block:22px; }
+.mk-legal-page .mk-legal-reading nav a { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:100px; padding:9px 14px; }
+.mk-legal-page .mk-legal-reading nav a:hover { background:var(--surface-2); }
 .mk-legal-page section { padding-block:28px; }
 .mk-legal-page section h2 { font-size:24px; letter-spacing:-.035em; }
 .mk-legal-page section:last-child { padding:28px; border-radius:24px; background:var(--surface-2); }
