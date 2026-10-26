@@ -128,17 +128,31 @@ for (const width of [1440, 390]) {
 test("header surface eases through intermediate opacity when crossing the preview boundary", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const samples = await page.locator(".cf-site-header-bar").evaluate(async element => {
+  await expect.poll(() => page.locator("header.cf-site-header").evaluate(element => element.style.getPropertyValue("--hero-header-progress"))).toBe("0");
+  const midpoint = await page.locator(".cf-site-header-bar").evaluate(async element => {
+    // Capture the real transition when it starts instead of racing page hydration and WebGL startup.
+    const started = new Promise<number>((resolve, reject) => {
+      const timeout = setTimeout(() => { element.removeEventListener("transitionrun", onTransition); reject(new Error("Header opacity transition did not start")); }, 5000);
+      function onTransition(event: Event) {
+        const transition = event as TransitionEvent;
+        if (transition.propertyName !== "opacity" || transition.pseudoElement !== "::before") return;
+        const animation = element.getAnimations({ subtree: true }).find(item => item instanceof CSSTransition && item.transitionProperty === "opacity");
+        if (!animation?.effect) return;
+        clearTimeout(timeout);
+        element.removeEventListener("transitionrun", onTransition);
+        animation.pause();
+        animation.currentTime = Number(animation.effect.getTiming().duration) / 2;
+        const opacity = Number(getComputedStyle(element, "::before").opacity);
+        animation.finish();
+        resolve(opacity);
+      }
+      element.addEventListener("transitionrun", onTransition);
+    });
     const preview = document.querySelector(".ol-product-stage")!;
-    window.scrollTo(0, preview.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(preview).paddingTop) + 100);
-    const values: number[] = [];
-    const start = performance.now();
-    while (performance.now() - start < 650) {
-      await new Promise(requestAnimationFrame);
-      values.push(Number(getComputedStyle(element, "::before").opacity));
-    }
-    return values;
+    window.scrollTo({ top: preview.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(preview).paddingTop) + 100, behavior: "instant" });
+    return started;
   });
-  expect(samples.some(value => value > 0.05 && value < 0.95)).toBe(true);
+  expect(midpoint).toBeGreaterThan(0.05);
+  expect(midpoint).toBeLessThan(0.95);
   await expect.poll(() => page.locator(".cf-site-header-bar").evaluate(element => Number(getComputedStyle(element, "::before").opacity))).toBe(1);
 });

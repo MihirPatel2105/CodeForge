@@ -24,6 +24,8 @@
  background-image: radial-gradient(180px 120px at var(--reflection-x,0px) 50%, #fff 0%, #f4f8ff 32%, #dce5f4 74%, #d4dfef 100%);
  background-clip: text; -webkit-background-clip: text;
  color: transparent; text-shadow: none;
+ /* Give the final glyph room beyond its tightly tracked advance width. */
+ padding-inline: .08em; margin-inline: -.08em;
 }
 .cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection] { position: relative; }
 .cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection]::before {
@@ -36,4 +38,10 @@
 @media(prefers-reduced-motion:reduce) {
  .cf-ostack .lp-hero-dark .cf-blur-word[data-ray-reflection] { background: none; color: #f8faff; }
  .cf-ostack .lp-hero-dark :is(.lp-intro,.lp-button,.ol-product-shell)[data-ray-reflection]::before { display: none; }
+}
+
+/* Entrance timing follows the hero CTA; scroll motion stays on the inner window. */
+.ol-product-entrance:focus-within { opacity: 1 !important; }
+@media(prefers-reduced-motion:reduce) {
+ .ol-product-entrance { opacity: 1 !important; transform: none !important; }
 }
