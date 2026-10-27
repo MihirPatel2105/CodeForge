@@ -46,6 +46,8 @@ test("stage inspection stays stable while live execution advances", async ({ pag
   await expect(page.locator('[data-stage="coder"]')).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator('[data-stage="coder"]')).toHaveAttribute("aria-current", "step");
   await expect(page.locator('[data-stage="coder"] .cf-step-indicator')).toHaveCount(1);
+  await expect(details).toBeHidden();
+  await page.getByRole("button", { name: "Show stage details", exact: true }).click();
   await expect(details).toContainText("Writes the application code");
   await page.getByRole("button", { name: "Inspect Architect, idle", exact: true }).click();
   await expect(details).toContainText("This stage has not started yet.");
@@ -134,6 +136,29 @@ for (const width of [1440, 375]) {
     await editor.getByRole("button", { name: /^main.py/ }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.locator(".cf-evidence-workbench").screenshot({ path: `/tmp/codeforge-workbench-${width}.png` });
+  });
+}
+
+for (const [width, height] of [[1440, 900], [1280, 720]]) {
+  test(`compact run leaves generated code in view at ${width}×${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/demo/library");
+    await page.getByRole("button", { name: "Skip", exact: true }).click();
+    const editor = page.getByRole("region", { name: "Generated code", exact: true });
+    await expect.poll(() => editor.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return Math.min(innerHeight, rect.bottom) - Math.max(0, rect.top);
+    })).toBeGreaterThanOrEqual(140);
+    expect(await editor.evaluate(element => element.clientHeight)).toBeGreaterThanOrEqual(360);
+    const request = page.locator(".cf-run-request-details");
+    await expect(request).not.toHaveAttribute("open");
+    await request.getByText("View request", { exact: true }).focus();
+    await page.keyboard.press("Enter");
+    await expect(request).toHaveAttribute("open", "");
+    await expect(request.locator("p")).toHaveText(/personal library of books/);
+    await page.keyboard.press("Enter");
+    await expect(request).not.toHaveAttribute("open");
   });
 }
 

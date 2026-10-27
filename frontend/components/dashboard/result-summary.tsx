@@ -112,13 +112,13 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-6 rounded-2xl border p-5 sm:p-6",
+        "cf-result-summary flex flex-wrap items-center gap-6 rounded-2xl border p-5 sm:p-6",
         "motion-safe:animate-[cfFade_0.3s_ease]",
         t.border,
         t.soft,
       )}
     >
-      <div className="flex min-w-[260px] flex-1 flex-col gap-[6px]">
+      <div className="cf-result-copy flex min-w-0 flex-1 flex-col gap-[6px]">
         <span
           className={cn(
             "w-fit rounded-full px-3 py-1 text-[12px] font-[700] text-surface",
@@ -134,7 +134,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
         <p className="max-w-[52ch] text-[14px] leading-[1.5] text-fg-muted">{detail}</p>
       </div>
 
-      <div className="flex w-full flex-wrap items-center gap-5 lg:w-auto lg:shrink-0 lg:gap-6">
+      <div className="cf-result-metrics flex w-full flex-wrap items-center gap-5 lg:w-auto lg:shrink-0 lg:gap-6">
         <Metric label="Iterations" value={String(snapshot.iterations)} tone="loop" />
         <Metric
           label="Tests"
@@ -143,7 +143,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
         <Metric label="Elapsed" value={elapsedMs != null ? formatElapsed(elapsedMs) : "—"} />
         <Metric label="Files" value={String(snapshot.files.length)} />
 
-        <div className="ml-auto flex shrink-0 flex-wrap items-center gap-2">
+        <div className="cf-result-actions ml-auto flex shrink-0 flex-wrap items-center gap-2">
           {tryApiHref && outcomeKey === "succeeded" && (
             <RunFlowLink href={tryApiHref} className="rounded-lg border border-accent-bd bg-accent-soft px-[16px] py-[10px] text-[13.5px] font-[700] text-accent hover:bg-surface">
               Use your API

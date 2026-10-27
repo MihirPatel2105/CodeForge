@@ -42,6 +42,11 @@ test("both approvals update the live pipeline without leaving the page", async (
   await page.route("**/api/backend/auth/me", route => route.fulfill({ json: { id: "user", first_name: "Test", email: "test@example.com" } }));
   await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
   await page.goto("/runs/approval-live");
+  const checkpoint = page.getByRole("region", { name: "Approval checkpoint", exact: true });
+  await expect(checkpoint).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(() => checkpoint.evaluate(element => element.getBoundingClientRect().top)).toBeLessThan(110);
+  expect(await checkpoint.evaluate(element => element.getBoundingClientRect().top)).toBeGreaterThanOrEqual(64);
   await page.getByRole("button", { name: "Review & approve →", exact: true }).click();
   await page.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(page.getByRole("button", { name: "Approving…", exact: true })).toBeDisabled();

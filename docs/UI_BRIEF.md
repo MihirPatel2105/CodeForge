@@ -104,6 +104,10 @@ Repair loops views. Filters combine and can be cleared without changing the run 
 The result count shows matching versus total entries. Only matching new entries contribute
 to the unread button while the viewer is reading older activity.
 
+Consecutive ordinary messages from the same agent share a heading. Every message and
+timestamp stays visible. Findings, decisions, failures and repair loops remain separate;
+filtering out an intervening event never merges the groups on either side.
+
 Real examples, taken from an actual run:
 
 ```
@@ -145,6 +149,12 @@ Timeline, Sandbox and Tests share that console; a compact recorded test score st
 next to its tabs. Switching console tabs keeps code visible and preserves timeline filters
 and scroll position. The terminal remains dark and scrollable.
 
+The run opens with a compact request summary, status, elapsed time and inline facts.
+Long requests have a keyboard-accessible disclosure. Pipeline stage details open on
+demand, while the active stage and repair return path remain visible. The resizable
+workbench adapts to viewport height; result actions and version history follow it.
+Recorded examples use event timestamps for elapsed time, including when playback pauses.
+
 And a test result summary: how many passed out of how many, with failures expandable to
 show the assertion that failed.
 
@@ -161,6 +171,7 @@ Facts and readable details sit above a decision footer with the note, revision, 
 and approve controls. Closing the dialog never sends a decision; the run stays paused
 and the note is retained. The dialog fills the screen on mobile, with scrollable review
 content and visible decision controls. Request failures appear inside the dialog.
+The compact checkpoint stays below the top bar while the evidence workspace scrolls.
 
 ---
 

@@ -1,0 +1,30 @@
+/* Recorded activity stays chronological; repeated ordinary messages share one heading. */
+.cf-run-page .cf-workbench-console-panel .cf-timeline-refined [role=log] { gap:12px; padding-block:18px; }
+.cf-run-page .cf-timeline-refined .cf-timeline-group { flex-shrink:0; padding:0 0 4px; border:1px solid var(--rule); border-radius:14px; background:var(--surface); }
+.cf-timeline-refined .cf-timeline-group-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 16px 8px; }
+.cf-timeline-refined .cf-timeline-group-heading > span:first-child { color:var(--fg); font-size:12px; font-weight:650; }
+.cf-timeline-refined .cf-timeline-group-heading > span:last-child { color:var(--fg-faint); font-size:10px; font-variant-numeric:tabular-nums; }
+.cf-run-page .cf-timeline-refined .cf-timeline-group .cf-timeline-group-message { display:block; padding:8px 16px; border-radius:0; }
+.cf-run-page .cf-timeline-refined .cf-timeline-group-message > span:first-child,
+.cf-run-page .cf-timeline-refined .cf-timeline-group-message::after { display:none; }
+.cf-timeline-refined .cf-timeline-group-message .cf-timeline-message-content { display:grid; grid-template-columns:minmax(0,1fr) 68px; align-items:start; gap:16px; }
+.cf-timeline-refined .cf-timeline-group-message .cf-timeline-message-meta { grid-column:2; grid-row:1; justify-content:flex-end; padding-top:3px; }
+.cf-timeline-refined .cf-timeline-group-message .cf-timeline-message-meta > span:first-child { font-size:10px; }
+.cf-run-page .cf-timeline-refined .cf-timeline-group-message p { grid-column:1; grid-row:1; margin-top:0; font-size:13px; line-height:1.7; color:var(--fg-muted); }
+.cf-run-page .cf-timeline-refined :is(.cf-timeline-finding,.cf-timeline-loop) { flex-shrink:0; padding:17px 18px; border-radius:14px; }
+.cf-timeline-refined :is(.cf-timeline-finding,.cf-timeline-loop) > p { max-width:100ch; line-height:1.7; }
+.cf-run-page .cf-timeline-refined .cf-timeline-message:is([data-variant=failed],[data-variant=approval-required],[data-variant=rejected]) { border:1px solid var(--rule); border-radius:14px; padding:16px 18px; }
+.cf-run-page .cf-timeline-refined .cf-timeline-message[data-variant=failed],
+.cf-run-page .cf-timeline-refined .cf-timeline-message[data-variant=rejected] { border-color:var(--danger-bd); }
+.cf-run-page .cf-timeline-refined .cf-timeline-message[data-variant=approval-required] { border-color:var(--warn-bd); }
+.cf-run-page .cf-timeline-refined .cf-timeline-message:is([data-variant=failed],[data-variant=approval-required],[data-variant=rejected])::after { display:none; }
+@media(max-width:639px) {
+ .cf-timeline-refined .cf-timeline-group-heading { padding-inline:13px; }
+ .cf-run-page .cf-timeline-refined .cf-timeline-group .cf-timeline-group-message { padding-inline:13px; }
+ .cf-timeline-refined .cf-timeline-group-message .cf-timeline-message-content { grid-template-columns:minmax(0,1fr) 60px; gap:10px; }
+ .cf-timeline-refined :is(.cf-timeline-finding,.cf-timeline-loop) { padding:15px 14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .cf-timeline-refined .cf-timeline-message,
+ .cf-timeline-refined :is(.cf-timeline-finding,.cf-timeline-loop) { animation:none; }
+}

@@ -60,6 +60,45 @@ test("timeline combines literal search, agent and activity filters without losin
   await expect(log).not.toContainText("Iteration 1");
 });
 
+test("agent activity groups preserve messages, timestamps and hidden repair boundaries", async ({ page }) => {
+  const checkpoints = ["Group checkpoint A", "Group checkpoint B", "Group checkpoint C", "Group checkpoint D"];
+  const log = await fixture(page, true, [
+    { event: "agent.message", agent: "coder", text: checkpoints[0], at },
+    { event: "agent.failed", agent: "tester", iteration: 2, code: "llm_exhausted", message: "private boundary detail", at },
+    { event: "agent.message", agent: "coder", text: checkpoints[1], at },
+    { event: "loop.iteration", iteration: 3, trigger: "reviewer", blocking_findings: 1, failed_tests: 0, at },
+    { event: "agent.message", agent: "coder", text: checkpoints[2], at },
+    { event: "agent.message", agent: "pm", text: "An intervening handoff", at },
+    { event: "agent.message", agent: "coder", text: checkpoints[3], at },
+  ]);
+  const groups = log.getByRole("group", { name: "Coder activity", exact: true });
+  const first = groups.filter({ hasText: "Writing main.py with literal a.b validation" });
+  await expect(first).toHaveCount(1);
+  await expect(first.getByText("Writing main.py with literal a.b validation", { exact: true })).toHaveCount(1);
+  await expect(first.getByText("Writing aXb helper", { exact: true })).toHaveCount(1);
+  await expect(first.getByText(/^\d{2}:\d{2}:\d{2}$/)).toHaveCount(2);
+  await expect(page.getByRole("status", { name: "Timeline results" })).toHaveText("44 events");
+  for (const checkpoint of checkpoints) {
+    const group = groups.filter({ hasText: checkpoint });
+    await expect(group).toHaveCount(1);
+    await expect(log.getByText(checkpoint, { exact: true })).toHaveCount(1);
+    for (const other of checkpoints.filter(text => text !== checkpoint)) await expect(group).not.toContainText(other);
+  }
+  await expect(log).toContainText("This step couldn't finish");
+  await expect(log).toContainText("Iteration 3");
+
+  await page.getByRole("searchbox", { name: "Search timeline", exact: true }).fill("Group checkpoint");
+  await expect(page.getByRole("status", { name: "Timeline results" })).toHaveText("4 of 44 events");
+  await expect(log).not.toContainText("This step couldn't finish");
+  await expect(log).not.toContainText("Iteration 3");
+  await expect(log).not.toContainText("An intervening handoff");
+  await expect(groups).toHaveCount(4);
+  for (const [index, checkpoint] of checkpoints.entries()) {
+    await expect(groups.nth(index)).toContainText(checkpoint);
+    await expect(groups.nth(index).getByText(/^\d{2}:\d{2}:\d{2}$/)).toHaveCount(1);
+  }
+});
+
 test("empty filter results explain how to recover and remain usable on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });

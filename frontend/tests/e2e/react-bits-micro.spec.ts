@@ -106,11 +106,15 @@ test("response segment preserves button semantics and keyboard selection", async
 
 test("demo activity clock follows playback and stops when paused", async ({ page }) => {
   await page.goto("/demo/library");
+  await page.getByRole("button", { name: "Show stage details", exact: true }).click();
   const clock = page.locator(".cf-stage-lattice > span.font-mono");
   await expect(clock).toBeVisible();
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   const pausedTime = await clock.textContent();
+  const runClock = page.getByLabel("Run elapsed time", { exact: true });
+  const pausedRunTime = await runClock.textContent();
   expect(pausedTime).not.toContain("m ");
   await page.waitForTimeout(1200);
   await expect(clock).toHaveText(pausedTime!);
+  await expect(runClock).toHaveText(pausedRunTime!);
 });

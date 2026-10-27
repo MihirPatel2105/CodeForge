@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ChevronDown, Clock3, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { MorphingPopover } from "@/components/ui/morphing-popover";
@@ -14,6 +14,28 @@ import { preferredScrollBehavior } from "@/lib/motion";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { typeScale } from "@/lib/type-scale";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";
+import "./timeline-refinement.css";
+
+type VisibleEntry = { entry: TimelineEntryData; index: number };
+type ActivityGroup = { agent: string | null; items: VisibleEntry[] };
+
+function groupActivity(visible: VisibleEntry[]): ActivityGroup[] {
+  const groups: ActivityGroup[] = [];
+  for (const item of visible) {
+    const { entry, index } = item;
+    const agent = entry.kind === "message" && entry.agent !== "—"
+      && (!entry.variant || entry.variant === "default" || entry.variant === "file")
+      ? entry.agent : null;
+    const previous = groups.at(-1);
+    // Source indices keep filtered-out handoffs and repair boundaries from being merged.
+    if (agent && previous?.agent === agent && previous.items.at(-1)!.index === index - 1) {
+      previous.items.push(item);
+    } else {
+      groups.push({ agent, items: [item] });
+    }
+  }
+  return groups;
+}
 
 export interface TimelinePanelProps {
   entries: TimelineEntryData[];
@@ -30,7 +52,8 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const previousLength = useRef(0);
   const [filters, setFilters] = useState<TimelineFilters>({ query: "", agent: "", view: "all" });
-  const visible = entries.flatMap((entry, index) => matchesTimeline(entry, filters) ? [{ entry, index }] : []);
+  const visible = useMemo(() => entries.flatMap((entry, index) => matchesTimeline(entry, filters) ? [{ entry, index }] : []), [entries, filters]);
+  const groups = useMemo(() => groupActivity(visible), [visible]);
   const filtering = Boolean(filters.query || filters.agent || filters.view !== "all");
   const following = useRef(true);
   const [unread, setUnread] = useState(0);
@@ -79,7 +102,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
   }
 
   return (
-    <div className="cf-evidence-timeline flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
+    <div className="cf-evidence-timeline cf-timeline-refined flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
       <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3">
         <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-muted")}>
           <Clock3 className="h-4 w-4 text-accent" aria-hidden />
@@ -149,7 +172,15 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
         ) : visible.length === 0 ? (
           <Empty illustration="search"><EmptyHeader><EmptyTitle>No matching activity</EmptyTitle><EmptyDescription>Try another search or clear the filters to see all events.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" size="sm" onClick={clearFilters}>Reset activity filters</Button></EmptyContent></Empty>
         ) : (
-          visible.map(({ entry, index }) => <TimelineEntry key={index} entry={entry} i={index} />)
+          groups.map(group => group.agent ? (
+            <div key={group.items[0].index} className="cf-timeline-group" role="group" aria-label={`${group.agent} activity`}>
+              <div className="cf-timeline-group-heading">
+                <span>{group.agent}</span>
+                <span aria-hidden="true">{group.items.length} {group.items.length === 1 ? "update" : "updates"}</span>
+              </div>
+              {group.items.map(({ entry, index }) => <TimelineEntry key={index} entry={entry} i={index} grouped />)}
+            </div>
+          ) : <TimelineEntry key={group.items[0].index} entry={group.items[0].entry} i={group.items[0].index} />)
         )}
         </div>
         <AnimatePresence initial={false}>

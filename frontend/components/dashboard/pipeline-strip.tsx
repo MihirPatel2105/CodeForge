@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { ArrowRight, ChevronDown, RotateCcw } from "lucide-react";
 import { StageActivity } from "./stage-activity";
 import type { TimelineEntryData } from "./timeline-entry";
 import { AgentCard, type AgentCardData } from "./agent-card";
@@ -12,6 +12,7 @@ import type { AgentSnapshot, LoopSnapshot } from "@/lib/run-reducer";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import "./run-dashboard.css";
+import "./pipeline-compact.css";
 
 /** How long the loop-firing visual treatment holds after a `loop.iteration` event —
  * long enough to cover the chip's 1.6s flight plus the badge pop on arrival, matching
@@ -34,6 +35,7 @@ export interface PipelineStripProps {
 export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }: PipelineStripProps) {
   const [firing, setFiring] = useState(false);
   const [inspected, setInspected] = useState<PipelineStageId | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const detailId = useId();
   const active = PIPELINE_STAGES.find(stage => agents[stage.id].state === "working")
     ?? PIPELINE_STAGES.find(stage => agents[stage.id].state === "failed")
@@ -70,7 +72,7 @@ export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }:
       : `${lastLoop.failedTests} failing test${lastLoop.failedTests === 1 ? "" : "s"}`;
 
   return (
-    <div className="cf-pipeline-explorer">
+    <div className="cf-pipeline-explorer cf-pipeline-compact" data-has-loop={Boolean(lastLoop)}>
       {/* Six flex:1 cards separated by five fixed 30px arrow cells — the loop band's
           percentage-based positions below assume exactly this structure. */}
       <div className="cf-pipeline-overview" role="group" aria-label="Inspect pipeline stages">
@@ -93,7 +95,7 @@ export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }:
           };
           return (
             <Fragment key={stage.id}>
-              <AgentCard data={data} selected={selected.id === stage.id} controls={detailId} indicatorId={`${detailId}-step`} onSelect={() => setInspected(stage.id)} />
+              <AgentCard data={data} selected={selected.id === stage.id} controls={detailId} indicatorId={`${detailId}-step`} onSelect={() => { setInspected(stage.id); setDetailsOpen(true); }} />
               {i < PIPELINE_STAGES.length - 1 && (
                 <div className="cf-pipeline-arrow flex w-[30px] shrink-0 items-center justify-center" aria-hidden>
                   <ArrowRight
@@ -110,10 +112,20 @@ export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }:
         })}
       </div>
 
-      <div className="cf-pipeline-loop-desktop"><LoopBand firing={firing} trigger={lastLoop?.trigger ?? null} chipText={chipText} /></div>
+      {lastLoop && <div className="cf-pipeline-loop-desktop"><LoopBand firing={firing} trigger={lastLoop.trigger} chipText={chipText} /><span className="cf-pipeline-loop-reason">Pass {lastLoop.iteration + 1} · {lastLoop.trigger === "reviewer" ? "Reviewer" : "Sandbox"} returned work · {chipText}</span></div>}
+      {!lastLoop && <p className="cf-pipeline-idle-note"><RotateCcw size={12} aria-hidden />Review findings and failed tests can return work to the Coder.</p>}
       <div className="cf-pipeline-loop-compact"><RotateCcw size={14} aria-hidden /><span>{lastLoop ? `${lastLoop.trigger === "reviewer" ? "Reviewer" : "Sandbox"} → Coder · ${chipText}` : "Review or failed tests can return work to the Coder."}</span></div>
-      <section id={detailId} className="cf-agent-detail" aria-label="Selected stage details">
-        <div className="cf-agent-detail-heading"><span>{selected.name} <span>· Stage {selected.index}</span></span><div><span>{inspected ? "Inspecting a stage" : "Following the workflow"}</span>{inspected && <Button variant="ghost" size="sm" onClick={() => setInspected(null)}>Follow active stage</Button>}</div></div>
+      <div className="cf-stage-inspection-bar">
+        <span className="cf-stage-inspection-current"><strong>{selected.name}</strong><span>{selectedSnapshot.state === "idle" ? "Not started" : selectedSnapshot.state === "working" ? "In progress" : selectedSnapshot.state === "done" ? "Complete" : selectedSnapshot.state === "failed" ? "Failed" : "Stopped"}{selectedSnapshot.iteration > 0 && ` · Pass ${selectedSnapshot.iteration + 1}`}</span></span>
+        <div className="cf-stage-inspection-actions">
+          {inspected && <Button variant="ghost" size="sm" onClick={() => setInspected(null)}>Follow active stage</Button>}
+          <Button variant="ghost" size="sm" aria-expanded={detailsOpen} aria-controls={detailId} onClick={() => setDetailsOpen(open => !open)}>
+            {detailsOpen ? "Hide stage details" : "Show stage details"}<ChevronDown size={14} aria-hidden className={detailsOpen ? "cf-stage-chevron-open" : undefined} />
+          </Button>
+        </div>
+      </div>
+      <section id={detailId} className="cf-agent-detail" aria-label="Selected stage details" hidden={!detailsOpen}>
+        <div className="cf-agent-detail-heading"><span>{selected.name} <span>· Stage {selected.index}</span></span><div><span>{inspected ? "Inspecting a stage" : "Following the workflow"}</span></div></div>
         <div className="cf-agent-detail-body"><div><h3>{selected.job}</h3><StageActivity key={`${selected.id}-${selectedSnapshot.iteration}`} name={selected.name} snapshot={selectedSnapshot} activity={recentActivity} playbackTime={playbackTime} /></div>
           {(selectedSnapshot.model || selectedSnapshot.durationMs != null || selectedSnapshot.iteration > 0) && <dl>{selectedSnapshot.model && <div><dt>{selected.id === "sandbox" ? "Runtime image" : "Model"}</dt><dd>{selectedSnapshot.model}</dd></div>}{selectedSnapshot.durationMs != null && <div><dt>Duration</dt><dd>{formatDuration(selectedSnapshot.durationMs)}</dd></div>}{selectedSnapshot.iteration > 0 && <div><dt>Pass</dt><dd>{selectedSnapshot.iteration + 1}</dd></div>}</dl>}
         </div>

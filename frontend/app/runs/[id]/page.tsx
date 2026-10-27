@@ -6,16 +6,16 @@ import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-tog
 
 import { Notice } from "@/components/ui/notice";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, FileCode2, FlaskConical, ListTree, RotateCcw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowDown } from "lucide-react";
 import { useRunStream } from "@/lib/use-run-stream";
 import { api, getToken, downloadLatestFileTree, ApiError } from "@/lib/api";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
 import { RunVersions } from "@/components/dashboard/run-versions";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
-import { RunStory } from "@/components/dashboard/run-story";
+import { RunOverview } from "@/components/dashboard/run-overview";
 import { EvidenceWorkbench } from "@/components/dashboard/evidence-workbench";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
@@ -28,8 +28,6 @@ import { ApprovalBar } from "@/components/dashboard/approval-bar";
 import { AgentCityInvite } from "@/components/dashboard/agent-city-invite";
 import { ApprovalPresence } from "@/components/dashboard/approval-presence";
 import { ResultSummary } from "@/components/dashboard/result-summary";
-import { displayStatus, tone } from "@/lib/tone";
-import { cn } from "@/lib/utils";
 import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
@@ -270,11 +268,7 @@ export default function LiveRunPage() {
   // check than enumerating status strings, since "cancelled" ends the run too.
   const isLive = snapshot.runId != null && !snapshot.endedAt;
 
-  const status = displayStatus(snapshot.status, snapshot.tests?.ok ?? null);
   const problems = runProblems(problemState?.runId === id ? problemState.state : {});
-  const completedStages = Object.values(snapshot.agents).filter(
-    (agent) => agent.state === "done",
-  ).length;
 
   if (!allowed) return null;
   if (loading) return (
@@ -292,10 +286,10 @@ export default function LiveRunPage() {
   );
 
   return (
-    <div className="cf-run-page min-h-screen bg-bg">
+    <div className="cf-run-page cf-run-refined min-h-screen bg-bg">
       <AppHeader />
       <main data-run-flow-page className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-9 items-center justify-between gap-3">
+        <div className="cf-run-navigation">
           <Link
             href="/projects"
             className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
@@ -306,88 +300,36 @@ export default function LiveRunPage() {
           <DashboardThemeToggle />
         </div>
 
-        <header className="cf-run-hero cf-run-summary mt-2 overflow-hidden rounded-3xl border border-border bg-surface">
-          <div className="cf-build-stage grid">
-            <div className="relative px-5 py-4 sm:px-7 sm:py-5 lg:px-7">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-[700]",
-                    tone[status.tone].soft,
-                  )}
-                >
-                  {isLive && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-[cfDot_1.1s_ease-in-out_infinite]" aria-hidden />
-                  )}
-                  {status.label}
-                </span>
-                {snapshot.iterations > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-loop-soft px-3 py-1.5 font-mono text-[11px] font-bold text-loop">
-                    <RotateCcw className="h-3 w-3" aria-hidden />
-                    loop {snapshot.iterations}
-                  </span>
-                )}
-                <span className="font-mono text-[11px] text-fg-faint">
-                  run {id.slice(0, 8)}
-                </span>
-              </div>
-
-              <p className="mt-3 text-[12px] font-[650] text-accent">
-                API build request
-              </p>
-              <h1 className="cf-run-request mt-1.5 text-[18px] font-[500] leading-[1.5] text-fg">
-                {snapshot.prompt ?? "Preparing the agent workflow…"}
-              </h1>
-
-              {isLive && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={cancelling}
-                  className="mt-3 border-danger-bd bg-surface text-danger hover:bg-danger-soft"
-                >
-                  {cancelling ? "Cancelling…" : "Cancel run"}
-                </Button>
-              )}
-            </div>
-
-            <dl className="cf-build-metrics grid grid-cols-2 bg-surface-2 sm:grid-cols-4">
-              <RunMetric icon={<ShieldCheck />} label="stages complete" value={`${completedStages}/6`} />
-              <RunMetric icon={<ListTree />} label="timeline events" value={String(snapshot.timeline.length)} bordered />
-              <RunMetric icon={<FileCode2 />} label="generated files" value={String(snapshot.files.length)} topBorder />
-              <RunMetric
-                icon={<FlaskConical />}
-                label="tests passed"
-                value={snapshot.tests ? `${snapshot.tests.passed}/${snapshot.tests.total}` : "—"}
-                bordered
-                topBorder
-              />
-            </dl>
-          </div>
-        </header>
+        <RunOverview snapshot={snapshot} actions={isLive ? (
+          <Button size="sm" variant="outline" onClick={handleCancel} disabled={cancelling} className="cf-overview-cancel">
+            {cancelling ? "Cancelling…" : "Cancel run"}
+          </Button>
+        ) : snapshot.endedAt ? (
+          <Button variant="outline" size="sm" render={<a href="#run-result" />}>View result <ArrowDown size={14} aria-hidden /></Button>
+        ) : undefined} />
 
         <AgentCityInvite key={`agent-city:${id}`} runId={id} snapshot={snapshot} connected={!connectionLost} />
-        {snapshot.approval && <a href="#approval-heading" className="sticky top-16 z-10 mt-3 block rounded-xl border border-warn-bd bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">Your decision is needed · Review checkpoint ↑</a>}
         {actionError && (
           <Notice className="mt-4">
             {actionError}
           </Notice>
         )}
 
-        <ApprovalPresence show={snapshot.approval != null}>
-          {snapshot.approval && (
-            <ApprovalBar
-              key={`${snapshot.approval.phase}:${snapshot.approval.payload.revisions_used ?? 0}`}
-              busy={deciding}
-              error={actionError}
-              onRevise={handleRevise}
-              approval={snapshot.approval}
-              onApprove={handleApprove}
-              onReject={handleReject}
-            />
-          )}
-        </ApprovalPresence>
+        <div className="cf-run-checkpoint">
+          <ApprovalPresence show={snapshot.approval != null}>
+            {snapshot.approval && (
+              <ApprovalBar
+                key={`${snapshot.approval.phase}:${snapshot.approval.payload.revisions_used ?? 0}`}
+                busy={deciding}
+                error={actionError}
+                onRevise={handleRevise}
+                approval={snapshot.approval}
+                onApprove={handleApprove}
+                onReject={handleReject}
+              />
+            )}
+          </ApprovalPresence>
+        </div>
 
         <section className="cf-run-pipeline mt-5 overflow-hidden rounded-3xl border border-border bg-surface" aria-labelledby="agent-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
@@ -400,8 +342,6 @@ export default function LiveRunPage() {
               <span className="hidden sm:inline">6 stages · feedback enabled</span>
             </span>
           </div>
-          <RunStory snapshot={snapshot} connectionLost={Boolean(connectionLost)} />
-
           <div className="cf-pipeline-viewport">
             <div className="min-w-0">
               <PipelineStrip key={id} agents={snapshot.agents} lastLoop={snapshot.lastLoop} activity={snapshot.timeline} />
@@ -409,35 +349,10 @@ export default function LiveRunPage() {
           </div>
         </section>
 
-        {snapshot.endedAt && (
-          <section className="mt-5" aria-label="Run result">
-            <ResultSummary
-              snapshot={snapshot}
-              onDownload={handleDownload}
-              downloadState={downloadState}
-              retryStage={retryStage}
-              retrying={retrying}
-              onRetryStage={handleStageRetry}
-              onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
-              onReuse={runProjectId && snapshot.prompt ? handleRetry : undefined}
-              tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : undefined}
-            />
-          </section>
-        )}
-
-        {(snapshot.endedAt || sourceRunId) && <RunVersions key={`run-versions:${id}`} id={id} completed={Boolean(snapshot.endedAt)} />}
-
-        {downloadError && (
-          <Notice className="mt-3">
-            {downloadError}
-          </Notice>
-        )}
-
-        <section className="mt-8" aria-labelledby="run-workbench-heading">
-          <div className="mb-4 flex items-end justify-between border-b border-rule pb-4">
+        <section className="cf-run-workbench-section" aria-labelledby="run-workbench-heading">
+          <div className="cf-run-workbench-title">
             <div>
-              <span className="text-[12px] font-[600] text-fg-faint">Execution evidence</span>
-              <h2 id="run-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Inspect the run</h2>
+              <h2 id="run-workbench-heading" className="font-display mt-1.5 text-[20px] font-[650] tracking-[-0.04em] text-fg">Run workspace</h2>
             </div>
             <span className="hidden text-[12px] text-fg-muted sm:block">Events · code · sandbox · tests</span>
           </div>
@@ -460,38 +375,26 @@ export default function LiveRunPage() {
           />
         </section>
 
-      </main>
-    </div>
-  );
-}
+        {snapshot.endedAt && (
+          <section id="run-result" className="cf-run-result-section" aria-label="Run result">
+            <ResultSummary
+              snapshot={snapshot}
+              onDownload={handleDownload}
+              downloadState={downloadState}
+              retryStage={retryStage}
+              retrying={retrying}
+              onRetryStage={handleStageRetry}
+              onRetry={runProjectId && snapshot.prompt ? handleRetry : undefined}
+              onReuse={runProjectId && snapshot.prompt ? handleRetry : undefined}
+              tryApiHref={snapshot.status === "succeeded" && snapshot.tests?.ok ? `/runs/${id}/use` : undefined}
+            />
+            {downloadError && <Notice className="mt-3">{downloadError}</Notice>}
+          </section>
+        )}
 
-function RunMetric({
-  icon,
-  label,
-  value,
-  bordered,
-  topBorder,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  bordered?: boolean;
-  topBorder?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative flex min-h-[76px] flex-col justify-center px-3.5 py-3.5",
-        bordered && "border-l border-rule",
-        topBorder && "border-t border-rule",
-      )}
-    >
-      <div className="flex items-center gap-2 text-fg-muted">
-        <span className="[&>svg]:h-3.5 [&>svg]:w-3.5" aria-hidden>{icon}</span>
-        <dt className="text-[11px] font-[600]">{label}</dt>
-      </div>
-      <dd className="font-display mt-1 text-[24px] font-[700] tracking-[-0.05em] text-fg">{value}</dd>
-      <span className="absolute inset-x-3.5 bottom-0 h-px bg-gradient-to-r from-accent-bd to-transparent opacity-55" aria-hidden />
+        {(snapshot.endedAt || sourceRunId) && <RunVersions key={`run-versions:${id}`} id={id} completed={Boolean(snapshot.endedAt)} />}
+
+      </main>
     </div>
   );
 }

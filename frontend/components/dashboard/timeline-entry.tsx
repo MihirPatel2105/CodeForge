@@ -44,21 +44,23 @@ export interface MessageEntryProps {
   variant?: MessageKind;
 }
 
-export function MessageEntry({ time, agent, text, variant = "default" }: MessageEntryProps) {
+export function MessageEntry({ time, agent, text, variant = "default", grouped = false }: MessageEntryProps & { grouped?: boolean }) {
   const k = MESSAGE_KIND[variant];
   return (
     <div
       className={cn(
         "cf-timeline-message grid grid-cols-[12px_minmax(0,1fr)] gap-x-2.5 rounded-xl px-2.5 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
+        grouped && "cf-timeline-group-message",
         k.bg,
       )}
+      data-variant={variant}
     >
       <span className={cn("mt-[5px] h-2 w-2 rounded-full", k.marker)} aria-hidden />
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+      <div className="cf-timeline-message-content min-w-0">
+        <div className="cf-timeline-message-meta flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
           <span className={cn(typeScale.metaMono, "text-[11px] text-fg-faint")}>{time}</span>
-          {agent !== "—" && <span className={cn(typeScale.label, "text-[11px]", k.agent)}>{agent}</span>}
+          {agent !== "—" && <span className={cn(typeScale.label, "text-[11px]", k.agent, grouped && "sr-only")}>{agent}</span>}
         </div>
         <p className={cn(typeScale.timelineBody, k.weight, "mt-1 text-pretty text-fg")}>{text}</p>
       </div>
@@ -83,7 +85,7 @@ export function FindingEntry({ time, agent, file, line, issue, fixHint }: Findin
   return (
     <div
       className={cn(
-        "rounded-2xl border border-danger-bd border-l-[3px] border-l-danger bg-danger-soft/75 px-4 py-3",
+        "cf-timeline-finding rounded-2xl border border-danger-bd border-l-[3px] border-l-danger bg-danger-soft/75 px-4 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}
     >
@@ -119,7 +121,7 @@ export function LoopEntry({ time, text }: LoopEntryProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-loop-bd border-l-[3px] border-l-loop bg-loop-soft px-4 py-3",
+        "cf-timeline-loop rounded-2xl border border-loop-bd border-l-[3px] border-l-loop bg-loop-soft px-4 py-3",
         "motion-safe:animate-[cfFade_0.3s_ease]",
       )}
     >
@@ -140,7 +142,7 @@ export type TimelineEntryData =
   | ({ kind: "finding" } & FindingEntryProps)
   | ({ kind: "loop" } & LoopEntryProps);
 
-export function TimelineEntry({ entry, i }: { entry: TimelineEntryData; i: number }) {
+export function TimelineEntry({ entry, i, grouped = false }: { entry: TimelineEntryData; i: number; grouped?: boolean }) {
   switch (entry.kind) {
     case "loop":
       return <LoopEntry key={i} time={entry.time} text={entry.text} />;
@@ -164,6 +166,7 @@ export function TimelineEntry({ entry, i }: { entry: TimelineEntryData; i: numbe
           agent={entry.agent}
           text={entry.text}
           variant={entry.variant}
+          grouped={grouped}
         />
       );
   }

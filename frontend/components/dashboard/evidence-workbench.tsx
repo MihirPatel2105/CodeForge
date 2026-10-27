@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import type { TestsSnapshot } from "@/lib/run-reducer";
 import "./run-dashboard.css";
+import "./run-workspace.css";
 
 export function EvidenceWorkbench({ code, timeline, terminal, tests, result, navigationRequest, problems, problemCount = 0 }: {
   code: ReactNode;
@@ -25,7 +26,7 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
   }, [navigationRequest]);
 
   return (
-    <ResizablePanelGroup orientation="vertical" className="cf-evidence-workbench" style={{ height: 960 }}>
+    <ResizablePanelGroup orientation="vertical" className="cf-evidence-workbench cf-responsive-workbench" style={{ height: "var(--run-workbench-height)" }}>
       <ResizablePanel id="code-evidence" defaultSize="60%" minSize="360px">
       <div ref={codeRef} className="cf-workbench-editor" data-lenis-prevent role="region" aria-label="Generated code">{code}</div>
       </ResizablePanel>
