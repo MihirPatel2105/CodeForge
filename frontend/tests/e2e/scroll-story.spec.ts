@@ -36,30 +36,49 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 1280, height: 72
 
 test("process descriptions interpolate open and closed, and reduced motion settles immediately", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const process = page.locator("#build-story");
   await process.getByRole("button", { name: "01 Describe", exact: true }).click();
   await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("opacity", "1");
+  await expect.poll(() => process.locator(".ol-process-reveal").first().evaluate(element => element.getAnimations().length)).toBe(0);
   const result = await process.evaluate(async element => {
     const buttons = element.querySelectorAll<HTMLButtonElement>(".ol-process-button");
     const first = buttons[0].querySelector<HTMLElement>(".ol-process-reveal")!;
     const second = buttons[1].querySelector<HTMLElement>(".ol-process-reveal")!;
     const initial = first.getBoundingClientRect().height;
-    const samples: { first: number; second: number }[] = [];
-    buttons[1].click();
-    await new Promise<void>(resolve => {
-      const start = performance.now();
-      function frame() {
-        samples.push({ first: first.getBoundingClientRect().height, second: second.getBoundingClientRect().height });
-        if (performance.now() - start < 650) requestAnimationFrame(frame); else resolve();
-      }
-      requestAnimationFrame(frame);
+    const selected = new Promise<void>(resolve => {
+      const observer = new MutationObserver(() => {
+        if (buttons[1].getAttribute("aria-current") !== "step") return;
+        observer.disconnect();
+        resolve();
+      });
+      observer.observe(buttons[1], { attributes: true, attributeFilter: ["aria-current"] });
     });
-    return { initial, samples, final: second.getBoundingClientRect().height };
+    buttons[1].click();
+    await selected;
+    // Seek the real transitions before the scroll observer's next frame can select
+    // another chapter. A fixed frame window can miss interpolation on a slow GPU.
+    const transitions = [first, second].map(reveal => reveal.getAnimations().find(animation =>
+      animation instanceof CSSTransition && animation.transitionProperty === "grid-template-rows"));
+    if (transitions.some(animation => !animation)) throw new Error("Both disclosure height transitions must run");
+    for (const animation of transitions) {
+      animation!.pause();
+      animation!.currentTime = Number(animation!.effect!.getComputedTiming().duration) / 2;
+    }
+    const midpoint = { first: first.getBoundingClientRect().height, second: second.getBoundingClientRect().height };
+    for (const animation of transitions) animation!.finish();
+    return { initial, midpoint, closed: first.getBoundingClientRect().height, final: second.getBoundingClientRect().height };
   });
-  expect(result.samples.some(sample => sample.first > 0 && sample.first < result.initial - 1)).toBe(true);
-  expect(result.samples.some(sample => sample.second > 0 && sample.second < result.final - 1)).toBe(true);
+  expect(result.midpoint.first).toBeGreaterThan(0);
+  expect(result.midpoint.first).toBeLessThan(result.initial - 1);
+  expect(result.midpoint.second).toBeGreaterThan(0);
+  expect(result.midpoint.second).toBeLessThan(result.final - 1);
+  expect(result.closed).toBeLessThanOrEqual(1);
   await expect(process.getByRole("button", { name: "02 Plan", exact: true })).toHaveAttribute("aria-current", "step");
+  await expect.poll(() => process.locator(".ol-process-reveal").nth(1).evaluate(element => element.getAnimations().length)).toBe(0);
+  await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("opacity", "0");
+  await expect(process.locator(".ol-process-reveal").nth(1)).toHaveCSS("opacity", "1");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("transition-duration", "0s");
 });
