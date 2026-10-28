@@ -31,6 +31,7 @@ import { ResultSummary } from "@/components/dashboard/result-summary";
 import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 
 /**
  * The real Live Run screen (docs/UI_BRIEF.md §4) — the same components proven out
@@ -310,7 +311,7 @@ export default function LiveRunPage() {
             {cancelling ? "Cancelling…" : "Cancel run"}
           </Button>
         ) : snapshot.endedAt ? (
-          <Button variant="outline" size="sm" render={<a href="#run-result" />}>View result <ArrowDown size={14} aria-hidden /></Button>
+          <ButtonLink variant="outline" size="sm" href="#run-result">View result <ArrowDown size={14} aria-hidden /></ButtonLink>
         ) : undefined} />
 
         <AgentCityInvite key={`agent-city:${id}`} runId={id} snapshot={snapshot} connected={!connectionLost} />

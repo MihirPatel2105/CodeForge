@@ -109,3 +109,32 @@ test("city and run view use the same compact theme control", async ({ page }) =>
     await expect(page.locator("html")).not.toHaveClass(/dark/);
   }
 });
+
+test("completed run result navigation uses a link without native-button warnings", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("pageerror", error => errors.push(error.message));
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await session(page);
+  const at = "2026-10-28T08:00:00Z";
+  await page.route("**/api/backend/runs/control-run", route => route.fulfill({ json: {
+    id: "control-run", project_id: "control-project", prompt: "Build a library API", status: "succeeded",
+    iterations: 0, created_at: at, updated_at: at, state: {}, metrics: null,
+  } }));
+  await page.route("**/api/backend/runs/control-run/stream", route => route.fulfill({ contentType: "text/event-stream", body: [
+    { event: "run.started", run_id: "control-run", prompt: "Build a library API", at },
+    { event: "run.completed", status: "succeeded", iterations: 0, duration_ms: 1000, at },
+  ].map((event, index) => `id: ${index + 1}\ndata: ${JSON.stringify(event)}\n\n`).join("") }));
+  await page.goto("/runs/control-run");
+  const result = page.getByRole("link", { name: "View result", exact: true });
+  await expect(result).toBeVisible();
+  await expect(result).toHaveAttribute("href", "#run-result");
+  await expect(result).not.toHaveAttribute("type", "button");
+  await expect(result).not.toHaveAttribute("role", "button");
+  await expect(result).toHaveCSS("height", "36px");
+  await result.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/runs\/control-run#run-result$/);
+  await expect(page.locator("#run-result")).toBeInViewport();
+  expect(errors.filter(message => /Base UI:|nativeButton|native <button>/.test(message))).toEqual([]);
+});

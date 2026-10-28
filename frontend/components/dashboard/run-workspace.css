@@ -13,7 +13,7 @@
 .cf-overview-status > span { width:5px; height:5px; border-radius:50%; background:currentColor; }
 .cf-overview-elapsed { display:inline-flex; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
 .cf-overview-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; flex-shrink:0; }
-.cf-overview-actions [data-slot=button] { min-height:36px; font-size:12px; }
+.cf-overview-actions :is([data-slot=button],[data-slot=button-link]) { min-height:36px; font-size:12px; }
 .cf-overview-actions .cf-overview-cancel { color:var(--danger); border-color:var(--danger-bd); background:var(--surface); }
 .cf-overview-actions .cf-overview-cancel:hover { background:var(--danger-soft); }
 .cf-overview-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 24px; border-top:1px solid var(--rule); margin-top:12px; min-height:40px; }
