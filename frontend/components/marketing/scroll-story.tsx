@@ -2,6 +2,7 @@
 
 import { useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
 import { ArrowDown, ArrowRight, Check, CheckCheck, Code2, FileCode2, Folder, ShieldCheck } from "lucide-react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -113,7 +114,7 @@ export function ScrollStory({ startHref = "/signup" }: { startHref?: string }) {
         <motion.div className="cf-story-device" style={staticLayout ? undefined : { scale }} aria-hidden><div className="cf-story-device-header"><span className="cf-story-device-logo"><Code2 size={16} strokeWidth={1.4} /></span><strong>Library API</strong><span>Example build</span></div><div className="cf-story-device-screen" /></motion.div>
         {chapters.map((chapter, index) => <div className="cf-story-layer" key={chapter.label} data-active={active === index}><StoryScene index={index} progress={scrollYProgress} staticLayout={staticLayout} active={active === index} /></div>)}
       </div>
-      <footer className="cf-story-bottom"><nav aria-label="Walkthrough chapters">{chapters.map((chapter, index) => <ChapterButton key={chapter.label} index={index} progress={scrollYProgress} active={active === index} onClick={() => goToChapter(index)} />)}</nav><div className="cf-story-actions"><Link href="/demo/library" className="cf-story-cta">Inspect the Library demo<span><ArrowRight size={16} aria-hidden /></span></Link><Link href={startHref} className="cf-story-start">{startHref === "/projects" ? "Start a project" : "Build your first API"}<ArrowRight size={15} aria-hidden /></Link></div><span className="cf-story-scroll-hint"><ArrowDown size={12} aria-hidden />More ideas below. Then meet the agents.</span></footer>
+      <footer className="cf-story-bottom"><nav aria-label="Walkthrough chapters">{chapters.map((chapter, index) => <ChapterButton key={chapter.label} index={index} progress={scrollYProgress} active={active === index} onClick={() => goToChapter(index)} />)}</nav><div className="cf-story-actions"><Link href="/demo/library" className="cf-story-cta">Inspect the Library demo<span><ArrowRight size={16} aria-hidden /></span></Link><ButtonLink href={startHref} className="cf-story-start">{startHref === "/projects" ? "Start a project" : "Build your first API"}<ArrowRight size={15} aria-hidden /></ButtonLink></div><span className="cf-story-scroll-hint"><ArrowDown size={12} aria-hidden />More ideas below. Then meet the agents.</span></footer>
     </div>
   </section>;
 }

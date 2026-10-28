@@ -1,5 +1,7 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowDown, ArrowRight, Boxes, LibraryBig, PackageSearch } from "lucide-react";
@@ -105,13 +107,13 @@ export function HeroDemo() {
             {user ? "Start a project" : "Build your first API"}
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
-          <Link
+          <ButtonLink variant="outline"
             href={`/demo/${active.id}`}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border-strong bg-surface px-5 py-3 text-[14px] font-[650] text-fg transition-colors hover:border-accent-bd hover:bg-accent-soft/40"
           >
             Watch a full run
             <ArrowDown className="h-3.5 w-3.5" aria-hidden />
-          </Link>
+          </ButtonLink>
         </div>
 
       </div>

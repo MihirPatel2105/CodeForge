@@ -1,5 +1,7 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import Link from "next/link";
 import { FooterTechText } from "./footer-tech-text";
 import { useEffect, useRef, useState } from "react";
@@ -27,9 +29,9 @@ export function ClosingBanner() {
       <h2 className="font-display max-w-[22ch] text-[25px] font-[600] leading-[1.2] tracking-[-0.04em] text-fg md:text-[30px]">
         {user ? "Your agents are standing by." : "One sentence in. A tested API out."}
       </h2>
-      <Link href={user ? "/projects" : "/signup"} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-accent px-6 text-[14px] font-[600] text-surface shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent active:translate-y-0">
+      <ButtonLink size="lg" href={user ? "/projects" : "/signup"} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-accent px-6 text-[14px] font-[600] text-surface shadow-sm transition-[transform,background-color,box-shadow] duration-200   focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent ">
         {user ? "Go to projects" : "Create an account"}
-      </Link>
+      </ButtonLink>
     </div>
   );
 }

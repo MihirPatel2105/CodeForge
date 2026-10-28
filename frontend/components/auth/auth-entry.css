@@ -28,7 +28,7 @@
 .pa-form h1 { font-size: 38px; line-height: 1.12; letter-spacing: -.05em; overflow-wrap: anywhere; }
 .pa-form .cf-auth-eyebrow { display: none; }
 .pa-form input:not([type=checkbox]) { height: 52px; border-radius: 12px; background: var(--bg); box-shadow: none; }
-.pa-form button[type=submit] { min-height: 52px; border-radius: 100px; background: var(--accent); color: var(--surface); box-shadow: none; }
+.pa-form button[type=submit] { min-height: 52px; background: var(--accent); color: var(--surface); box-shadow: none; }
 .pa-form button[type=submit]:disabled { opacity: .5; cursor: not-allowed; }
 .pa-form .cf-auth-rules { background: var(--bg); border: 0; border-radius: 12px; }
 .pa-form .cf-auth-footer { line-height: 1.7; }

@@ -1,5 +1,7 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import "@/components/account/settings-premium.css";
 import { SettingsPanel, SettingsRail } from "@/components/account/settings-premium";
 import { SecurityHighlightList, SettingsNavigation } from "@/components/account/account-enhancements";
@@ -451,7 +453,7 @@ function SecurityMethodRow({
           </p>
         </div>
       </div>
-      <Link
+      <ButtonLink variant="outline"
         href={href}
         className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-3xl border border-border-strong px-4 text-[13px] font-[650] text-fg transition-colors hover:border-accent-bd hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:self-auto"
       >
@@ -460,7 +462,7 @@ function SecurityMethodRow({
           className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
           aria-hidden
         />
-      </Link>
+      </ButtonLink>
     </li>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import { motion, useScroll, useTransform } from "motion/react";
 import { ScrollReveal } from "@/components/ui/react-bits/scroll-reveal";
 import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
@@ -68,7 +70,7 @@ export function PremiumLanding() {
             <BlurHeadline />
             <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
             <motion.div {...entrance(0.7)} className="lp-actions">
-              <Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link>
+              <ButtonLink size="lg" className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></ButtonLink>
               <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
             </motion.div>
           </motion.div>
@@ -99,7 +101,7 @@ export function PremiumLanding() {
         <section className="lp-section lp-examples-section" aria-label="Explore example APIs"><DemoCarousel /></section>
 
         <motion.section {...reveal} id="questions" className="lp-faq lp-section" aria-labelledby="faq-title"><ScrollReveal id="faq-title">{"A little more clarity."}</ScrollReveal><FaqAccordion items={questions.map(question => ({ question: question.title, answer: question.answer }))} /></motion.section>
-        <motion.section {...reveal} id="start-building" className="lp-closing"><span className="lp-section-label">From an idea to something you can inspect</span><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><Link className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></Link></motion.section>
+        <motion.section {...reveal} id="start-building" className="lp-closing"><span className="lp-section-label">From an idea to something you can inspect</span><ScrollReveal>{"What will you build?"}</ScrollReveal><p>Start with one sentence. Follow it all the way through.</p><ButtonLink size="lg" className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></ButtonLink></motion.section>
       </main>
       <SiteFooter />
     </div>

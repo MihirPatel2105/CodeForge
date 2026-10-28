@@ -13,7 +13,7 @@
 .cf-overview-status > span { width:5px; height:5px; border-radius:50%; background:currentColor; }
 .cf-overview-elapsed { display:inline-flex; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
 .cf-overview-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; flex-shrink:0; }
-.cf-overview-actions [data-slot=button] { min-height:36px; border-radius:100px; font-size:12px; }
+.cf-overview-actions [data-slot=button] { min-height:36px; font-size:12px; }
 .cf-overview-actions .cf-overview-cancel { color:var(--danger); border-color:var(--danger-bd); background:var(--surface); }
 .cf-overview-actions .cf-overview-cancel:hover { background:var(--danger-soft); }
 .cf-overview-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px 24px; border-top:1px solid var(--rule); margin-top:12px; min-height:40px; }
@@ -33,7 +33,6 @@
 .cf-run-refined .cf-demo-controls > div:first-child > span { display:none; }
 .cf-run-refined .cf-demo-controls > div:first-child > div { margin-top:0; justify-content:flex-end; }
 .cf-run-refined .cf-demo-controls > div:last-child { margin-top:10px; }
-.cf-run-refined .cf-demo-controls button { border-radius:100px; }
 .cf-run-refined .cf-demo-controls > div:last-child > div:first-child { font-size:10px; }
 .cf-run-refined .cf-demo-controls > div:last-child > div:last-child { height:3px; margin-top:6px; }
 
@@ -63,7 +62,7 @@
 .cf-run-refined .cf-result-metrics > div:not(.cf-result-actions) { align-items:flex-start; }
 .cf-run-refined .cf-result-metrics > div > span:first-child { font-size:19px; font-variant-numeric:tabular-nums; }
 .cf-run-refined .cf-result-actions { gap:8px; }
-.cf-run-refined .cf-result-actions :is(a,button) { border-radius:100px; font-size:12px; }
+.cf-run-refined .cf-result-actions :is(a,button) { font-size:12px; }
 
 @media(max-width:1023px) {
  .cf-run-refined > main { padding-inline:24px; }

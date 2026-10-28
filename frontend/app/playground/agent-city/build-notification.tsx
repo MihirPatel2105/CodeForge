@@ -1,7 +1,8 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { ArrowUpRight, Bell, X } from "lucide-react";
 import { api, ApiError, getToken } from "@/lib/api";
 import type { RunStatus } from "@/lib/types";
@@ -52,7 +53,7 @@ export function BuildNotification() {
         <h2 className="text-base font-semibold">{success ? "Your API is ready." : cancelled ? "Your build was cancelled." : "Your build needs a look."}</h2>
         <p className="mt-2 text-sm leading-6 text-fg-muted">{success ? "The agents finished your build. Your API and test results are ready to inspect." : "Return to the run to review its outcome and next steps."}</p>
       </div>
-      <Link href={`/runs/${result.id}${success ? "/use" : ""}`} className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">{success ? "View your API" : "View run"}<ArrowUpRight size={16} aria-hidden /></Link>
+      <ButtonLink href={`/runs/${result.id}${success ? "/use" : ""}`} className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">{success ? "View your API" : "View run"}<ArrowUpRight size={16} aria-hidden /></ButtonLink>
     </aside>
   );
 }

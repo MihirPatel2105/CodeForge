@@ -1,5 +1,5 @@
+import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArrowRight, Box, CircleHelp, Clock3, Coins, MessageSquare, ShieldCheck } from "lucide-react";
 import { MarketingHero } from "@/components/marketing/marketing-hero";
 import { SiteHeader } from "@/components/marketing/site-header";
@@ -77,7 +77,7 @@ export default function FaqPage() {
             <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
             <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
             <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>
-            <Link href="#questions" className="cf-marketing-action cf-marketing-primary mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></Link>
+            <ButtonLink size="lg" href="#questions" className="cf-marketing-action cf-marketing-primary mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></ButtonLink>
           </div>
           <dl className="mk-hero-copy cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
             {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
@@ -104,7 +104,7 @@ export default function FaqPage() {
               <h2 className="font-display mt-4 max-w-[22ch] text-[28px] font-[650] leading-[1.2] tracking-[-0.045em] text-fg md:text-[36px]">Ask about your use case or report a surprising run.</h2>
               <p className="mt-4 max-w-[58ch] text-[14px] leading-[1.7] text-fg-muted">Specific prompts, unexpected agent decisions and confusing failures are the most useful messages.</p>
             </div>
-            <Link href="/contact" className="inline-flex min-h-12 w-fit items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-bg transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"><MessageSquare className="h-4 w-4" aria-hidden />Contact us</Link>
+            <ButtonLink size="lg" href="/contact" className="inline-flex min-h-12 w-fit items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-bg transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"><MessageSquare className="h-4 w-4" aria-hidden />Contact us</ButtonLink>
           </div>
         </section>
       </main>

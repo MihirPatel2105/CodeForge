@@ -13,9 +13,9 @@
 .lp-hero h1 { font-size: var(--lp-display); line-height: 1.02; letter-spacing: -.065em; font-weight: 700; margin: 0; }
 .lp-lead { color: var(--lp-muted); font-size: clamp(17px,1.8vw,21px); line-height: 1.6; margin: 28px auto 0; max-width: 650px; }
 .lp-actions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 28px; margin-top: 28px; }
-.lp-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border-radius: 100px; padding: 14px 26px; background: var(--lp-accent); color: var(--lp-paper); font-weight: 600; font-size: 15px; text-decoration: none; transition: transform var(--lp-duration) var(--lp-ease-out); }
-.lp-button:hover { transform: translateY(-2px); }
-.lp-button:active { transform: scale(.98); }
+.lp-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border-radius: var(--ui-radius-action); padding: 14px 26px; background: var(--lp-accent); color: var(--lp-paper); font-weight: 600; font-size: 15px; text-decoration: none; transition: background-color var(--ui-duration-standard) var(--ui-ease), color var(--ui-duration-standard) var(--ui-ease); }
+.lp-button:hover { background: color-mix(in srgb,var(--lp-accent) 92%,var(--lp-paper)); }
+
 .lp-text-link { display: inline-flex; align-items: center; gap: 10px; color: var(--lp-accent); min-height: 48px; font-weight: 600; font-size: 15px; text-decoration: none; }
 .lp-text-link:hover { text-decoration: underline; text-underline-offset: 5px; }
 .lp-product { max-width: 1100px; margin: 56px auto 0; border: 1px solid var(--lp-rule); border-radius: var(--lp-radius); text-align: left; background: var(--lp-paper); overflow: hidden; box-shadow: 0 32px 64px -40px var(--lp-muted); animation: lp-arrive 900ms var(--lp-ease-out) both; }
@@ -220,10 +220,10 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 
 /* Hero actions respond without changing their layout or replaying the entrance. */
 .cf-premium :is(.lp-actions, .lp-closing) > a {
-  transition: transform 360ms cubic-bezier(.16,1,.3,1), background-color 360ms ease, box-shadow 360ms ease;
+  transition: background-color var(--ui-duration-standard) var(--ui-ease), box-shadow var(--ui-duration-standard) var(--ui-ease);
 }
 .cf-premium :is(.lp-actions, .lp-closing) > a svg {
-  transition: transform 360ms cubic-bezier(.16,1,.3,1);
+  transition: transform var(--ui-duration-standard) var(--ui-ease);
 }
 .cf-premium :is(.lp-actions, .lp-closing) > .lp-text-link {
   border-radius: 100px;
@@ -232,7 +232,6 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
 }
 @media (hover: hover) and (pointer: fine) {
   .cf-premium :is(.lp-actions, .lp-closing) > .lp-button:hover {
-    transform: translateY(-3px);
     background: color-mix(in srgb, var(--lp-accent) 92%, black);
     box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--lp-accent) 50%, transparent);
   }
@@ -240,11 +239,10 @@ html:has(.cf-premium) { scroll-behavior: smooth; }
   .cf-premium :is(.lp-actions, .lp-closing) > .lp-text-link:hover {
     text-decoration: none;
     background: color-mix(in srgb, var(--lp-accent) 7%, transparent);
-    transform: translateY(-2px);
   }
   .cf-premium :is(.lp-actions, .lp-closing) > .lp-text-link:hover svg { transform: translateX(2px) scale(1.08); }
 }
-.cf-premium :is(.lp-actions, .lp-closing) > a:active { transform: scale(.98); box-shadow: none; }
+.cf-premium :is(.lp-actions, .lp-closing) > .lp-text-link:active { box-shadow: none; }
 .cf-premium :is(.lp-actions, .lp-closing) > a:active svg { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .cf-premium :is(.lp-actions, .lp-closing) > a:hover,

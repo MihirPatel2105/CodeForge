@@ -54,6 +54,6 @@ export function AgentCard({ data, selected, onSelect, controls, indicatorId }: {
     <span className="cf-agent-step-name">{data.name}</span>
     <span className="cf-agent-step-status"><StatusMark className="cf-agent-status-mark" status={STATUS[data.state]} label={data.state} size={16} fontSize={11} strike={false} doneColor="var(--ok)" errorColor="var(--danger)" /></span>
     {(data.iteration ?? 0) > 0 && <span className="cf-agent-step-pass">pass {(data.iteration ?? 0) + 1}</span>}
-    {selected && <motion.span aria-hidden="true" className="cf-step-indicator" data-state={data.state} layoutId={indicatorId} transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 36 }} />}
+    {selected && <motion.span aria-hidden="true" className="cf-step-indicator" data-state={data.state} layoutId={indicatorId} transition={reduced ? { duration: 0 } : motionSpring} />}
   </motion.button>;
 }

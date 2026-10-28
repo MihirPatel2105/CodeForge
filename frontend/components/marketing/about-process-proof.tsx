@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { ArrowRight, Check, FileCode2, Terminal } from "lucide-react";
 import { DEMO_RUNS } from "@/lib/demo-runs";
 import { tokenizePythonLine } from "@/lib/python-highlight";
@@ -31,7 +31,7 @@ export function AboutProcessProof() {
         <p className="mt-3 flex items-center gap-2 font-mono text-[14px] font-[600] text-ok"><Check size={16} aria-hidden />{demo.preview.result}</p>
         <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">Source, review feedback, and test output stay available together.</p>
       </div>
-      <Link href={`/demo/${demo.slug}`} className="flex min-h-12 items-center justify-between gap-3 border-t border-rule px-5 py-4 text-[13px] font-[600] text-accent hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-accent">Inspect the library demo<ArrowRight size={16} aria-hidden /></Link>
+      <ButtonLink variant="outline" size="lg" href={`/demo/${demo.slug}`} className="flex min-h-12 items-center justify-between gap-3 border-t border-rule px-5 py-4 text-[13px] font-[600] text-accent hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-accent">Inspect the library demo<ArrowRight size={16} aria-hidden /></ButtonLink>
     </section>
   );
 }

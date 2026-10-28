@@ -1,3 +1,4 @@
+import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDown, ArrowRight, ArrowUpRight, RotateCcw } from "lucide-react";
@@ -29,7 +30,7 @@ export default function HowItWorksPage() {
       <main>
         <MarketingHero>
           <div className="ed-wrap ed-hero ed-process-hero">
-            <div className="ed-process-copy mk-hero-copy"><span className="ed-kicker">How CodeForge works</span><h1>From your idea<br />to a tested API.</h1><p>A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back.</p><div className="ed-actions"><Link href="#stages" className="lp-button">Follow the process <ArrowDown size={16} aria-hidden /></Link><Link href="/demo/library" className="lp-text-link">Open the demo <ArrowUpRight size={16} aria-hidden /></Link></div><span className="ed-small-note">Five agents. Two human checkpoints. One isolated sandbox.</span></div>
+            <div className="ed-process-copy mk-hero-copy"><span className="ed-kicker">How CodeForge works</span><h1>From your idea<br />to a tested API.</h1><p>A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back.</p><div className="ed-actions"><ButtonLink size="lg" href="#stages" className="lp-button">Follow the process <ArrowDown size={16} aria-hidden /></ButtonLink><Link href="/demo/library" className="lp-text-link">Open the demo <ArrowUpRight size={16} aria-hidden /></Link></div><span className="ed-small-note">Five agents. Two human checkpoints. One isolated sandbox.</span></div>
             <div className="ed-route-preview"><HowRunRoute /></div>
           </div>
         </MarketingHero>
@@ -48,7 +49,7 @@ export default function HowItWorksPage() {
 
         <section id="technology" className="ed-section ed-band"><div className="ed-wrap ed-tech-grid"><div className="ed-section-intro"><span className="ed-kicker">03 / The foundation</span><h2>The tools behind<br />each run.</h2></div><dl className="ed-tech">{[["Orchestration", "LangGraph with a durable checkpointer"], ["Generated API", "FastAPI, MongoDB and Beanie"], ["Verification", "pytest in an isolated Docker sandbox"], ["Run dashboard", "Source files, review findings and live event history"]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div></section>
 
-        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">See the handoffs happen</span><h2>Watch the work.<br />Inspect the result.</h2></div><Link href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></Link></section>
+        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">See the handoffs happen</span><h2>Watch the work.<br />Inspect the result.</h2></div><ButtonLink size="lg" href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></ButtonLink></section>
       </main>
       <SiteFooter />
     </div>

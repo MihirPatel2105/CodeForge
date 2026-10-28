@@ -66,7 +66,7 @@
 .cf-account .account-main--settings .settings-premium-panel li > div > span { width:36px; height:36px; border:0; color:var(--accent); border-radius:10px; background:var(--accent-soft); }
 .cf-account .account-main--settings .settings-premium-panel li > a { border:0; padding:0; color:var(--accent); font-size:13px; font-weight:400; min-height:44px; background:transparent; }
 .cf-account .account-main--settings .settings-premium-panel li > a:hover { text-decoration:underline; }
-.cf-account .account-main--settings .settings-premium-panel button { font-size:12px; border-radius:999px; min-height:40px; }
+.cf-account .account-main--settings .settings-premium-panel button { font-size:12px;  min-height:40px; }
 .cf-account .account-main--settings .settings-premium-panel .text-danger { color:var(--danger); }
 .cf-account .account-main--settings .settings-premium-panel:has(.text-danger) { border-color:var(--danger-bd); }
 @keyframes settings-settle { from { opacity:0; } to { opacity:1; } }

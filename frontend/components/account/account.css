@@ -112,7 +112,6 @@
 .account-workspace .settings-premium-hero > div > p,
 .account-workspace .settings-hero-eyebrow { color: #b6bed0; }
 .account-workspace .account-main :is(.profile-premium-panel,.settings-premium-panel) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223830; }
-.account-workspace .account-main [data-slot="button"]:not([role="switch"]):not([role="checkbox"]) { border-radius: 100px; }
 .account-workspace .settings-account-pass { border-radius: 18px; }
 @media(max-width:639px) {
  .account-workspace :is(.profile-page-intro,.settings-premium-hero) { padding: 24px 20px; }

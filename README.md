@@ -37,6 +37,10 @@ back to the Coder within a bounded loop; the sandbox executes the generated API 
 network access. MongoDB stores run state and per-iteration artifacts, which power stream replay
 and the code Diff panel. The supported generation domain is single- and two-entity CRUD APIs.
 
+**Agent City** offers a live miniature view of each run: inspect six stage buildings,
+watch repair handoffs, and replay recorded events. Open it from a run's header.
+See [Live Agent City](docs/LIVE_AGENT_CITY.md) for controls and playback behavior.
+
 After a run passes its tests, **Use your API** offers three paths: test endpoints in a private,
 15-minute sandbox, publish for another app, or download runnable source. **Publish API**
 gives the owner a stable URL and a one-time API key for server-side callers, with endpoint

@@ -49,7 +49,7 @@ export function DashboardThemeToggle() {
     });
   };
 
-  return <Button variant="outline" disabled={!mounted} aria-pressed={dark} aria-label="Dark mode for agent dashboard" onClick={(event) => toggleTheme(event.currentTarget)} className="h-9 gap-2 rounded-lg text-xs">
+  return <Button variant="outline" shape="compact" disabled={!mounted} aria-pressed={dark} aria-label="Dark mode for agent dashboard" onClick={(event) => toggleTheme(event.currentTarget)} className="h-9 gap-2 rounded-lg text-xs">
     {dark ? <Sun size={15} aria-hidden /> : <Moon size={15} aria-hidden />}
     {dark ? "Light mode" : "Dark mode"}
   </Button>;

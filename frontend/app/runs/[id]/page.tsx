@@ -9,7 +9,7 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowDown } from "lucide-react";
+import { ArrowLeft, ArrowDown, Building2 } from "lucide-react";
 import { useRunStream } from "@/lib/use-run-stream";
 import { api, getToken, downloadLatestFileTree, ApiError } from "@/lib/api";
 import { PipelineStrip } from "@/components/dashboard/pipeline-strip";
@@ -297,7 +297,12 @@ export default function LiveRunPage() {
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Projects
           </Link>
-          <DashboardThemeToggle />
+          <div className="flex items-center gap-3">
+            <Link href={`/playground/agent-city?run=${encodeURIComponent(id)}`} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-fg-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              <Building2 className="h-4 w-4" aria-hidden /> Agent City
+            </Link>
+            <DashboardThemeToggle />
+          </div>
         </div>
 
         <RunOverview snapshot={snapshot} actions={isLive ? (

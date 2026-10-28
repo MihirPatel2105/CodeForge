@@ -88,8 +88,8 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
     materials.add(material);
     return material;
   };
-  const cream = mat(0xf5ecd4), wall = mat(0xe3d5b5), stone = mat(0xb5bea0), wood = mat(0x805b43), dark = mat(0x35494c);
-  const leaf = mat(0x6c956b), leafLight = mat(0x90ad77), grass = mat(0xa8b993), path = mat(0xe1d6b9), skin = mat(0xf4c89e);
+  const cream = mat(0xf7f8fc), wall = mat(0xe2e6ed), stone = mat(0xaab2c0), wood = mat(0x805b43), dark = mat(0x303640);
+  const leaf = mat(0x6e8d7f), leafLight = mat(0x9cae9f), grass = mat(0xb5c2b7), path = mat(0xd7dce5), skin = mat(0xf4c89e);
   const teal = mat(0x488d88), yellow = mat(0xe6ae4e);
   const windowMat = new THREE.MeshStandardMaterial({ color: 0x86aeb2, emissive: 0xf4c374, emissiveIntensity: 0 });
   materials.add(windowMat);
@@ -125,9 +125,9 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
     const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 128;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.fillStyle = "#fffdf3"; ctx.beginPath(); ctx.roundRect(4, 4, 504, 120, 30); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(4, 4, 504, 120, 20); ctx.fill();
     ctx.fillStyle = color; ctx.beginPath(); ctx.arc(50, 64, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#35494c"; ctx.font = "600 43px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(text, 280, 66);
+    ctx.fillStyle = "#171717"; ctx.font = "600 43px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(text, 280, 66);
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; textures.push(texture);
     const material = new THREE.SpriteMaterial({ map: texture, depthTest: false }); materials.add(material);
     const sprite = new THREE.Sprite(material); sprite.position.set(x, y, z); sprite.scale.set(3.1, 0.78, 1); sprite.renderOrder = 3; scene.add(sprite);
@@ -408,11 +408,11 @@ export function createCity(host: HTMLElement, initial: CitySnapshot, callbacks: 
   }
   function applyLighting() {
     const night = snapshot.night;
-    renderer.setClearColor(night ? 0x253f4a : 0xb6d7d2);
-    scene.background = new THREE.Color(night ? 0x253f4a : 0xb6d7d2);
-    (sea.material as THREE.MeshStandardMaterial).color.set(night ? 0x294a55 : 0xb6d7d2);
+    renderer.setClearColor(night ? 0x17202c : 0xedf0f5);
+    scene.background = new THREE.Color(night ? 0x17202c : 0xedf0f5);
+    (sea.material as THREE.MeshStandardMaterial).color.set(night ? 0x202936 : 0xedf0f5);
     ambient.intensity = night ? 1.1 : 2.4; sun.intensity = night ? 0.8 : 3.4;
-    sun.color.set(night ? 0xaacbff : 0xffefce); windowMat.emissiveIntensity = night ? 1.4 : 0;
+    sun.color.set(night ? 0xaacbff : 0xfffaf3); windowMat.emissiveIntensity = night ? 1.4 : 0;
   }
   const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (!visible) { cancelAnimationFrame(frame); frame = 0; clearKeys(); } else requestDraw(); }); observer.observe(host);
   const resizeObserver = new ResizeObserver(resize); resizeObserver.observe(host);

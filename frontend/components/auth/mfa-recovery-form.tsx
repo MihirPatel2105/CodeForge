@@ -6,6 +6,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { AuthEntryShell } from "./auth-entry-shell";
 import { VerificationCode } from "./verification-code";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
@@ -40,7 +41,7 @@ export function MfaRecoveryForm({ token }: { token?: string }) {
     <p className="cf-auth-eyebrow">Account support</p>
     <h1 className="mt-4 font-display text-3xl font-bold tracking-tight">Contact us about your authenticator</h1>
     <p className="mt-4 text-sm leading-6 text-fg-muted">First contact our team using the Contact page or email codeforge.sdlc@gmail.com. If you cannot sign in to use the Contact form, email us directly. Include your registered email and explain what happened. Never send your password or recovery codes.</p>
-    <div className="mt-6 flex flex-wrap gap-4"><Link href="/contact" className="rounded-full bg-fg px-5 py-3 text-sm font-semibold text-surface">Open Contact page</Link><a href="mailto:codeforge.sdlc@gmail.com?subject=Authenticator%20recovery%20help" className="inline-flex items-center text-sm underline">Email recovery support</a></div>
+    <div className="mt-6 flex flex-wrap gap-4"><ButtonLink href="/contact" size="lg">Open Contact page</ButtonLink><a href="mailto:codeforge.sdlc@gmail.com?subject=Authenticator%20recovery%20help" className="inline-flex items-center text-sm underline">Email recovery support</a></div>
     <ol className="mt-6 list-decimal space-y-3 pl-5 text-sm leading-6 text-fg-muted"><li>We manually review your support message.</li><li>If appropriate, we email a private invitation to request a recovery review.</li><li>Open that invitation and submit your registered email. Your request then appears in the admin dashboard.</li><li>After final approval, use a separate recovery link with your password and an unused recovery code to connect a new authenticator.</li></ol>
     <Link href="/login" className="mt-6 block text-sm underline">Back to sign in</Link>
   </AuthEntryShell>;

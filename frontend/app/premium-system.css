@@ -8,9 +8,22 @@
   --premium-display: clamp(44px, 5.8vw, 76px);
   --premium-ease: cubic-bezier(.16, 1, .3, 1);
   --premium-duration: 220ms;
+  --ui-radius-action: 999px;
+  --ui-radius-control: 12px;
+  --ui-radius-compact: 8px;
+  --ui-duration-fast: 160ms;
+  --ui-duration-standard: 220ms;
+  --ui-duration-panel: 280ms;
+  --ui-ease: cubic-bezier(.16, 1, .3, 1);
 }
 
 /* Component primitives keep their variants and native interaction semantics. */
+.cf-button { transition-duration: var(--ui-duration-standard); transition-timing-function: var(--ui-ease); }
+.cf-button[data-ui-shape="action"] { border-radius: var(--ui-radius-action); }
+.cf-button[data-ui-shape="compact"] { border-radius: var(--ui-radius-compact); }
+.cf-field { border-radius: var(--ui-radius-control); transition-duration: var(--ui-duration-standard); transition-timing-function: var(--ui-ease); }
+.cf-button:focus-visible, .cf-field:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent); }
+.cf-button[data-ui-variant="destructive"]:focus-visible, .cf-field[aria-invalid="true"]:focus-visible { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb,var(--danger) 16%,transparent); }
 [data-slot=dialog-content] { border-radius: var(--premium-radius-panel); }
 [data-slot=card] { border-radius: var(--premium-radius-panel); }
 [data-slot=label] { line-height: 1.4; }
@@ -93,7 +106,7 @@
   .cf-error > div { padding: 32px 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-slot=button], [data-slot=input], [data-slot=textarea], [data-slot=tabs-trigger],
+  .cf-button, [data-slot=button], [data-slot=input], [data-slot=textarea], [data-slot=tabs-trigger],
   [data-slot=switch], [data-slot=switch-thumb], .cf-project-card { transition: none; }
   [data-slot=dialog-content], [data-slot=dialog-overlay] { animation: none; }
 }
@@ -133,7 +146,6 @@
 .cf-project-composer-head { padding: 24px; border: 0; background: transparent; }
 .cf-project-composer-head h2 { font-size: 23px; line-height: 1.16; }
 .cf-project-workspace textarea { min-height: 160px; background: var(--surface); }
-.cf-project-workspace :is(button[type=submit],[data-slot=button]) { border-radius: 100px; }
 .cf-account-hero { border: 0; background: transparent; border-radius: 0; }
 .cf-identity-stage > div:first-child { padding: 16px 0 24px; }
 .cf-identity-stage > div:first-child > p { margin-top: 16px; font-size: 15px; max-width: 58ch; }

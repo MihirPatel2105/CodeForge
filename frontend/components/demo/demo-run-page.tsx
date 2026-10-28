@@ -4,6 +4,7 @@ import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-tog
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { ArrowLeft, Pause, Play, RotateCcw, ShieldCheck, SkipForward } from "lucide-react";
 import { motion } from "motion/react";
 import { AppHeader } from "@/components/dashboard/app-header";
@@ -236,9 +237,9 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
           <p className="max-w-[58ch] text-[13.5px] leading-[1.55] text-fg-muted">
             This is a deterministic replay of the CodeForge interface. The real product uses the same workflow with live models and a locked-down sandbox.
           </p>
-          <Link href={user ? "/projects" : "/signup"} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-fg px-5 py-3 text-[14px] font-[650] text-surface transition-[transform,opacity] hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+          <ButtonLink href={user ? "/projects" : "/signup"}>
             Build your own API
-          </Link>
+          </ButtonLink>
         </div>
       </main>
     </div>

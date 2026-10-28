@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { BuildNotification } from "./build-notification";
 import { LogoLockup } from "@/components/brand/logo-lockup";
+import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Bug, Check, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Coffee, Moon, Sun, Pause, Play, RotateCcw, MapPin, Plus, Minus, X, Box } from "lucide-react";
 import { useMotionPreference } from "@/lib/use-motion-preference";
@@ -20,7 +22,9 @@ export function AgentCity() {
   const [progress, setProgress] = useState<Progress>(freshProgress);
   const [hydrated, setHydrated] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready" | "fallback">("loading");
-  const [night, setNight] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [nightOverride, setNightOverride] = useState<boolean | null>(null);
+  const night = nightOverride ?? resolvedTheme === "dark";
   const [paused, setPaused] = useState(false);
   const [near, setNear] = useState<number | null>(null);
   const [dialog, setDialog] = useState<number | "secret" | "complete" | "help" | null>(null);
@@ -109,7 +113,7 @@ export function AgentCity() {
       <header className="city-header">
         <Link href="/" className="city-back"><ArrowLeft size={16} /><LogoLockup /></Link>
         <div className="city-heading"><h1>Agent City<span>Playground</span></h1><p>A small island. Some big ideas.</p></div>
-        <button className="city-help" onClick={() => setDialog("help")}>How to play <span>?</span></button>
+        <div className="city-header-actions"><DashboardThemeToggle /><button className="city-help" onClick={() => setDialog("help")}>How to play <span>?</span></button></div>
       </header>
 
       <section className="city-island" aria-label="Explore Agent City">
@@ -118,7 +122,7 @@ export function AgentCity() {
 
         <div className="city-world-caption"><span className="city-live-dot" /><span>{night ? "Evening on the island" : "A good day to make something"}</span></div>
         <div className="city-tools" aria-label="Island controls">
-          <button aria-label={night ? "Switch to daytime" : "Switch to evening"} aria-pressed={night} onClick={() => setNight(!night)}>{night ? <Sun size={17} /> : <Moon size={17} />}</button>
+          <button aria-label={night ? "Switch to daytime" : "Switch to evening"} aria-pressed={night} onClick={() => setNightOverride(!night)}>{night ? <Sun size={17} /> : <Moon size={17} />}</button>
           <button aria-label={paused ? "Resume island" : "Pause island"} aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? <Play size={17} /> : <Pause size={17} />}</button>
           <span />
           <button aria-label="Reset camera view" title="Reset camera view" disabled={status !== "ready"} onClick={() => world.current?.resetView()}><RotateCcw size={16} /></button>

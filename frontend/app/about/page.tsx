@@ -1,3 +1,4 @@
+import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
@@ -29,7 +30,7 @@ export default function AboutPage() {
             <div className="ed-kicker">About CodeForge</div>
             <div className="ed-about-lead">
               <h1>Build with AI.<br />Know what<br />you’re shipping.</h1>
-              <div className="ed-hero-note"><p>Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result.</p><div className="lp-actions"><Link href="/demo/library" className="lp-button">Watch a run <ArrowRight size={16} aria-hidden /></Link><Link className="lp-text-link" href="/how-it-works">How CodeForge works <ArrowRight size={16} aria-hidden /></Link></div></div>
+              <div className="ed-hero-note"><p>Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result.</p><div className="lp-actions"><ButtonLink size="lg" href="/demo/library" className="lp-button">Watch a run <ArrowRight size={16} aria-hidden /></ButtonLink><Link className="lp-text-link" href="/how-it-works">How CodeForge works <ArrowRight size={16} aria-hidden /></Link></div></div>
             </div>
             <dl className="ed-facts"><div><dt>Specialized agents</dt><dd>05</dd></div><div><dt>Your approval checkpoints</dt><dd>02</dd></div><div><dt>Execution environment</dt><dd>Isolated sandbox</dd></div></dl>
           </div>
@@ -52,7 +53,7 @@ export default function AboutPage() {
           <div className="ed-scope"><div><span>Generated application</span><p>FastAPI · MongoDB · Beanie</p></div><div><span>Verification</span><p>pytest inside an isolated Docker sandbox</p></div><div><span>Your next step</span><p>Test in the browser, publish the API, or download the source.</p></div><Link className="lp-text-link" href="/how-it-works#technology">Explore the technology <ArrowUpRight size={16} aria-hidden /></Link></div>
         </div></section>
 
-        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">Make the process visible</span><h2>Follow an idea through<br />to its test result.</h2></div><Link href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></Link></section>
+        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">Make the process visible</span><h2>Follow an idea through<br />to its test result.</h2></div><ButtonLink size="lg" href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></ButtonLink></section>
       </main>
       <SiteFooter />
     </div>

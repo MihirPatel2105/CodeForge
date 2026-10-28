@@ -1,8 +1,9 @@
 "use client";
 
+import { ButtonLink } from "@/components/ui/button-link";
+
 import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -97,18 +98,17 @@ export function ContactForm() {
           itself in.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link
-            href="/login"
+          <ButtonLink size="lg" href="/login"
             className="inline-flex items-center justify-center rounded-full bg-accent px-6 py-[13px] text-[14px] font-[650] text-surface transition-opacity hover:opacity-88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Sign in
-          </Link>
-          <Link
+          </ButtonLink>
+          <ButtonLink variant="outline" size="lg"
             href="/signup"
             className="inline-flex items-center justify-center rounded-xl border border-border-strong bg-surface px-6 py-[13px] text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Create an account
-          </Link>
+          </ButtonLink>
         </div>
         <p className="mt-7 text-[13.5px] leading-[1.6] text-fg-muted">
           Rather not sign up just to ask something? Email{" "}

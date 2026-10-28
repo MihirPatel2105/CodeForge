@@ -1,16 +1,17 @@
+import { motionDuration, motionEase, motionSpring } from "@/lib/motion-tokens";
 // Arc UI MIT license: docs/vendor/arc-ui.md
 /** Motion presets are shared by the gallery and future registry consumers. */
 export const motionTokens = {
-  duration: { instant: 0.12, fast: 0.16, exit: 0.18, standard: 0.24, considered: 0.48 },
+  duration: { instant: 0.12, fast: motionDuration.fast, exit: 0.18, standard: motionDuration.standard, considered: motionDuration.considered },
   ease: {
-    enter: [0.16, 1, 0.3, 1],
+    enter: motionEase,
     exit: [0.7, 0, 0.84, 0],
     standard: [0.22, 1, 0.36, 1],
     /** For elements that move while already on screen. */
     inOut: [0.65, 0, 0.35, 1],
   },
   spring: {
-    responsive: { type: "spring", stiffness: 520, damping: 38 },
+    responsive: motionSpring,
     gentle: { type: "spring", stiffness: 340, damping: 34 },
     /** Presses, toggles, thumbs, and small indicators. Settles fast with a hint of life. */
     snappy: { type: "spring", visualDuration: 0.26, bounce: 0.12 },

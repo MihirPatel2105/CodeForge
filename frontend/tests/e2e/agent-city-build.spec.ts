@@ -1,24 +1,25 @@
 import { expect, test } from "@playwright/test";
 
 for (const status of ["succeeded", "failed_sandbox", "cancelled"]) {
-  test(`Agent City reports ${status} for the linked build`, async ({ page }) => {
-    await page.clock.install();
+  test(`Agent City settles the linked ${status} build`, async ({ page }) => {
     await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
-    let requests = 0;
-    await page.route("**/api/backend/runs/build-42", route => route.fulfill({ json: { id: "build-42", status: ++requests === 1 ? "running" : status } }));
+    await page.route("**/api/backend/runs/build-42", route => route.fulfill({ json: { id: "build-42", project_id: "project", prompt: "Build a books API", state: {}, status } }));
+    await page.route("**/api/backend/runs/build-42/files", route => route.fulfill({ json: { run_id: "build-42", files: [] } }));
+    const events = [
+      { event: "run.started", run_id: "build-42", prompt: "Build a books API" },
+      { event: "agent.started", agent: "coder", iteration: 0 },
+      ...(status === "succeeded" ? [
+        { event: "agent.completed", agent: "coder", output_summary: { files: 1 }, duration_ms: 10 },
+        { event: "tests.result", passed: true, total: 4, failed: 0 },
+        { event: "run.completed", status, iterations: 0, duration_ms: 20 },
+      ] : [{ event: "run.failed", status, reason: status }]),
+    ];
+    await page.route("**/api/backend/runs/build-42/stream", route => route.fulfill({ contentType: "text/event-stream", body: events.map((event, index) => `id: ${index + 1}\ndata: ${JSON.stringify({ ...event, at: new Date(Date.UTC(2026, 9, 27, 8, 0, index)).toISOString() })}\n\n`).join("") }));
     await page.goto("/playground/agent-city?run=build-42");
-    await expect(page.getByRole("heading", { name: "Agent City" })).toBeVisible();
-    await expect.poll(() => requests).toBe(1);
-    const notice = page.getByRole("complementary", { name: "API build update" });
-    await expect(notice).not.toBeVisible();
-    await page.clock.runFor(5100);
-    await expect(notice).toBeVisible();
-    await expect(notice.getByRole("link")).toHaveAttribute("href", status === "succeeded" ? "/runs/build-42/use" : "/runs/build-42");
-    await expect(notice).toContainText(status === "succeeded" ? "Your API is ready." : status === "cancelled" ? "Your build was cancelled." : "Your build needs a look.");
-    await page.getByRole("button", { name: "Dismiss build update" }).click();
-    await page.clock.runFor(20000);
-    await expect(notice).not.toBeVisible();
-    expect(requests).toBe(2);
+    await expect(page.getByRole("heading", { name: "Agent City", exact: true })).toBeVisible();
+    await expect(page.locator('[data-city-stage="coder"]')).toHaveAttribute("data-state", status === "succeeded" ? "done" : "stopped");
+    await expect(page.locator('[data-city-stage][data-state="working"]')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Replay run", exact: true })).toBeVisible();
   });
 }
 

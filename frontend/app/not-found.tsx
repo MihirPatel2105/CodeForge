@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { ArrowRight, House } from "lucide-react";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SiteFooter } from "@/components/marketing/marketing-actions";
@@ -21,12 +21,12 @@ export default function NotFound() {
             The link may have changed, or the page no longer exists.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/projects" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-accent px-5 text-[14px] font-[600] text-surface transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+            <ButtonLink size="lg" href="/projects" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-accent px-5 text-[14px] font-[600] text-surface transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
               Back to projects<ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <Link href="/" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong bg-surface px-5 text-[14px] font-[600] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+            </ButtonLink>
+            <ButtonLink variant="outline" size="lg" href="/" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong bg-surface px-5 text-[14px] font-[600] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
               <House className="size-4" aria-hidden />Go home
-            </Link>
+            </ButtonLink>
           </div>
         </div>
       </main>
