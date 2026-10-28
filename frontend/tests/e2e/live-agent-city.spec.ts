@@ -241,9 +241,13 @@ test("sample replay reveals repaired source only after its recorded file rewrite
   expect(repairStart).toBeGreaterThan(0);
   expect(rewrite).toBeGreaterThan(repairStart);
   await page.goto("/playground/agent-city?demo=library");
+  // The slider is server-rendered; its change handler is ready after the scene's effect runs.
+  await expect(page.locator(".lc-world")).toHaveAttribute("data-status", /^(ready|fallback)$/);
   const scene = page.getByRole("region", { name: "Live agent city", exact: true });
   const position = page.getByRole("slider", { name: "Replay position", exact: true });
   await position.fill(String(repairStart + 1));
+  await expect(position).toHaveValue(String(repairStart + 1));
+  await expect(page.locator('[data-city-stage="coder"]')).toHaveAttribute("data-state", "working");
   await expect(scene).toHaveAttribute("data-animation-paused", "true");
   await page.getByRole("button", { name: "Inspect Coder", exact: true }).click();
   const evidence = page.getByRole("region", { name: "Stage evidence", exact: true });

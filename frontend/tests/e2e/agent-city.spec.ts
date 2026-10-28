@@ -1,8 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { OrthographicCamera, Vector3 } from "three";
 import { bugs } from "../../app/playground/agent-city/city-data";
 
+// Keep real WebGL/navigation coverage affordable on software-rendered CI runners.
+test.use({ deviceScaleFactor: 0.5 });
+
+async function advanceUntil(page: Page, reached: () => Promise<boolean>) {
+  for (let elapsed = 0; elapsed < 12_000 && !await reached(); elapsed += 200) {
+    await page.clock.runFor(200);
+  }
+}
+
 test("walk the five-agent quest, save progress, and restart", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install();
@@ -16,7 +27,7 @@ test("walk the five-agent quest, save progress, and restart", async ({ page }, t
   const names = ["PM", "Architect", "Coder", "Reviewer", "Tester"];
   for (let i = 0; i < names.length; i++) {
     await page.getByRole("button", { name: `Visit ${names[i]}`, exact: true }).click();
-    await page.clock.runFor(4500);
+    await advanceUntil(page, () => page.getByRole("heading", { name: `Hey, I’m the ${names[i]}.` }).isVisible());
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByRole("heading", { name: `Hey, I’m the ${names[i]}.` })).toBeVisible();
     if (i === 0) await page.getByRole("radio", { name: "Task API" }).check();
@@ -84,6 +95,8 @@ test("the quest is playable when WebGL is unavailable", async ({ page }) => {
 });
 
 test("click-to-walk discovers the bugs and the hidden coffee nook", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.clock.install();
   await page.goto("/playground/agent-city");
   await expect(page.locator(".city-world")).toHaveAttribute("data-status", "ready");
@@ -98,15 +111,16 @@ test("click-to-walk discovers the bugs and the hidden coffee nook", async ({ pag
   const clickLandmark = async (x: number, y: number, z: number) => {
     const point = new Vector3(x,y,z).project(camera);
     await canvas.click({ position: { x: (point.x+1)*bounds.width/2, y: (1-point.y)*bounds.height/2 } });
-    await page.clock.runFor(6000);
   };
   await page.clock.runFor(100);
   await clickLandmark(-2.9,0.65,2.6);
+  await advanceUntil(page, () => page.getByRole("heading", { name: "The unofficial sixth agent." }).isVisible());
   await expect(page.getByRole("heading", { name: "The unofficial sixth agent." })).toBeVisible();
   await page.getByRole("button", { name: "Back to the island" }).click();
   await expect(page.locator(".city-collectibles")).toContainText("Nook found");
   for (let i = 0; i < bugs.length; i++) {
     await clickLandmark(bugs[i].x,0.45,bugs[i].z);
+    await advanceUntil(page, async () => (await page.locator(".city-collectibles").textContent())?.includes(`${i+1}/3 bugs`) ?? false);
     await expect(page.locator(".city-collectibles")).toContainText(`${i+1}/3 bugs`);
   }
 });
