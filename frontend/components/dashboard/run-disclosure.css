@@ -1,0 +1,19 @@
+.cf-run-disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows var(--ui-duration-panel, 280ms) var(--ui-ease),
+    opacity var(--ui-duration-standard, 220ms) var(--ui-ease),
+    visibility 0s var(--ui-duration-panel, 280ms);
+}
+.cf-run-disclosure[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.cf-run-disclosure-content { min-height: 0; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .cf-run-disclosure { transition: none; }
+}

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { RunDisclosure } from "./run-disclosure";
 import { ChevronDown, Clock3 } from "lucide-react";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
 import { formatElapsed, parseApiTime } from "@/lib/format";
@@ -15,6 +17,8 @@ export function RunOverview({ snapshot, title, playbackTime, actions }: {
   actions?: ReactNode;
 }) {
   const [now, setNow] = useState<number | null>(null);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const requestId = useId();
   useEffect(() => {
     if (playbackTime != null || snapshot.endedAt || !snapshot.startedAt) return;
     setNow(Date.now());
@@ -58,11 +62,13 @@ export function RunOverview({ snapshot, title, playbackTime, actions }: {
           <div><dt>Tests</dt><dd>{snapshot.tests ? `${snapshot.tests.passed}/${snapshot.tests.total}` : "Pending"}</dd></div>
           {snapshot.iterations > 0 && <div className="cf-overview-loops"><dt>Repair loops</dt><dd>{snapshot.iterations}</dd></div>}
         </dl>
-        {snapshot.prompt && <details className="cf-run-request-details">
-          <summary>View request <ChevronDown size={13} aria-hidden="true" /></summary>
-          <p>{snapshot.prompt}</p>
-        </details>}
+        {snapshot.prompt && <Button variant="ghost" size="sm" className="cf-request-toggle" aria-expanded={requestOpen} aria-controls={requestId} onClick={() => setRequestOpen(open => !open)}>
+          View request <ChevronDown size={13} aria-hidden="true" />
+        </Button>}
       </div>
+      {snapshot.prompt && <RunDisclosure open={requestOpen}>
+        <section id={requestId} className="cf-run-request-details" aria-label="Full request"><p>{snapshot.prompt}</p></section>
+      </RunDisclosure>}
     </header>
   );
 }

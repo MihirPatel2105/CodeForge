@@ -139,6 +139,65 @@ for (const width of [1440, 375]) {
   });
 }
 
+for (const width of [1440, 375]) {
+  test(`run disclosures animate both ways and keep the request toggle fixed at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/demo/library");
+    await page.getByRole("button", { name: "Skip", exact: true }).click();
+    for (const label of ["View request", "Show stage details"]) {
+      const toggle = page.getByRole("button", { name: label, exact: true });
+      const id = (await toggle.getAttribute("aria-controls"))!;
+      const panel = page.locator(`[id="${id}"]`).locator("xpath=../..");
+      for (const opening of [true, false]) {
+        const measurement = await panel.evaluate(async (element, { id, opening }) => {
+          const button = document.querySelector<HTMLButtonElement>(`button[aria-controls="${CSS.escape(id)}"][aria-expanded]`)!;
+          const before = button.getBoundingClientRect();
+          const start = element.getBoundingClientRect().height;
+          const changed = new Promise<void>((resolve, reject) => {
+            const timeout = window.setTimeout(() => reject(new Error(`Toggle did not update ${element.className}: ${button.textContent}, open=${element.getAttribute("data-open")}`)), 3000);
+            const observer = new MutationObserver(() => { window.clearTimeout(timeout); observer.disconnect(); resolve(); });
+            observer.observe(element, { attributes: true, attributeFilter: ["data-open"] });
+          });
+          button.click();
+          await changed;
+          element.getBoundingClientRect();
+          const animation = element.getAnimations().find(animation => animation instanceof CSSTransition && animation.transitionProperty === "grid-template-rows");
+          if (!animation) throw new Error(`Missing ${opening ? "opening" : "closing"} height transition`);
+          animation.pause();
+          animation.currentTime = Number(animation.effect!.getComputedTiming().duration) / 2;
+          const middle = element.getBoundingClientRect().height;
+          for (const transition of element.getAnimations()) transition.finish();
+          const end = element.getBoundingClientRect().height;
+          const after = button.getBoundingClientRect();
+          return { start, middle, end, dx: after.x - before.x, dy: after.y - before.y };
+        }, { id, opening });
+        expect(measurement.middle).toBeGreaterThan(Math.min(measurement.start, measurement.end));
+        expect(measurement.middle).toBeLessThan(Math.max(measurement.start, measurement.end));
+        if (label === "View request") {
+          expect(Math.abs(measurement.dx)).toBeLessThan(1);
+          expect(Math.abs(measurement.dy)).toBeLessThan(1);
+        }
+        if (!opening) expect(measurement.end).toBe(0);
+      }
+    }
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    for (const label of ["View request", "Show stage details"]) {
+      const id = (await page.getByRole("button", { name: label, exact: true }).getAttribute("aria-controls"))!;
+      const toggle = page.locator(`button[aria-controls="${id}"][aria-expanded]`);
+      await toggle.click();
+      const panel = page.locator(`[id="${id}"]`).locator("xpath=../..");
+      await expect(panel).toHaveCSS("transition-duration", "0s");
+      await expect(page.locator(`[id="${id}"]`)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.screenshot({ path: testInfo.outputPath(`${label}.png`), fullPage: true });
+      await toggle.click();
+      await expect(page.locator(`[id="${id}"]`)).toBeHidden();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  });
+}
+
 for (const [width, height] of [[1440, 900], [1280, 720]]) {
   test(`compact run leaves generated code in view at ${width}×${height}`, async ({ page }) => {
     await page.setViewportSize({ width, height });
@@ -152,13 +211,13 @@ for (const [width, height] of [[1440, 900], [1280, 720]]) {
     })).toBeGreaterThanOrEqual(140);
     expect(await editor.evaluate(element => element.clientHeight)).toBeGreaterThanOrEqual(360);
     const request = page.locator(".cf-run-request-details");
-    await expect(request).not.toHaveAttribute("open");
-    await request.getByText("View request", { exact: true }).focus();
+    await expect(page.getByRole("button", { name: "View request", exact: true })).toHaveAttribute("aria-expanded", "false");
+    await page.getByRole("button", { name: "View request", exact: true }).focus();
     await page.keyboard.press("Enter");
-    await expect(request).toHaveAttribute("open", "");
+    await expect(page.getByRole("button", { name: "View request", exact: true })).toHaveAttribute("aria-expanded", "true");
     await expect(request.locator("p")).toHaveText(/personal library of books/);
     await page.keyboard.press("Enter");
-    await expect(request).not.toHaveAttribute("open");
+    await expect(page.getByRole("button", { name: "View request", exact: true })).toHaveAttribute("aria-expanded", "false");
   });
 }
 

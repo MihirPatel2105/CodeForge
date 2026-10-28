@@ -11,6 +11,7 @@ import { formatDuration } from "@/lib/format";
 import type { AgentSnapshot, LoopSnapshot } from "@/lib/run-reducer";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { RunDisclosure } from "./run-disclosure";
 import "./run-dashboard.css";
 import "./pipeline-compact.css";
 
@@ -124,12 +125,14 @@ export function PipelineStrip({ agents, lastLoop, activity = [], playbackTime }:
           </Button>
         </div>
       </div>
-      <section id={detailId} className="cf-agent-detail" aria-label="Selected stage details" hidden={!detailsOpen}>
+      <RunDisclosure open={detailsOpen}>
+      <section id={detailId} className="cf-agent-detail" aria-label="Selected stage details">
         <div className="cf-agent-detail-heading"><span>{selected.name} <span>· Stage {selected.index}</span></span><div><span>{inspected ? "Inspecting a stage" : "Following the workflow"}</span></div></div>
         <div className="cf-agent-detail-body"><div><h3>{selected.job}</h3><StageActivity key={`${selected.id}-${selectedSnapshot.iteration}`} name={selected.name} snapshot={selectedSnapshot} activity={recentActivity} playbackTime={playbackTime} /></div>
           {(selectedSnapshot.model || selectedSnapshot.durationMs != null || selectedSnapshot.iteration > 0) && <dl>{selectedSnapshot.model && <div><dt>{selected.id === "sandbox" ? "Runtime image" : "Model"}</dt><dd>{selectedSnapshot.model}</dd></div>}{selectedSnapshot.durationMs != null && <div><dt>Duration</dt><dd>{formatDuration(selectedSnapshot.durationMs)}</dd></div>}{selectedSnapshot.iteration > 0 && <div><dt>Pass</dt><dd>{selectedSnapshot.iteration + 1}</dd></div>}</dl>}
         </div>
       </section>
+      </RunDisclosure>
     </div>
   );
 }
