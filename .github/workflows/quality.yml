@@ -77,7 +77,10 @@ jobs:
           path: frontend/test-results
 
   sandbox-smoke:
-    runs-on: ubuntu-latest
+    # MongoDB 8 refuses the Linux 7.0 kernel on current ubuntu-latest runners.
+    # Keep the 6.8 runner kernel until SERVER-136848 is fixed; revisit before
+    # ubuntu-22.04 retires in April 2027.
+    runs-on: ubuntu-22.04
     services:
       mongo:
         image: mongo:7
