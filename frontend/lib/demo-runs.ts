@@ -173,6 +173,21 @@ function buildEvents(demo: DemoRunDefinition): CodeForgeEvent[] {
   return events.sort((a, b) => a.at.localeCompare(b.at));
 }
 
+/** The client setup real runs emit: Beanie 2 on PyMongo's async client (motor is not installed). */
+function databaseFile(model: string): string {
+  return `from beanie import init_beanie
+from pymongo import AsyncMongoClient
+
+from models import ${model}
+
+
+async def init_db() -> AsyncMongoClient:
+    client = AsyncMongoClient("mongodb://localhost:27017", tz_aware=True)
+    await init_beanie(database=client.appdb, document_models=[${model}])
+    return client
+`;
+}
+
 const definitions: DemoRunDefinition[] = [
   {
     slug: "library",
@@ -200,13 +215,13 @@ const definitions: DemoRunDefinition[] = [
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.patch(\"/books/{book_id}\")\nasync def update(book_id: str, body: BookIn):\n    return await update_book(book_id, body)\n",
       "models.py": "from beanie import Document\n\nclass Book(Document):\n    title: str\n    author: str\n    isbn: str\n    read: bool = False\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass BookIn(BaseModel):\n    title: str\n    author: str\n    isbn: str\n    read: bool = False\n\nclass BookOut(BookIn):\n    id: str\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Book"),
     },
     finalFiles: {
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.patch(\"/books/{book_id}\", response_model=BookOut)\nasync def update(book_id: str, body: BookIn):\n    return await update_book(book_id, body)\n",
       "models.py": "from beanie import Document\n\nclass Book(Document):\n    title: str\n    author: str\n    isbn: str\n    read: bool = False\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass BookIn(BaseModel):\n    title: str\n    author: str\n    isbn: str\n    read: bool = False\n\nclass BookOut(BookIn):\n    id: str\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Book"),
     },
     testFile: { path: "test_main.py", content: "def test_create_book(client):\n    response = client.post(\"/books\", json={\"title\": \"Networks\", \"author\": \"A. Author\", \"isbn\": \"123\"})\n    assert response.status_code == 201\n" },
     tests: 8,
@@ -237,13 +252,13 @@ const definitions: DemoRunDefinition[] = [
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.patch(\"/products/{product_id}/stock\")\nasync def update_stock(product_id: str, body: StockUpdate):\n    return await change_stock(product_id, body)\n",
       "models.py": "from beanie import Document\n\nclass Product(Document):\n    name: str\n    stock: int = 0\n    warehouse: str\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass StockUpdate(BaseModel):\n    stock: int\n\nclass ProductOut(BaseModel):\n    id: str\n    name: str\n    stock: int\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Product"),
     },
     finalFiles: {
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.patch(\"/products/{product_id}/stock\", response_model=ProductOut)\nasync def update_stock(product_id: str, body: StockUpdate):\n    return await change_stock(product_id, body)\n",
       "models.py": "from beanie import Document\n\nclass Product(Document):\n    name: str\n    stock: int = 0\n    warehouse: str\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass StockUpdate(BaseModel):\n    stock: int\n\nclass ProductOut(BaseModel):\n    id: str\n    name: str\n    stock: int\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Product"),
     },
     testFile: { path: "test_products.py", content: "def test_update_stock(client):\n    response = client.patch(\"/products/1/stock\", json={\"stock\": 12})\n    assert response.status_code in (200, 404)\n" },
     tests: 10,
@@ -274,13 +289,13 @@ const definitions: DemoRunDefinition[] = [
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.post(\"/tickets\", status_code=201)\nasync def open_ticket(body: TicketCreate):\n    return await create_ticket(body)\n",
       "models.py": "from beanie import Document\n\nclass Ticket(Document):\n    title: str\n    priority: str = \"normal\"\n    status: str = \"open\"\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass TicketCreate(BaseModel):\n    title: str\n    priority: str = \"normal\"\n\nclass TicketOut(TicketCreate):\n    id: str\n    status: str\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Ticket"),
     },
     finalFiles: {
       "main.py": "from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.post(\"/tickets\", status_code=201, response_model=TicketOut)\nasync def open_ticket(body: TicketCreate):\n    return await create_ticket(body)\n",
       "models.py": "from beanie import Document\n\nclass Ticket(Document):\n    title: str\n    priority: str = \"normal\"\n    status: str = \"open\"\n",
       "schemas.py": "from pydantic import BaseModel\n\nclass TicketCreate(BaseModel):\n    title: str\n    priority: str = \"normal\"\n\nclass TicketOut(TicketCreate):\n    id: str\n    status: str\n",
-      "database.py": "from motor.motor_asyncio import AsyncIOMotorClient\n\nclient = AsyncIOMotorClient(\"mongodb://localhost:27017\")\n",
+      "database.py": databaseFile("Ticket"),
     },
     testFile: { path: "test_tickets.py", content: "def test_open_ticket(client):\n    response = client.post(\"/tickets\", json={\"title\": \"Cannot sign in\"})\n    assert response.status_code == 201\n" },
     tests: 12,

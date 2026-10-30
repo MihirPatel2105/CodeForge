@@ -15,8 +15,7 @@ import "./hero-workspace.css";
 
 const DEMO = getDemoRun("library");
 const EVENT_INTERVAL_MS = 700;
-// database.py is left out: the scripted demo still uses motor, which real runs never emit.
-const FILES = ["models.py", "schemas.py", "main.py", DEMO.testFile.path] as const;
+const FILES = ["models.py", "schemas.py", "database.py", "main.py", DEMO.testFile.path] as const;
 const NO_CHANGES: ReadonlySet<number> = new Set();
 const START_MS = Date.parse(DEMO.events[0].at);
 const TOTAL_MS = Date.parse(DEMO.events[DEMO.events.length - 1].at) - START_MS;

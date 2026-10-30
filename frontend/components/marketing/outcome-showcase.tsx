@@ -56,13 +56,13 @@ const FILES: Array<{
     status: "updated",
     lines: [
       { value: "from beanie import init_beanie" },
-      { value: "from motor.motor_asyncio import AsyncIOMotorClient" },
+      { value: "from pymongo import AsyncMongoClient" },
       { value: "from models import Book" },
       { value: "" },
       { value: "async def connect_database():" },
-      { value: '    client = AsyncIOMotorClient(\"mongodb://db:27017\")' },
+      { value: '    client = AsyncMongoClient(\"mongodb://db:27017\", tz_aware=True)' },
       { value: "    await init_beanie(" },
-      { value: "        database=client.library, document_models=[Book]" },
+      { value: "        database=client.appdb, document_models=[Book]" },
     ],
   },
   {
