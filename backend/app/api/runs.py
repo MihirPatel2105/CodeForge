@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from app.core.abuse_limits import check_run_submission_limit
 from app.core.deps import CurrentUser, get_owned
 from app.core.exceptions import ConflictError, NotFoundError
-from app.core.usage_limits import confirm_run_admission, release_count, reserve_run
+from app.core.usage_limits import admit_run
 from app.db import aggregate_rows, get_database
 from app.db.artifacts import list_artifacts, read_artifact, unzip_tree
 from app.events import events
@@ -104,15 +104,7 @@ async def create_run(payload: RunCreate, user: CurrentUser, request: Request) ->
         status="queued",
     )
     run.id = ObjectId()
-    reservation = await reserve_run(run, user)
-    try:
-        await run.insert()
-        await confirm_run_admission(str(run.id))
-    except BaseException:
-        await release_count(reservation)
-        await get_database().run_admissions.delete_one({"_id": str(run.id)})
-        await run.delete()
-        raise
+    await admit_run(run, user)
 
     run_id = str(run.id)
     try:

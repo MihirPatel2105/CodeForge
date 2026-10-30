@@ -23,6 +23,7 @@ from app.core.deps import AdminUser, is_admin_user
 from app.core.email import send_account_deleted_email
 from app.core.exceptions import AuthError, ConflictError, NotFoundError
 from app.core.security import verify_password
+from app.core.usage_limits import admit_run
 from app.core.user_updates import update_user
 from app.db.artifacts import list_artifacts, read_artifact
 from app.db.mongo import get_database
@@ -406,19 +407,35 @@ async def retry_run(
     retried = Run(
         project_id=source.project_id, user_id=source.user_id, prompt=source.prompt, status="queued"
     )
-    await retried.insert()
+    retried.id = ObjectId()
     retried_id = str(retried.id)
-    state = new_run_state(
-        run_id=retried_id,
-        project_id=source.project_id,
-        user_id=source.user_id,
-        thread_id=retried_id,
-        user_prompt=source.prompt,
-        rag_enabled=bool((source.state or {}).get("rag_enabled", True)),
-    )
-    retried.state = {**state, "started_at": state["started_at"].isoformat(), "retried_from": run_id}
-    await retried.save()
-    await executor.start_run(retried)
+    # The run belongs to the owner, so it is admitted against the owner's monthly and
+    # active-run limits exactly as `POST /runs` would admit it.
+    await admit_run(retried, user)
+    try:
+        state = new_run_state(
+            run_id=retried_id,
+            project_id=source.project_id,
+            user_id=source.user_id,
+            thread_id=retried_id,
+            user_prompt=source.prompt,
+            rag_enabled=bool((source.state or {}).get("rag_enabled", True)),
+        )
+        retried.state = {
+            **state,
+            "started_at": state["started_at"].isoformat(),
+            "retried_from": run_id,
+        }
+        await retried.save()
+        await executor.start_run(retried)
+    except BaseException:
+        if not executor.is_running(retried_id):
+            await Run.get_pymongo_collection().update_one(
+                {"_id": retried.id},
+                {"$set": {"status": "failed_llm", "updated_at": datetime.now(UTC)}},
+            )
+            await get_database().run_admissions.delete_one({"_id": retried_id})
+        raise
     await _audit(
         admin,
         action="run.retried",

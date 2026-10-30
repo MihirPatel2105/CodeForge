@@ -102,14 +102,21 @@ def _sibling_context(by_path: dict[str, GeneratedFile], exclude: str) -> str:
     return "\n\n".join(parts)
 
 
+def _failure_code(exc: Exception) -> str:
+    """One label for an agent failure, shared by run state and the `agent.failed` event.
+
+    Only an exhausted provider chain is `llm_exhausted`; recovery offers a retry for that
+    alone, so any other cause must not borrow the label.
+    """
+    return "llm_exhausted" if isinstance(exc, ProviderExhaustedError) else type(exc).__name__
+
+
 def _error(state: State, agent: str, exc: Exception) -> list[dict]:
     errors = list(state.get("errors") or [])
     errors.append(
         {
             "agent": agent,
-            "code": "llm_exhausted"
-            if isinstance(exc, ProviderExhaustedError)
-            else type(exc).__name__,
+            "code": _failure_code(exc),
             "message": str(exc)[:400],
             "at": datetime.now(UTC).isoformat(),
         }
@@ -147,7 +154,7 @@ async def pm_node(state: State) -> State:
         update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "pm", exc)
         update["status"] = "failed_llm"
-        await events.agent_failed(run_id, "pm", "llm_exhausted", str(exc))
+        await events.agent_failed(run_id, "pm", _failure_code(exc), str(exc))
 
     await save_state({**state, **update})
     return update
@@ -183,7 +190,7 @@ async def architect_node(state: State) -> State:
         update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "architect", exc)
         update["status"] = "failed_llm"
-        await events.agent_failed(run_id, "architect", "llm_exhausted", str(exc))
+        await events.agent_failed(run_id, "architect", _failure_code(exc), str(exc))
 
     await save_state({**state, **update})
     return update
@@ -472,7 +479,7 @@ async def reviewer_node(state: State) -> State:
         update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "reviewer", exc)
         update["status"] = "failed_llm"
-        await events.agent_failed(run_id, "reviewer", "llm_exhausted", str(exc))
+        await events.agent_failed(run_id, "reviewer", _failure_code(exc), str(exc))
 
     await save_state({**state, **update})
     return update
@@ -508,7 +515,7 @@ async def tester_node(state: State) -> State:
         update.update(_failed_usage_update(state, exc))
         update["errors"] = _error(state, "tester", exc)
         update["status"] = "failed_llm"
-        await events.agent_failed(run_id, "tester", "llm_exhausted", str(exc))
+        await events.agent_failed(run_id, "tester", _failure_code(exc), str(exc))
 
     await save_state({**state, **update})
     return update

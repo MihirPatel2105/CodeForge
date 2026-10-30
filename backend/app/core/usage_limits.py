@@ -107,6 +107,23 @@ async def reserve_run(run: Run, user: User) -> str:
     return key
 
 
+async def admit_run(run: Run, user: User) -> None:
+    """Reserve capacity for `run` against `user`'s limits, then insert it.
+
+    `run.id` must already be set so the admission and the document share one id. On any
+    failure the reservation, admission and document are all rolled back.
+    """
+    reservation = await reserve_run(run, user)
+    try:
+        await run.insert()
+        await confirm_run_admission(str(run.id))
+    except BaseException:
+        await release_count(reservation)
+        await get_database().run_admissions.delete_one({"_id": str(run.id)})
+        await run.delete()
+        raise
+
+
 async def confirm_run_admission(run_id: str) -> None:
     if await get_database().run_admissions.find_one({"_id": run_id}) is None:
         raise SecurityServiceError("Run admission expired. Please try again.")
