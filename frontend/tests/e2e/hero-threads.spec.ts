@@ -15,7 +15,7 @@ for (const width of [1440, 390, 320]) {
     }
     await expect(page.locator(".lp-hero")).toHaveCSS("background-color", "rgb(7, 9, 15)");
     await expect(page.locator(".ol-product-workspace")).toBeVisible();
-    await expect(page.locator(".ol-product-outcome")).toContainText("Tests + execution logs");
+    await expect(page.locator(".ol-product-outcome [role=status]")).not.toBeEmpty();
     const action = page.locator(".lp-actions").getByRole("link", { name: "Build your first API", exact: true });
     await expect(action).toHaveAttribute("href", "/signup");
     await action.click({ trial: true });

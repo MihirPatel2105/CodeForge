@@ -19,7 +19,7 @@ import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import type { DemoRun } from "@/lib/demo-runs";
 import { useMotionPreference } from "@/lib/use-motion-preference";
-import { reduceRun } from "@/lib/run-reducer";
+import { useDemoPlayback } from "@/lib/use-demo-playback";
 import { useCurrentUser } from "@/lib/use-current-user";
 
 const EVENT_INTERVAL_MS = 980;
@@ -27,30 +27,17 @@ const EVENT_INTERVAL_MS = 980;
 export function DemoRunPage({ demo }: { demo: DemoRun }) {
   const user = useCurrentUser();
   const reducedMotion = useMotionPreference();
-  const [eventIndex, setEventIndex] = useState(0);
-  const [playing, setPlaying] = useState(true);
   const [controlsReady, setControlsReady] = useState(false);
   useEffect(() => { setControlsReady(true); }, []);
-  const lastEventIndex = demo.events.length - 1;
-  const isComplete = eventIndex >= lastEventIndex;
-
-  const snapshot = useMemo(
-    () => reduceRun(demo.events.slice(0, eventIndex + 1)),
-    [demo.events, eventIndex],
-  );
-
-  useEffect(() => {
-    if (!playing || isComplete) return;
-    const timer = window.setTimeout(() => setEventIndex((current) => current + 1), EVENT_INTERVAL_MS);
-    return () => window.clearTimeout(timer);
-  }, [eventIndex, isComplete, playing]);
-
-  useEffect(() => {
-    if (!isComplete) return;
-    setPlaying(false);
-  }, [isComplete]);
-
-
+  const {
+    eventIndex,
+    snapshot,
+    playing,
+    isComplete,
+    setPlaying,
+    replay,
+    skipToEnd: skipToResult,
+  } = useDemoPlayback(demo.events, { intervalMs: EVENT_INTERVAL_MS });
 
   const finalFiles = useMemo(
     () => ({ ...demo.finalFiles, [demo.testFile.path]: demo.testFile.content }),
@@ -73,16 +60,6 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
     },
     [demo.initialFiles],
   );
-
-  function replay() {
-    setEventIndex(0);
-    setPlaying(true);
-  }
-
-  function skipToResult() {
-    setEventIndex(lastEventIndex);
-    setPlaying(false);
-  }
 
   return (
     <div className="cf-run-page cf-run-refined min-h-screen bg-bg">
@@ -185,7 +162,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
               <div>
                 <p className="text-[13px] font-[700] text-warn">Human checkpoint</p>
                 <p className="mt-1 text-[13.5px] leading-5 text-fg-muted">
-                  This recorded run pauses for approval before continuing. The replay resumes automatically.
+                  This sample replay pauses for approval before continuing. It resumes automatically.
                 </p>
               </div>
             </div>
@@ -195,7 +172,7 @@ export function DemoRunPage({ demo }: { demo: DemoRun }) {
         <section className="cf-run-pipeline mt-5 overflow-hidden rounded-2xl border border-border bg-surface" aria-labelledby="demo-pipeline-heading">
           <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-3 sm:px-6">
             <div>
-              <span className="text-[12px] font-[650] text-accent">Recorded orchestration</span>
+              <span className="text-[12px] font-[650] text-accent">Sample orchestration</span>
               <h2 id="demo-pipeline-heading" className="font-display mt-1 text-[24px] font-[700] tracking-[-0.04em] text-fg">Agent pipeline</h2>
             </div>
             <span className="text-[11px] text-fg-muted">

@@ -52,7 +52,7 @@ export function DemoCarousel() {
         const lines = demo.finalFiles["main.py"].trimEnd().split("\n");
         return <div key={demo.slug} className="cf-demo-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${examples.length}: ${demo.label}`}>
           <div className="cf-demo-brief"><div className="cf-demo-slide-top"><span className="cf-demo-case-icon"><Icon size={22} strokeWidth={1.5} aria-hidden /></span><span>Example API / 0{index + 1}</span></div>
-            <span className="cf-demo-case-label">{demo.label} / Recorded build</span><h3>{demo.title}</h3><p>{demo.prompt}</p>
+            <span className="cf-demo-case-label">{demo.label} / Sample replay</span><h3>{demo.title}</h3><p>{demo.prompt}</p>
             <div className="cf-demo-facts"><span><FileCode2 size={13} aria-hidden />{files.length} generated files</span><span><Check size={13} aria-hidden />{demo.tests} tests passed</span></div>
             <Link href={`/demo/${demo.slug}`} className="cf-demo-slide-link">Explore {demo.label} API<span><AnimatedArrow /></span></Link>
           </div>

@@ -40,7 +40,7 @@ export function RunOverview({ snapshot, title, playbackTime, actions }: {
       <div className="cf-overview-heading">
         <div className="cf-overview-title">
           <div className="cf-overview-eyebrow">
-            <span>{replay ? "Recorded example" : "API build"}</span>
+            <span>{replay ? "Sample replay" : "API build"}</span>
             {snapshot.runId && !replay && <span>run {snapshot.runId.slice(0, 8)}</span>}
             {replay && <span>Replay · no model calls</span>}
           </div>
