@@ -21,8 +21,7 @@ test("templates, drafts, reuse, filters and project management", async ({ page }
   });
   await page.route(`**/api/backend/projects/${project.id}/runs/page*`, route => route.fulfill({ json: { items: new URL(route.request().url()).searchParams.get("q") ? [] : [run], stats, next_cursor: null } }));
   await page.goto(`/projects/${project.id}`);
-  await page.getByLabel("Starter template").selectOption("0");
-  await page.getByRole("button", { name: "Use template", exact: true }).click();
+  await page.getByRole("group", { name: "Start from a template" }).getByRole("button", { name: "Task manager", exact: true }).click();
   await expect(page.getByLabel("Describe the API")).toHaveValue(/tasks/);
   await page.getByLabel("Describe the API").fill("My saved library prompt");
   await expect.poll(() => page.evaluate(() => localStorage.getItem("codeforge:draft:workspace-user:workspace-project"))).toContain("My saved library prompt");

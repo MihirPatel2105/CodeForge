@@ -2,42 +2,27 @@
 
 import "./workspace-design.css";
 
-import { motion } from "motion/react";
-import { useMotionPreference } from "@/lib/use-motion-preference";
 
-import { RunStatusFilter } from "./run-status-filter";
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
-import { GenerateButton } from "@/components/ui/vengeance/generate-button";
 import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
 import { Notice } from "@/components/ui/notice";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Clock3,
-  Play,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DeletionDialog } from "@/components/ui/deletion-dialog";
-import { tone, RUN_STATUS_META } from "@/lib/tone";
-import { formatElapsed, formatWhen } from "@/lib/format";
 import { runStats } from "@/lib/run-stats";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse, RunSummary } from "@/lib/types";
-import { API_TEMPLATES, readLocal, writeLocal } from "@/lib/workspace-storage";
+import { readLocal, writeLocal } from "@/lib/workspace-storage";
 import { useSession } from "@/lib/use-current-user";
 import { ProjectSettings } from "@/components/dashboard/project-settings";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { PromptStudio } from "@/components/dashboard/prompt-studio";
+import { RunHistoryList } from "@/components/dashboard/run-history-list";
 
 const LABEL = "text-[12px] font-[650] text-fg-muted";
 
@@ -64,7 +49,6 @@ export function ProjectDetail({
   onLoadMore?: () => void;
 }) {
   const router = useRouter();
-  const reduced = useMotionPreference();
   const [prompt, setPrompt] = useState("");
   const [ragEnabled, setRagEnabled] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -75,7 +59,6 @@ export function ProjectDetail({
   const [loadedDraft, setLoadedDraft] = useState<string | null>(null);
   const [draftStatus, setDraftStatus] = useState("");
   const [parentRunId, setParentRunId] = useState<string | null>(null);
-  const [template, setTemplate] = useState("");
 
   useEffect(() => {
     if (!draftKey) return;
@@ -156,168 +139,31 @@ export function ProjectDetail({
         </section>
 
         <div className="cf-project-workspace mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:items-start">
-          {/* Prompt entry. Sticky so it stays reachable while a long history scrolls. */}
-          <section className="cf-prompt-stage overflow-hidden rounded-3xl border border-border bg-surface lg:sticky lg:top-[88px]">
-            <div className="cf-project-composer-head border-b border-rule px-5 py-4">
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
-                  <Play className="h-4 w-4 fill-current" aria-hidden />
-                </span>
-                <div>
-                  <h2 className="font-display text-[20px] font-[700] tracking-[-0.035em] text-fg">
-                    What do you want to build?
-                  </h2>
-                  <p className="mt-0.5 text-[13px] text-fg-muted">
-                    Describe the API in plain language.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 p-5">
-              <label className="text-[13px] font-semibold">Start from a template<select aria-label="Starter template" value={template} onChange={e => setTemplate(e.target.value)} className="cf-project-select mt-2 h-11 w-full rounded-xl border border-border bg-bg px-3"><option value="">Choose a template</option>{API_TEMPLATES.map((item, index) => <option key={item.name} value={index}>{item.name}</option>)}</select></label>
-              {template !== "" && <Button variant="outline" onClick={() => { setPrompt(API_TEMPLATES[Number(template)].prompt); setParentRunId(null); setTemplate(""); }}>Use template{prompt.trim() ? " and replace draft" : ""}</Button>}
-              <p className="text-[13px] leading-5 text-fg-muted">Describe 1–2 entities, their fields, and validation rules. CodeForge builds CRUD REST APIs; generated apps do not include a frontend or sign-in system.</p>
-              <div className="flex flex-col gap-[7px]">
-                <label htmlFor="prompt" className={LABEL}>Describe the API</label>
-                <Textarea
-                  id="prompt"
-                  maxLength={12000}
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="I want an API to manage…"
-                  className="min-h-[136px] resize-y rounded-xl border-border-strong bg-bg/60 px-4 py-3.5 text-[16px] leading-[1.6] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/10 md:text-[15px]"
-                />
-              </div>
-
-              {parentRunId && <div className="rounded-xl bg-accent-soft p-3 text-sm"><Link href={`/runs/${parentRunId}`} className="text-accent underline">Revising an existing API</Link><Button variant="ghost" size="sm" onClick={() => setParentRunId(null)}>Start independently instead</Button></div>}
-              <p role="status" className="text-xs text-fg-muted">{draftStatus}</p>
-              <div className="rounded-lg border border-border bg-surface-2/70 p-3.5">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-fg-muted">
-                    <BookOpen className="h-4 w-4" aria-hidden />
-                  </span>
-                  <label htmlFor="rag-enabled" className="min-w-0 flex-1 cursor-pointer">
-                    <span className="block text-[13px] font-[650] text-fg">Use example library</span>
-                    <span className="mt-0.5 block text-[11.5px] leading-[1.4] text-fg-faint">
-                      {ragEnabled ? "Agents see 6 similar APIs" : "Agents use this prompt alone"}
-                    </span>
-                  </label>
-                  <Switch
-                    id="rag-enabled"
-                    checked={ragEnabled}
-                    onCheckedChange={setRagEnabled}
-                    aria-label="Use example library"
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <Notice>
-                  {error}
-                </Notice>
-              )}
-
-              <GenerateButton onClick={startRun} disabled={!prompt.trim()} isGenerating={starting} />
-
-              <p className="flex gap-2 text-[11.5px] leading-[1.5] text-fg-faint">
-                <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                The run pauses for approval after requirements and system design.
-              </p>
-            </div>
-          </section>
-
-          {/* Run history */}
-          <section className="min-w-0 overflow-hidden rounded-3xl border border-border bg-surface" aria-labelledby="run-history-heading">
-            <div className="flex items-end justify-between gap-5 border-b border-rule bg-surface-2/55 px-5 py-5 md:px-6">
-              <div>
-                <h2 id="run-history-heading" className="font-display text-[22px] font-[700] tracking-[-0.04em] text-fg">
-                  Run history
-                </h2>
-              </div>
-              <span className="rounded-xl border border-border bg-surface px-2.5 py-1 text-[12px] font-[600] text-fg-muted">
-                {history.length} of {stats.total} {stats.total === 1 ? "run" : "runs"}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-3 border-b border-border p-4"><Input aria-label="Search run prompts" placeholder="Search run prompts" value={query} onChange={e => onFilter?.(e.target.value, outcome)} className="min-w-0 flex-1" /><RunStatusFilter value={outcome} onChange={value => onFilter?.(query, value)} /></div>
-            {filtering && <p role="status" className="px-5 py-2 text-sm text-fg-muted">Searching runs…</p>}
-            <div className="cf-run-history-scroll max-h-[min(60dvh,560px)] overflow-y-auto overscroll-contain [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent" data-lenis-prevent role="region" aria-label="Run history list" tabIndex={0}>
-            <div
-              className="cf-run-history-grid sticky top-0 z-10 hidden items-center gap-x-4 border-b border-border bg-bg px-5 py-[11px] md:grid md:px-6"
-            >
-              {["Prompt", "Outcome", "Loops", "Elapsed", "When", ""].map((h) => (
-                <span key={h} className={LABEL}>
-                  {h}
-                </span>
-              ))}
-            </div>
-
-            {history.length === 0 ? (
-              <Empty illustration={query || outcome ? "search" : "inbox"} className="cf-project-history-empty min-h-[330px]"><EmptyHeader><EmptyTitle>{query || outcome ? "No matching runs" : "No runs yet"}</EmptyTitle><EmptyDescription>{query || outcome ? "Try fewer outcomes or another search." : "Describe the API in the composer and start the agent workflow."}</EmptyDescription></EmptyHeader>{(query || outcome) && <EmptyContent><Button variant="outline" onClick={() => onFilter?.("", "")}>Clear run filters</Button></EmptyContent>}</Empty>
-            ) : (
-              history.map((run, index) => {
-                const meta = RUN_STATUS_META[run.status] ?? {
-                  label: run.status,
-                  tone: "neutral" as const,
-                };
-                const elapsedMs =
-                  new Date(run.updated_at).getTime() - new Date(run.created_at).getTime();
-                return (
-                  <motion.div key={run.id} initial={reduced ? false : { opacity: 0, transform: "translateY(5px)" }} animate={{ opacity: 1, transform: "none" }} transition={{ duration: reduced ? 0 : .22, delay: reduced ? 0 : Math.min(index * .025, .12) }}
-                    className="cf-run-history-grid group relative grid gap-x-4 gap-y-4 border-b border-border px-5 py-5 transition-colors last:border-b-0 hover:bg-accent-soft/35 md:items-center md:gap-y-0 md:px-6 md:py-4"
-                  >
-                    <Link href={`/runs/${run.id}`} aria-label={`Open run: ${run.prompt}`} className="absolute inset-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-accent" />
-                    <div className="cf-run-history-prompt min-w-0 md:pr-4">
-                      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
-                        Prompt
-                      </span>
-                      <span className="line-clamp-2 text-[13.5px] leading-[1.5] text-fg md:truncate">
-                        {run.prompt}
-                      </span>
-                      <div className="relative mt-2 flex w-fit flex-wrap items-center gap-2">
-                        <Button variant="outline" size="sm" className="gap-1.5 text-[11px] text-fg-muted hover:text-accent" onClick={() => { setPrompt(run.prompt); setParentRunId(run.parent_run_id ?? null); }}>
-                          <RotateCcw className="size-3" aria-hidden /> Reuse prompt
-                        </Button>
-                        {run.parent_run_id && <Link href={`/runs/${run.parent_run_id}`} className="rounded px-1 py-1 text-xs text-accent">View source version</Link>}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
-                        Outcome
-                      </span>
-                      <span
-                        className={cn(
-                          "inline-flex w-fit rounded-lg px-2 py-[3px] text-[11px] font-[650]",
-                          tone[meta.tone].soft,
-                        )}
-                      >
-                        {meta.label}
-                      </span>
-                    </div>
-                    <RunDatum
-                      label="Loops"
-                      className={
-                        run.iterations > 0 ? "font-[700] text-loop" : "text-fg-faint"
-                      }
-                    >
-                      {run.iterations}
-                    </RunDatum>
-                    <RunDatum label="Elapsed" className="text-fg-muted">
-                      {formatElapsed(Math.max(0, elapsedMs))}
-                    </RunDatum>
-                    <RunDatum label="When" className="text-fg-faint">
-                      {formatWhen(run.created_at)}
-                    </RunDatum>
-                    <ArrowRight className="hidden h-4 w-4 text-fg-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent md:block" aria-hidden />
-                  </motion.div>
-                );
-              })
-            )}
-            {moreError && <Notice>{moreError}</Notice>}
-            {nextCursor && <div className="border-t border-border px-5 py-4"><Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>{loadingMore ? "Loading…" : "Load more runs"}</Button></div>}
-            </div>
-          </section>
+          <PromptStudio
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            ragEnabled={ragEnabled}
+            onRagChange={setRagEnabled}
+            parentRunId={parentRunId}
+            onDetachParent={() => setParentRunId(null)}
+            draftStatus={draftStatus}
+            error={error}
+            starting={starting}
+            onStart={startRun}
+          />
+          <RunHistoryList
+            history={history}
+            stats={stats}
+            query={query}
+            outcome={outcome}
+            filtering={filtering}
+            onFilter={onFilter}
+            onReuse={(run) => { setPrompt(run.prompt); setParentRunId(run.parent_run_id ?? null); }}
+            nextCursor={nextCursor}
+            loadingMore={loadingMore}
+            moreError={moreError}
+            onLoadMore={onLoadMore}
+          />
         </div>
 
         {/* Deleting sits at the very bottom, well past the things you came here to do.
@@ -413,25 +259,6 @@ function DeleteProjectDialog({
         <Button type="button" onClick={handleDelete} disabled={!matches || deleting} className="cf-deletion-submit"><Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete project"}</Button>
       </div>
     </DeletionDialog>
-  );
-}
-
-function RunDatum({
-  label,
-  className,
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <span className="mb-1.5 block text-[12px] font-[600] text-fg-muted md:hidden">
-        {label}
-      </span>
-      <span className={cn("font-mono text-[12px]", className)}>{children}</span>
-    </div>
   );
 }
 

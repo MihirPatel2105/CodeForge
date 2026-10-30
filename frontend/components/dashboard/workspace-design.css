@@ -59,3 +59,15 @@
  outline: 2px solid #b9ceff; outline-offset: 3px;
 }
 .cf-project-detail .cf-project-detail-hero .cf-manage-project:active { background: #2a3548; }
+
+/* Run history list (run-history-list.tsx) */
+.cf-run-health-bar { display: block; width: 6px; height: 18px; border-radius: 2px; background: var(--border-strong); }
+.cf-run-health-bar[data-tone=ok] { background: var(--ok); }
+.cf-run-health-bar[data-tone=danger] { background: var(--danger); }
+.cf-run-health-bar[data-tone=warn] { background: var(--warn); }
+.cf-run-health-bar[data-tone=accent] { background: var(--accent); }
+@media (hover: hover) and (min-width: 640px) {
+  .cf-run-actions { opacity: 0; transition: opacity .15s ease; }
+  .cf-run-row:hover .cf-run-actions, .cf-run-row:focus-within .cf-run-actions { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .cf-run-actions { transition: none; } }
