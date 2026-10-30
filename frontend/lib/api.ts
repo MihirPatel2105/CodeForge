@@ -310,11 +310,13 @@ export const api = {
   adminMonitoring: (days = 30) => request<AdminMonitoringResponse>(`/admin/monitoring?days=${days}`),
 
   listProjects: () => request<ProjectResponse[]>("/projects"),
-  projectOverview: (options: { cursor?: string; q?: string; archived?: boolean } = {}) => {
+  projectOverview: (options: { cursor?: string; q?: string; archived?: boolean; state?: string | null; limit?: number } = {}) => {
     const search = new URLSearchParams();
     if (options.cursor) search.set("cursor", options.cursor);
     if (options.q) search.set("q", options.q);
     if (options.archived) search.set("archived", "true");
+    if (options.state) search.set("state", options.state);
+    if (options.limit) search.set("limit", String(options.limit));
     return request<ProjectOverviewPage>(`/projects/overview${search.size ? `?${search}` : ""}`);
   },
   createProject: (payload: ProjectCreate) =>

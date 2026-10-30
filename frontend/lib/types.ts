@@ -384,6 +384,8 @@ export interface ProjectOverviewItem extends ProjectResponse {
     last: RunSummary | null;
   };
   recent_runs: RunSummary[];
+  /** Latest run start, or the project's creation when it has none; the list's order. */
+  last_activity_at: string;
 }
 
 export interface ProjectOverviewPage {

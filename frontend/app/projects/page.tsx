@@ -2,97 +2,94 @@
 
 import "@/components/dashboard/workspace-design.css";
 
-
-import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
-import { AnimatedArrow } from "@/components/ui/enhancements/animated-icons";
-import { FolderPreview } from "@/components/ui/vengeance/folder-preview";
-import { Notice } from "@/components/ui/notice";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useAnimatedList } from "@/lib/use-animated-list";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowRight, FolderPlus, LoaderCircle, Plus, Search } from "lucide-react";
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { FolderPlus, LoaderCircle, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { AppHeader } from "@/components/dashboard/app-header";
+import { NeedsYouStrip } from "@/components/dashboard/needs-you-strip";
+import { LIST_COLUMNS, ProjectListRow, ProjectTile } from "@/components/dashboard/project-list-row";
+import { ProjectsToolbar, type ProjectLayout } from "@/components/dashboard/projects-toolbar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { api, getToken, ApiError } from "@/lib/api";
-import type { ProjectOverviewItem, ProjectResponse, RunSummary } from "@/lib/types";
-import { OUTCOME_FILL, type RunStats } from "@/lib/run-stats";
-import { RUN_STATUS_META, tone } from "@/lib/tone";
-import { formatWhen } from "@/lib/format";
+import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
+import { api, ApiError, getToken } from "@/lib/api";
+import { hasLiveRun, type ProjectState } from "@/lib/project-insights";
+import type { ProjectOverviewItem, ProjectResponse } from "@/lib/types";
+import { useProjectListKeys } from "@/lib/use-project-list-keys";
+import { readLocal, writeLocal } from "@/lib/workspace-storage";
 import { cn } from "@/lib/utils";
-import { AppHeader } from "@/components/dashboard/app-header";
-
-interface ProjectRow extends ProjectResponse {
-  runs: RunSummary[];
-  stats: RunStats;
-}
 
 const LABEL = "text-[12px] font-[650] text-fg-muted";
+const LAYOUT_KEY = "codeforge:projects:layout";
+const PAGE_SIZE = 20;
+const MAX_PAGE = 50;
+/** How often the list re-reads itself while one of its projects has a run in flight. */
+const LIVE_REFRESH_MS = 5000;
+const SEARCH_DEBOUNCE_MS = 300;
 
-function projectRow(item: ProjectOverviewItem): ProjectRow {
-  return {
-    id: item.id,
-    name: item.name,
-    description: item.description,
-    archived: item.archived,
-    created_at: item.created_at,
-    runs: item.recent_runs,
-    stats: { ...item.stats, avgLoops: item.stats.avg_loops },
-  };
+interface Totals {
+  projects: number;
+  runs: number;
+  succeeded: number;
 }
 
-/** Projects (design_handoff/README.md "Other screens"). Renders whichever state the
- * real `/projects` list implies — empty or populated — matching UI_BRIEF.md §7 state 1
- * and the populated example, both live in the same component. */
+/** Projects: a dense index of every API, ordered by latest activity. */
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<ProjectRow[] | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const requestId = useRef(0);
+  const [projects, setProjects] = useState<ProjectOverviewItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [open, setOpen] = useState(false);
-  const { ref: projectListRef, key: listMotionKey } = useAnimatedList<HTMLUListElement>();
   const [search, setSearch] = useState("");
   const [archived, setArchived] = useState(false);
+  const [stateFilter, setStateFilter] = useState<ProjectState | null>(null);
+  const [layout, setLayout] = useState<ProjectLayout>("list");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [totals, setTotals] = useState({ projects: 0, runs: 0, succeeded: 0 });
+  const [totals, setTotals] = useState<Totals>({ projects: 0, runs: 0, succeeded: 0 });
   const [matchingProjects, setMatchingProjects] = useState(0);
-  const requestId = useRef(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const load = useCallback(async (query = "") => {
-    const currentRequest = ++requestId.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await api.projectOverview({ q: query.trim(), archived });
-      if (currentRequest !== requestId.current) return;
-      setProjects(page.items.map(projectRow));
-      setNextCursor(page.next_cursor);
-      setTotals({ projects: page.total_projects, runs: page.total_runs, succeeded: page.total_succeeded });
-      setMatchingProjects(page.matching_projects);
-    } catch (err) {
-      if (currentRequest !== requestId.current) return;
-      if (err instanceof ApiError && err.status === 401) {
-        router.replace("/login");
-        return;
+  useProjectListKeys(searchRef);
+  useEffect(() => setLayout(readLocal<ProjectLayout>(LAYOUT_KEY, "list") === "grid" ? "grid" : "list"), []);
+
+  const load = useCallback(
+    async ({ silent = false, limit = PAGE_SIZE }: { silent?: boolean; limit?: number } = {}) => {
+      const currentRequest = ++requestId.current;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
       }
-      setError(err instanceof ApiError ? err.message : "Couldn't load projects.");
-    } finally {
-      if (currentRequest === requestId.current) setLoading(false);
-    }
-  }, [router, archived]);
+      try {
+        const page = await api.projectOverview({ q: search.trim(), archived, state: stateFilter, limit });
+        if (currentRequest !== requestId.current) return;
+        setProjects(page.items);
+        setNextCursor(page.next_cursor);
+        setTotals({ projects: page.total_projects, runs: page.total_runs, succeeded: page.total_succeeded });
+        setMatchingProjects(page.matching_projects);
+        setRefreshKey((key) => key + 1);
+      } catch (err) {
+        if (currentRequest !== requestId.current) return;
+        if (err instanceof ApiError && err.status === 401) {
+          router.replace("/login");
+          return;
+        }
+        // A background refresh that fails keeps the list on screen rather than blanking it.
+        if (!silent) setError(err instanceof ApiError ? err.message : "Couldn't load projects.");
+      } finally {
+        if (currentRequest === requestId.current && !silent) setLoading(false);
+      }
+    },
+    [router, search, archived, stateFilter],
+  );
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore) return;
@@ -100,16 +97,16 @@ export default function ProjectsPage() {
     setLoadingMore(true);
     setError(null);
     try {
-      const page = await api.projectOverview({ cursor: nextCursor, q: search.trim(), archived });
+      const page = await api.projectOverview({ cursor: nextCursor, q: search.trim(), archived, state: stateFilter });
       if (currentRequest !== requestId.current) return;
-      setProjects((current) => [...(current ?? []), ...page.items.map(projectRow)]);
+      setProjects((current) => [...(current ?? []), ...page.items]);
       setNextCursor(page.next_cursor);
     } catch (err) {
       if (currentRequest === requestId.current) setError(err instanceof ApiError ? err.message : "Couldn't load more projects.");
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, nextCursor, search, archived]);
+  }, [loadingMore, nextCursor, search, archived, stateFilter]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -117,148 +114,165 @@ export default function ProjectsPage() {
       router.replace("/login");
       return;
     }
-    const timer = setTimeout(() => void load(search), search.trim() ? 300 : 0);
+    const timer = setTimeout(() => void load(), search.trim() ? SEARCH_DEBOUNCE_MS : 0);
     return () => clearTimeout(timer);
   }, [router, load, search]);
 
+  // Re-read the rows already on screen while a run is in flight, so a finishing run
+  // changes its row without a reload. Stops by itself once nothing is running.
+  const shownCount = projects?.length ?? 0;
+  const live = projects != null && hasLiveRun(projects);
+  useEffect(() => {
+    if (!live) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void load({ silent: true, limit: Math.min(Math.max(shownCount, PAGE_SIZE), MAX_PAGE) });
+      }
+    }, LIVE_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [live, load, shownCount]);
+
+  const refresh = useCallback(
+    () => void load({ silent: true, limit: Math.min(Math.max(shownCount, PAGE_SIZE), MAX_PAGE) }),
+    [load, shownCount],
+  );
+
+  function changeLayout(next: ProjectLayout) {
+    setLayout(next);
+    writeLocal(LAYOUT_KEY, next);
+  }
+
+  const projectNames = useMemo(
+    () => new Map((projects ?? []).map((project) => [project.id, project.name])),
+    [projects],
+  );
   const query = search.trim();
+  const filtered = Boolean(query || stateFilter);
+  const passed = totals.runs > 0 ? Math.round((totals.succeeded / totals.runs) * 100) : null;
 
   return (
     <div className="cf-projects min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-8 md:px-10 md:pt-10 lg:px-14">
-        <div className="cf-workspace-stage">
-        <section className="cf-projects-intro relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-7 md:px-9 md:py-8">
-          <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <div>
-              <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
-                Projects
-              </h1>
-              <p className="mt-2 max-w-[58ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
-                Pick up an API or start a new one. Each project keeps its runs, code, and test results together.
-              </p>
-            </div>
-
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger
-                render={
-                  <Button className="cf-project-action h-12 gap-2 rounded-full px-6 text-[14px]" />
-                }
-              >
-                <Plus className="h-4 w-4" aria-hidden />
-                New project
-              </DialogTrigger>
-              <NewProjectDialogContent
-                onCreated={() => {
-                  setSearch("");
-                  toast.success("Project created.");
-                  setOpen(false);
-                  void load("");
-                }}
-              />
-            </Dialog>
+      <main className="mx-auto w-full max-w-[1240px] px-5 pb-20 pt-8 md:px-10 md:pt-10">
+        <header className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <h1 className="font-display text-fg">Projects</h1>
+            {totals.projects > 0 && (
+              <dl className="mt-2 flex flex-wrap items-center gap-x-2 font-mono text-[12.5px] text-fg-muted">
+                <Total label="Projects" value={totals.projects} unit={totals.projects === 1 ? "project" : "projects"} />
+                <Total label="Runs" value={totals.runs} unit={totals.runs === 1 ? "run" : "runs"} separated />
+                <Total
+                  label="Successful runs"
+                  value={totals.succeeded}
+                  unit="passed"
+                  note={passed != null ? `(${passed}%)` : undefined}
+                  separated
+                />
+              </dl>
+            )}
           </div>
-        </section>
-
-        {/* Portfolio totals. Only rendered once there is something to total. */}
-        {loading && projects == null ? (
-          <div className="cf-workspace-summary grid rounded-3xl" aria-hidden="true">
-            {[0, 1, 2].map((item) => <div key={item} className="space-y-2"><div className="h-3 w-16 animate-pulse rounded bg-border" /><div className="h-7 w-12 animate-pulse rounded bg-border" /></div>)}
-          </div>
-        ) : projects && totals.projects > 0 && (
-          <dl className="cf-workspace-summary grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-3">
-            <Figure label="Projects" value={String(totals.projects)} />
-            <Figure label="Total runs" value={String(totals.runs)} bordered />
-            <Figure
-              label="Successful runs"
-              value={String(totals.succeeded)}
-              hint={
-                totals.runs > 0
-                  ? `${Math.round((totals.succeeded / totals.runs) * 100)}% of runs`
-                  : undefined
-              }
-              bordered
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={<Button className="h-10 gap-2 rounded-xl px-4 text-[13.5px]" />}>
+              <Plus className="size-4" aria-hidden />
+              New project
+            </DialogTrigger>
+            <NewProjectDialogContent
+              onCreated={() => {
+                setSearch("");
+                setStateFilter(null);
+                toast.success("Project created.");
+                setOpen(false);
+                void load();
+              }}
             />
-          </dl>
-        )}
+          </Dialog>
+        </header>
 
+        <div className="mt-6 flex flex-col gap-4">
+          <NeedsYouStrip projectNames={projectNames} refreshKey={refreshKey} />
+          {(projects == null || projects.length > 0 || filtered || archived) && (
+            <ProjectsToolbar
+              archived={archived}
+              onArchivedChange={setArchived}
+              state={stateFilter}
+              onStateChange={setStateFilter}
+              search={search}
+              onSearchChange={setSearch}
+              layout={layout}
+              onLayoutChange={changeLayout}
+              searchRef={searchRef}
+            />
+          )}
         </div>
 
-        <div className="mt-5 flex gap-2" role="group" aria-label="Project view"><Button aria-pressed={!archived} variant={!archived ? "default" : "outline"} onClick={() => setArchived(false)}>Active projects</Button><Button aria-pressed={archived} variant={archived ? "default" : "outline"} onClick={() => setArchived(true)}>Archived projects</Button></div>
-
         {error && (
-          <Notice className="mt-6"><div className="flex flex-wrap items-center justify-between gap-3">
-            <p>{error}</p>
-            <Button type="button" variant="outline" onClick={() => void (nextCursor && projects ? loadMore() : load(search))} disabled={loading || loadingMore}>
-              Try again
-            </Button>
-          </div></Notice>
+          <Notice className="mt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p>{error}</p>
+              <Button type="button" variant="outline" onClick={() => void (nextCursor && projects ? loadMore() : load())} disabled={loading || loadingMore}>
+                Try again
+              </Button>
+            </div>
+          </Notice>
         )}
 
         {loading && projects == null ? (
-          <LoadingState />
-        ) : projects == null ? null : projects.length === 0 && !query && !archived ? (
+          <LoadingState layout={layout} />
+        ) : projects == null ? null : projects.length === 0 && !filtered && !archived ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
-          <section className="mt-6" aria-labelledby="project-list-heading">
-            <div className="flex flex-wrap items-end justify-between gap-5 border-b border-rule pb-4">
-              <div>
-                <span className={LABEL}>Your workspaces</span>
-                <h2
-                  id="project-list-heading"
-                  className="font-display mt-2 text-[24px] font-[700] tracking-[-0.04em] text-fg"
-                >
-                  Your projects
-                </h2>
-              </div>
-              <div className="w-full sm:w-[280px]">
-                <label htmlFor="project-search" className="sr-only">Search projects</label>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-faint" aria-hidden />
-                  <Input
-                    id="project-search"
-                    type="search"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search projects"
-                    className="h-11 rounded-xl border-border-strong bg-surface pl-10 pr-4 text-[14px]"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <p role="status" className="mt-4 text-[12px] font-[550] text-fg-muted">
-              {query
+          <section className="mt-5" aria-label="Your projects">
+            <p role="status" className="mb-3 text-[12px] font-[550] text-fg-muted">
+              {filtered
                 ? `${projects.length} of ${matchingProjects} matching projects shown`
                 : `${projects.length} of ${totals.projects} projects shown`}
             </p>
-
-            {projects.length ? (
-              <ul key={listMotionKey} ref={projectListRef} className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
-                {projects.map((project) => (
-                  <li key={project.id}>
-                    <ProjectCard project={project} />
-                  </li>
-                ))}
-                {!query && (
-                  <li key="new-project">
-                    <NewProjectCard onClick={() => setOpen(true)} />
-                  </li>
-                )}
-              </ul>
+            {projects.length === 0 ? (
+              <FilteredEmpty
+                archived={archived}
+                query={query}
+                stateFilter={stateFilter}
+                onClearSearch={() => setSearch("")}
+                onClearState={() => setStateFilter(null)}
+                onShowActive={() => setArchived(false)}
+              />
+            ) : layout === "list" ? (
+              <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+                <div className={cn("hidden items-center gap-x-4 border-b border-rule bg-surface-2/70 px-5 py-2 text-[11.5px] font-[650] text-fg-faint md:grid", LIST_COLUMNS)} aria-hidden>
+                  <span>Project</span>
+                  <span>Status</span>
+                  <span>Recent runs</span>
+                  <span>Pass rate</span>
+                  <span>Runs</span>
+                  <span>Updated</span>
+                  <span />
+                </div>
+                <ul aria-label="Projects">
+                  {projects.map((project) => (
+                    <ProjectListRow key={project.id} project={project} onChanged={refresh} />
+                  ))}
+                </ul>
+              </div>
             ) : (
-              <Empty className="mt-5 border border-border bg-surface py-14">
-                <EmptyHeader>
-                  <EmptyTitle><h3>{archived ? query ? "No archived projects found" : "No archived projects yet" : "No matching projects"}</h3></EmptyTitle>
-                  <EmptyDescription>{archived && !query ? "Projects you archive will appear here." : "Try a different name or description."}</EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  {query ? <Button variant="outline" onClick={() => setSearch("")}>Clear search</Button>
-                    : <Button variant="outline" onClick={() => setArchived(false)}>Back to active projects</Button>}
-                </EmptyContent>
-              </Empty>
+              <ul aria-label="Projects" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {projects.map((project) => (
+                  <ProjectTile key={project.id} project={project} onChanged={refresh} />
+                ))}
+              </ul>
             )}
-            {nextCursor && <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore} className="mt-6">{loadingMore ? "Loading…" : "Load more projects"}</Button>}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              {nextCursor ? (
+                <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
+                  {loadingMore ? "Loading…" : "Load more projects"}
+                </Button>
+              ) : <span />}
+              {projects.length > 0 && (
+                <p className="hidden text-[11.5px] text-fg-faint md:block">
+                  <kbd className="font-mono">j</kbd> / <kbd className="font-mono">k</kbd> to move,{" "}
+                  <kbd className="font-mono">Enter</kbd> to open, <kbd className="font-mono">/</kbd> to search
+                </p>
+              )}
+            </div>
           </section>
         )}
       </main>
@@ -266,202 +280,124 @@ export default function ProjectsPage() {
   );
 }
 
-function Figure({
+function Total({
   label,
   value,
-  hint,
-  bordered,
+  unit,
+  note,
+  separated,
 }: {
   label: string;
-  value: string;
-  hint?: string;
-  bordered?: boolean;
+  value: number;
+  unit: string;
+  note?: string;
+  separated?: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        "relative px-6 py-4 sm:py-5",
-        bordered && "border-t border-rule sm:border-l sm:border-t-0",
-      )}
-    >
-      <dt className={LABEL}>{label}</dt>
-      <dd className="mt-1 flex items-baseline gap-3">
-        <span className="font-display text-[30px] font-[700] tracking-[-0.055em] text-fg">
-          <AnimatedNumber value={Number(value)} />
-        </span>
-        {hint && <span className="text-[12px] font-[600] text-ok">{hint}</span>}
+    <div className="flex items-center gap-1.5">
+      <dt className="sr-only">{label}</dt>
+      <dd className="flex items-center gap-1.5">
+        {separated && <span aria-hidden>·</span>}
+        <span className="font-[650] text-fg"><AnimatedNumber value={value} /></span>
+        <span aria-hidden>{unit}</span>
+        {note && <span className="text-ok">{note}</span>}
       </dd>
     </div>
   );
 }
 
-function ProjectCard({ project }: { project: ProjectRow }) {
-  const { stats } = project;
-  const lastMeta = stats.last
-    ? (RUN_STATUS_META[stats.last.status] ?? {
-        label: stats.last.status,
-        tone: "neutral" as const,
-      })
-    : null;
-  // Oldest-to-newest, so the strip reads left to right like the history it represents.
-  const strip = project.runs.slice(0, 14).reverse();
-
+function FilteredEmpty({
+  archived,
+  query,
+  stateFilter,
+  onClearSearch,
+  onClearState,
+  onShowActive,
+}: {
+  archived: boolean;
+  query: string;
+  stateFilter: ProjectState | null;
+  onClearSearch: () => void;
+  onClearState: () => void;
+  onShowActive: () => void;
+}) {
+  const title = query
+    ? archived ? "No archived projects found" : "No matching projects"
+    : stateFilter ? "No projects in this state" : archived ? "No archived projects yet" : "No matching projects";
+  const description = query
+    ? "Try a different name or description."
+    : stateFilter ? "Each project is filed by its latest run." : "Projects you archive will appear here.";
   return (
-    <Link
-      href={`/projects/${project.id}`}
-      className="cf-project-card group relative flex min-h-[280px] h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_16px_40px_rgba(27,41,70,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    >
-      <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
-
-      <div className="relative z-10 flex items-start justify-between gap-5">
-        <div className="min-w-0">
-          <h3 className="font-display truncate text-[22px] font-[700] tracking-[-0.045em] text-fg">
-            {project.name}
-          </h3>
-          {project.description && (
-            <p className="mt-2 line-clamp-2 max-w-[56ch] text-[14px] leading-[1.6] text-fg-muted">
-              {project.description}
-            </p>
-          )}
-        </div>
-        <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-bg text-fg-muted transition-colors group-hover:border-accent-bd group-hover:bg-accent-soft group-hover:text-accent group-focus-visible:border-accent-bd group-focus-visible:bg-accent-soft group-focus-visible:text-accent">
-          <AnimatedArrow className="size-[18px]" />
-        </span>
-      </div>
-
-      <FolderPreview label="Project workspace" detail={stats.total ? `${stats.total} ${stats.total === 1 ? "run" : "runs"} · code and test results` : "Ready for your first run"} />
-
-      {/* Outcome strip — one tick per run, newest at the right. Gives the shape of a
-          project's history at a glance without adding another number to read.
-
-          Ticks are a fixed width rather than `flex-1`. Stretching them made a project
-          with a single successful run render as one full-width green bar, which reads
-          as a progress meter sitting at 100% — a completely different claim from "one
-          run, and it passed". */}
-      {strip.length > 0 && (
-        <div className="relative z-10 mt-5" aria-hidden>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-[12px] font-[600] text-fg-muted">
-              Recent runs
-            </span>
-            <span className="text-[11px] text-fg-muted">
-              {strip.length === 1 ? "1 run" : `last ${strip.length}`}
-            </span>
-          </div>
-          <div className="flex items-center gap-[4px]">
-            {strip.map((run) => (
-              <span
-                key={run.id}
-                title={run.status}
-                className={cn(
-                  "h-[6px] w-5 rounded-full",
-                  OUTCOME_FILL[run.status] ?? "bg-border-strong",
-                )}
-              />
-            ))}
-            <span className="h-px flex-1 bg-rule" />
-          </div>
-        </div>
-      )}
-
-      <div className="relative z-10 mt-auto flex flex-col gap-4 border-t border-rule pt-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-baseline gap-6">
-          <Stat label="runs" value={String(stats.total)} />
-          <Stat label="succeeded" value={String(stats.succeeded)} />
-          {stats.avgLoops != null && <Stat label="avg loops" value={stats.avgLoops.toFixed(1)} />}
-        </div>
-
-        {lastMeta && stats.last && (
-          <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-[5px]">
-            <span
-              className={cn(
-                "w-fit rounded-lg px-2 py-[3px] text-[11px] font-[650]",
-                tone[lastMeta.tone].soft,
-              )}
-            >
-              {lastMeta.label}
-            </span>
-            <span className="text-[11px] text-fg-muted">
-              {formatWhen(stats.last.created_at)}
-            </span>
-          </div>
+    <Empty className="border border-border bg-surface py-14">
+      <EmptyHeader>
+        <EmptyTitle><h3>{title}</h3></EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        {query ? (
+          <Button variant="outline" onClick={onClearSearch}>Clear search</Button>
+        ) : stateFilter ? (
+          <Button variant="outline" onClick={onClearState}>Show all projects</Button>
+        ) : (
+          <Button variant="outline" onClick={onShowActive}>Back to active projects</Button>
         )}
-      </div>
-    </Link>
-  );
-}
-
-/** The empty cell at the end of the grid.
- *
- * Deliberately quiet — dashed, no fill, muted type. It is an invitation sitting in the
- * gap a short list leaves, not a card competing with the real ones beside it. */
-function NewProjectCard({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="cf-project-new group relative flex min-h-[280px] h-full w-full flex-col items-start justify-between overflow-hidden rounded-2xl border border-dashed border-border-strong p-6 text-left transition-[border-color,background-color] duration-200 hover:border-accent-bd hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    >
-      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-accent-bd bg-accent-soft text-accent transition-transform duration-300 group-hover:scale-105">
-        <FolderPlus className="h-[19px] w-[19px]" aria-hidden />
-      </span>
-
-      <span className="relative z-10 block">
-        <span className="font-display block text-[22px] font-[700] tracking-[-0.04em] text-fg">
-          Start another API
-        </span>
-        <span className="mt-2 block max-w-[36ch] text-[13px] leading-[1.55] text-fg-muted">
-          Create a clean workspace for its prompts, agent runs, code, and tests.
-        </span>
-        <span className="mt-5 inline-flex items-center gap-2 text-[13px] font-[650] text-accent">
-          New project
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
-        </span>
-      </span>
-    </button>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span className="font-display block text-[17px] font-[600] tracking-[-0.03em] text-fg">
-        {value}
-      </span>
-      <span className={cn(LABEL, "mt-[2px] block text-[11px]")}>{label}</span>
-    </div>
+      </EmptyContent>
+    </Empty>
   );
 }
 
 function EmptyState({ onNewProject }: { onNewProject: () => void }) {
   return (
-    <Empty className="cf-project-empty mt-8 min-h-[360px] border border-border py-16"><EmptyHeader><FolderPlus className="size-8 text-fg-muted" aria-hidden /><EmptyTitle><h2 className="font-display text-2xl font-semibold">Start your first API project</h2></EmptyTitle><EmptyDescription>A project holds the runs for one API. Name it after the thing you are building.</EmptyDescription></EmptyHeader><EmptyContent><Button onClick={onNewProject} className="cf-project-action"><Plus aria-hidden />New project</Button></EmptyContent></Empty>
+    <Empty className="cf-project-empty mt-8 min-h-[360px] border border-border py-16">
+      <EmptyHeader>
+        <FolderPlus className="size-8 text-fg-muted" aria-hidden />
+        <EmptyTitle><h2 className="font-display text-2xl font-semibold">Start your first API project</h2></EmptyTitle>
+        <EmptyDescription>A project holds the runs for one API. Name it after the thing you are building.</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button onClick={onNewProject}><Plus aria-hidden />New project</Button>
+      </EmptyContent>
+    </Empty>
   );
 }
 
-function LoadingState() {
+/** Placeholders in the exact shape of the layout they stand in for, so nothing jumps. */
+function LoadingState({ layout }: { layout: ProjectLayout }) {
+  const rows = [0, 1, 2, 3];
   return (
-    <div className="mt-6" aria-label="Loading projects" aria-live="polite">
-      <div className="flex items-end justify-between border-b border-rule pb-4">
-        <div className="space-y-2.5">
-          <div className="h-2.5 w-24 animate-pulse rounded bg-border" />
-          <div className="h-6 w-40 animate-pulse rounded bg-border" />
+    <div className="mt-5" aria-label="Loading projects" aria-live="polite">
+      <div className="mb-3 h-3 w-36 animate-pulse rounded bg-border" />
+      {layout === "list" ? (
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="hidden h-[33px] border-b border-rule bg-surface-2/70 md:block" />
+          {rows.map((row) => (
+            <div key={row} className={cn("grid grid-cols-[36px_minmax(0,1fr)] items-center gap-x-4 border-b border-rule px-5 py-3.5 last:border-b-0", LIST_COLUMNS)}>
+              <div className="flex items-center gap-3 md:col-span-1">
+                <div className="size-9 shrink-0 animate-pulse rounded-[10px] bg-border" />
+                <div className="hidden flex-1 space-y-2 md:block">
+                  <div className="h-3.5 w-40 animate-pulse rounded bg-border" />
+                  <div className="h-3 w-56 max-w-full animate-pulse rounded bg-border/70" />
+                </div>
+              </div>
+              <div className="space-y-2 md:hidden">
+                <div className="h-3.5 w-40 animate-pulse rounded bg-border" />
+                <div className="h-3 w-48 animate-pulse rounded bg-border/70" />
+              </div>
+              <div className="hidden h-6 w-20 animate-pulse rounded-full bg-border md:block" />
+              <div className="hidden h-4 w-24 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3.5 w-10 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3.5 w-6 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3.5 w-20 animate-pulse rounded bg-border md:block" />
+            </div>
+          ))}
         </div>
-        <div className="h-2.5 w-16 animate-pulse rounded bg-border" />
-      </div>
-      <div className="cf-workspace-grid mt-6 grid gap-6 md:grid-cols-2">
-        {[0, 1].map((item) => (
-          <div
-            key={item}
-            className="min-h-[240px] animate-pulse rounded-3xl border border-border bg-bg p-6"
-          >
-            <div className="h-2.5 w-28 rounded bg-border" />
-            <div className="mt-5 h-6 w-44 rounded bg-border" />
-            <div className="mt-3 h-3 w-3/4 rounded bg-border" />
-            <div className="mt-8 h-14 rounded-lg bg-bg" />
-          </div>
-        ))}
-      </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map((row) => (
+            <div key={row} className="h-[184px] animate-pulse rounded-2xl border border-border bg-surface" />
+          ))}
+        </div>
+      )}
       <span className="sr-only">Loading projects</span>
     </div>
   );

@@ -53,7 +53,8 @@ test("project cards preserve navigation and show actual accessible totals", asyn
   await expect(page.locator("dl").first()).toContainText("12");
   await expect(page.locator(".vui-number .sr-only")).toHaveText(["1", "12", "9"]);
   const card = page.getByRole("link", { name: /Library API Manage a book collection/ });
-  await expect(card).toContainText("12 runs · code and test results");
+  // 9 of 12 finished runs passed.
+  await expect(page.locator("li").filter({ has: card })).toContainText("75%");
   await card.focus();
   await page.screenshot({ path: "/tmp/codeforge-vengeance-projects.png", fullPage: true });
   await page.keyboard.press("Enter");

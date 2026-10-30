@@ -51,8 +51,9 @@ test("project cards and run history use the viewer's local time", async ({ page 
   }
 
   await page.goto("/projects");
-  await expect(page.locator('a[href="/projects/project-1"]')).toContainText("Sep 24, 14:09");
-  await expect(page.locator('a[href="/projects/project-2"]')).toContainText("Sep 25, 02:39");
+  const row = (id: string) => page.locator("li").filter({ has: page.locator(`a[href="/projects/${id}"]`) });
+  await expect(row("project-1")).toContainText("Sep 24, 14:09");
+  await expect(row("project-2")).toContainText("Sep 25, 02:39");
 
   await page.locator('a[href="/projects/project-2"]').click();
   await expect(page.getByText("Sep 25, 02:39")).toBeVisible();
