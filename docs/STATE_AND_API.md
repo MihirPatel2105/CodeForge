@@ -109,7 +109,7 @@ Auth header: `Authorization: Bearer <jwt>` on everything except `/health` and `/
 | POST | `/auth/passkeys/mfa/verify` | exchange the password ticket and a user-verified passkey assertion for a JWT |
 | POST | `/projects` | create project |
 | GET | `/projects` | list user's projects |
-| GET | `/projects/overview` | owner-scoped, cursor-paged project cards with aggregated run counts, recent runs, and portfolio totals; `q` searches name and description |
+| GET | `/projects/overview` | owner-scoped, cursor-paged project cards with aggregated run counts, recent runs, and portfolio totals, ordered by latest activity (`last_activity_at`: newest run start, else creation); `q` searches name and description; `state=needs_you\|running\|failing\|passing` filters by each project's latest run |
 | GET | `/projects/{id}` | project detail |
 | POST | `/runs` | start a run — body: `{project_id, prompt, rag_enabled?}` → `{run_id}` |
 | GET | `/runs/{id}` | full run state snapshot |

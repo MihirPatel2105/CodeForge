@@ -631,6 +631,8 @@ class ProjectRunPage(BaseModel):
 class ProjectOverviewItem(ProjectResponse):
     stats: ProjectRunStats = Field(default_factory=ProjectRunStats)
     recent_runs: list[RunSummary] = Field(default_factory=list)
+    # Latest run start, or the project's creation when it has no runs; the list's order.
+    last_activity_at: datetime
 
 
 class ProjectOverviewPage(BaseModel):

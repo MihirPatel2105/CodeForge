@@ -69,7 +69,10 @@ def test_project_overview_is_paginated_and_owner_scoped(
     assert first_page.status_code == 200
     assert first_page.json()["total_projects"] == 2
     assert first_page.json()["total_runs"] == 1
-    assert first_page.json()["items"][0]["id"] == second["id"]
+    # The project that just ran leads, although "Tasks API" was created after it.
+    assert first_page.json()["items"][0]["id"] == project["id"]
+    assert first_page.json()["items"][0]["stats"]["total"] == 1
+    assert len(first_page.json()["items"][0]["recent_runs"]) == 1
     cursor = first_page.json()["next_cursor"]
     assert cursor
 
@@ -77,9 +80,7 @@ def test_project_overview_is_paginated_and_owner_scoped(
         f"/projects/overview?limit=1&cursor={cursor}", headers=registered_user["headers"]
     )
     assert next_page.status_code == 200
-    assert next_page.json()["items"][0]["id"] == project["id"]
-    assert next_page.json()["items"][0]["stats"]["total"] == 1
-    assert len(next_page.json()["items"][0]["recent_runs"]) == 1
+    assert next_page.json()["items"][0]["id"] == second["id"]
     assert next_page.json()["next_cursor"] is None
 
     others = client.get("/projects/overview", headers=other_user["headers"])

@@ -2,6 +2,8 @@
 
 import logging
 import re
+from datetime import UTC, datetime
+from typing import Literal
 
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Query, status
@@ -57,6 +59,98 @@ async def list_projects(user: CurrentUser) -> list[ProjectResponse]:
     return [_to_response(p) for p in projects]
 
 
+# The latest run's status, grouped into the filters the projects page offers.
+_STATE_STATUSES: dict[str, list[str]] = {
+    "needs_you": ["awaiting_approval"],
+    "running": ["queued", "running"],
+    "failing": ["failed_max_loops", "failed_sandbox", "failed_llm"],
+    "passing": ["succeeded"],
+}
+ProjectState = Literal["needs_you", "running", "failing", "passing"]
+
+
+def _as_utc(value: datetime) -> datetime:
+    # The platform client is not tz-aware, so stored datetimes come back naive UTC.
+    return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+
+def _encode_cursor(activity_at: datetime, project_id: ObjectId) -> str:
+    return f"{int(_as_utc(activity_at).timestamp() * 1000)}.{project_id}"
+
+
+def _decode_cursor(cursor: str) -> tuple[datetime, ObjectId]:
+    millis, _, raw_id = cursor.partition(".")
+    if not millis.isdigit() or not ObjectId.is_valid(raw_id):
+        raise HTTPException(status_code=422, detail="Invalid project cursor")
+    return datetime.fromtimestamp(int(millis) / 1000, tz=UTC), ObjectId(raw_id)
+
+
+def _activity_pipeline(query: dict, owner: str, state: ProjectState | None) -> list[dict]:
+    """Projects with their latest run's start time and status, newest activity first.
+
+    Activity is the latest run's start, or the project's creation when it has none, so a
+    project you just ran sits at the top even if it was created months ago."""
+    pipeline: list[dict] = [
+        {"$match": query},
+        {"$addFields": {"_pid": {"$toString": "$_id"}}},
+        {
+            "$lookup": {
+                "from": "runs",
+                "localField": "_pid",
+                "foreignField": "project_id",
+                "pipeline": [
+                    {"$match": {"user_id": owner}},
+                    {"$sort": {"created_at": -1, "_id": -1}},
+                    {"$limit": 1},
+                    {"$project": {"_id": 0, "created_at": 1, "status": 1}},
+                ],
+                "as": "_last",
+            }
+        },
+        {
+            "$addFields": {
+                "activity_at": {"$ifNull": [{"$first": "$_last.created_at"}, "$created_at"]},
+                "last_status": {"$first": "$_last.status"},
+            }
+        },
+    ]
+    if state:
+        pipeline.append({"$match": {"last_status": {"$in": _STATE_STATUSES[state]}}})
+    return pipeline
+
+
+async def _activity_page(
+    query: dict, owner: str, state: ProjectState | None, cursor: str | None, limit: int
+) -> tuple[list[dict], int, str | None]:
+    base = _activity_pipeline(query, owner, state)
+    counted = await aggregate_rows("projects", [*base, {"$count": "n"}], 1)
+    matching = counted[0]["n"] if counted else 0
+    page_stages: list[dict] = []
+    if cursor:
+        after_at, after_id = _decode_cursor(cursor)
+        page_stages.append(
+            {
+                "$match": {
+                    "$or": [
+                        {"activity_at": {"$lt": after_at}},
+                        {"activity_at": after_at, "_id": {"$lt": after_id}},
+                    ]
+                }
+            }
+        )
+    page_stages += [
+        {"$sort": {"activity_at": -1, "_id": -1}},
+        {"$limit": limit + 1},
+        {"$project": {"_last": 0, "_pid": 0}},
+    ]
+    rows = await aggregate_rows("projects", [*base, *page_stages])
+    page = rows[:limit]
+    next_cursor = (
+        _encode_cursor(page[-1]["activity_at"], page[-1]["_id"]) if len(rows) > limit else None
+    )
+    return page, matching, next_cursor
+
+
 @router.get("/overview", response_model=ProjectOverviewPage)
 async def project_overview(
     user: CurrentUser,
@@ -64,6 +158,7 @@ async def project_overview(
     limit: int = Query(default=20, ge=1, le=50),
     q: str = Query(default="", max_length=120),
     archived: bool = False,
+    state: ProjectState | None = None,
 ) -> ProjectOverviewPage:
     """Bound the list response and aggregate card metrics on the server."""
     owner = str(user.id)
@@ -75,14 +170,9 @@ async def project_overview(
             {"description": {"$regex": term, "$options": "i"}},
         ]
     total_projects = await Project.find(Project.user_id == owner).count()
-    matching_projects = await Project.find(query).count()
-    if cursor:
-        if not ObjectId.is_valid(cursor):
-            raise HTTPException(status_code=422, detail="Invalid project cursor")
-        query["_id"] = {"$lt": ObjectId(cursor)}
-    page = await Project.find(query).sort("-_id").limit(limit + 1).to_list()
-    projects = page[:limit]
-    next_cursor = str(projects[-1].id) if len(page) > limit else None
+    rows, matching_projects, next_cursor = await _activity_page(query, owner, state, cursor, limit)
+    projects = [Project.model_validate({**row, "id": row["_id"]}) for row in rows]
+    activity = {str(row["_id"]): _as_utc(row["activity_at"]) for row in rows}
 
     owner_totals = await aggregate_rows(
         "runs",
@@ -200,7 +290,10 @@ async def project_overview(
         )
         items.append(
             ProjectOverviewItem(
-                **_to_response(project).model_dump(), stats=stats, recent_runs=recent
+                **_to_response(project).model_dump(),
+                stats=stats,
+                recent_runs=recent,
+                last_activity_at=activity[str(project.id)],
             )
         )
     return ProjectOverviewPage(
