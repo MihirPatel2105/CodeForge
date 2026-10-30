@@ -11,12 +11,12 @@
 .ol-product-stage { position: relative; isolation: isolate; width: min(100%,1120px); max-width: 1120px; margin: 20px auto 0; padding: 66px 56px 0; text-align: left; }
 .ol-product-shell { background: #fff; padding: 10px; border: 1px solid #e5e5e8; border-radius: 24px; box-shadow: 0 40px 75px -45px #1c243e66; transform-origin: center; }
 .ol-product-toolbar { display: flex; align-items: center; gap: 9px; padding: 15px 18px 22px; font-size: 12px; color: #33343b; }
-.ol-product-toolbar > span:last-child { margin-left: auto; font-size: 10px; color: #888990; }
+.ol-product-toolbar > span:last-child { margin-left: auto; font-size: 10px; color: #6b6c73; }
 .ol-window-dots { display: flex; gap: 4px; margin-right: 12px; }
 .ol-window-dots i { width: 6px; height: 6px; background: #c7c8ce; border-radius: 50%; }
 .ol-product-workspace { display: grid; grid-template-columns: .85fr 1.15fr; border-radius: 15px; overflow: hidden; border: 1px solid #ececee; }
 .ol-product-brief { display: flex; flex-direction: column; align-items: flex-start; padding: 30px; background: #f5f5f8; }
-.ol-mini-label { display: block; font: 500 10px/1.5 var(--lp-mono); text-transform: uppercase; letter-spacing: .05em; color: #73747b; }
+.ol-mini-label { display: block; font: 500 10px/1.5 var(--lp-mono); text-transform: uppercase; letter-spacing: .05em; color: #63646b; }
 .ol-product-brief h2 { font-size: 33px; line-height: 1.15; letter-spacing: -.045em; margin: 18px 0; font-weight: 550; }
 .ol-product-brief p { color: #686970; font-size: 12px; line-height: 1.7; max-width: 260px; }
 .ol-brief-checks { display: flex; flex-direction: column; gap: 12px; margin: 26px 0; font-size: 10px; color: #65666d; }
@@ -35,17 +35,17 @@
 .ol-product-outcome { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 19px; color: #666974; font: 9px var(--lp-mono); }
 .ol-product-outcome > span { display: inline-flex; align-items: center; gap: 5px; }
 .ol-product-outcome > span:first-child { color: #39466d; }
-.ol-product-foot { display: flex; justify-content: space-between; gap: 16px; padding: 17px 18px 6px; color: #81828a; font-size: 9px; }
+.ol-product-foot { display: flex; justify-content: space-between; gap: 16px; padding: 17px 18px 6px; color: #6b6c73; font-size: 9px; }
 .ol-product-foot a { color: #333640; }
 .ol-technology { padding: 70px 32px 64px; text-align: center; overflow: hidden; }
 .ol-technology > p { font-size: 13px; color: #707078; margin-bottom: 30px; }
 .ol-tech-track { display: flex; width: max-content; animation: ol-marquee 36s linear infinite; }
 .ol-tech-group { display: flex; flex-shrink: 0; min-width: 100vw; align-items: center; justify-content: space-around; gap: 80px; padding-right: 80px; }
-.ol-tech-group span { color: #96979e; font-size: 25px; font-weight: 650; letter-spacing: -.05em; }
+.ol-tech-group span { color: #85868d; font-size: 25px; font-weight: 650; letter-spacing: -.05em; }
 @keyframes ol-marquee { to { transform: translateX(-50%); } }
 .cf-ostack .lp-section { max-width: 1360px; padding-inline: 40px; }
 .cf-ostack .lp-team { padding-top: 60px; padding-bottom: 100px; }
-.cf-ostack .lp-section-label { color: #7b7c84; font-size: 10px; }
+.cf-ostack .lp-section-label { color: #6b6c73; font-size: 10px; }
 .cf-ostack .lp-team .lp-section-intro { display: block; max-width: 690px; text-align: center; margin: 0 auto 60px; }
 .cf-ostack .lp-team > .lp-section-label { justify-content: center; }
 .cf-ostack .lp-section-intro h2 { font-size: clamp(35px,4vw,52px); }
@@ -65,7 +65,7 @@
 .cf-ostack .lp-team .vui-agent-note { margin-top: auto; font-size: 10px; }
 .ol-section-heading { text-align: center; max-width: 720px; margin: 0 auto 64px; }
 .ol-section-heading > h2 { font-size: clamp(36px,4.2vw,56px); line-height: 1.12; letter-spacing: -.05em; font-weight: 600; margin: 20px 0; }
-.ol-section-heading > p { font-size: 14px; color: #777780; }
+.ol-section-heading > p { font-size: 14px; color: #6b6c73; }
 .cf-ostack .ol-process { padding-top: 50px; padding-bottom: 120px; }
 .ol-process-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; align-items: start; }
 .ol-process-nav { position: sticky; top: 130px; display: flex; flex-direction: column; gap: 8px; }
@@ -119,9 +119,9 @@
   .cf-ostack .lp-hero { padding: 44px 20px 0; }.cf-ostack .lp-intro { font-size: 10px; margin-bottom: 24px; }.cf-ostack .lp-hero h1 { font-size: clamp(38px,10vw,52px); }.cf-ostack .lp-lead { font-size: 15px; max-width: 340px; margin-top: 22px; }.cf-ostack .lp-actions { flex-direction: column; gap: 6px; margin-top: 24px; }
   .ol-product-stage { margin-top: 32px; padding: 22px 0 0; }.ol-product-shell { padding: 6px; border-radius: 15px; }.ol-product-toolbar { padding: 10px 8px 15px; font-size: 10px; gap: 5px; }.ol-product-toolbar > span:last-child { font-size: 7px; max-width: 135px; text-align: right; }.ol-window-dots { margin-right: 4px; gap: 3px; }.ol-window-dots i { width: 4px; height: 4px; }
   .ol-product-workspace { grid-template-columns: 1fr; }.ol-product-brief { padding: 24px; }.ol-product-brief h2 { font-size: 28px; }.ol-product-brief h2 br { display: none; }.ol-product-brief p { max-width: none; font-size: 12px; }.ol-brief-checks { flex-direction: row; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; font-size: 8px; }.ol-product-code { padding: 18px; }.ol-product-code .lp-preview-code { font-size: 9px; }.ol-product-foot { padding: 12px 6px 6px; font-size: 8px; }
-  .ol-technology { padding: 48px 20px 40px; }.ol-technology > p { font-size: 12px; }.ol-tech-group { gap: 44px; padding-right: 44px; }.ol-tech-group span { font-size: 21px; }
+  .ol-technology { padding: 48px 20px 40px; }.ol-technology > p { font-size: 12px; }.ol-tech-group { gap: 44px; padding-right: 44px; }.ol-tech-group span { font-size: 21px; color: #6b6c73; }
   .cf-ostack .lp-section { padding-inline: 20px; }.cf-ostack .lp-team { padding-top: 36px; padding-bottom: 64px; }.cf-ostack .lp-team .lp-section-intro { margin-bottom: 32px; }.cf-ostack .lp-team .lp-section-intro > p { font-size: 13px; }.cf-ostack .lp-team .vui-agent-grid { grid-template-columns: 1fr; gap: 18px; }.cf-ostack .lp-team .vui-agent-card,.cf-ostack .lp-team .vui-agent-card:nth-child(4),.cf-ostack .lp-team .vui-agent-card:nth-child(5),.cf-ostack .lp-team .vui-agent-card:last-child { grid-column: auto; padding: 24px; }.cf-ostack .lp-team .vui-agent-artifact { min-height: 190px; }
-  .cf-ostack .ol-process { padding-top: 30px; padding-bottom: 64px; }.ol-section-heading { margin-bottom: 36px; }.ol-process-layout { display: block; }.ol-process-nav { display: none; }.ol-process-panels { gap: 18px; }.ol-process-panel { padding: 26px 20px; scroll-margin-top: 90px; }.ol-process-panel h3 { font-size: 26px; margin-bottom: 20px; }.ol-process-artifact { min-height: 240px; }.ol-prompt-card { transform: none; padding: 22px; }.ol-prompt-card p { font-size: 19px; }.ol-process-mobile-detail { display: block; margin-top: 22px; font-size: 12px; line-height: 1.8; color: #71727c; }.ol-process-artifact .lp-preview-checkpoint { flex-wrap: wrap; }.ol-process-artifact .lp-preview-document { padding-inline: 12px; }
+  .cf-ostack .ol-process { padding-top: 30px; padding-bottom: 64px; }.ol-section-heading { margin-bottom: 36px; }.ol-process-layout { display: block; }.ol-process-nav { display: none; }.ol-process-panels { gap: 18px; }.ol-process-panel { padding: 26px 20px; scroll-margin-top: 90px; }.ol-process-panel h3 { font-size: 26px; margin-bottom: 20px; }.ol-process-artifact { min-height: 240px; }.ol-prompt-card { transform: none; padding: 22px; }.ol-prompt-card p { font-size: 19px; }.ol-process-mobile-detail { display: block; margin-top: 22px; font-size: 12px; line-height: 1.8; color: #63646b; }.ol-process-artifact .lp-preview-checkpoint { flex-wrap: wrap; }.ol-process-artifact .lp-preview-document { padding-inline: 12px; }
   .cf-ostack .lp-loop-section { margin-inline: 0; }.cf-ostack .lp-loop-inner { padding-inline: 24px; }.cf-ostack .lp-closing { margin-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .ol-process-button,.ol-process-reveal { transition: none; }.ol-tech-track { animation: none; }.ol-product-shell,.ol-prompt-card { transform: none !important; } }

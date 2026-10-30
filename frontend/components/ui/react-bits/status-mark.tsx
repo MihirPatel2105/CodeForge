@@ -197,7 +197,7 @@ const StatusMark: React.FC<StatusMarkProps> = ({
       </svg>
       {hasLabel ? <span className="sr-only">{spoken}: </span> : null}
       {hasLabel ? (
-        <span className="relative leading-[1.25] opacity-[0.65] [color:var(--sm-color)] [font-size:var(--sm-font)] [transition:opacity_200ms_ease] group-data-[status=running]:opacity-100 group-data-[status=done]:opacity-60 group-data-[status=failed]:opacity-100 group-data-[status=cancelled]:opacity-[0.55]">
+        <span className="relative leading-[1.25] [color:var(--sm-color)] [font-size:var(--sm-font)]">
           {label}
           <span
             className="pointer-events-none absolute inset-x-0 top-1/2 origin-left scale-x-0 bg-current [translate:0_-50%] [height:max(1px,calc(var(--sm-font)/14))] [transition:transform_160ms_cubic-bezier(0.23,1,0.32,1)] group-data-[status=done]:group-data-[strike]:scale-x-100 group-data-[status=done]:group-data-[strike]:[transition:transform_280ms_cubic-bezier(0.23,1,0.32,1)_var(--sm-strike-delay)] motion-reduce:scale-x-100! motion-reduce:opacity-0 motion-reduce:[transition:opacity_200ms_ease] motion-reduce:group-data-[status=done]:group-data-[strike]:opacity-100 motion-reduce:group-data-[status=done]:group-data-[strike]:[transition:opacity_200ms_ease]"

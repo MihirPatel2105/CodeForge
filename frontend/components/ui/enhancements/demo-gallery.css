@@ -1,18 +1,18 @@
 .cf-demo-gallery { max-width: 1120px; }
 .cf-demo-gallery .cf-demo-gallery-heading { align-items: flex-end; gap: 32px; margin-bottom: 34px; }
 .cf-premium .cf-demo-gallery .cf-demo-gallery-heading h2 { max-width: 650px; font-size: clamp(30px,3.5vw,46px); line-height: 1.12; letter-spacing: -.05em; text-wrap: balance; }
-.cf-demo-gallery .cf-demo-gallery-heading p { font: 500 10px/1.5 var(--font-mono-stack); text-transform: uppercase; letter-spacing: .06em; color: #777b87; margin-bottom: 18px; }
+.cf-demo-gallery .cf-demo-gallery-heading p { font: 500 10px/1.5 var(--font-mono-stack); text-transform: uppercase; letter-spacing: .06em; color: #666873; margin-bottom: 18px; }
 .cf-demo-gallery .cf-demo-gallery-heading > div:last-child { flex-shrink: 0; padding-bottom: 4px; }
 .cf-demo-gallery .cf-demo-slides { border-radius: 28px; scrollbar-width: none; }
 .cf-demo-gallery .cf-demo-slides::-webkit-scrollbar { display: none; }
 .cf-demo-gallery .cf-demo-slide { display: grid; grid-template-columns: .9fr 1.1fr; padding: 0; border: 0; background: #f5f5f7; border-radius: 28px; overflow: hidden; }
 .cf-demo-brief { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 38px; }
-.cf-demo-gallery .cf-demo-slide-top { width: 100%; font: 9px var(--font-mono-stack); color: #858791; margin-bottom: 30px; }
+.cf-demo-gallery .cf-demo-slide-top { width: 100%; font: 9px var(--font-mono-stack); color: #666873; margin-bottom: 30px; }
 .cf-demo-case-icon { display: grid; place-items: center; height: 44px; width: 44px; border-radius: 14px; color: #505875; background: #e7eaf3; }
-.cf-demo-case-label { font: 9px var(--font-mono-stack); color: #777b87; }
+.cf-demo-case-label { font: 9px var(--font-mono-stack); color: #666873; }
 .cf-demo-gallery .cf-demo-slide h3 { font-size: 33px; line-height: 1.15; letter-spacing: -.045em; margin: 13px 0 18px; }
 .cf-demo-gallery .cf-demo-slide p { font-size: 13px; line-height: 1.85; color: #6c6e77; margin-bottom: 26px; }
-.cf-demo-facts { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 30px; font-size: 10px; color: #737784; }
+.cf-demo-facts { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 30px; font-size: 10px; color: #666873; }
 .cf-demo-facts > span { display: inline-flex; align-items: center; gap: 6px; }
 .cf-demo-gallery .cf-demo-slide-link { display: inline-flex; align-items: center; gap: 18px; min-height: 48px; margin-top: auto; padding: 6px 7px 6px 19px; border-radius: 100px; background: var(--action-ink, #07090f); color: #fff; text-decoration: none; font-size: 12px; }
 .cf-demo-slide-link > span { display: grid; place-items: center; height: 34px; width: 34px; border-radius: 50%; background: #ffffff14; transition: transform 250ms cubic-bezier(.16,1,.3,1), background-color 250ms; }
@@ -37,11 +37,11 @@
 .cf-demo-test-result { display: flex; align-items: center; gap: 12px; padding: 17px 18px; background: #fff; border-radius: 13px; box-shadow: 0 12px 28px -24px #252d4755; }
 .cf-demo-test-check { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; background: #edf0fb; color: #54628c; border-radius: 50%; }
 .cf-demo-test-result > div { min-width: 0; }
-.cf-demo-test-result > div > span { display: block; font-size: 9px; color: #898c96; }
+.cf-demo-test-result > div > span { display: block; font-size: 9px; color: #666873; }
 .cf-demo-test-result strong { display: block; margin-top: 4px; color: #40485e; font: 500 11px var(--font-mono-stack); }
-.cf-demo-test-tag { margin-left: auto; font: 8px var(--font-mono-stack); color: #959aa7; }
+.cf-demo-test-tag { margin-left: auto; font: 8px var(--font-mono-stack); color: #666873; }
 .cf-demo-gallery-footer { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 22px; }
-.cf-demo-gallery-footer .cf-demo-position { margin: 0; font-size: 10px; color: #878994; }
+.cf-demo-gallery-footer .cf-demo-position { margin: 0; font-size: 10px; color: #666873; }
 .cf-demo-progress { display: flex; gap: 5px; }
 .cf-demo-progress i { width: 16px; height: 3px; border-radius: 4px; background: #e0e2e9; transition: background-color 200ms; }
 .cf-demo-progress i[data-active=true] { background: #525e80; }

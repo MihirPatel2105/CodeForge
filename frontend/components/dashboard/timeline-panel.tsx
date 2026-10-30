@@ -158,7 +158,9 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           onScroll={handleScroll}
           role="log"
           aria-label="Live timeline"
-          className="cf-run-scroll cf-scroll-cue absolute inset-0 flex flex-col gap-1.5 overflow-y-auto p-2.5"
+          /* Entries are plain text, so the log itself takes focus for keyboard scrolling. */
+          tabIndex={0}
+          className="cf-run-scroll cf-scroll-cue absolute inset-0 flex flex-col gap-1.5 overflow-y-auto p-2.5 outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50"
           style={{ scrollBehavior: "auto" }}
         >
         {entries.length === 0 ? (
