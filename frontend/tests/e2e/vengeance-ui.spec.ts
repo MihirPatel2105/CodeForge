@@ -136,3 +136,15 @@ test("FAQ page and dark footer retain readable content and links", async ({ page
   await expect(footer.getByRole("link", { name: "FAQ", exact: true })).toHaveAttribute("href", "/faq");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
+
+test("help tooltip opens on a tap that follows mouse input", async ({ page }) => {
+  await session(page);
+  await page.goto(`/projects/${project.id}`);
+  // A touchscreen laptop: the pointer is used first, then the screen is tapped.
+  await page.getByLabel("Describe the API").click();
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.getByRole("button", { name: "About average loops" }).tap();
+  await expect(page.getByRole("tooltip")).toContainText("Average repair iterations");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+});

@@ -102,12 +102,12 @@ test("pause holds the replay and replay restarts it", async ({ page }) => {
 
   await advance(page, 3_000);
   await region.getByRole("button", { name: "Pause replay" }).click();
-  await advance(page, FULL_REPLAY_MS);
+  // A held replay would have moved several stages in this time.
+  await advance(page, 5_000);
   await expect(sandbox).toHaveAttribute("data-state", "idle");
 
   await region.getByRole("button", { name: "Play replay" }).click();
-  await advance(page, FULL_REPLAY_MS);
-  await expect(sandbox).toHaveAttribute("data-state", "done");
+  await advanceUntil(page, async () => (await sandbox.getAttribute("data-state")) === "done");
 
   await region.getByRole("button", { name: "Replay from start" }).click();
   await expect(sandbox).toHaveAttribute("data-state", "idle");
