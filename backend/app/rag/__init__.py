@@ -1,4 +1,20 @@
 from app.rag.library import SNIPPETS, Snippet
-from app.rag.retriever import context_for, retrieve, warm_index
+from app.rag.retriever import (
+    RetrievalOutcome,
+    RetrievalUnavailableError,
+    context_for,
+    retrieve,
+    retrieve_context,
+    warm_index,
+)
 
-__all__ = ["SNIPPETS", "Snippet", "context_for", "retrieve", "warm_index"]
+__all__ = [
+    "SNIPPETS",
+    "RetrievalOutcome",
+    "RetrievalUnavailableError",
+    "Snippet",
+    "context_for",
+    "retrieve",
+    "retrieve_context",
+    "warm_index",
+]

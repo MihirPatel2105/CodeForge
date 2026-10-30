@@ -8,12 +8,19 @@ success-rate delta — the project's headline reportable metric — can actually
 rather than asserted.
 """
 
+import logging
+from dataclasses import dataclass
 from functools import lru_cache
+from typing import Any, Literal
 
 from app.rag.library import SNIPPETS, Snippet
 
+logger = logging.getLogger(__name__)
+
 COLLECTION_NAME = "codeforge_examples"
 DEFAULT_TOP_K = 4
+
+RetrievalStatus = Literal["disabled", "retrieved", "empty", "unavailable"]
 
 
 class RetrievalUnavailableError(RuntimeError):
@@ -83,21 +90,56 @@ def render_snippets(snippets: list[Snippet]) -> str:
     )
 
 
-def context_for(query: str, *, enabled: bool, top_k: int = DEFAULT_TOP_K) -> str:
-    """The Coder's entry point: retrieved context, or an empty string.
+@dataclass(frozen=True)
+class RetrievalOutcome:
+    """What one Coder call was actually given.
 
-    Returns empty rather than raising when retrieval is off or broken, so a RAG failure
-    degrades the run instead of ending it.
+    The run flag says retrieval was *requested*; this says whether it happened. Without
+    the distinction a broken index turns a with-RAG run into a without-RAG run that is
+    still counted on the with-RAG side of the headline delta.
+    """
+
+    status: RetrievalStatus
+    snippet_ids: tuple[str, ...] = ()
+    text: str = ""
+
+    def record(self) -> dict[str, Any]:
+        return {"status": self.status, "snippets": list(self.snippet_ids)}
+
+
+def retrieve_context(query: str, *, enabled: bool, top_k: int = DEFAULT_TOP_K) -> RetrievalOutcome:
+    """Retrieved context plus how it was obtained.
+
+    Never raises: a RAG failure degrades the run instead of ending it, and the outcome
+    makes that degradation measurable.
     """
     if not enabled:
-        return ""
+        return RetrievalOutcome(status="disabled")
     try:
-        return render_snippets(retrieve(query, top_k=top_k))
-    except RetrievalUnavailableError:
-        return ""
+        snippets = retrieve(query, top_k=top_k)
+    except RetrievalUnavailableError as exc:
+        logger.warning("Retrieval unavailable; continuing without examples: %s", exc)
+        return RetrievalOutcome(status="unavailable")
+    if not snippets:
+        return RetrievalOutcome(status="empty")
+    return RetrievalOutcome(
+        status="retrieved",
+        snippet_ids=tuple(s.id for s in snippets),
+        text=render_snippets(snippets),
+    )
+
+
+def context_for(query: str, *, enabled: bool, top_k: int = DEFAULT_TOP_K) -> str:
+    """Retrieved context as prompt text, or an empty string when off or broken."""
+    return retrieve_context(query, enabled=enabled, top_k=top_k).text
 
 
 def warm_index() -> int:
     """Build the index eagerly and report its size. Called at startup so the first run
     does not pay for it."""
-    return _collection().count()
+    try:
+        return _collection().count()
+    except RetrievalUnavailableError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - same degradation contract as `retrieve`
+        raise RetrievalUnavailableError(str(exc)) from exc

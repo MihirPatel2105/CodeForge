@@ -79,6 +79,14 @@ def test_architect_recovery_requires_fresh_design_approval():
     assert patch["review"] is None and patch["tests"] is None
 
 
+@pytest.mark.parametrize(("stage", "kept"), [("pm", False), ("architect", False), ("coder", True)])
+def test_retry_keeps_retrieval_records_only_for_code_it_keeps(stage, kept):
+    records = [{"path": "main.py", "iteration": 0, "status": "unavailable", "snippets": []}]
+    saved = state(rag_retrievals=records)
+    restored = {**saved, **recovery.retry_update(saved, stage, 1)}
+    assert restored["rag_retrievals"] == (records if kept else [])
+
+
 def test_recovered_provider_error_does_not_allow_retrying_a_later_unrelated_failure():
     saved = state(review={"passed": True}, errors=[{"agent": "reviewer", "code": "llm_exhausted"}])
     assert recovery.retry_stage(saved) is None

@@ -68,10 +68,11 @@ def retry_update(state: dict[str, Any], stage: str, attempt: int) -> dict[str, A
     }
     if stage in ("pm", "architect", "coder", "reviewer"):
         update.update(review=None, test_files=[])
+    # Retrieval records describe the files they produced, so they go with those files.
     if stage == "pm":
-        update.update(requirements=None, design=None, code=None, files=[])
+        update.update(requirements=None, design=None, code=None, files=[], rag_retrievals=[])
     if stage == "architect":
-        update.update(design=None, code=None, files=[])
+        update.update(design=None, code=None, files=[], rag_retrievals=[])
     keep = () if stage == "pm" else ("pm",) if stage == "architect" else ("pm", "architect")
     update["approvals"] = {
         phase: record for phase, record in state.get("approvals", {}).items() if phase in keep

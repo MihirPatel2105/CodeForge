@@ -66,6 +66,15 @@ def score_run(state: dict[str, Any], *, status: str, prompt_id: str | None = Non
         llm_calls=len(llm_attempts),
         tokens_total=int(state.get("llm_tokens") or 0),
     )
+    if metrics.rag_enabled:
+        retrievals = [_data(r) for r in (state.get("rag_retrievals") or [])]
+        metrics.rag_context_calls = sum(r.get("status") == "retrieved" for r in retrievals)
+        metrics.rag_missed_calls = sum(r.get("status") != "retrieved" for r in retrievals)
+        if metrics.rag_missed_calls:
+            metrics.notes.append(
+                f"Retrieval returned no examples for {metrics.rag_missed_calls} of "
+                f"{len(retrievals)} Coder calls"
+            )
     metrics.provider_fallbacks = sum(
         1
         for attempt in llm_attempts

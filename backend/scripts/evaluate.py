@@ -31,6 +31,8 @@ CSV_FIELDS = (
     "attempt",
     "prompt_id",
     "rag_enabled",
+    "rag_context_calls",
+    "rag_missed_calls",
     "repetition",
     "run_id",
     "status",
@@ -91,8 +93,22 @@ def summarize(records: list[dict], planned: list[dict]) -> dict[str, Any]:
         any(record.get("failure_category") == "quota" for record in arms.values())
         for arms in results_by_pair.values()
     )
+    # A with-RAG run whose retrieval failed was effectively a without-RAG run; counting it
+    # on the with-RAG side would bias the headline delta toward zero.
+    retrieval_affected_pairs = sum(
+        any(
+            record["rag_enabled"] and int(record.get("rag_missed_calls") or 0) > 0
+            for record in arms.values()
+        )
+        for arms in results_by_pair.values()
+    )
     complete = planned_ids <= included.keys()
-    comparison_ready = complete and paired_pairs == len(planned_pairs) and not quota_affected_pairs
+    comparison_ready = (
+        complete
+        and paired_pairs == len(planned_pairs)
+        and not quota_affected_pairs
+        and not retrieval_affected_pairs
+    )
     by_arm: dict[str, dict[str, Any]] = {}
     for rag, label in ((False, "without_rag"), (True, "with_rag")):
         arm = [r for r in included.values() if r["rag_enabled"] is rag]
@@ -145,11 +161,14 @@ def summarize(records: list[dict], planned: list[dict]) -> dict[str, Any]:
         "planned_pairs": len(planned_pairs),
         "paired_pairs": paired_pairs,
         "quota_affected_pairs": quota_affected_pairs,
+        "retrieval_affected_pairs": retrieval_affected_pairs,
         "rag_comparison_status": (
             "incomplete"
             if not complete
             else "quota_confounded"
             if quota_affected_pairs
+            else "retrieval_confounded"
+            if retrieval_affected_pairs
             else "ready"
         ),
         "excluded_attempts": dict(

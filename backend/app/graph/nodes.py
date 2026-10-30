@@ -73,6 +73,16 @@ def _failed_attempts(previous: list[dict], exc: Exception) -> list[dict]:
     ]
 
 
+def _with_retrieval(
+    records: list[dict], path: str, iteration: int, result: LLMResult
+) -> list[dict]:
+    """Append what this Coder call was given, so scoring can tell RAG requested from
+    RAG received. A result without retrieval information adds nothing."""
+    if result.retrieval is None:
+        return records
+    return [*records, {"path": path, "iteration": iteration, **result.retrieval}]
+
+
 def _failed_usage_update(state: State, exc: Exception) -> State:
     return {"llm_attempts": _failed_attempts(list(state.get("llm_attempts") or []), exc)}
 
@@ -266,6 +276,8 @@ async def _generate_tree(state: State, coder, design: Design) -> State:
     errors = list(state.get("errors") or [])
     attempts = list(state.get("llm_attempts") or [])
     tokens = int(state.get("llm_tokens") or 0)
+    retrievals = list(state.get("rag_retrievals") or [])
+    iteration = state.get("loop_count", 0)
 
     for spec in design.files:
         if spec.path in written:
@@ -273,6 +285,7 @@ async def _generate_tree(state: State, coder, design: Design) -> State:
         try:
             result = await coder.run_file(state, spec)
             attempts, tokens = _collect_usage(attempts, tokens, result)
+            retrievals = _with_retrieval(retrievals, spec.path, iteration, result)
             files.append(GeneratedFile(path=spec.path, content=result.value.content))
         except Exception as exc:
             attempts = _failed_attempts(attempts, exc)
@@ -283,6 +296,7 @@ async def _generate_tree(state: State, coder, design: Design) -> State:
         "errors": errors,
         "llm_attempts": attempts,
         "llm_tokens": tokens,
+        "rag_retrievals": retrievals,
         "retry_stage": None,
     }
 
@@ -299,6 +313,7 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
     errors = list(state.get("errors") or [])
     attempts = list(state.get("llm_attempts") or [])
     tokens = int(state.get("llm_tokens") or 0)
+    retrievals = list(state.get("rag_retrievals") or [])
 
     problems = _problems_by_file(state)
     design_specs = {spec.path: spec for spec in state["design"].files}
@@ -322,6 +337,7 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
             try:
                 result = await coder.run_file({**state, "loop_count": iteration}, spec)
                 attempts, tokens = _collect_usage(attempts, tokens, result)
+                retrievals = _with_retrieval(retrievals, path, iteration, result)
                 by_path[path] = GeneratedFile(path=path, content=result.value.content)
                 changed.append(path)
             except Exception as exc:
@@ -337,6 +353,7 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
                 siblings=_sibling_context(by_path, exclude=path),
             )
             attempts, tokens = _collect_usage(attempts, tokens, result)
+            retrievals = _with_retrieval(retrievals, path, iteration, result)
             by_path[path] = GeneratedFile(path=path, content=result.value.content)
             changed.append(path)
         except Exception as exc:
@@ -361,6 +378,7 @@ async def _fix_tree(state: State, coder, trigger: str) -> State:
         "errors": errors,
         "llm_attempts": attempts,
         "llm_tokens": tokens,
+        "rag_retrievals": retrievals,
         "loop_count": iteration,
         "loop_history": [*(state.get("loop_history") or []), record],
         # Cleared so the next reviewer/sandbox verdict is judged fresh rather than

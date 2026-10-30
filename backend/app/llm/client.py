@@ -47,6 +47,9 @@ class LLMResult(BaseModel):
     model: str
     attempts: list[LLMAttempt]
     tokens: int = 0
+    # Set by agents that inject retrieved context, so the run can record what the model
+    # was actually given rather than only what the run requested.
+    retrieval: dict[str, Any] | None = None
 
     @property
     def fallbacks(self) -> int:

@@ -30,6 +30,7 @@ from app.core.abuse_limits import check_abuse_limit
 from app.core.exceptions import CodeForgeError
 from app.core.monitoring import monitor_loop
 from app.db import connect, disconnect
+from app.rag import RetrievalUnavailableError, warm_index
 
 logger = logging.getLogger(__name__)
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
@@ -63,6 +64,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             from app.graph.executor import reconcile_interrupted_runs
 
             await reconcile_interrupted_runs()
+            await _warm_retrieval()
             if not settings.email_verification_enabled:
                 logger.warning(
                     "SMTP is not configured — sign-up will NOT verify email addresses. "
@@ -82,6 +84,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     finally:
         if app.state.redis is not None:
             await app.state.redis.aclose()
+
+
+async def _warm_retrieval() -> None:
+    """Build the example index before the first run needs it.
+
+    The Coder queries it from the event loop, so a cold first build would stall every
+    request for the time it takes to load the embedding model. A failure is logged, not
+    raised: runs without retrieval are valid, and each one records that it got none.
+    """
+    try:
+        count = await asyncio.to_thread(warm_index)
+    except RetrievalUnavailableError as exc:
+        logger.warning("Retrieval index unavailable at startup: %s", exc)
+    else:
+        logger.info("Retrieval index ready with %d examples", count)
 
 
 async def codeforge_error_handler(request: Request, exc: CodeForgeError) -> JSONResponse:

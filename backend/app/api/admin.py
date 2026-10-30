@@ -793,7 +793,14 @@ async def quality(admin: AdminUser) -> AdminQualityResponse:
 
     rag_comparison: list[AdminRagQuality] = []
     for rag_enabled in (True, False):
-        group = [metric for metric in eligible if metric.rag_enabled is rag_enabled]
+        # A with-RAG run whose retrieval returned nothing did not test retrieval, so it
+        # is left out of the comparison while still counting toward platform totals.
+        group = [
+            metric
+            for metric in eligible
+            if metric.rag_enabled is rag_enabled
+            and not (metric.rag_enabled and metric.rag_missed_calls)
+        ]
         rag_comparison.append(
             AdminRagQuality(
                 rag_enabled=rag_enabled,

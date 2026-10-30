@@ -1,7 +1,7 @@
 from app.agents.base import BaseAgent
 from app.llm.client import LLMResult
 from app.prompts import coder as prompt
-from app.rag import context_for
+from app.rag import retrieve_context
 from app.schemas.agents import CodeOutput, Requirements, SingleFileOutput
 
 
@@ -79,7 +79,11 @@ class SingleFileCoderAgent(CoderAgent):
             ),
             "",
         )
-        return await self.call(
+        retrieval = retrieve_context(
+            f"{spec.path} {spec.purpose} {requirements.summary}",
+            enabled=state.get("rag_enabled", False),
+        )
+        result = await self.call(
             prompt.render_file(
                 path=spec.path,
                 purpose=spec.purpose or "part of the application",
@@ -88,10 +92,7 @@ class SingleFileCoderAgent(CoderAgent):
                 entities=describe_entities(requirements),
                 endpoints=describe_endpoints(design),
                 file_list=", ".join(f.path for f in design.files),
-                reference=context_for(
-                    f"{spec.path} {spec.purpose} {requirements.summary}",
-                    enabled=state.get("rag_enabled", False),
-                ),
+                reference=retrieval.text,
             )
             + (
                 "\nExisting version of this file (preserve unaffected behavior):\n" + source
@@ -101,21 +102,24 @@ class SingleFileCoderAgent(CoderAgent):
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),
         )
+        return result.model_copy(update={"retrieval": retrieval.record()})
 
     async def run_fix(
         self, state: dict, path: str, current: str, problems: str, siblings: str = ""
     ) -> LLMResult:
         """Regenerate one file to address specific problems."""
-        return await self.call(
+        # The problem text is the best possible query: it describes exactly what went
+        # wrong, which is what the snippets are indexed against.
+        retrieval = retrieve_context(problems, enabled=state.get("rag_enabled", False))
+        result = await self.call(
             prompt.render_fix(
                 path=path,
                 current=current,
                 problems=problems,
                 siblings=siblings,
-                # The problem text is the best possible query: it describes exactly what
-                # went wrong, which is what the snippets are indexed against.
-                reference=context_for(problems, enabled=state.get("rag_enabled", False)),
+                reference=retrieval.text,
             ),
             run_id=state["run_id"],
             iteration=state.get("loop_count", 0),
         )
+        return result.model_copy(update={"retrieval": retrieval.record()})

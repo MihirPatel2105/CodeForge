@@ -114,6 +114,9 @@ class RunState(TypedDict, total=False):
     current_agent: AgentName | None
     prompt_versions: dict[str, str]  # agent -> template version
     rag_enabled: bool
+    # One entry per Coder generation: path, iteration, retrieval status, snippet ids.
+    # `rag_enabled` records the request; this records what each call actually received.
+    rag_retrievals: list[dict]
     llm_attempts: list[dict]
     llm_tokens: int
     errors: list[RunError]
@@ -158,6 +161,7 @@ def new_run_state(
         current_agent=None,
         prompt_versions={},
         rag_enabled=rag_enabled,
+        rag_retrievals=[],
         llm_attempts=[],
         llm_tokens=0,
         errors=[],
@@ -176,6 +180,8 @@ class RunMetrics(BaseModel):
     blocking_findings_total: int = 0
     findings_fixed: int = 0  # review-loop effectiveness
     rag_enabled: bool = False
+    rag_context_calls: int = 0  # Coder calls that received retrieved snippets
+    rag_missed_calls: int = 0  # RAG-enabled Coder calls that received none
     llm_calls: int = 0
     tokens_total: int = 0
     provider_fallbacks: int = 0  # how often a 429 forced a provider switch

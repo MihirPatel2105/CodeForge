@@ -43,7 +43,8 @@ class RunState(TypedDict, total=False):
     status: RunStatus
     current_agent: str | None
     prompt_versions: dict[str, str]      # agent -> template version
-    rag_enabled: bool
+    rag_enabled: bool                    # retrieval requested for this run
+    rag_retrievals: list[dict]           # per Coder call: path, iteration, status, snippets
     errors: list[RunError]
     started_at: datetime
     finished_at: datetime | None
@@ -313,6 +314,8 @@ class RunMetrics(BaseModel):
     blocking_findings_total: int
     findings_fixed: int              # review-loop effectiveness
     rag_enabled: bool
+    rag_context_calls: int           # Coder calls that received retrieved snippets
+    rag_missed_calls: int            # RAG-enabled Coder calls that received none
     llm_calls: int
     tokens_total: int
     provider_fallbacks: int          # how often a 429 forced a switch
@@ -328,6 +331,12 @@ FastAPI app and calls one designed endpoint before pytest; its marker establishe
 tests fail. Excluded attempts remain in the JSON/CSV report but do not enter success-rate
 denominators. The evaluator checks a fingerprint of the backend and sandbox implementation before
 resuming, so RAG arms from different versions cannot be combined accidentally.
+
+`rag_enabled` records that retrieval was requested; `rag_retrievals` records what each Coder
+call received (`disabled`, `retrieved`, `empty`, or `unavailable`). Retrieval failure degrades
+a run instead of ending it, so a with-RAG run can finish without any examples. Such a run is
+reported through `rag_missed_calls`, left out of the admin RAG comparison, and marks its
+evaluation pair `retrieval_confounded`. The index is built once at startup.
 
 ## Workspace evolution (2026-10-02)
 
