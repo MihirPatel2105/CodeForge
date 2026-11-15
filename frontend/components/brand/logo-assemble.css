@@ -1,0 +1,28 @@
+/* Slabs fill and stroke with the text colour; the round-joined stroke gives the corner radius. */
+.cf-assemble-slab {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linejoin: round;
+  transform-box: view-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cf-assemble .cf-assemble-slab {
+    animation: cf-assemble-in 620ms cubic-bezier(.22, 1.2, .36, 1) var(--delay) both;
+  }
+  /* Loading: assemble, hold the finished mark, slide back out the way each came, go again. */
+  .cf-assemble[data-looping] .cf-assemble-slab {
+    animation: cf-assemble-loop 2400ms cubic-bezier(.4, 0, .2, 1) var(--delay) infinite both;
+  }
+}
+
+@keyframes cf-assemble-in {
+  from { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes cf-assemble-loop {
+  0% { transform: translate(var(--dx), var(--dy)); opacity: 0; animation-timing-function: cubic-bezier(.22, 1.2, .36, 1); }
+  28%, 72% { transform: none; opacity: 1; animation-timing-function: cubic-bezier(.55, 0, .75, .2); }
+  92%, 100% { transform: translate(calc(var(--dx) * .5), calc(var(--dy) * .5)); opacity: 0; }
+}
