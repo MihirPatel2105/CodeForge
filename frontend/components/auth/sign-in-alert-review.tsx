@@ -32,29 +32,26 @@ export function SignInAlertReview({ token }: { token: string }) {
     <AuthEntryShell label="Review sign-in alert" proof="security">
         {result === "not_me" ? (
           <>
-            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-danger-bd bg-danger-soft text-danger"><ShieldAlert className="h-5 w-5" aria-hidden /></span>
-            <span className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-danger"><span className="h-1.5 w-1.5 rounded-full bg-danger" aria-hidden /> Account security</span>
-            <h1 className="mt-4 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">All sessions ended</h1>
+            <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-danger"><ShieldAlert className="h-5 w-5" aria-hidden /></span>
+            <h1 className="mt-6 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">All sessions ended</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">Your account has been signed out on every device. Reset your password before signing in again.</p>
-            <ButtonLink href="/forgot-password" size="lg" className="mt-7">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></ButtonLink>
+            <ButtonLink href="/forgot-password" size="lg" className="mt-7 h-[52px] w-full rounded-[var(--ui-radius-control)]">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></ButtonLink>
           </>
         ) : result === "me" ? (
           <>
-            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-ok-bd bg-ok-soft text-ok"><ShieldCheck className="h-5 w-5" aria-hidden /></span>
-            <span className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden /> Account security</span>
-            <h1 className="mt-4 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Sign-in confirmed</h1>
+            <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-ok"><ShieldCheck className="h-5 w-5" aria-hidden /></span>
+            <h1 className="mt-6 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Sign-in confirmed</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">No account sessions were changed.</p>
-            <Link href="/profile/settings" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-accent hover:underline hover:underline-offset-4">Review your devices <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            <Link href="/profile/settings" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[var(--ui-radius-control)] text-[13px] font-[650] text-fg hover:underline hover:underline-offset-4">Review your devices <ArrowRight className="h-4 w-4" aria-hidden /></Link>
           </>
         ) : (
           <>
-            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><ShieldAlert className="h-5 w-5" aria-hidden /></span>
-            <span className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Account security</span>
-            <h1 className="mt-4 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Was this sign-in you?</h1>
+            <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><ShieldAlert className="h-5 w-5" aria-hidden /></span>
+            <h1 className="mt-6 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Was this sign-in you?</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">A new browser signed in to your account. Review the activity and choose what to do.</p>
             <div className="mt-7 flex flex-col gap-3">
-              <Button type="button" size="lg" disabled={pending} onClick={() => void respond("me")} className="w-full text-[14px] font-[650]">{pending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}Yes, it was me</Button>
-              <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => void respond("not_me")} className="w-full border-danger-bd text-[14px] font-[650] text-danger hover:bg-danger-soft">No, sign out all devices</Button>
+              <Button type="button" size="lg" disabled={pending} onClick={() => void respond("me")} className="h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]">{pending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}Yes, it was me</Button>
+              <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => void respond("not_me")} className="h-[52px] w-full rounded-[var(--ui-radius-control)] border-danger-bd text-[14px] font-[650] text-danger hover:bg-danger-soft">No, sign out all devices</Button>
             </div>
             <p className="mt-5 text-[13px] leading-5 text-fg-muted">This link works once and expires after 24 hours. If this wasn&apos;t you, all sessions will end and you&apos;ll need to reset your password.</p>
             {error ? <Notice className="mt-4">{error}</Notice> : null}

@@ -237,7 +237,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                         if (!transition || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
                         event.preventDefault();
                         transition.navigate("/login/passkey");
-                      }} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                      }} className="flex h-[52px] items-center justify-center gap-2 rounded-[var(--ui-radius-control)] border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                         <KeyRound className="h-4 w-4" aria-hidden /> Sign in with a passkey
                       </Link>
                     </>

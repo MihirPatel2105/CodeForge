@@ -61,11 +61,10 @@ export default function PasskeyLoginPage() {
 
   const content = (
     <>
-          <span className="pa-passkey-icon grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+          <span className="pa-passkey-icon grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
             <Fingerprint className="h-5 w-5" aria-hidden />
           </span>
-          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Your workspace</div>
-          <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
+          <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
             Sign in with a passkey
           </h1>
           <p className="mt-3 text-[15px] leading-6 text-fg-muted">
@@ -75,7 +74,7 @@ export default function PasskeyLoginPage() {
             type="button"
             onClick={signIn}
             disabled={busy}
-            className="mt-8 h-12 w-full gap-2 rounded-xl text-[14px] font-[650]"
+            className="mt-8 h-[52px] w-full gap-2 rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
           >
             {busy && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />}
             {busy ? "Waiting for passkey…" : "Continue with passkey"}
@@ -86,11 +85,11 @@ export default function PasskeyLoginPage() {
             </Notice>
           )}
           {notice && (
-            <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">
+            <p role="status" className="mt-5 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3 text-[13px] leading-5 text-fg">
               {notice}
             </p>
           )}
-          <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">
+          <p className="cf-auth-footer mt-7 text-center text-[13px] text-fg-muted">
             <Link
               href="/login"
               onClick={(event) => {
@@ -98,7 +97,7 @@ export default function PasskeyLoginPage() {
                 event.preventDefault();
                 transition.navigate("/login");
               }}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg font-[650] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--ui-radius-control)] font-[650] text-fg hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-fg"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Sign in with password

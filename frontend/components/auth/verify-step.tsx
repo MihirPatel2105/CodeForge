@@ -152,20 +152,20 @@ export function VerifyStep({
 
   return (
     <div className="w-full">
-      <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent">
+      <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
         <MailCheck className="h-5 w-5" aria-hidden />
       </span>
-      <span className="mt-6 inline-flex rounded-full border border-accent-bd bg-accent-soft px-3 py-1.5 text-[12px] font-[650] text-accent">
+      <span className="mt-6 block font-mono text-[12px] uppercase tracking-[.08em] text-fg-muted">
         Step 2 of 2
       </span>
 
-      <h1 className="font-display mt-5 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
+      <h1 className="font-display mt-3 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
         Check your email
       </h1>
       <p className="mt-3 text-[15px] leading-6 text-fg-muted">
         Enter the {LENGTH}-digit code we sent to finish creating your account.
       </p>
-      <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-border bg-surface-2/60 px-4 py-3">
+      <div className="mt-5 flex items-center justify-between gap-4 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
         <span className="min-w-0 truncate text-[13px] font-[600] text-fg">{email}</span>
         <span className="flex shrink-0 items-center gap-1.5 text-[12px] text-fg-muted">
           <Clock3 className="h-3.5 w-3.5" aria-hidden />
@@ -194,7 +194,7 @@ export function VerifyStep({
               aria-label={`Digit ${i + 1}`}
               maxLength={LENGTH}
               className={cn(
-                "h-14 w-full min-w-0 rounded-xl border bg-surface text-center",
+                "h-14 w-full min-w-0 rounded-[var(--ui-radius-control)] border bg-surface text-center",
                 "font-mono text-[20px] font-[600] text-fg outline-none transition-colors",
                 "focus:border-accent focus:ring-4 focus:ring-accent/15 disabled:opacity-60",
                 error ? "border-danger-bd" : "border-border-strong",
@@ -213,7 +213,7 @@ export function VerifyStep({
       {resent && !error && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-ok-bd bg-ok-soft px-4 py-3 text-[13px] leading-5 text-ok"
+          className="mt-4 rounded-[var(--ui-radius-control)] border border-ok-bd bg-ok-soft px-4 py-3 text-[13px] leading-5 text-ok"
         >
           A new code is on its way. The previous one no longer works.
         </p>
@@ -223,12 +223,12 @@ export function VerifyStep({
         type="button"
         disabled={submitting || code.length < LENGTH}
         onClick={() => void submit(code)}
-        className="mt-6 h-12 w-full rounded-xl text-[14px] font-[650]"
+        className="mt-6 h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
       >
         {submitting ? "Verifying…" : "Verify and continue"}
       </Button>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-5">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => void resend()}
