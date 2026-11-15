@@ -2,7 +2,7 @@
 
 import { SiteHeader } from "@/components/marketing/site-header";
 
-/** Public and workspace routes share the same navigation dimensions and motion. */
+/** Workspace pages use the site's bar, without the marketing dropdowns. */
 export function AppHeader() {
   return <SiteHeader workspace />;
 }

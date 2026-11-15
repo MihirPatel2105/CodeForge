@@ -1,0 +1,301 @@
+/* Landing hero and top bar · tone: quiet, editorial, technical · memorable detail: the run drawn on a sunlit horizon */
+:root { --lh-bar-height: 76px; }
+@media (max-width: 639px) { :root { --lh-bar-height: 64px; } }
+
+:is(.lh-header, .lh-hero) {
+  --lh-header-height: var(--lh-bar-height);
+  --lh-night: #0a0b10;
+  --lh-ink: #f5f3ee;
+  --lh-ink-muted: #a9aeb9;
+  --lh-rim: #ecf2ff;
+  --lh-sky-glow: 96 130 255;
+  --lh-forge: 255 168 104;
+  --lh-ease: cubic-bezier(.65, 0, .35, 1);
+  /* The reference page's entrance curve: a fast start that settles softly. */
+  --lh-ease-rise: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────────── */
+/* Sticky, not fixed: anything rendered above the page (the mobile notice) pushes the bar down with it. */
+.lh-header {
+  position: sticky; top: 0; z-index: 20; height: var(--lh-header-height);
+  transition: transform 300ms var(--lh-ease);
+  --lh-pill-bg: var(--surface); --lh-pill-bg-hover: var(--surface-2);
+  --lh-pill-border: var(--border); --lh-pill-fg: var(--fg);
+  --lh-solid-bg: var(--accent); --lh-solid-fg: var(--surface);
+  --lh-focus: var(--accent);
+}
+/* Tone rules set the whole surface themselves: some pages style any top-level header (.cf-subpage > header).
+   Only the standard backdrop-filter: the build merges a -webkit- twin into it and drops the standard one. */
+.lh-header[data-tone="hero"] {
+  background: transparent; backdrop-filter: none;
+  --lh-pill-bg: #17181e; --lh-pill-bg-hover: #23252d;
+  --lh-pill-border: #ffffff24; --lh-pill-fg: #ecebe6;
+  --lh-solid-bg: #f5f3ee; --lh-solid-fg: #111216;
+  --lh-focus: #c9d6ff;
+  /* Shared controls inside the bar read these. */
+  --fg: #f5f3ee; --fg-muted: #c4c6cc; --surface: #17181e; --surface-2: #23252d;
+  --border: #ffffff24; --border-strong: #ffffff45; --accent: #f5f3ee;
+  color: var(--fg);
+}
+/* Past the hero the bar becomes a solid strip in the page's own colour, so text scrolling under
+   it never shows through the pills. It switches at the hero's edge; only the slide is animated. */
+.lh-header[data-tone="page"] {
+  background: var(--lp-paper, var(--surface)); backdrop-filter: none;
+  --lh-pill-bg: var(--bg); --lh-pill-bg-hover: var(--surface-2);
+}
+/* Over a dark hero the bar floats on top of it; otherwise it takes its own space. */
+.lh-header[data-overlay] { margin-bottom: calc(-1 * var(--lh-header-height)); }
+/* Landing only: arrives last, once the headline has landed. `translate` leaves `transform` to the hide logic. */
+.lh-header[data-entrance] { animation: lh-bar-in 300ms var(--lh-ease) 2000ms backwards; }
+.lh-header[data-hidden] { transform: translateY(-100%); }
+/* Keyboard focus must never land on something off screen; a pointer click must not pin the bar. */
+/* Same animation name, so the entrance is never restarted: focus just ends its delay. */
+.lh-header:has(:focus-visible) { transform: none; animation-delay: 0s; }
+/* A panel or menu the bar opened is anchored to it: keep the bar in place while one is open.
+   Must stay after the [data-hidden] rule: equal specificity, so source order decides. */
+.lh-header:has([role="dialog"], :is(button, a)[aria-expanded="true"]) { transform: none; }
+.lh-header[data-entered] { animation: none; }
+
+.lh-bar {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px;
+  height: 100%; padding-inline: clamp(16px, 5.4vw, 80px);
+}
+.lh-start, .lh-end { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lh-end { justify-content: flex-end; }
+
+.lh-pill {
+  display: inline-flex; align-items: center; height: 34px; padding-inline: 16px;
+  border: 1px solid var(--lh-pill-border); border-radius: 999px;
+  background: var(--lh-pill-bg); color: var(--lh-pill-fg);
+  font-size: 14px; font-weight: 450; line-height: 1; white-space: nowrap; text-decoration: none;
+  transition: background-color 320ms ease, border-color 320ms ease, color 320ms ease;
+}
+.lh-pill:hover { background: var(--lh-pill-bg-hover); }
+button.lh-pill { font: inherit; font-size: 14px; cursor: pointer; }
+.lh-pill-solid { border-color: transparent; background: var(--lh-solid-bg); color: var(--lh-solid-fg); font-weight: 550; }
+.lh-pill-solid:hover { background: color-mix(in srgb, var(--lh-solid-bg) 88%, var(--lh-solid-fg)); }
+/* Where you are: a firmer outline pill. The solid Projects pill is already emphatic. */
+.lh-pill[aria-current="page"]:not(.lh-pill-solid) {
+  background: var(--lh-pill-bg-hover);
+  border-color: color-mix(in srgb, var(--lh-pill-fg) 28%, transparent);
+  font-weight: 550;
+}
+/* Doubled class: beats the landing page's own focus rule whatever order the CSS chunks load in. */
+.lh-header.lh-header :is(a, button):focus-visible { outline: 2px solid var(--lh-focus); outline-offset: 3px; }
+
+/* ── Dropdown menus (Product / Demos / Company) ─────────────────────────
+   The open pill turns ivory; its panel is a cream card with plain text links. */
+.lh-menus { display: flex; align-items: center; gap: 8px; }
+.lh-menu { position: relative; }
+.lh-menu-trigger { gap: 6px; padding-inline: 16px 13px; }
+.lh-menu-chevron { width: 14px; height: 14px; transition: transform 200ms var(--lh-ease); }
+.lh-menu-trigger[aria-expanded="true"] { background: #f5f3ee; border-color: #f5f3ee; color: #141413; }
+.lh-menu-trigger[aria-expanded="true"] .lh-menu-chevron { transform: rotate(180deg); }
+/* On the ivory page bar an ivory pill would vanish; the open pill inverts to ink instead. */
+.lh-header[data-tone="page"] .lh-menu-trigger[aria-expanded="true"] { background: #141413; border-color: #141413; color: #faf9f5; }
+.lh-menu-trigger[data-current]:not([aria-expanded="true"]) {
+  background: var(--lh-pill-bg-hover);
+  border-color: color-mix(in srgb, var(--lh-pill-fg) 28%, transparent);
+}
+.lh-menu-panel {
+  position: absolute; z-index: 60; top: calc(100% + 10px); left: -8px;
+  min-width: 248px; padding: 12px 10px;
+  background: #faf9f5; color: #141413;
+  border: 1px solid #e3dacc; border-radius: 16px;
+  box-shadow: 0 12px 32px -18px rgb(20 20 19 / .35);
+}
+/* Invisible bridge across the gap, so the pointer can travel from pill to panel. */
+.lh-menu-panel::before { content: ""; position: absolute; inset: -12px 0 auto; height: 12px; }
+.lh-menu-panel[data-columns="2"] { min-width: 470px; }
+.lh-menu-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lh-menu-panel[data-columns="2"] ul { grid-template-columns: 1fr 1fr; column-gap: 12px; }
+.lh-menu-panel a {
+  /* 30px rows + 2px gap: the 32px rhythm of Fable's menus. */
+  display: flex; align-items: center; min-height: 30px; padding: 0 16px; border-radius: 8px;
+  color: #3d3d3a; font-size: 15px; text-decoration: none; white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.lh-menu-panel a:hover { background: #f0eee6; color: #141413; }
+.lh-header.lh-header .lh-menu-panel a:focus-visible { outline: 2px solid #141413; outline-offset: -2px; }
+@media (prefers-reduced-motion: no-preference) {
+  .lh-menu-panel[data-open] { animation: lh-menu-in 180ms var(--lh-ease) both; }
+}
+@keyframes lh-menu-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (max-width: 639px) { .lh-menus { display: none; } }
+
+/* Signed-in tools sized to the pills beside them. */
+.lh-end .cf-command-trigger { height: 34px; border-radius: 999px; padding-inline: 14px; background: var(--lh-pill-bg); border-color: var(--lh-pill-border); }
+.lh-end .cf-command-trigger:hover { background: var(--lh-pill-bg-hover); }
+.lh-end .lh-avatar { border: 1px solid var(--lh-pill-border); padding: 2px; }
+.lh-account-note { font-size: 13px; color: var(--fg-muted); }
+.lh-account-loading { display: flex; gap: 8px; }
+.lh-account-loading span { width: 96px; height: 34px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.lh-account-loading span + span { width: 34px; }
+@media (prefers-reduced-motion: no-preference) { .lh-account-loading span { animation: lh-pulse 1.4s ease-in-out infinite; } }
+@keyframes lh-pulse { 50% { opacity: .5; } }
+
+/* The lockup is one image split into icon and word at --cf-logo-icon (set by LogoLockup from
+   the artwork). Hiding the word and shifting by half its share lands the icon on the centre line. */
+/* A long, soft glide: gentle start, low top speed, easy landing. The bar's shared ease is too
+   brisk for a move this long (half the viewport). */
+.lh-logo { display: block; border-radius: 8px; transition: transform 850ms cubic-bezier(.4, 0, .2, 1); }
+
+/* Workspace: the logo slides from the centre to the bar's left edge. cqw is the bar's content
+   width, so the move lands exactly on the padding at any viewport. Dropdown panels anchor to
+   their own pill, so making the bar a size container does not move them. */
+.lh-bar { container-type: inline-size; }
+.lh-logo[data-logo-left] { transform: translateX(calc(-50cqw + 50%)); }
+/* Folding the wordmark on scroll normally re-centres the mark; on the left it stays put. */
+.lh-logo[data-logo-left][data-collapsed] .lh-lockup { transform: none; }
+/* Sized by height, so the icon keeps its size whatever the wordmark's length (35.7px is the
+   height the original 150px-wide lockup gave). */
+.lh-lockup { height: 35.7px; width: auto; transition: transform 620ms var(--lh-ease), filter 320ms ease; }
+.lh-lockup .cf-logo-word { clip-path: inset(0 0 0 0); transition: clip-path 620ms var(--lh-ease), opacity 420ms ease; }
+/* Shifting by half the wordmark's share of the width lands the icon on the centre line. */
+.lh-logo[data-collapsed] .lh-lockup { transform: translateX(calc((1 - var(--cf-logo-icon)) * 50%)); }
+.lh-logo[data-collapsed] .cf-logo-word { clip-path: inset(0 100% 0 0); opacity: 0; }
+.lh-header[data-tone="hero"] .lh-lockup { filter: brightness(0) invert(1); }
+
+@media (pointer: coarse) { .lh-pill { height: 44px; } }
+@media (max-width: 1040px) { .lh-pill[data-wide] { display: none; } }
+@media (max-width: 760px) { .lh-signin, .lh-admin { display: none; } }
+
+/* Projects folds away on the projects list and unfolds elsewhere: width, padding and the
+   flex gap collapse together so the neighbours slide over instead of jumping. */
+.lh-projects {
+  max-width: 140px; overflow: hidden;
+  transition: max-width 360ms var(--lh-ease), padding 360ms var(--lh-ease), margin 360ms var(--lh-ease),
+    opacity 240ms ease, transform 360ms var(--lh-ease), background-color 320ms ease;
+}
+.lh-projects[data-collapsed] {
+  max-width: 0; padding-inline: 0; margin-left: -8px; border-width: 0;
+  opacity: 0; transform: scale(.92); pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) { .lh-projects { transition: none; } }
+/* Workspace bar on phones: no site menu on the left, so the logo moves there and the
+   account group gets the rest of the row instead of sliding under a centred logo. */
+@media (max-width: 639px) {
+  .lh-header[data-workspace] .lh-bar { grid-template-columns: auto minmax(0, 1fr); }
+  .lh-header[data-workspace] .lh-start { display: none; }
+  /* The phone grid already puts the logo first, so there is nothing to slide. */
+  .lh-logo[data-logo-left] { transform: none; }
+
+  /* On phones a centred logo leaves each side under 100px, too little for the CODEFORGE
+     wordmark plus Get started, or for search, inbox and avatar. So every public phone bar puts
+     the logo beside the menu button, and signed in, Projects moves into the menu. */
+  .lh-header:not([data-workspace]) .lh-bar { grid-template-columns: auto auto minmax(0, 1fr); }
+  .lh-header:not([data-workspace]):has(.lh-avatar) .lh-projects { display: none; }
+}
+@media (max-width: 639px) {
+  .lh-start .lh-pill, .lh-signin { display: none; }
+  .lh-end .cf-command-trigger { width: 34px; justify-content: center; padding: 0; }
+  .lh-lockup { height: 25.7px; }
+  .lh-pill { padding-inline: 13px; }
+  .lh-bar { gap: 8px; }
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+.lh-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: min(100svh, 940px);
+  padding: calc(var(--lh-header-height) + 40px) 24px 64px;
+  background:
+    radial-gradient(120% 70% at 50% 100%, #10131c 0%, transparent 60%),
+    linear-gradient(#08090c, var(--lh-night) 55%);
+  color: var(--lh-ink);
+}
+.lh-eyebrow {
+  position: relative; z-index: 2; margin: 0 0 28px; text-align: center; color: var(--lh-ink-muted);
+  font: 500 12.5px/1.6 var(--font-ui); letter-spacing: .16em; text-transform: uppercase;
+}
+.lh-eyebrow i { margin-inline: .55em; font-style: normal; opacity: .55; }
+.lh-title {
+  position: relative; z-index: 2; width: fit-content; max-width: 100%; margin: 0;
+  /* Fable's proportion: about 5vw, so the headline leads without filling the sky. */
+  font-size: clamp(38px, 5.2vw, 80px); line-height: 1.05; color: var(--lh-ink);
+}
+/* Two lines set against each other, so the title reads as a movement from left to right. */
+.lh-title span { display: block; white-space: nowrap; }
+.lh-title span:first-child { margin-right: 1.6em; }
+.lh-title span:last-child { margin-left: 1.6em; }
+
+/* The horizon: a very large circle whose top edge crosses the stage. Everything on it is placed
+   by angle from the circle's centre, so it holds its shape at every width. The light itself is
+   drawn by the canvas, which measures this same geometry. */
+.lh-stage {
+  --lh-r: 118cqw;
+  --lh-horizon-y: 40px;
+  position: relative; z-index: 1; align-self: stretch; margin: 10px -24px 0;
+  height: calc(var(--lh-horizon-y) + 70px);
+  container-type: inline-size;
+  font: 500 11px/1 var(--font-mono-stack); letter-spacing: .14em; text-transform: uppercase;
+}
+/* The sky is one canvas behind everything; the entrance fades it up from black. */
+.lh-world {
+  position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none;
+  animation: lh-fade 1600ms var(--lh-ease-rise) 150ms backwards;
+}
+/* Without WebGL: a plain lit limb in the same place. */
+.lh-hero[data-webgl="off"] .lh-world { display: none; }
+.lh-hero[data-webgl="off"] .lh-orbit::before {
+  content: ""; position: absolute; left: 0; top: 0; translate: -50% -50%;
+  width: calc(2 * var(--lh-r)); aspect-ratio: 1; border-radius: 50%;
+  box-shadow: 0 0 0 1px #ecf2ff, 0 0 24px 3px rgb(var(--lh-sky-glow) / .6), inset 0 2px 5px -1px rgb(var(--lh-forge) / .8);
+}
+
+/* Zero-size point at the circle's centre; spokes rotate around it. */
+.lh-orbit { position: absolute; left: 50%; top: calc(var(--lh-horizon-y) + var(--lh-r)); width: 0; height: 0; }
+.lh-spoke { position: absolute; left: 0; top: 0; rotate: var(--lh-angle); }
+
+/* An invisible anchor on the limb at angle 0: the sky canvas measures the arc from it. */
+.lh-node {
+  position: absolute; left: 0; top: 0;
+  transform: translateY(calc(-1 * var(--lh-r))) translate(-50%, -50%);
+}
+.lh-node i { display: block; width: 9px; height: 9px; }
+/* Contents sit on the dark of the world, below the horizon. */
+/* A compact table of contents, like Fable's: a narrow block of tight rows. */
+/* Sits well below the limb, as on Fable, so the list reads as its own block. */
+.lh-contents { position: relative; z-index: 2; width: min(100%, 360px); margin-top: clamp(28px, 6vh, 56px); }
+.lh-toc { list-style: none; margin: 0; padding: 0; }
+.lh-toc a {
+  display: flex; align-items: baseline; gap: 8px; min-height: 24px; padding-block: 1px;
+  color: #f1efe9; text-decoration: none; transition: opacity 200ms ease;
+}
+.lh-toc-label { font: 400 16px/1.35 var(--font-display-stack); letter-spacing: -.005em; }
+.lh-toc-number { color: var(--lh-ink-muted); font: 500 12px/1 var(--font-mono-stack); }
+.lh-toc-leader { flex: 1; min-width: 16px; border-bottom: 1.5px dotted #ffffff55; transform: translateY(-3px); }
+.lh-toc:is(:hover, :focus-within) a:not(:hover, :focus-visible) { opacity: .68; }
+.lh-toc a:focus-visible { outline: 2px solid #c9d6ff; outline-offset: 2px; border-radius: 6px; }
+@media (pointer: coarse) { .lh-toc a { min-height: 44px; } }
+
+/* ── Entrance ────────────────────────────────────────────────────────── */
+.lh-rise { animation: lh-rise 700ms var(--lh-ease-rise) var(--lh-delay, 0ms) backwards; }
+.lh-rise-far { animation: lh-rise-far 720ms var(--lh-ease-rise) var(--lh-delay, 0ms) backwards; }
+.lh-fade { animation: lh-fade 600ms var(--lh-ease-rise) var(--lh-delay, 0ms) backwards; }
+
+@keyframes lh-rise { from { opacity: 0; translate: 0 10px; } }
+@keyframes lh-rise-far { from { opacity: 0; translate: 0 .22em; } }
+@keyframes lh-fade { from { opacity: 0; } }
+@keyframes lh-bar-in { from { translate: 0 -100%; } }
+
+@media (max-width: 700px) {
+  .lh-hero { min-height: 0; padding-bottom: 52px; }
+  .lh-title { font-size: clamp(32px, 10.6vw, 56px); }
+  .lh-eyebrow { font-size: 10.5px; letter-spacing: .1em; margin-bottom: 22px; white-space: nowrap; }
+  .lh-eyebrow i { margin-inline: .25em; }
+  .lh-title span:first-child { margin-right: .7em; }
+  .lh-title span:last-child { margin-left: .7em; }
+  .lh-stage { font-size: 9px; letter-spacing: .06em; height: calc(var(--lh-horizon-y) + 76px); }
+  .lh-toc-label { font-size: 15px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-header, .lh-logo, .lh-lockup, .lh-lockup .cf-logo-word, .lh-pill, .lh-toc a { transition: none; }
+  .lh-header, .lh-world, .lh-rise, .lh-rise-far, .lh-fade { animation: none; }
+}
+
+/* The arc anchor is measured, never seen. */
+.lh-anchor { visibility: hidden; }

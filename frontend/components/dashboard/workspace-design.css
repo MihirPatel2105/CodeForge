@@ -3,12 +3,12 @@
 :is(.cf-projects,.cf-project-detail) main :is(h1,h2,h3,dd),
 .cf-workspace-dialog [data-slot="dialog-title"] { font-family: var(--font-ui); }
 .cf-project-detail .cf-project-detail-hero > div:first-child {
- --fg: #f8faff; --fg-muted: #b6bed0; --fg-faint: #98a4bc;
- --accent: #f3f6ff; --surface: #111722; --bg: #07090f;
+ --fg: #faf9f5; --fg-muted: #b0aea5; --fg-faint: #9c9a92;
+ --accent: #faf9f5; --surface: #1a1a18; --bg: #141413;
  --border: #ffffff20; --border-strong: #ffffff40;
- background: radial-gradient(ellipse at 0% 0%,#566eaa48,transparent 70%),#07090f;
+ background: #141413;
  border-color: #ffffff14;
- color: #f8faff;
+ color: #faf9f5;
 }
 :is(.cf-projects,.cf-project-detail) main h1 { font-size: clamp(36px,4vw,54px); font-weight: 650; line-height: 1.1; letter-spacing: -.055em; }
 /* The projects list is a working index, so its heading steps down to leave room for rows. */
@@ -18,7 +18,7 @@
 .cf-project-detail .cf-project-detail-hero { border-radius: 28px; overflow: hidden; }
 .cf-project-detail .cf-project-detail-hero > div:first-child { padding: 30px 36px; border-radius: 28px 28px 0 0; }
 .cf-project-detail .cf-project-detail-stats { background: var(--surface); }
-.cf-project-detail :is(.cf-prompt-stage,.cf-project-workspace > section) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223835; }
+.cf-project-detail :is(.cf-prompt-stage,.cf-project-workspace > section) { border-radius: 24px; box-shadow: 0 8px 28px -24px #14141335; }
 .cf-project-detail .cf-project-composer-head { background: color-mix(in srgb,var(--surface) 70%,var(--bg)); }
 .cf-project-detail .cf-project-composer-head h2 { font-size: 22px; font-weight: 650; letter-spacing: -.04em; }
 .cf-project-detail #prompt { background: var(--surface); border-radius: var(--ui-radius-control); line-height: 1.7; }
@@ -38,15 +38,15 @@
 
 /* The management action sits on a dark surface, including its interactive states. */
 .cf-project-detail .cf-project-detail-hero .cf-manage-project {
- background: #ffffff06; color: #f8faff; border-color: #ffffff30;
+ background: #ffffff06; color: #faf9f5; border-color: #ffffff30;
 }
 .cf-project-detail .cf-project-detail-hero .cf-manage-project:is(:hover,:focus-visible) {
- background: #202938; color: #f8faff; border-color: #ffffff60;
+ background: #2a2a27; color: #faf9f5; border-color: #ffffff60;
 }
 .cf-project-detail .cf-project-detail-hero .cf-manage-project:focus-visible {
- outline: 2px solid #b9ceff; outline-offset: 3px;
+ outline: 2px solid #faf9f5; outline-offset: 3px;
 }
-.cf-project-detail .cf-project-detail-hero .cf-manage-project:active { background: #2a3548; }
+.cf-project-detail .cf-project-detail-hero .cf-manage-project:active { background: #30302e; }
 
 /* Run history list (run-history-list.tsx) */
 .cf-run-health-bar { display: block; width: 6px; height: 18px; border-radius: 2px; background: var(--border-strong); }

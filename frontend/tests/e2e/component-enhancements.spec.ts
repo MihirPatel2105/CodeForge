@@ -69,12 +69,11 @@ test("homepage teaser stays readable with reduced motion", async ({ page }) => {
   await expect(page.getByRole("button", { name: /^(Pause|Play|Replay) walkthrough$/ })).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".lp-product-scale")).toHaveCSS("transform", "none");
-  const headline = page.getByRole("heading", { name: "Great ideas deserve to work.", exact: true });
+  const headline = page.getByRole("heading", { level: 1, name: "From an idea to a tested API" });
   await expect(headline).toBeVisible();
-  const word = headline.locator(".cf-blur-word").first();
-  await expect(word).toHaveCSS("animation-name", "none");
-  await expect(word).toHaveCSS("opacity", "1");
-  await expect(word).toHaveCSS("filter", "none");
+  const line = headline.locator("span").first();
+  await expect(line).toHaveCSS("animation-name", "none");
+  await expect(line).toHaveCSS("opacity", "1");
 });
 
 test("share sheet copies and shares only the address and downloads a local QR", async ({ page }) => {

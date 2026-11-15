@@ -42,12 +42,16 @@ for (const route of ["about", "how-it-works"]) {
 test("public pages retain shared typography and contrasting controls", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  const landingFamily = await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily);
+  await page.goto("/about");
   const readStyle = () => page.locator(".lp-button").first().evaluate(el => { const s = getComputedStyle(el); return { font: s.fontFamily, background: s.backgroundColor, color: s.color }; });
   const control = await readStyle();
-  expect(control.background).toBe("rgb(243, 246, 255)");
-  expect(control.color).toBe("rgb(17, 23, 34)");
+  // Slate ink button with ivory text on the cream hero (DESIGN.md button-primary).
+  expect(control.background).toBe("rgb(20, 20, 19)");
+  expect(control.color).toBe("rgb(250, 249, 245)");
   const family = await page.getByRole("heading", { level: 1 }).evaluate(el => getComputedStyle(el).fontFamily);
-  for (const route of ["about", "how-it-works"]) {
+  expect(family).toBe(landingFamily);
+  for (const route of ["how-it-works"]) {
     await page.goto(`/${route}`);
     expect((await readStyle()).font).toBe(control.font);
     await expect(page.locator(".lp-button").first()).toHaveCSS("background-color", control.background);
@@ -61,9 +65,10 @@ test("section colors span the page and stage disclosures animate in both directi
   await page.emulateMedia({ reducedMotion: "no-preference" });
   for (const route of ["faq", "contact", "about", "how-it-works"]) {
     await page.goto(`/${route}`);
-    const fade = await page.locator(".mk-hero-fade").boundingBox();
-    expect(fade?.x).toBe(0);
-    expect(fade?.width).toBe(1440);
+    // The cream hero band runs edge to edge.
+    const hero = await page.locator("#overview").boundingBox();
+    expect(hero?.x).toBe(0);
+    expect(hero?.width).toBe(1440);
   }
   for (const route of ["about", "how-it-works"]) {
     await page.goto(`/${route}`);
@@ -107,7 +112,7 @@ for (const width of [1440, 375]) {
     const submit = page.getByRole("button", { name: "Send message", exact: true });
     await expect(submit).toBeDisabled();
     await page.getByLabel("Phone", { exact: true }).fill("1234567890");
-    await expect(page.getByLabel("Phone", { exact: true })).toHaveCSS("color", "rgb(23, 23, 23)");
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCSS("color", "rgb(20, 20, 19)");
     await page.getByLabel("Message", { exact: true }).fill("The report details are readable on this screen.");
     await expect(submit).toBeEnabled();
     const panel = await page.locator(".cf-contact-form-stage").boundingBox();

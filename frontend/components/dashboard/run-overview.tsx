@@ -10,11 +10,13 @@ import { displayStatus, tone } from "@/lib/tone";
 import type { RunSnapshot } from "@/lib/run-reducer";
 import "./run-workspace.css";
 
-export function RunOverview({ snapshot, title, playbackTime, actions }: {
+export function RunOverview({ snapshot, title, playbackTime, actions, replayLabel = "Sample replay" }: {
   snapshot: RunSnapshot;
   title?: string;
   playbackTime?: number;
   actions?: ReactNode;
+  /** What a replay says it is: a scripted sample, or a recorded real run. */
+  replayLabel?: string;
 }) {
   const [now, setNow] = useState<number | null>(null);
   const [requestOpen, setRequestOpen] = useState(false);
@@ -40,7 +42,7 @@ export function RunOverview({ snapshot, title, playbackTime, actions }: {
       <div className="cf-overview-heading">
         <div className="cf-overview-title">
           <div className="cf-overview-eyebrow">
-            <span>{replay ? "Sample replay" : "API build"}</span>
+            <span>{replay ? replayLabel : "API build"}</span>
             {snapshot.runId && !replay && <span>run {snapshot.runId.slice(0, 8)}</span>}
             {replay && <span>Replay · no model calls</span>}
           </div>

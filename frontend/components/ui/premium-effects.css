@@ -33,7 +33,17 @@
 }
 
 /* React Bits micro interactions use CodeForge's existing focus and surface tokens. */
-.cf-verification-code:focus-within [data-active] { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Code slots read like the email-code boxes: the active slot shows an ink border, not a grey
+   tint. The tint stays only for the error state. !important beats the slot's own variant chain. */
+.cf-verification-code [data-status="idle"] [data-slot] { background-color: var(--cs-slot) !important; }
+.cf-verification-code [data-slot] { box-shadow: inset 0 0 0 1px var(--cs-border); transition: background-color 200ms ease, box-shadow 200ms ease; }
+/* Focus: the hidden input holds focus, so the active slot carries the cue (as on the email step). */
+.cf-verification-code [data-slot][data-active] { box-shadow: inset 0 0 0 1px var(--cs-ink), 0 0 0 4px color-mix(in srgb, var(--cs-ink) 15%, transparent); }
+.cf-verification-code [data-status="error"] [data-slot] { box-shadow: inset 0 0 0 1px var(--cs-danger); }
+.cf-verification-code [data-status="error"] [data-slot][data-active] { box-shadow: inset 0 0 0 1px var(--cs-danger), 0 0 0 4px color-mix(in srgb, var(--cs-danger) 25%, transparent); }
+/* Digits drain on a red fill in error; keep them light there for contrast. */
+.cf-verification-code [data-status="error"] [data-slot] > span + span { color: var(--cs-slot); }
+.cf-verification-code [data-status="success"] [data-slot] { box-shadow: inset 0 0 0 1px var(--ok); }
 .cf-stage-thought > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 .cf-stage-thought:not([data-working]) i { animation: none; }
 .cf-stage-thought [data-open] { overflow-wrap: anywhere; }

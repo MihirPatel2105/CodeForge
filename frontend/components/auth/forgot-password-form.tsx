@@ -54,20 +54,17 @@ export function ForgotPasswordForm() {
     <AuthEntryShell label={sent ? "Reset link requested" : "Request a password reset"} proof="recovery" compact>
           {sent ? (
             <>
-              <span className="grid h-12 w-12 place-items-center rounded-2xl border border-ok-bd bg-ok-soft text-ok">
+              <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
                 <MailCheck className="h-5 w-5" aria-hidden />
               </span>
-              <span className="mt-7 inline-flex items-center gap-2 text-[12px] font-[650] text-ok">
-                Reset requested
-              </span>
-              <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
+              <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
                 Check your inbox
               </h1>
               <p className="mt-3 text-[15px] leading-6 text-fg-muted">
                 If that address has an account, a reset link is on its way. Open the
                 email to choose a new password.
               </p>
-              <div className="mt-6 rounded-2xl border border-border bg-surface-2/60 px-4 py-3">
+              <div className="mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
                 <p className="text-[13px] leading-5 text-fg-muted">
                   The link works once and expires after 10 minutes. Existing sessions
                   stay active until the password is changed.
@@ -76,7 +73,7 @@ export function ForgotPasswordForm() {
               <button
                 type="button"
                 onClick={() => setSent(false)}
-                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-accent hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent"
+                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[var(--ui-radius-control)] text-[13px] font-[650] text-fg hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-fg"
               >
                 <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
                 Try another address
@@ -84,9 +81,8 @@ export function ForgotPasswordForm() {
             </>
           ) : (
             <>
-              <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><KeyRound className="h-5 w-5" aria-hidden /></span>
-              <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> Account recovery</div>
-              <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
+              <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
+              <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
                 Reset your password
               </h1>
               <p className="mt-3 text-[15px] leading-6 text-fg-muted">
@@ -120,7 +116,7 @@ export function ForgotPasswordForm() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="mt-1 h-12 w-full rounded-xl text-[14px] font-[650]"
+                  className="mt-1 h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
                 >
                   {submitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                   {submitting ? "Sending…" : "Send reset link"}
@@ -129,14 +125,14 @@ export function ForgotPasswordForm() {
             </>
           )}
 
-          <details className="mt-6 rounded-xl border border-border bg-surface-2/40 px-4 text-[13px] text-fg-muted">
-            <summary className="cursor-pointer rounded-md py-3 font-[600] focus-visible:outline-2 focus-visible:outline-accent">Need help with 2FA?</summary>
+          <details className="mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 text-[13px] text-fg-muted">
+            <summary className="cursor-pointer rounded-md py-3 font-[600] focus-visible:outline-2 focus-visible:outline-fg">Need help with 2FA?</summary>
             <p className="pb-3 text-[12px] leading-5">If you lost your authenticator, contact support first. Recovery still requires your password and a saved recovery code.</p>
             <Link href="/recover-2fa" className="mb-4 inline-flex min-h-11 items-center font-[650] text-fg underline underline-offset-4">Recover authenticator access</Link>
           </details>
 
-          <p className="mt-7 border-t border-border pt-5 text-center text-[13px] text-fg-muted">
-            Remembered it? <Link href="/login" className="font-[700] text-accent hover:underline hover:underline-offset-4">Sign in</Link>
+          <p className="cf-auth-footer mt-7 text-center text-[13px] text-fg-muted">
+            Remembered it? <Link href="/login" className="font-[700] text-fg hover:underline hover:underline-offset-4">Sign in</Link>
           </p>
     </AuthEntryShell>
   );

@@ -1,0 +1,517 @@
+{
+  "version": 1,
+  "slug": "books-review-loop",
+  "title": "Books API with a review loop",
+  "source_run_id": "6adf7b8ea61fc854f76fc0af",
+  "recorded_at": "2026-10-26T16:10:54.025000+00:00",
+  "prompt": "Build a CRUD API for books with title and author (required strings), year (integer), and genres (list of strings). Support create, list, get by ID, update, and delete. Reject empty titles and return 404 for missing books.",
+  "events": [
+    {
+      "event": "run.started",
+      "at": "2026-10-26T16:10:54.562163Z",
+      "run_id": "6adf7b8ea61fc854f76fc0af",
+      "prompt": "Build a CRUD API for books with title and author (required strings), year (integer), and genres (list of strings). Support create, list, get by ID, update, and delete. Reject empty titles and return 404 for missing books."
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:10:55.465284Z",
+      "agent": "pm",
+      "iteration": 0
+    },
+    {
+      "event": "agent.message",
+      "at": "2026-10-26T16:10:57.953237Z",
+      "agent": "pm",
+      "text": "Identified entity: Book (id, title, author, year)"
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:10:58.003118Z",
+      "agent": "pm",
+      "output_summary": {
+        "entities": 1,
+        "operations": 4,
+        "model": "groq/openai/gpt-oss-120b"
+      },
+      "duration_ms": 2537
+    },
+    {
+      "event": "approval.required",
+      "at": "2026-10-26T16:10:58.366548Z",
+      "phase": "pm",
+      "payload": {
+        "project_name": "book-api",
+        "entity": "Book — id, title, author, year, genres",
+        "operations": "create, read, update, delete",
+        "details": {
+          "project_name": "book-api",
+          "summary": "A CRUD API for managing books with title, author, year, and genres.",
+          "entities": [
+            {
+              "name": "Book",
+              "fields": [
+                {
+                  "name": "id",
+                  "type": "int",
+                  "required": false,
+                  "default": null
+                },
+                {
+                  "name": "title",
+                  "type": "str",
+                  "required": true,
+                  "default": null
+                },
+                {
+                  "name": "author",
+                  "type": "str",
+                  "required": true,
+                  "default": null
+                },
+                {
+                  "name": "year",
+                  "type": "int",
+                  "required": true,
+                  "default": null
+                },
+                {
+                  "name": "genres",
+                  "type": "list[str]",
+                  "required": true,
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "operations": [
+            "create",
+            "read",
+            "update",
+            "delete"
+          ],
+          "user_stories": [
+            "As a user I can create a new book record.",
+            "As a user I can retrieve a list of all books.",
+            "As a user I can get details of a specific book by its ID.",
+            "As a user I can update an existing book's information.",
+            "As a user I can delete a book."
+          ],
+          "out_of_scope": []
+        },
+        "revisions_used": 0
+      }
+    },
+    {
+      "event": "approval.resolved",
+      "at": "2026-10-26T16:11:17.661245Z",
+      "revision_requested": false,
+      "phase": "pm",
+      "approved": true,
+      "note": null
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:11:18.134520Z",
+      "agent": "architect",
+      "iteration": 0
+    },
+    {
+      "event": "agent.message",
+      "at": "2026-10-26T16:11:20.234847Z",
+      "agent": "architect",
+      "text": "5 endpoints designed, 4 with explicit response models"
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:11:20.276517Z",
+      "agent": "architect",
+      "output_summary": {
+        "endpoints": 5,
+        "files": 4,
+        "model": "groq/openai/gpt-oss-120b"
+      },
+      "duration_ms": 2141
+    },
+    {
+      "event": "approval.required",
+      "at": "2026-10-26T16:11:20.638071Z",
+      "phase": "architect",
+      "payload": {
+        "endpoints": "5",
+        "details": {
+          "collections": [
+            {
+              "name": "books",
+              "entity": "Book",
+              "fields": [
+                "id",
+                "title",
+                "author",
+                "year",
+                "genres"
+              ],
+              "indexes": [
+                "id"
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "method": "POST",
+              "path": "/books",
+              "summary": "Create a new book",
+              "request_model": "BookCreate",
+              "response_model": "BookRead",
+              "status_code": 201
+            },
+            {
+              "method": "GET",
+              "path": "/books",
+              "summary": "Retrieve all books",
+              "request_model": null,
+              "response_model": "list[BookRead]",
+              "status_code": 200
+            },
+            {
+              "method": "GET",
+              "path": "/books/{book_id}",
+              "summary": "Retrieve a book by its ID",
+              "request_model": null,
+              "response_model": "BookRead",
+              "status_code": 200
+            },
+            {
+              "method": "PUT",
+              "path": "/books/{book_id}",
+              "summary": "Update an existing book",
+              "request_model": "BookUpdate",
+              "response_model": "BookRead",
+              "status_code": 200
+            },
+            {
+              "method": "DELETE",
+              "path": "/books/{book_id}",
+              "summary": "Delete a book",
+              "request_model": null,
+              "response_model": null,
+              "status_code": 204
+            }
+          ],
+          "files": [
+            {
+              "path": "database.py",
+              "purpose": "Initialize Beanie with MongoDB connection"
+            },
+            {
+              "path": "models.py",
+              "purpose": "Define Beanie Document for Book"
+            },
+            {
+              "path": "schemas.py",
+              "purpose": "Pydantic models for request and response payloads"
+            },
+            {
+              "path": "main.py",
+              "purpose": "FastAPI app with CRUD route definitions"
+            }
+          ],
+          "notes": [
+            "All endpoints use plural lowercase paths as required",
+            "Response models are explicit Pydantic schemas; delete endpoint has no response model",
+            "ID is exposed as a string in API responses, matching FastAPI serialization rules",
+            "Only the fields listed in requirements are included; no extra audit fields"
+          ]
+        },
+        "revisions_used": 0,
+        "collection": "books",
+        "files_planned": "database, models, schemas, main"
+      }
+    },
+    {
+      "event": "approval.resolved",
+      "at": "2026-10-26T16:11:32.508063Z",
+      "revision_requested": false,
+      "phase": "architect",
+      "approved": true,
+      "note": null
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:11:33.545635Z",
+      "agent": "coder",
+      "iteration": 0
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:12:18.800768Z",
+      "path": "database.py",
+      "bytes": 434
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:12:18.842332Z",
+      "path": "models.py",
+      "bytes": 245
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:12:18.884868Z",
+      "path": "schemas.py",
+      "bytes": 451
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:12:18.929822Z",
+      "path": "main.py",
+      "bytes": 2575
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:12:18.972182Z",
+      "agent": "coder",
+      "output_summary": {
+        "files": 4,
+        "fix_pass": false
+      },
+      "duration_ms": 45427
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:12:19.115638Z",
+      "agent": "reviewer",
+      "iteration": 0
+    },
+    {
+      "event": "agent.message",
+      "at": "2026-10-26T16:12:43.489067Z",
+      "agent": "reviewer",
+      "text": "models.py: The `Book` document defines `id` as `int | None`, but the API expects a string representation of an ObjectId (converted with `str(book.id)`). This type mismatch will cause runtime errors when Beanie tries to generate or handle the document ID."
+    },
+    {
+      "event": "agent.message",
+      "at": "2026-10-26T16:12:43.530630Z",
+      "agent": "reviewer",
+      "text": "3 findings, 1 blocking"
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:12:43.572388Z",
+      "agent": "reviewer",
+      "output_summary": {
+        "findings": 3,
+        "blocking": 1,
+        "passed": false
+      },
+      "duration_ms": 24456
+    },
+    {
+      "event": "loop.iteration",
+      "at": "2026-10-26T16:12:43.751064Z",
+      "iteration": 1,
+      "trigger": "reviewer",
+      "blocking_findings": 1,
+      "failed_tests": 0
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:12:43.795825Z",
+      "agent": "coder",
+      "iteration": 1
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:13:07.361383Z",
+      "path": "database.py",
+      "bytes": 434
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:13:07.430797Z",
+      "path": "models.py",
+      "bytes": 219
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:13:07.478364Z",
+      "path": "schemas.py",
+      "bytes": 451
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:13:07.522362Z",
+      "path": "main.py",
+      "bytes": 2575
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:13:07.567081Z",
+      "agent": "coder",
+      "output_summary": {
+        "files": 4,
+        "fix_pass": true
+      },
+      "duration_ms": 23815
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:13:07.758877Z",
+      "agent": "reviewer",
+      "iteration": 1
+    },
+    {
+      "event": "agent.message",
+      "at": "2026-10-26T16:13:33.111829Z",
+      "agent": "reviewer",
+      "text": "1 findings, none blocking — passed"
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:13:33.154814Z",
+      "agent": "reviewer",
+      "output_summary": {
+        "findings": 1,
+        "blocking": 0,
+        "passed": true
+      },
+      "duration_ms": 25396
+    },
+    {
+      "event": "agent.started",
+      "at": "2026-10-26T16:13:33.317603Z",
+      "agent": "tester",
+      "iteration": 1
+    },
+    {
+      "event": "file.written",
+      "at": "2026-10-26T16:13:56.345062Z",
+      "path": "test_main.py",
+      "bytes": 3571
+    },
+    {
+      "event": "agent.completed",
+      "at": "2026-10-26T16:13:56.389083Z",
+      "agent": "tester",
+      "output_summary": {
+        "files": 1,
+        "model": "groq/openai/gpt-oss-120b"
+      },
+      "duration_ms": 23070
+    },
+    {
+      "event": "sandbox.started",
+      "at": "2026-10-26T16:13:56.565286Z",
+      "image": "codeforge-sandbox:latest"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:57.971237Z",
+      "stream": "stdout",
+      "chunk": "........                                                                 [100%]\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.013835Z",
+      "stream": "stdout",
+      "chunk": "=============================== warnings summary ===============================\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.056127Z",
+      "stream": "stdout",
+      "chunk": "../opt/venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.098368Z",
+      "stream": "stdout",
+      "chunk": "  /opt/venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.140631Z",
+      "stream": "stdout",
+      "chunk": "    from starlette.testclient import TestClient as TestClient  # noqa\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.183304Z",
+      "stream": "stdout",
+      "chunk": "\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.227270Z",
+      "stream": "stdout",
+      "chunk": "../opt/venv/lib/python3.12/site-packages/starlette/testclient.py:53\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.272235Z",
+      "stream": "stdout",
+      "chunk": "  /opt/venv/lib/python3.12/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.316737Z",
+      "stream": "stdout",
+      "chunk": "    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.360891Z",
+      "stream": "stdout",
+      "chunk": "\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.404960Z",
+      "stream": "stdout",
+      "chunk": "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.448552Z",
+      "stream": "stdout",
+      "chunk": "8 passed, 2 warnings in 0.18s\n"
+    },
+    {
+      "event": "sandbox.output",
+      "at": "2026-10-26T16:13:58.491965Z",
+      "stream": "stderr",
+      "chunk": "/opt/venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n  from starlette.testclient import TestClient as TestClient  # noqa"
+    },
+    {
+      "event": "tests.result",
+      "at": "2026-10-26T16:13:58.535832Z",
+      "passed": true,
+      "total": 8,
+      "failed": 0
+    },
+    {
+      "event": "run.completed",
+      "at": "2026-10-26T16:13:59.262111Z",
+      "status": "succeeded",
+      "iterations": 1,
+      "duration_ms": 184745
+    }
+  ],
+  "files": {
+    "database.py": "from contextlib import asynccontextmanager\n\nfrom beanie import init_beanie\nfrom fastapi import FastAPI\nfrom pymongo import AsyncMongoClient\n\nfrom models import Book\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    client = AsyncMongoClient(\"mongodb://localhost:27017\", tz_aware=True)\n    await init_beanie(database=client.appdb, document_models=[Book])\n    yield\n    await client.close()\n\n\napp = FastAPI(lifespan=lifespan)",
+    "models.py": "from beanie import Document\nfrom pydantic import Field\n\nclass Book(Document):\n    title: str\n    author: str\n    year: int\n    genres: list[str] = Field(default_factory=list)\n\n    class Settings:\n        name = \"books\"\n",
+    "schemas.py": "from typing import List\nfrom pydantic import BaseModel, Field\n\n\nclass BookCreate(BaseModel):\n    title: str\n    author: str\n    year: int\n    genres: List[str] = Field(default_factory=list)\n\n\nclass BookRead(BaseModel):\n    id: str\n    title: str\n    author: str\n    year: int\n    genres: List[str]\n\n\nclass BookUpdate(BaseModel):\n    title: str | None = None\n    author: str | None = None\n    year: int | None = None\n    genres: List[str] | None = None",
+    "main.py": "from contextlib import asynccontextmanager\nfrom typing import List\n\nfrom beanie import PydanticObjectId, init_beanie\nfrom fastapi import FastAPI, HTTPException, Response, status\nfrom pymongo import AsyncMongoClient\n\nfrom models import Book\nfrom schemas import BookCreate, BookRead, BookUpdate\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    client = AsyncMongoClient(\"mongodb://localhost:27017\", tz_aware=True)\n    await init_beanie(database=client.appdb, document_models=[Book])\n    yield\n    await client.close()\n\napp = FastAPI(lifespan=lifespan)\n\n\n@app.post(\"/books\", response_model=BookRead, status_code=status.HTTP_201_CREATED)\nasync def create_book(book_in: BookCreate):\n    book = Book(**book_in.model_dump())\n    await book.insert()\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.get(\"/books\", response_model=List[BookRead])\nasync def list_books():\n    books = await Book.find_all().to_list()\n    return [\n        BookRead(\n            id=str(b.id),\n            title=b.title,\n            author=b.author,\n            year=b.year,\n            genres=b.genres,\n        )\n        for b in books\n    ]\n\n\n@app.get(\"/books/{book_id}\", response_model=BookRead)\nasync def get_book(book_id: str):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.put(\"/books/{book_id}\", response_model=BookRead)\nasync def update_book(book_id: str, book_update: BookUpdate):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    update_data = book_update.model_dump(exclude_unset=True)\n    for field, value in update_data.items():\n        if value is not None:\n            setattr(book, field, value)\n    await book.save()\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.delete(\"/books/{book_id}\", status_code=status.HTTP_204_NO_CONTENT)\nasync def delete_book(book_id: str):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    await book.delete()\n    return Response(status_code=status.HTTP_204_NO_CONTENT)\n",
+    "test_main.py": "import pytest\nfrom fastapi.testclient import TestClient\nfrom main import app\n\n# Helper payloads\nBASE_PAYLOAD = {\n    \"title\": \"Sample Book\",\n    \"author\": \"Jane Doe\",\n    \"year\": 2021,\n    \"genres\": [\"Fiction\", \"Adventure\"]\n}\n\nINVALID_ID = \"000000000000000000000000\"\n\n\ndef create_book(client, payload=None):\n    \"\"\"Create a book via the API and return its JSON representation.\"\"\"\n    if payload is None:\n        payload = BASE_PAYLOAD\n    resp = client.post(\"/books\", json=payload)\n    assert resp.status_code == 201\n    return resp.json()\n\n\ndef delete_book(client, book_id):\n    \"\"\"Delete a book via the API – used for cleanup.\"\"\"\n    resp = client.delete(f\"/books/{book_id}\")\n    # Deleting an existing book should return 204\n    assert resp.status_code == 204\n\n\ndef test_create_book():\n    with TestClient(app) as client:\n        data = create_book(client)\n        # Verify fields\n        assert data[\"title\"] == BASE_PAYLOAD[\"title\"]\n        assert data[\"author\"] == BASE_PAYLOAD[\"author\"]\n        assert data[\"year\"] == BASE_PAYLOAD[\"year\"]\n        assert data[\"genres\"] == BASE_PAYLOAD[\"genres\"]\n        # Cleanup\n        delete_book(client, data[\"id\"])\n\n\ndef test_list_books():\n    with TestClient(app) as client:\n        # Create two distinct books\n        payload1 = {**BASE_PAYLOAD, \"title\": \"Book One\"}\n        payload2 = {**BASE_PAYLOAD, \"title\": \"Book Two\"}\n        book1 = create_book(client, payload1)\n        book2 = create_book(client, payload2)\n\n        resp = client.get(\"/books\")\n        assert resp.status_code == 200\n        books = resp.json()\n        ids = {b[\"id\"] for b in books}\n        assert book1[\"id\"] in ids\n        assert book2[\"id\"] in ids\n\n        # Cleanup\n        delete_book(client, book1[\"id\"])\n        delete_book(client, book2[\"id\"])\n\n\ndef test_get_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        resp = client.get(f\"/books/{book_id}\")\n        assert resp.status_code == 200\n        data = resp.json()\n        assert data == created\n        # Cleanup\n        delete_book(client, book_id)\n\n\ndef test_update_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        update_payload = {\"title\": \"Updated Title\", \"year\": 2022}\n        resp = client.put(f\"/books/{book_id}\", json=update_payload)\n        assert resp.status_code == 200\n        updated = resp.json()\n        assert updated[\"title\"] == \"Updated Title\"\n        assert updated[\"year\"] == 2022\n        # unchanged fields remain the same\n        assert updated[\"author\"] == created[\"author\"]\n        assert updated[\"genres\"] == created[\"genres\"]\n        # Cleanup\n        delete_book(client, book_id)\n\n\ndef test_delete_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        resp = client.delete(f\"/books/{book_id}\")\n        assert resp.status_code == 204\n        # Subsequent GET should be 404\n        resp = client.get(f\"/books/{book_id}\")\n        assert resp.status_code == 404\n\n\ndef test_get_book_404():\n    with TestClient(app) as client:\n        resp = client.get(f\"/books/{INVALID_ID}\")\n        assert resp.status_code == 404\n\n\ndef test_update_book_404():\n    with TestClient(app) as client:\n        resp = client.put(f\"/books/{INVALID_ID}\", json={\"title\": \"Nope\"})\n        assert resp.status_code == 404\n\n\ndef test_delete_book_404():\n    with TestClient(app) as client:\n        resp = client.delete(f\"/books/{INVALID_ID}\")\n        assert resp.status_code == 404\n"
+  },
+  "history": [
+    {
+      "iteration": 1,
+      "files": {
+        "database.py": "from contextlib import asynccontextmanager\n\nfrom beanie import init_beanie\nfrom fastapi import FastAPI\nfrom pymongo import AsyncMongoClient\n\nfrom models import Book\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    client = AsyncMongoClient(\"mongodb://localhost:27017\", tz_aware=True)\n    await init_beanie(database=client.appdb, document_models=[Book])\n    yield\n    await client.close()\n\n\napp = FastAPI(lifespan=lifespan)",
+        "models.py": "from beanie import Document\nfrom pydantic import Field\n\nclass Book(Document):\n    title: str\n    author: str\n    year: int\n    genres: list[str] = Field(default_factory=list)\n\n    class Settings:\n        name = \"books\"\n",
+        "schemas.py": "from typing import List\nfrom pydantic import BaseModel, Field\n\n\nclass BookCreate(BaseModel):\n    title: str\n    author: str\n    year: int\n    genres: List[str] = Field(default_factory=list)\n\n\nclass BookRead(BaseModel):\n    id: str\n    title: str\n    author: str\n    year: int\n    genres: List[str]\n\n\nclass BookUpdate(BaseModel):\n    title: str | None = None\n    author: str | None = None\n    year: int | None = None\n    genres: List[str] | None = None",
+        "main.py": "from contextlib import asynccontextmanager\nfrom typing import List\n\nfrom beanie import PydanticObjectId, init_beanie\nfrom fastapi import FastAPI, HTTPException, Response, status\nfrom pymongo import AsyncMongoClient\n\nfrom models import Book\nfrom schemas import BookCreate, BookRead, BookUpdate\n\n\n@asynccontextmanager\nasync def lifespan(app: FastAPI):\n    client = AsyncMongoClient(\"mongodb://localhost:27017\", tz_aware=True)\n    await init_beanie(database=client.appdb, document_models=[Book])\n    yield\n    await client.close()\n\napp = FastAPI(lifespan=lifespan)\n\n\n@app.post(\"/books\", response_model=BookRead, status_code=status.HTTP_201_CREATED)\nasync def create_book(book_in: BookCreate):\n    book = Book(**book_in.model_dump())\n    await book.insert()\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.get(\"/books\", response_model=List[BookRead])\nasync def list_books():\n    books = await Book.find_all().to_list()\n    return [\n        BookRead(\n            id=str(b.id),\n            title=b.title,\n            author=b.author,\n            year=b.year,\n            genres=b.genres,\n        )\n        for b in books\n    ]\n\n\n@app.get(\"/books/{book_id}\", response_model=BookRead)\nasync def get_book(book_id: str):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.put(\"/books/{book_id}\", response_model=BookRead)\nasync def update_book(book_id: str, book_update: BookUpdate):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    update_data = book_update.model_dump(exclude_unset=True)\n    for field, value in update_data.items():\n        if value is not None:\n            setattr(book, field, value)\n    await book.save()\n    return BookRead(\n        id=str(book.id),\n        title=book.title,\n        author=book.author,\n        year=book.year,\n        genres=book.genres,\n    )\n\n\n@app.delete(\"/books/{book_id}\", status_code=status.HTTP_204_NO_CONTENT)\nasync def delete_book(book_id: str):\n    book = await Book.get(PydanticObjectId(book_id))\n    if not book:\n        raise HTTPException(status_code=404, detail=\"Book not found\")\n    await book.delete()\n    return Response(status_code=status.HTTP_204_NO_CONTENT)\n",
+        "test_main.py": "import pytest\nfrom fastapi.testclient import TestClient\nfrom main import app\n\n# Helper payloads\nBASE_PAYLOAD = {\n    \"title\": \"Sample Book\",\n    \"author\": \"Jane Doe\",\n    \"year\": 2021,\n    \"genres\": [\"Fiction\", \"Adventure\"]\n}\n\nINVALID_ID = \"000000000000000000000000\"\n\n\ndef create_book(client, payload=None):\n    \"\"\"Create a book via the API and return its JSON representation.\"\"\"\n    if payload is None:\n        payload = BASE_PAYLOAD\n    resp = client.post(\"/books\", json=payload)\n    assert resp.status_code == 201\n    return resp.json()\n\n\ndef delete_book(client, book_id):\n    \"\"\"Delete a book via the API – used for cleanup.\"\"\"\n    resp = client.delete(f\"/books/{book_id}\")\n    # Deleting an existing book should return 204\n    assert resp.status_code == 204\n\n\ndef test_create_book():\n    with TestClient(app) as client:\n        data = create_book(client)\n        # Verify fields\n        assert data[\"title\"] == BASE_PAYLOAD[\"title\"]\n        assert data[\"author\"] == BASE_PAYLOAD[\"author\"]\n        assert data[\"year\"] == BASE_PAYLOAD[\"year\"]\n        assert data[\"genres\"] == BASE_PAYLOAD[\"genres\"]\n        # Cleanup\n        delete_book(client, data[\"id\"])\n\n\ndef test_list_books():\n    with TestClient(app) as client:\n        # Create two distinct books\n        payload1 = {**BASE_PAYLOAD, \"title\": \"Book One\"}\n        payload2 = {**BASE_PAYLOAD, \"title\": \"Book Two\"}\n        book1 = create_book(client, payload1)\n        book2 = create_book(client, payload2)\n\n        resp = client.get(\"/books\")\n        assert resp.status_code == 200\n        books = resp.json()\n        ids = {b[\"id\"] for b in books}\n        assert book1[\"id\"] in ids\n        assert book2[\"id\"] in ids\n\n        # Cleanup\n        delete_book(client, book1[\"id\"])\n        delete_book(client, book2[\"id\"])\n\n\ndef test_get_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        resp = client.get(f\"/books/{book_id}\")\n        assert resp.status_code == 200\n        data = resp.json()\n        assert data == created\n        # Cleanup\n        delete_book(client, book_id)\n\n\ndef test_update_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        update_payload = {\"title\": \"Updated Title\", \"year\": 2022}\n        resp = client.put(f\"/books/{book_id}\", json=update_payload)\n        assert resp.status_code == 200\n        updated = resp.json()\n        assert updated[\"title\"] == \"Updated Title\"\n        assert updated[\"year\"] == 2022\n        # unchanged fields remain the same\n        assert updated[\"author\"] == created[\"author\"]\n        assert updated[\"genres\"] == created[\"genres\"]\n        # Cleanup\n        delete_book(client, book_id)\n\n\ndef test_delete_book():\n    with TestClient(app) as client:\n        created = create_book(client)\n        book_id = created[\"id\"]\n        resp = client.delete(f\"/books/{book_id}\")\n        assert resp.status_code == 204\n        # Subsequent GET should be 404\n        resp = client.get(f\"/books/{book_id}\")\n        assert resp.status_code == 404\n\n\ndef test_get_book_404():\n    with TestClient(app) as client:\n        resp = client.get(f\"/books/{INVALID_ID}\")\n        assert resp.status_code == 404\n\n\ndef test_update_book_404():\n    with TestClient(app) as client:\n        resp = client.put(f\"/books/{INVALID_ID}\", json={\"title\": \"Nope\"})\n        assert resp.status_code == 404\n\n\ndef test_delete_book_404():\n    with TestClient(app) as client:\n        resp = client.delete(f\"/books/{INVALID_ID}\")\n        assert resp.status_code == 404\n"
+      }
+    }
+  ]
+}

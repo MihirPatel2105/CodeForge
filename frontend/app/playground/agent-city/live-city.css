@@ -19,7 +19,7 @@
 .lc-header { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--border); }
 .lc-back { display: inline-flex; align-items: center; gap: 20px; color: var(--fg); text-decoration: none; }
 .lc-back > svg { color: var(--fg-muted); }
-.lc-back .lc-brand { width: 132px; height: auto; }
+.lc-back .lc-brand { height: 31.4px; width: auto; }
 .lc-back .text-fg { color: inherit; }
 .lc-header-center { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--fg-muted); }
 .lc-breadcrumb { color: var(--fg-muted); font-family: var(--font-mono-stack), monospace; font-size: 11px; letter-spacing: .13em; }
@@ -304,7 +304,7 @@
 @media(max-width:650px) {
   .lc-header { gap:12px; }
   .lc-back { gap:10px; }
-  .lc-back .lc-brand { width:110px; }
+  .lc-back .lc-brand { height:26.2px; }
   .lc-header-actions { gap:10px; }
   .lc-header-actions [data-slot="button"] { width:34px; min-width:34px; padding:0; font-size:0; gap:0; }
   .lc-header-link { font-size:11px; gap:6px; }

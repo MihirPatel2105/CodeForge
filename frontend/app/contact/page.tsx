@@ -22,7 +22,7 @@ const USEFUL_DETAILS = [
 export default function ContactPage() {
   return (
     <div className="cf-contact cf-premium-marketing mk-page mk-contact-page min-h-screen bg-surface">
-      <SiteHeader heroOverlay />
+      <SiteHeader />
       <main>
         <MarketingHero className="cf-contact-hero cf-contact-stage">
           <div className="cf-entrance-grid relative z-10 mx-auto grid w-full max-w-[1536px] gap-14 px-6 py-14 md:px-10 md:py-18 lg:min-h-[calc(100svh-64px)] lg:grid-cols-[minmax(0,0.82fr)_minmax(460px,0.78fr)] lg:items-center lg:px-14 lg:py-16">

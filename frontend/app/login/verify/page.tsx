@@ -102,9 +102,8 @@ export default function VerifyLoginPage() {
 
   return (
     <AuthEntryShell label="Verify sign in">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-accent-bd bg-accent-soft text-accent"><KeyRound className="h-5 w-5" aria-hidden /></span>
-          <div className="mt-7 flex items-center gap-2.5 text-[12px] font-[650] text-accent"><span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden /> One more step</div>
-          <h1 className="font-display mt-4 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Verify yourself</h1>
+          <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
+          <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Verify yourself</h1>
           <p className="mt-3 text-[15px] leading-6 text-fg-muted">
             Complete sign-in{pending.email ? <> for <span className="font-[650] text-fg">{pending.email}</span></> : ""} using a method you saved.
           </p>
@@ -119,7 +118,7 @@ export default function VerifyLoginPage() {
                   aria-pressed={method === option}
                   disabled={busy}
                   onClick={() => { setMethod(option); setCode(""); setError(null); setNotice(null); }}
-                  className={cn("h-auto min-h-[68px] flex-col gap-1.5 rounded-xl border-border-strong px-2 py-3 text-[12px] font-[650] sm:min-h-[76px] sm:flex-row sm:text-[13px]", method === option && "border-accent bg-accent-soft text-accent ring-2 ring-accent/10")}
+                  className={cn("h-auto min-h-[68px] flex-col gap-1.5 rounded-[var(--ui-radius-control)] border-border-strong px-2 py-3 text-[12px] font-[650] sm:min-h-[76px] sm:flex-row sm:text-[13px]", method === option && "border-accent bg-accent-soft text-accent ring-2 ring-accent/10")}
                 >
                   {option === "passkey" ? <Fingerprint className="h-4 w-4" aria-hidden /> : <KeyRound className="h-4 w-4" aria-hidden />}
                   {option === "totp" ? "Authenticator code" : "Passkey"}
@@ -135,7 +134,7 @@ export default function VerifyLoginPage() {
                 <VerificationCode id="login-verification-code" value={code} onChange={setCode} autoFocus disabled={busy} invalid={Boolean(error)} />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>
-              <Button type="submit" disabled={busy || code.length !== 6} className="h-12 w-full rounded-xl text-[14px] font-[650]">
+              <Button type="submit" disabled={busy || code.length !== 6} className="h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]">
                 {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                 {busy ? "Verifying…" : "Verify and sign in"}
               </Button>
@@ -143,7 +142,7 @@ export default function VerifyLoginPage() {
           ) : (
             <div className="mt-7">
               <p className="text-[13px] leading-5 text-fg-muted">Your device or password manager may ask for a PIN or biometric check.</p>
-              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-5 h-12 w-full gap-2 rounded-xl text-[14px] font-[650]">
+              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-5 h-[52px] w-full gap-2 rounded-[var(--ui-radius-control)] text-[14px] font-[650]">
                 {busy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
                 {busy ? "Waiting for passkey…" : "Verify with passkey"}
               </Button>
@@ -151,9 +150,9 @@ export default function VerifyLoginPage() {
           )}
 
           {error ? <Notice className="mt-5">{error}</Notice> : null}
-          {notice ? <p role="status" className="mt-5 rounded-xl border border-accent-bd bg-accent-soft px-4 py-3 text-[13px] leading-5 text-accent">{notice}</p> : null}
+          {notice ? <p role="status" className="mt-5 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3 text-[13px] leading-5 text-accent">{notice}</p> : null}
           <Link href="/recover-2fa" className="mt-6 block text-sm underline">Lost your authenticator? Request recovery</Link>
-          <button type="button" onClick={startAgain} disabled={busy} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-[13px] font-[650] text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"><ArrowLeft className="h-4 w-4" aria-hidden /> Start sign-in again</button>
+          <button type="button" onClick={startAgain} disabled={busy} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-[var(--ui-radius-control)] text-[13px] font-[650] text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-fg disabled:opacity-50"><ArrowLeft className="h-4 w-4" aria-hidden /> Start sign-in again</button>
     </AuthEntryShell>
   );
 }

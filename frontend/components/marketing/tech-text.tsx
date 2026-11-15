@@ -6,7 +6,18 @@ import type { CSSProperties } from 'react';
 
 type Box = { x1: number; y1: number; x2: number; y2: number };
 type Art = { image: HTMLCanvasElement; left: number; top: number };
-type Shape = { char: string; x: number; box: Box };
+type Shape = { char: string; x: number; box: Box; path?: Path2D };
+
+/**
+ * Letters as vector outlines, in font units: each glyph's path is y-down at its own origin,
+ * `x` is its pen position along the word, `bounds` is [xMin, yMin, xMax, yMax] y-up. Given
+ * these, the effect draws paths instead of typing text, so no font file is needed.
+ */
+export type GlyphOutlines = {
+  unitsPerEm: number;
+  metrics: { xHeight: number; capHeight: number; ascender: number; descender: number };
+  glyphs: { char: string; x: number; path: string; bounds: number[] }[];
+};
 type Cell = { x: number; y: number; size: number; dx: number; dy: number; start: number; land: number };
 type Glyph = Shape & {
   offset: { x: number; y: number };
@@ -23,6 +34,8 @@ type Line = { y: number; label: string };
 type Band = { y0: number; y1: number; up: boolean; order: number };
 type Word = {
   size: number;
+  /** Font units to pixels, when drawing from outlines. */
+  scale: number;
   baseline: number;
   left: number;
   right: number;
@@ -60,6 +73,8 @@ export interface TechTextProps {
   intro?: 'none' | 'type' | 'assemble' | 'metrics';
   introDuration?: number;
   guides?: boolean;
+  /** Draw these outlines instead of typing `text` with a font. */
+  outlines?: GlyphOutlines | null;
   className?: string;
   style?: CSSProperties;
 }
@@ -123,6 +138,7 @@ const TechText = ({
   intro = 'none',
   introDuration = 2,
   guides = false,
+  outlines = null,
   className = '',
   style
 }: TechTextProps) => {
@@ -158,7 +174,8 @@ const TechText = ({
       clickKick,
       intro,
       introDuration,
-      guides
+      guides,
+      outlines
     };
     wakeRef.current();
   });
@@ -192,7 +209,17 @@ const TechText = ({
     let introClock = 0;
     let introKind = '';
     let introducing = false;
-    let fontsReady = !document.fonts;
+    // Outlines need no font, so there is nothing to wait for.
+    let fontsReady = !document.fonts || Boolean(settingsRef.current?.outlines);
+    const paths = new Map<string, Path2D>();
+    const pathFor = (data: string) => {
+      let path = paths.get(data);
+      if (!path) {
+        path = new Path2D(data);
+        paths.set(data, path);
+      }
+      return path;
+    };
     let guideAlpha = 0;
     const kicks: Kick[] = [];
     const press = { x: 0, y: 0, time: 0, index: -1 };
@@ -239,6 +266,30 @@ const TechText = ({
       const c = image.getContext('2d');
       if (!c) return { image, left, top };
       c.setTransform(dpr, 0, 0, dpr, -left * dpr, -top * dpr);
+      if (glyph.path) {
+        // Outline mode: draw the letter's path at its pen position, scaled from font units.
+        // Line widths and dashes are divided by the scale so they stay in screen pixels.
+        const k = view.scale;
+        c.translate(glyph.x, view.baseline);
+        c.scale(k, k);
+        if (stroke) {
+          c.lineJoin = 'round';
+          c.lineWidth = (s.strokeWidth * 2) / k;
+          c.lineCap = 'butt';
+          c.strokeStyle = ink;
+          if (s.lineStyle !== 'solid') c.setLineDash([Math.max(1, s.dashLength) / k, Math.max(1, s.dashGap) / k]);
+          c.stroke(glyph.path);
+          c.setLineDash([]);
+          c.globalCompositeOperation = 'destination-out';
+          c.fillStyle = '#000000';
+          c.fill(glyph.path);
+          c.globalCompositeOperation = 'source-over';
+        } else {
+          c.fillStyle = ink;
+          c.fill(glyph.path);
+        }
+        return { image, left, top };
+      }
       setFont(c, s, view.size);
       if (stroke) {
         c.lineJoin = 'round';
@@ -259,25 +310,41 @@ const TechText = ({
       return { image, left, top };
     };
 
-    const ensureLayout = (s: Settings, ink: string): Word => {
-      const key = [
-        s.text,
-        family(s),
-        s.fontWeight,
-        s.fontSize,
-        s.letterSpacing,
-        s.align,
-        ink,
-        s.dashLength,
-        s.dashGap,
-        s.strokeWidth,
-        s.lineStyle,
-        width,
-        height,
-        dpr
-      ].join('|');
-      if (key === layoutKey && word) return word;
-      layoutKey = key;
+    type Base = { base: Shape; index: number };
+
+    // Guide lines and bands shared by both layouts. All y values are canvas pixels.
+    const wordFrom = (v: {
+      size: number; scale: number; baseline: number; left: number; right: number; top: number; bottom: number;
+      xHeight: number; capHeight: number; ascender: number; descender: number;
+    }): Word => {
+      const inkTop = Math.min(v.top, v.capHeight) - 2;
+      const inkBottom = Math.max(v.bottom, v.baseline) + 2;
+      return {
+        size: v.size,
+        scale: v.scale,
+        baseline: v.baseline,
+        left: v.left,
+        right: v.right,
+        top: v.top,
+        bottom: v.bottom,
+        lines: [
+          { y: v.baseline, label: 'baseline' },
+          { y: v.xHeight, label: 'x-height' },
+          { y: v.capHeight, label: 'cap height' },
+          ...(v.capHeight - v.ascender > Math.max(11, v.size * 0.06) ? [{ y: v.ascender, label: 'ascender' }] : []),
+          { y: v.descender, label: 'descender' }
+        ],
+        bands: [
+          { y0: v.xHeight, y1: v.baseline, up: true, order: 0 },
+          { y0: v.capHeight, y1: v.xHeight, up: true, order: 1 },
+          { y0: inkTop, y1: v.capHeight, up: true, order: 2 },
+          { y0: v.baseline, y1: inkBottom, up: false, order: 1 }
+        ].filter(band => band.y1 - band.y0 > 0.5)
+      };
+    };
+
+    // Typed text: measure the word and each letter with the font, as the original effect does.
+    const textLayout = (s: Settings): { next: Word; bases: Base[] } => {
       const wanted = fontFor(s, 64);
       if (document.fonts && wanted !== requestedFont) {
         requestedFont = wanted;
@@ -302,66 +369,130 @@ const TechText = ({
         s.align === 'left' ? margin : s.align === 'right' ? width - margin - inkWidth : (width - inkWidth) / 2;
       const x = start + m.actualBoundingBoxLeft;
       const baseline = (height - inkHeight) / 2 + m.actualBoundingBoxAscent;
-      const xHeight = baseline - probe.measureText('x').actualBoundingBoxAscent;
-      const capHeight = baseline - probe.measureText('H').actualBoundingBoxAscent;
-      const ascender = baseline - probe.measureText('d').actualBoundingBoxAscent;
-      const descender = baseline + probe.measureText('p').actualBoundingBoxDescent;
-      const top = baseline - m.actualBoundingBoxAscent;
-      const bottom = baseline + m.actualBoundingBoxDescent;
-      const inkTop = Math.min(top, capHeight) - 2;
-      const inkBottom = Math.max(bottom, baseline) + 2;
-      const next: Word = {
+      const next = wordFrom({
         size,
+        scale: 1,
         baseline,
         left: x - m.actualBoundingBoxLeft,
         right: x + m.actualBoundingBoxRight,
-        top,
-        bottom,
-        lines: [
-          { y: baseline, label: 'baseline' },
-          { y: xHeight, label: 'x-height' },
-          { y: capHeight, label: 'cap height' },
-          ...(capHeight - ascender > Math.max(11, size * 0.06) ? [{ y: ascender, label: 'ascender' }] : []),
-          { y: descender, label: 'descender' }
-        ],
-        bands: [
-          { y0: xHeight, y1: baseline, up: true, order: 0 },
-          { y0: capHeight, y1: xHeight, up: true, order: 1 },
-          { y0: inkTop, y1: capHeight, up: true, order: 2 },
-          { y0: baseline, y1: inkBottom, up: false, order: 1 }
-        ].filter(band => band.y1 - band.y0 > 0.5)
-      };
-      word = next;
+        top: baseline - m.actualBoundingBoxAscent,
+        bottom: baseline + m.actualBoundingBoxDescent,
+        xHeight: baseline - probe.measureText('x').actualBoundingBoxAscent,
+        capHeight: baseline - probe.measureText('H').actualBoundingBoxAscent,
+        ascender: baseline - probe.measureText('d').actualBoundingBoxAscent,
+        descender: baseline + probe.measureText('p').actualBoundingBoxDescent
+      });
 
-      const chars = Array.from(s.text);
-      const previous = glyphs;
-      glyphs = [];
+      const bases: Base[] = [];
       let prefix = '';
-      chars.forEach((char, i) => {
+      Array.from(s.text).forEach((char, i) => {
         prefix += char;
         const own = probe.measureText(char);
         const gx = x + probe.measureText(prefix).width - own.width;
         if (!char.trim()) return;
-        const base = {
-          char,
-          x: gx,
-          box: {
-            x1: gx - own.actualBoundingBoxLeft,
-            y1: baseline - own.actualBoundingBoxAscent,
-            x2: gx + own.actualBoundingBoxRight,
-            y2: baseline + own.actualBoundingBoxDescent
+        bases.push({
+          index: i,
+          base: {
+            char,
+            x: gx,
+            box: {
+              x1: gx - own.actualBoundingBoxLeft,
+              y1: baseline - own.actualBoundingBoxAscent,
+              x2: gx + own.actualBoundingBoxRight,
+              y2: baseline + own.actualBoundingBoxDescent
+            }
+          }
+        });
+      });
+      return { next, bases };
+    };
+
+    // Outlines: the same fit, baseline, guides and letter boxes, computed from font units.
+    const outlineLayout = (s: Settings, o: GlyphOutlines): { next: Word; bases: Base[] } => {
+      const left = Math.min(...o.glyphs.map(g => g.x + g.bounds[0]));
+      const right = Math.max(...o.glyphs.map(g => g.x + g.bounds[2]));
+      const ascent = Math.max(...o.glyphs.map(g => g.bounds[3]));
+      const descent = Math.max(0, -Math.min(...o.glyphs.map(g => g.bounds[1])));
+      const base = s.fontSize / o.unitsPerEm;
+      const fit = Math.min(
+        1,
+        (width * 0.9) / Math.max((right - left) * base, 1),
+        (height * 0.66) / Math.max((ascent + descent) * base, 1)
+      );
+      const size = s.fontSize * fit;
+      const k = size / o.unitsPerEm;
+      const inkWidth = (right - left) * k;
+      const inkHeight = (ascent + descent) * k;
+      const margin = width * 0.05;
+      const start =
+        s.align === 'left' ? margin : s.align === 'right' ? width - margin - inkWidth : (width - inkWidth) / 2;
+      const x = start - left * k;
+      const baseline = (height - inkHeight) / 2 + ascent * k;
+      const next = wordFrom({
+        size,
+        scale: k,
+        baseline,
+        left: start,
+        right: start + inkWidth,
+        top: baseline - ascent * k,
+        bottom: baseline + descent * k,
+        xHeight: baseline - o.metrics.xHeight * k,
+        capHeight: baseline - o.metrics.capHeight * k,
+        ascender: baseline - o.metrics.ascender * k,
+        descender: baseline - o.metrics.descender * k
+      });
+      const bases: Base[] = o.glyphs.map((g, i) => {
+        const gx = x + g.x * k;
+        const [x0, y0, x1, y1] = g.bounds;
+        return {
+          index: i,
+          base: {
+            char: g.char,
+            x: gx,
+            path: pathFor(g.path),
+            box: { x1: gx + x0 * k, y1: baseline - y1 * k, x2: gx + x1 * k, y2: baseline - y0 * k }
           }
         };
+      });
+      return { next, bases };
+    };
+
+    const ensureLayout = (s: Settings, ink: string): Word => {
+      const key = [
+        s.text,
+        s.outlines ? 'outlines' : family(s),
+        s.fontWeight,
+        s.fontSize,
+        s.letterSpacing,
+        s.align,
+        ink,
+        s.dashLength,
+        s.dashGap,
+        s.strokeWidth,
+        s.lineStyle,
+        width,
+        height,
+        dpr
+      ].join('|');
+      if (key === layoutKey && word) return word;
+      layoutKey = key;
+
+      const { next, bases } = s.outlines ? outlineLayout(s, s.outlines) : textLayout(s);
+      word = next;
+
+      const previous = glyphs;
+      glyphs = [];
+      bases.forEach(({ base, index }) => {
         const kept = previous[glyphs.length];
         glyphs.push({
           ...base,
-          offset: kept?.char === char ? kept.offset : { x: 0, y: 0 },
+          offset: kept?.char === base.char ? kept.offset : { x: 0, y: 0 },
           velocity: { x: 0, y: 0 },
           outline: 0,
           shown: 1,
           cells: null,
           assembled: 0,
-          index: i,
+          index,
           fill: sprite(s, next, base, false, ink),
           dashes: sprite(s, next, base, true, ink)
         });
@@ -573,6 +704,8 @@ const TechText = ({
 
       if (!s.labels) return;
       ctx.font = LABEL_FONT;
+      // Labels set their own spacing; otherwise the page's letter-spacing can squash them.
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = accent;
@@ -595,6 +728,8 @@ const TechText = ({
       ctx.fillStyle = accent;
       ctx.lineWidth = 1;
       ctx.font = LABEL_FONT;
+      // Labels set their own spacing; otherwise the page's letter-spacing can squash them.
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.textBaseline = 'middle';
       ctx.textAlign = room ? 'left' : 'right';
       view.lines.forEach((line, k) => {

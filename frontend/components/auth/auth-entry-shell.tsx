@@ -1,11 +1,23 @@
+"use client";
+
 import type { ReactNode, Ref } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { LogoLockup } from "@/components/brand/logo-lockup";
-import { AuthEntryProof } from "@/components/auth/auth-entry-proof";
-import { AuthAtmosphere } from "@/components/auth/auth-atmosphere";
+import { AuthHorizonPanel } from "@/components/auth/auth-horizon-panel";
 import "./auth-entry.css";
 
+/** The line on the dark band, chosen by what the page is for. */
+function headlineFor(label: string, proof: "product" | "recovery" | "security") {
+  if (proof === "recovery") return "Back to your builds in a minute.";
+  if (proof === "security") return "Your workspace, kept yours.";
+  if (label === "Create account") return "Start your first build.";
+  return "Your next idea starts here.";
+}
+
+/**
+ * Auth layout: a black band carrying the landing's sunlit horizon, and the form straight on the
+ * cream canvas. The band stays mounted while sign in, sign up and passkey swap the form.
+ */
 export function AuthEntryShell({ children, label, proof = "product", entrance = false, shared = false, compact = false, formRef }: {
   children: ReactNode;
   label: string;
@@ -15,20 +27,19 @@ export function AuthEntryShell({ children, label, proof = "product", entrance = 
   compact?: boolean;
   formRef?: Ref<HTMLElement>;
 }) {
+  const modifiers = `${entrance ? " pa-auth-entrance" : ""}${shared ? " pa-auth-shared" : ""}${compact ? " pa-auth-fit" : ""}`;
   return (
-    <div className={`pa-auth${entrance ? " pa-auth-entrance" : ""}${shared ? " pa-auth-shared" : ""}${compact ? " pa-auth-fit" : ""}`}>
-      <AuthAtmosphere />
-      <header className="pa-header">
-        <Link href="/" aria-label="CodeForge home"><LogoLockup variant="dark" className="h-9 w-auto" /></Link>
-        <Link href="/" className="pa-back"><ArrowLeft size={16} aria-hidden /><span>Home</span></Link>
-      </header>
-      <main className="pa-stage">
-        <AuthEntryProof variant={proof} />
-        <section ref={formRef} className="pa-form" aria-label={label}>
-          <div className="pa-form-content">{children}</div>
-        </section>
-      </main>
-      <footer className="pa-footer"><span>CodeForge</span><Link href="/contact">Need a hand?</Link></footer>
+    <div className={`pa-auth ah-auth${modifiers}`}>
+      <AuthHorizonPanel headline={headlineFor(label, proof)} />
+      <div className="ah-side">
+        <Link href="/" className="pa-back ah-back"><ArrowLeft size={16} aria-hidden /><span>Home</span></Link>
+        <main className="ah-main">
+          <section ref={formRef} className="pa-form" aria-label={label}>
+            <div className="pa-form-content">{children}</div>
+          </section>
+        </main>
+        <footer className="pa-footer ah-footer"><span>CodeForge</span><Link href="/contact">Need a hand?</Link></footer>
+      </div>
     </div>
   );
 }

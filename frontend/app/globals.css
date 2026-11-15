@@ -113,33 +113,42 @@
   --radius-sm: calc(var(--radius) * 0.83);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.33);
-  --radius-2xl: calc(var(--radius) * 1.33);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 2);
+  /* Depth comes from surface steps and hairlines, not elevation: card-level shadows are off.
+     Larger shadows stay for menus, popovers and dialogs, which genuinely float. */
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
   --radius-full: 999px;
 }
 
 :root {
   /* Keep the product fast and legible with system fonts. Use mono for data and code;
      use a clear sans hierarchy for navigation, decisions, and reading. */
-  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-mono-stack: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-display-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-ui: var(--font-brand-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono-stack: var(--font-brand-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display-stack: var(--font-brand-serif), Georgia, "Times New Roman", serif;
 
-  --bg: #f8f8f8;
-  --surface: #ffffff;
-  --surface-2: #f4f4f4;
-  --fg: #171717;
-  --fg-muted: #575757;
-  --fg-faint: #6b6b6b;
-  --border: #e5e5e5;
-  --border-strong: #cccccc;
+  /* Editorial palette (DESIGN.md): slate ink on an ivory canvas, warm greys, hairline borders.
+     Colour is held in reserve for run state below; actions stay monochrome. The two lightest
+     greys of the spec (#b0aea5, #87867f) fail AA as text on cream, so they draw lines only. */
+  --bg: #f0eee6;
+  --surface: #faf9f5;
+  --surface-2: #e8e6dc;
+  --fg: #141413;
+  --fg-muted: #5e5d59;
+  --fg-faint: #65645e;
+  --border: #e3dacc;
+  --border-strong: #b0aea5;
 
-  --action-ink: #07090f;
+  --action-ink: #141413;
   --accent: var(--action-ink);
-  --accent-soft: #f1f1f1;
-  --accent-bd: #c9c9c9;
+  --accent-soft: #f0eee6;
+  --accent-bd: #d1cfc5;
 
-  --ok: #0f7a55;
+  /* Darker than before so success text holds 4.5:1 on every cream surface. */
+  --ok: #0d6e4d;
   --ok-soft: #e7f5ee;
   --ok-bd: #b4decb;
 
@@ -172,16 +181,17 @@
   --term-dim: #828a95;
   --term-bg: #14161a;
 
-  --ink-accent: #171717;
-  --rule: #e5e5e5;
+  --ink-accent: #141413;
+  --rule: #e8e6dc;
 
-  --radius: 12px;
+  /* 8px controls, 16px cards (radius-xl/2xl), 24px for the rare large container. */
+  --radius: 8px;
 }
 
 /* A precise, readable lockup across navigation, auth, and the compact dashboard. */
 .cf-wordmark {
   display: inline-block;
-  font-family: var(--font-display-stack);
+  font-family: var(--font-ui);
   font-size: 20px;
   font-weight: 750;
   letter-spacing: -0.065em;
@@ -222,19 +232,20 @@
 }
 
 :root.dark, .cf-invert {
-  --bg: #0d0f12;
-  --surface: #15181d;
-  --surface-2: #1c2027;
-  --fg: #f1f3f5;
-  --fg-muted: #9aa1ab;
-  --fg-faint: #828a95;
-  --border: #262b33;
-  --border-strong: #3a414b;
-  --rule: #2a2f37;
+  /* The same palette at night: warm near-black surfaces and ivory ink. */
+  --bg: #1a1a18;
+  --surface: #262624;
+  --surface-2: #30302e;
+  --fg: #faf9f5;
+  --fg-muted: #b0aea5;
+  --fg-faint: #9c9a92;
+  --border: #3a3935;
+  --border-strong: #55544f;
+  --rule: #34332f;
 
-  --accent: #f5f5f5;
-  --accent-soft: #262626;
-  --accent-bd: #525252;
+  --accent: #faf9f5;
+  --accent-soft: #30302e;
+  --accent-bd: #55544f;
 
   --ok: #4fd1a0;
   --ok-soft: #0f2a20;
@@ -715,40 +726,6 @@ html.lenis {
   mask-image: linear-gradient(to bottom, #000, transparent 72%);
 }
 
-.cf-auth-aside {
-  background:
-    radial-gradient(circle at 78% 16%, rgba(139, 147, 248, 0.13), transparent 22rem),
-    radial-gradient(circle at 8% 82%, rgba(49, 193, 139, 0.055), transparent 20rem),
-    var(--bg);
-}
-
-.cf-auth-aside::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 72px 72px;
-  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 88%);
-  mask-image: linear-gradient(to bottom, #000, transparent 88%);
-}
-
-.cf-auth-aside::after {
-  content: "";
-  position: absolute;
-  width: 30rem;
-  height: 30rem;
-  right: -16rem;
-  top: -15rem;
-  border: 1px solid rgba(139, 147, 248, 0.12);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 4rem rgba(139, 147, 248, 0.025),
-    0 0 0 8rem rgba(139, 147, 248, 0.016);
-  pointer-events: none;
-}
 
 /* Projects-only visual system. It shares the homepage's warm paper and indigo signal,
    while keeping the denser, operational character expected after sign-in. */
@@ -1244,31 +1221,6 @@ body:has(.cf-run-loading) {
   background-image: none;
 }
 
-/* Keep the full-width header at a fixed height. */
-.cf-site-header-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  border-radius: 0;
-  transition: top 420ms cubic-bezier(.22,1,.36,1), left 420ms cubic-bezier(.22,1,.36,1), right 420ms cubic-bezier(.22,1,.36,1), border-radius 420ms cubic-bezier(.22,1,.36,1), box-shadow 420ms cubic-bezier(.22,1,.36,1), border-color 420ms;
-}
-@media (max-width: 600px) {
-  .cf-site-header-bar .h-16 { padding-left: 12px; padding-right: 12px; }
-}
-@media (prefers-reduced-motion: reduce) { .cf-site-header-bar { transition: none; } }
-
-/* Only the inner navigation surface is painted. */
-header.cf-site-header {
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 0;
-  box-shadow: none;
-  pointer-events: none;
-}
-.cf-site-header-bar { pointer-events: auto; }
-
 .cf-project-select {
   appearance: none;
   padding-right: 2.5rem;
@@ -1298,29 +1250,6 @@ button.cf-project-action:not(:disabled):active svg { transform: none; }
   button.cf-project-action svg { transition: none; }
   button.cf-project-action:not(:disabled):is(:hover,:active),
   button.cf-project-action:not(:disabled):hover svg { transform: none; }
-}
-
-/* Header feedback stays anchored: color and halos replace positional motion. */
-.cf-site-header a.cf-header-projects,
-.cf-site-header a.cf-header-profile {
-  transition: background-color 360ms ease, border-color 360ms ease, box-shadow 420ms cubic-bezier(.16,1,.3,1);
-}
-@media (hover: hover) and (pointer: fine) {
-  .cf-site-header a.cf-header-projects:hover {
-    background: color-mix(in srgb, var(--accent) 90%, black);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-  .cf-site-header a.cf-header-profile:hover {
-    border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
-    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent);
-  }
-}
-.cf-site-header a.cf-header-projects:active,
-.cf-site-header a.cf-header-profile:active { transform: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent); }
-@media (prefers-reduced-motion: reduce) {
-  .cf-site-header a.cf-header-projects,
-  .cf-site-header a.cf-header-profile { transition: none; }
 }
 
 /* Marketing hero entrances share timing while forms and demos remain usable. */
@@ -1377,7 +1306,7 @@ a.cf-marketing-action:active svg { transform: none; }
 }
 
 
-/* Logo shine sweeps across the stationary symbol and wordmark. */
+/* The logo: symbol and wordmark drawn from one artwork. No hover or focus effect. */
 .cf-logo-lockup { position: relative; flex-shrink: 0; }
 .cf-logo-symbol, .cf-logo-word {
   position: absolute; top: 0; bottom: 0;
@@ -1385,31 +1314,9 @@ a.cf-marketing-action:active svg { transform: none; }
   background-repeat: no-repeat;
   pointer-events: none;
 }
-.cf-logo-symbol { left: 0; width: 24%; background-size: 416.666667% 100%; background-position: left center; }
-.cf-logo-word { right: 0; width: 76%; background-size: 131.578947% 100%; background-position: right center; }
-.cf-logo-symbol::after, .cf-logo-word::after {
-  content: ""; position: absolute; inset: 0; opacity: 0;
-  background: linear-gradient(110deg, transparent 35%, #737373 46%, #e5e5e5 50%, #737373 54%, transparent 65%);
-  background-size: 300% 100%; background-position: 100% 0;
-  mask-image: var(--cf-logo-mask); -webkit-mask-image: var(--cf-logo-mask);
-  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
-}
-.cf-logo-symbol::after { mask-size: 416.666667% 100%; -webkit-mask-size: 416.666667% 100%; mask-position: left center; -webkit-mask-position: left center; }
-.cf-logo-word::after { mask-size: 131.578947% 100%; -webkit-mask-size: 131.578947% 100%; mask-position: right center; -webkit-mask-position: right center; }
-@keyframes cfLogoSweep {
-  0% { opacity: 0; background-position: 100% 0; }
-  20%, 75% { opacity: 1; }
-  100% { opacity: 0; background-position: 0% 0; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  a:focus-visible > .cf-logo-lockup .cf-logo-symbol::after { animation: cfLogoSweep 750ms ease-out; }
-  a:focus-visible > .cf-logo-lockup .cf-logo-word::after { animation: cfLogoSweep 1200ms cubic-bezier(.22,.68,.25,1) 120ms backwards; }
-}
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  a:hover > .cf-logo-lockup .cf-logo-symbol::after { animation: cfLogoSweep 750ms ease-out; }
-  a:hover > .cf-logo-lockup .cf-logo-word::after { animation: cfLogoSweep 1200ms cubic-bezier(.22,.68,.25,1) 120ms backwards; }
-}
-
+/* --cf-logo-icon is the icon's share of the lockup width (set by LogoLockup from the artwork). */
+.cf-logo-symbol { left: 0; width: calc(var(--cf-logo-icon) * 100%); background-size: calc(100% / var(--cf-logo-icon)) 100%; background-position: left center; }
+.cf-logo-word { right: 0; width: calc((1 - var(--cf-logo-icon)) * 100%); background-size: calc(100% / (1 - var(--cf-logo-icon))) 100%; background-position: right center; }
 /* Shared control motion follows the same timing as the Motion provider. */
 :root {
   --cf-motion-fast: 160ms;

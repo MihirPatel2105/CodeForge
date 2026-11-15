@@ -11,6 +11,9 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./premium-system.css";
 import "@/components/ui/premium-effects.css";
+import "./typography.css";
+import "./design-system.css";
+import { brandMono, brandSans, brandSerif } from "./fonts";
 
 // Nonces must be generated for each response rather than cached in static HTML.
 export const dynamic = "force-dynamic";
@@ -27,7 +30,7 @@ export default async function RootLayout({
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html suppressHydrationWarning lang="en" data-scroll-behavior="smooth">
+    <html suppressHydrationWarning lang="en" data-scroll-behavior="smooth" className={`${brandSans.variable} ${brandSerif.variable} ${brandMono.variable}`}>
       <body className="antialiased">
         <AppScroll />
         <ThemeProvider nonce={nonce}><DesktopRecommendation /><MotionProvider><PageMotion><AuthEntryTransition>{children}</AuthEntryTransition></PageMotion><AppToaster /></MotionProvider></ThemeProvider>

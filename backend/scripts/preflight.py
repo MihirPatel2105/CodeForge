@@ -302,6 +302,7 @@ async def main() -> int:
         print(f"{GREEN}Every agent has a working rung.{RESET}")
     else:
         print(f"{RED}At least one agent has no working rung — a run will fail.{RESET}")
+        print(f"{DIM}Demo fallback: open /replay to play a recorded real run offline.{RESET}")
     return 0 if all_ok else 1
 
 

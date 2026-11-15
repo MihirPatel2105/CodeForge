@@ -36,27 +36,44 @@
   .cf-site-footer[data-reveal="true"] { position: relative; }
 }
 
+/* CODEFORGE in Roundex from outlines (1809 × 201), filled with the footer's text colour. Its
+   width matches what the animated canvas fits the word to (90%, up to 1240px), so the two line
+   up exactly when the canvas takes over. */
+.cf-footer-wordmark-art {
+  display: block;
+  width: min(90%, 1240px);
+  aspect-ratio: 1809 / 201;
+  margin-inline: auto;
+  background-color: currentColor;
+  -webkit-mask: url("/brand/codeforge-wordmark-v4.svg") center / contain no-repeat;
+  mask: url("/brand/codeforge-wordmark-v4.svg") center / contain no-repeat;
+}
+
+/* The interactive letter inspector, drawn from outlines. It extends above and below the word
+   for guide lines and pointer room; the static outline stays until the canvas is ready. */
 .cf-footer-tech { position: relative; }
-.cf-footer-tech-fallback { pointer-events: none; }
-.cf-footer-tech-canvas { position: absolute; inset: calc(4px - .4em) 0 calc(12px - .4em); opacity: 0; }
+/* letter-spacing: Chrome applies an element's CSS letter-spacing to canvas text, and the
+   wordmark's -0.05em (at 172px) would otherwise squash the inspector's small labels. */
+.cf-footer-tech-canvas { position: absolute; inset: -50% 0; opacity: 0; letter-spacing: normal; }
 .cf-footer-tech:has(canvas[data-ready="true"]) .cf-footer-tech-canvas { opacity: 1; }
-.cf-footer-tech:has(canvas[data-ready="true"]) .cf-footer-tech-fallback { visibility: hidden; }
+.cf-footer-tech:has(canvas[data-ready="true"]) .cf-footer-wordmark-art { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .cf-footer-tech-canvas { display: none; }
-  .cf-footer-tech .cf-footer-tech-fallback { visibility: visible; }
+  .cf-footer-tech .cf-footer-wordmark-art { visibility: visible; }
 }
 
 /* The hero's palette returns quietly at the end of the page. */
 footer.cf-site-footer.cf-invert {
-  --bg: #07090f;
-  --surface: #10141e;
-  --surface-2: #1a2130;
-  --fg: #f8faff;
-  --fg-muted: #b6bed0;
-  --fg-faint: #98a4bc;
+  --bg: #141413;
+  --surface: #1a1a18;
+  --surface-2: #262624;
+  --fg: #faf9f5;
+  --fg-muted: #b0aea5;
+  --fg-faint: #9c9a92;
   --rule: #ffffff1a;
   --border: #ffffff20;
-  background: #07090f;
+  /* The footer is the closing black band (DESIGN.md footer-band): true black, warm greys, no glow. */
+  background: #000;
   border-top-color: #ffffff0d;
 }
 .cf-site-footer::before {
@@ -64,7 +81,7 @@ footer.cf-site-footer.cf-invert {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 0% 0%, #566eaa24, transparent 62%), radial-gradient(ellipse at 100% 100%, #1e3fd810, transparent 65%);
+  background: none;
 }
 .cf-site-footer > div { position: relative; z-index: 1; }
-.cf-site-footer a:focus-visible { outline-color: #b9ceff; }
+.cf-site-footer a:focus-visible { outline-color: #faf9f5; }

@@ -74,9 +74,9 @@
 .account-main .cf-settings-nav a { background: transparent; }
 .account-main .cf-settings-nav a[aria-current="location"] { color: var(--fg); }
 
-/* Keep the account layout on CodeForge's shared colour tokens. */
+/* Keep the account layout on CodeForge's shared colour tokens: the ivory page under the ivory bar. */
 .account-workspace {
-  background: var(--bg);
+  background: var(--surface);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
 }
@@ -104,14 +104,14 @@
 .account-workspace .account-tabs a[aria-current="page"]::after { display: none; }
 .account-workspace :is(.profile-page-intro,.settings-premium-hero) {
  padding: 28px 32px; border: 0; border-radius: 24px;
- background: radial-gradient(ellipse at 0% 0%,#566eaa48,transparent 70%),#07090f;
+ background: #141413;
 }
 .account-workspace .profile-page-intro p,
-.account-workspace .settings-premium-hero h1 { color: #f8faff; font-weight: 650; letter-spacing: -.045em; }
+.account-workspace .settings-premium-hero h1 { color: #faf9f5; font-weight: 650; letter-spacing: -.045em; }
 .account-workspace .profile-page-intro > span,
 .account-workspace .settings-premium-hero > div > p,
-.account-workspace .settings-hero-eyebrow { color: #b6bed0; }
-.account-workspace .account-main :is(.profile-premium-panel,.settings-premium-panel) { border-radius: 24px; box-shadow: 0 8px 28px -24px #18223830; }
+.account-workspace .settings-hero-eyebrow { color: #b0aea5; }
+.account-workspace .account-main :is(.profile-premium-panel,.settings-premium-panel) { border-radius: 24px; box-shadow: 0 8px 28px -24px #14141330; }
 .account-workspace .settings-account-pass { border-radius: 18px; }
 @media(max-width:639px) {
  .account-workspace :is(.profile-page-intro,.settings-premium-hero) { padding: 24px 20px; }

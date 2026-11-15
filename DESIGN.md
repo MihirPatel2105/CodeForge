@@ -48,9 +48,30 @@ Always pair status color with a readable label or icon.
 
 ## Typography and spacing
 
-Keep the existing system sans stack for navigation, headings, and prose. Keep
-system monospace for code, timestamps, durations, and technical identifiers.
-Use tabular numerals for aligned numeric columns. No decorative serif pairing.
+Three open-licence faces, self-hosted through `next/font` in `frontend/app/fonts.ts`
+(updated 2026-11-15, following an editorial pattern):
+
+- **Newsreader (serif):** headlines (regular, h1 tracked -0.01em, h2 untracked),
+  marketing sub-heads (medium), and reading text: hero leads, section intros,
+  principles, stage bodies, FAQ answers and legal prose.
+- **Hanken Grotesk (sans):** navigation, controls, labels, captions, the dashboard,
+  and eyebrows (500 weight, uppercase, 0.12em tracking, like a dateline).
+- **JetBrains Mono:** code, timestamps, durations, run ids and technical identifiers.
+
+Role rules live in `frontend/app/typography.css` and `frontend/app/design-system.css`.
+Use tabular numerals for aligned numeric columns. Do not use proprietary brand faces
+from other companies, even when a download site offers them.
+
+**Logo (2026-11-15):** the supplied slab icon beside a CODEFORGE wordmark in Roundex
+(Eko Bimantara; licensed by the project owner for this logo). The lockup lives in
+`frontend/public/brand/codeforge-lockup-{light,dark}-v6.svg`, rendered only through
+`LogoLockup`, and is rebuilt with `frontend/scripts/brand/` (the font file stays out of the
+repo). Logos are sized by height so the icon keeps its size whatever the wordmark's length.
+The icon is vector (`codeforge-icon-v6.svg`): its slabs are optically weighted so the thinner
+ones read as heavy as the rest. The favicon and app icons are that icon in ivory (#f5f3ee) on a
+near-black (#141413) tile with a 22.5% corner radius (`build-app-tile.mjs`). Loading screens use
+`LogoAssemble`: the slabs slide into place along the isometric axes, looping, and hold still
+with reduced motion.
 
 Suggested hierarchy for future polish: body 14–16px; essential labels 12–14px;
 panel headings 19–24px; page headings 32–48px. Keep the existing responsive hero
