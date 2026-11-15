@@ -30,12 +30,12 @@ test("auth routes keep the story and card mounted while swapping forms in both d
   await page.setViewportSize({ width: 1440, height: 1100 });
   await page.goto("/login");
   await expect(page.getByLabel("Email")).toBeFocused();
-  const story = page.locator(".pa-story");
+  const story = page.locator(".ah-panel");
   const card = page.locator(".pa-form");
   await story.evaluate(element => element.setAttribute("data-persist-check", "story"));
   await card.evaluate(element => element.setAttribute("data-persist-check", "card"));
   const before = await story.boundingBox();
-  await expect(story.getByRole("heading", { name: "Your next idea starts here." })).toHaveCSS("opacity", "1");
+  await expect(story.locator(".ah-headline", { hasText: "Your next idea starts here." })).toHaveCSS("opacity", "1");
   await page.getByLabel("Email").fill("person@example.com");
   await page.getByLabel("Password", { exact: true }).fill("Privatepass1");
   await page.getByRole("link", { name: "Create an account", exact: true }).click();
@@ -142,7 +142,7 @@ test("passkey entry turns only the form and preserves the story in both directio
   await page.setViewportSize({ width: 1470, height: 802 });
   await page.goto("/login");
   await expect(page.getByLabel("Email")).toBeFocused();
-  const story = page.locator(".pa-story");
+  const story = page.locator(".ah-panel");
   const card = page.locator(".pa-form");
   await story.evaluate(element => element.setAttribute("data-persist-check", "passkey-story"));
   await card.evaluate(element => element.setAttribute("data-persist-check", "passkey-card"));

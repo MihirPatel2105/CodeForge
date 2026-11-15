@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test("homepage explanation link works without hover previews or the removed search block", async ({ page }) => {
   await page.goto("/");
-  const link = page.getByRole("link", { name: "How CodeForge works", exact: true });
+  // "How it works" now lives in the Product menu.
+  await page.getByRole("banner").getByRole("button", { name: "Product", exact: true }).click();
+  const link = page.getByRole("banner").getByRole("link", { name: "How it works", exact: true });
   await link.hover();
   await expect(page.locator("[data-slot=hover-card-trigger], [data-slot=hover-card-content]")).toHaveCount(0);
   await expect(link).toHaveAttribute("href", "/how-it-works");
@@ -13,7 +15,7 @@ test("homepage explanation link works without hover previews or the removed sear
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const cta = page.locator(".lp-actions").getByRole("link", { name: "Build your first API" });
+  const cta = page.getByRole("banner").getByRole("link", { name: "Get started", exact: true });
   await cta.hover();
   await expect(cta).toHaveAttribute("href", "/signup");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);

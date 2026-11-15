@@ -10,19 +10,20 @@ test.beforeEach(async ({ page }) => {
 
 test("headline remains accessible and resolves immediately when motion is reduced", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Great ideas deserve to work.", exact: true })).toBeVisible();
-  const word = page.locator(".cf-blur-word").last();
-  await expect(word).toHaveCSS("opacity", "1");
-  await expect(word).toHaveCSS("filter", "blur(0px)");
-  const cta = page.locator(".lp-actions .cf-specular");
+  const headline = page.getByRole("heading", { level: 1, name: "From an idea to a tested API" });
+  await expect(headline).toBeVisible();
+  const line = headline.locator("span").last();
+  await expect(line).toHaveCSS("opacity", "1");
+  const cta = page.locator("#start-building .cf-specular");
+  await cta.scrollIntoViewIfNeeded();
   await cta.hover();
   await expect.poll(() => cta.evaluate(node => node.style.getPropertyValue("--light-x"))).not.toBe("");
   await page.screenshot({ path: "/tmp/codeforge-premium-effects-desktop.png" });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(word).toHaveCSS("animation-name", "none");
+  await expect(line).toHaveCSS("animation-name", "none");
   await page.setViewportSize({ width: 375, height: 812 });
   await page.reload();
-  await expect(page.locator(".cf-blur-word").first()).toHaveCSS("opacity", "1");
+  await expect(headline.locator("span").first()).toHaveCSS("opacity", "1");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 

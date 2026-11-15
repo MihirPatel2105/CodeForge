@@ -34,10 +34,11 @@ test("marketing, authentication, security, and admin actions share geometry and 
     if (entry.path === "/profile/settings/password") await session(page);
     await page.goto(entry.path);
     await expect(entry.action()).toBeVisible();
-    await expect(entry.action()).toHaveCSS("border-radius", "999px");
+    // Actions share the 8px control corner (DESIGN.md); only the top bar keeps capsule pills.
+    await expect(entry.action()).toHaveCSS("border-radius", "8px");
     await expect(entry.action()).toHaveCSS("height", `${entry.height}px`);
     const fields = page.locator("main .cf-field:visible");
-    for (const field of await fields.all()) await expect(field).toHaveCSS("border-radius", "12px");
+    for (const field of await fields.all()) await expect(field).toHaveCSS("border-radius", "8px");
   }
   await expect(page.getByRole("button", { name: "Running", exact: true })).toHaveCSS("border-radius", "8px");
   await expect(page.getByRole("button", { name: "Clear", exact: true })).toHaveCSS("border-radius", "8px");

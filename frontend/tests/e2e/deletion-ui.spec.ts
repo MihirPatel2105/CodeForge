@@ -63,13 +63,23 @@ for (const width of [1440, 375]) {
   test(`project deletion preserves confirmation and errors at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: width === 375 ? 480 : 1000 });
     let deletes = 0;
+    const libraryProject = {
+      id: "project-delete", name: "Library API", description: "Project preview", archived: false,
+      created_at: "2026-09-23T00:00:00Z", last_activity_at: "2026-09-23T00:00:00Z", recent_runs: [],
+      stats: { total: 0, succeeded: 0, failed: 0, active: 0, avg_loops: null, last: null },
+    };
+    await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
+    await page.route("**/api/backend/projects/overview*", route => route.fulfill({ json: {
+      items: [libraryProject], next_cursor: null, total_projects: 1, matching_projects: 1, total_runs: 0, total_succeeded: 0,
+    } }));
     await page.route("**/api/backend/projects/project-delete", route => {
       if (route.request().method() === "DELETE") { deletes++; return route.fulfill({ status: 500, json: { error: { code: "server_error", message: "Deletion unavailable" } } }); }
-      return route.fulfill({ json: { id: "project-delete", name: "Library API", description: "Project preview", created_at: "2026-09-23T00:00:00Z" } });
+      return route.fulfill({ json: libraryProject });
     });
-    await page.route("**/api/backend/projects/project-delete/runs/page*", route => route.fulfill({ json: { items: [], next_cursor: null, stats: { total: 0, succeeded: 0, failed: 0, active: 0, avg_loops: 0, last: null } } }));
-    await page.goto("/projects/project-delete");
-    await page.getByRole("button", { name: "Delete project", exact: true }).click();
+    // Deleting starts from the project's ⋯ menu in the list, not from inside the project.
+    await page.goto("/projects");
+    await page.getByRole("button", { name: "Actions for Library API", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Delete this project?" });
     await expect(dialog).toBeVisible();
     const lockedScroll = await page.evaluate(() => scrollY);
@@ -98,10 +108,18 @@ for (const width of [1440, 375]) {
     expect(deletes).toBe(1);
     await dialog.getByRole("button", { name: "Cancel" }).click();
     await expect(dialog).toHaveCount(0);
-    await page.mouse.move(5, 100);
-    await page.mouse.wheel(0, -500);
-    await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(lockedScroll);
-    await page.getByRole("button", { name: "Delete project", exact: true }).click();
+    // Reopening starts clean: the typed name does not carry over.
+    await page.getByRole("button", { name: "Actions for Library API", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
     await expect(page.getByRole("dialog").getByRole("button", { name: "Delete project", exact: true })).toBeDisabled();
+  });
+
+  test(`the project page no longer carries a delete section at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route("**/api/backend/projects/project-delete", route => route.fulfill({ json: { id: "project-delete", name: "Library API", description: "Project preview", created_at: "2026-09-23T00:00:00Z" } }));
+    await page.route("**/api/backend/projects/project-delete/runs/page*", route => route.fulfill({ json: { items: [], next_cursor: null, stats: { total: 0, succeeded: 0, failed: 0, active: 0, avg_loops: 0, last: null } } }));
+    await page.goto("/projects/project-delete");
+    await expect(page.getByRole("heading", { name: "Library API" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Delete project", exact: true })).toHaveCount(0);
   });
 }

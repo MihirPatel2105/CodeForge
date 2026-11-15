@@ -57,20 +57,28 @@ test("homepage preview grows without moving subsequent sections and resets for r
   await page.goto("/");
   const preview = page.locator(".lp-product-scale");
   await expect(preview).toBeVisible();
-  await expect.poll(() => page.locator(".lp-hero .lp-actions").evaluate(element => getComputedStyle(element).opacity)).toBe("1");
+  await expect.poll(() => page.locator(".lh-title span").last().evaluate(element => getComputedStyle(element).opacity)).toBe("1");
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeLessThan(1090);
   const before = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
-  const initialWidth = await preview.evaluate(element => element.getBoundingClientRect().width);
-  await page.evaluate(() => window.scrollTo({ top: 400, behavior: "instant" }));
-  await expect.poll(() => preview.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(initialWidth);
+  // Measure the preview's own scale, not its bounding box: while it is tilted in 3D its near edge
+  // looks wider, which cancels the growth out of the box width as it flattens.
+  const scale = () => preview.evaluate(element => new DOMMatrixReadOnly(getComputedStyle(element).transform).m11);
+  const initialScale = await scale();
+  expect(initialScale).toBeLessThan(0.95);
+  // Scroll the preview well into view (the full-height hero puts it below the fold).
+  await page.evaluate(() => {
+    const top = document.querySelector(".lp-product-scroll")!.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top - window.innerHeight / 2, behavior: "instant" });
+  });
+  await expect.poll(scale).toBeGreaterThan(initialScale + 0.02);
   const after = await page.locator("#how").evaluate(element => (element as HTMLElement).offsetTop);
   expect(Math.abs(after - before)).toBeLessThan(1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(preview).toHaveCSS("transform", "none");
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("transform", "none");
   await expect(page.locator(".lp-product-scroll")).toHaveCSS("opacity", "1");
-  await expect(page.locator(".lp-hero .lp-actions")).toHaveCSS("transform", "none");
+  await expect(page.locator(".lh-title span").last()).toHaveCSS("animation-name", "none");
   await page.setViewportSize({ width: 320, height: 720 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(preview).toHaveCSS("transform", "none");
@@ -85,9 +93,10 @@ test("homepage product preview leads into the split build process", async ({ pag
   await expect(page.locator(".lp-pipeline-content")).toHaveCount(0);
   const order = await page.evaluate(() => {
     const hero = document.getElementById("overview")!;
-    return [hero.nextElementSibling?.className, hero.nextElementSibling?.nextElementSibling?.id];
+    const next = hero.nextElementSibling;
+    return [next?.className, next?.nextElementSibling?.className, next?.nextElementSibling?.nextElementSibling?.id];
   });
-  expect(order).toEqual(["ol-technology", "how"]);
+  expect(order).toEqual(["lp-product-section", "ol-technology", "how"]);
   await teaser.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#cf-story-title")).toBeInViewport();
