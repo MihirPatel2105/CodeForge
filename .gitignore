@@ -36,6 +36,8 @@ out/
 .nuxt/
 coverage/
 *.tsbuildinfo
+# Local verification screenshots, recordings and generated documents
+/output/
 
 # Python
 __pycache__/
