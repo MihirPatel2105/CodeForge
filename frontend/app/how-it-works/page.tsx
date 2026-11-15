@@ -26,7 +26,7 @@ const stages = [
 export default function HowItWorksPage() {
   return (
     <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-how-page">
-      <SiteHeader heroOverlay />
+      <SiteHeader />
       <main>
         <MarketingHero>
           <div className="ed-wrap ed-hero ed-process-hero">

@@ -2,9 +2,9 @@
 
 import { ButtonLink } from "@/components/ui/button-link";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion } from "motion/react";
 import { ScrollReveal } from "@/components/ui/react-bits/scroll-reveal";
-import { BlurHeadline, pointerLight } from "@/components/ui/premium-effects";
+import { pointerLight } from "@/components/ui/premium-effects";
 import { DemoCarousel } from "@/components/ui/enhancements/demo-carousel";
 import { FaqAccordion } from "@/components/ui/vengeance/faq-accordion";
 import { AgentBentoGrid } from "@/components/ui/vengeance/agent-bento-grid";
@@ -14,8 +14,8 @@ import "./premium-landing.css";
 import "./landing-showcase.css";
 import "./ostack-landing.css";
 import { ArrowRight, Check, Code2, Layers3, RotateCcw, ShieldCheck, Terminal } from "lucide-react";
-import { SiteHeader } from "./site-header";
-import { HeroLightRays } from "./hero-light-rays";
+import { LaunchHeader } from "./launch-hero/launch-header";
+import { LaunchHero } from "./launch-hero/launch-hero";
 import { LandingProductPreview } from "./landing-product-preview";
 import { BuildProcess } from "./build-process";
 import { SiteFooter } from "./marketing-actions";
@@ -36,20 +36,13 @@ const questions = [
   { title: "What do I get at the end?", answer: "Generated application files, review feedback, and the test output. You can inspect and download the artifacts. A completed run shows its actual outcome, including any unresolved problems." },
 ];
 
+/** The hero id doubles as the "Overview" anchor that the landing scroll navigation uses. */
+const HERO_ID = "overview";
+
 export function PremiumLanding() {
   const user = useCurrentUser();
   const reducedMotion = useMotionPreference();
-  const { scrollY } = useScroll();
-  // Lenis already smooths the page position; follow it without adding a second spring.
-  const heroTransform = useTransform(scrollY, [0, 600], ["translateY(0px)", "translateY(-48px)"]);
-  const heroOpacity = useTransform(scrollY, [0, 240, 600], [1, 1, 0]);
   const start = user ? "/projects" : "/signup";
-  const entrance = (delay: number) => ({
-    initial: { opacity: 0, transform: "translateY(12px)" },
-    animate: { opacity: 1, transform: "none" },
-    transition: reducedMotion ? { duration: 0, delay: 0 } : { duration: 1.5, delay, ease: [0.22, 0.61, 0.36, 1] as const },
-  });
-
   const reveal = {
     initial: { opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 18 },
     animate: reducedMotion ? { opacity: 1, y: 0 } : undefined,
@@ -61,19 +54,11 @@ export function PremiumLanding() {
   return (
     <div className="cf-premium cf-ostack">
       <a className="lp-skip" href="#landing-content">Skip to content</a>
-      <SiteHeader heroOverlay />
+      <LaunchHeader heroId={HERO_ID} entrance />
       <main id="landing-content">
-        <section id="overview" className="lp-hero lp-hero-dark" aria-labelledby="landing-title">
-          <HeroLightRays />
-          <motion.div className="lp-hero-copy" style={{ transform: reducedMotion ? "none" : heroTransform, opacity: reducedMotion ? 1 : heroOpacity }}>
-            <motion.p {...entrance(0.12)} className="lp-intro"><span className="ol-hero-mark"><Code2 size={14} aria-hidden /></span>Five agents. Two checkpoints. Your API.</motion.p>
-            <BlurHeadline />
-            <motion.p {...entrance(0.5)} className="lp-lead">Describe your API. Watch a team of AI agents plan,<br className="lp-desktop-break" /> build, review, and test it—with you in control.</motion.p>
-            <motion.div {...entrance(0.7)} className="lp-actions">
-              <ButtonLink size="lg" className="lp-button cf-specular" onPointerMove={pointerLight} href={start}>{user ? "Start a project" : "Build your first API"}<ArrowRight size={18} aria-hidden /></ButtonLink>
-              <Link className="lp-text-link" href="/how-it-works">How CodeForge works<ArrowRight size={18} aria-hidden /></Link>
-            </motion.div>
-          </motion.div>
+        <LaunchHero id={HERO_ID} />
+        {/* The sample run sits directly under the hero, so the first scroll shows the product working. */}
+        <section className="lp-product-section" aria-label="A sample run, replayed">
           <LandingProductPreview />
         </section>
         <section className="ol-technology" aria-label="Built with open-source tools"><p>Real tools. Working together behind your API.</p><div className="ol-tech-track">{[0, 1].map(copy => <div className="ol-tech-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>{["Python", "FastAPI", "MongoDB", "LangGraph", "Docker", "pytest"].map(tool => <span key={tool}>{tool}</span>)}</div>)}</div></section>

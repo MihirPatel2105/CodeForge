@@ -70,7 +70,7 @@ const QUICK_FACTS = [
 export default function FaqPage() {
   return (
     <div className="cf-subpage cf-premium-marketing mk-page mk-faq-page min-h-screen bg-surface">
-      <SiteHeader heroOverlay />
+      <SiteHeader />
       <main>
         <MarketingHero className="cf-faq-stage">
           <div className="mk-hero-copy cf-entrance-copy mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">

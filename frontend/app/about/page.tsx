@@ -23,7 +23,7 @@ const principles = [
 export default function AboutPage() {
   return (
     <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-about-page">
-      <SiteHeader heroOverlay />
+      <SiteHeader />
       <main>
         <MarketingHero>
           <div className="ed-hero ed-wrap ed-about-masthead mk-hero-copy">
