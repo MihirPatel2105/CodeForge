@@ -1,0 +1,136 @@
+/* Editorial design system — the rules tokens alone cannot express (DESIGN.md, Anthropic marketing
+   surface). Colours, radii and the shadow scale live in globals.css / premium-system.css; this file
+   adds the type roles, the flat-card depth model and the band rhythm.
+
+   Out of scope on purpose: the landing hero and top bar (components/marketing/launch-hero),
+   which keep their own, approved look. */
+
+/* ── Type roles ─────────────────────────────────────────────────────── */
+
+/* Eyebrows: short tracked sans capitals that name a section, like a dateline. The colour is a
+   zero-specificity default, so a label on the black band keeps its own light colour. */
+:is(.lp-section-label, .ol-mini-label, .cf-demo-gallery-heading p):not(.lh-hero *) {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+/* Section kickers on editorial pages ("02 / OUR APPROACH"); a trailing mono counter keeps its case. */
+.cf-editorial-page .ed-kicker:not(.mk-hero-copy *) {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.cf-editorial-page .ed-kicker:not(.mk-hero-copy *) > span:last-child {
+  letter-spacing: 0;
+  text-transform: none;
+}
+:where(.lp-section-label, .ol-mini-label, .cf-demo-gallery-heading p) { color: var(--fg-muted); }
+
+/* Lead prose reads as an essay: serif, generous size and leading. */
+:is(
+  .lp-section-intro > p,
+  .ol-section-heading > p,
+  .ed-section-intro > p,
+  .lp-loop-copy > p,
+  .lp-closing > p,
+  .mk-page-closing p
+):not(.lh-hero *) {
+  font-family: var(--font-display-stack);
+  font-size: clamp(18px, 1.45vw, 21px);
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
+}
+
+/* Long-form reading surfaces (legal pages, FAQ answers) set body prose in the serif. */
+.mk-legal-page :is(section p, section li),
+.cf-faq-reading :is(p, li) {
+  font-family: var(--font-display-stack);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* ── Depth: a cream step and a hairline, never a drop shadow ─────────────
+   !important because each of these surfaces sets its own shadow at higher specificity; this is
+   the one place that decides the depth model. Menus, popovers and dialogs keep theirs. */
+:is(
+  .ol-product-shell,
+  .lp-product,
+  .lp-product-scale > .lp-brief-preview,
+  .lp-agent-showcase,
+  .vui-agent-card,
+  .vui-agent-artifact,
+  .vui-feature-card,
+  .ol-process-button,
+  .ol-prompt-card,
+  .lp-preview-window,
+  .lp-preview-receipt,
+  .lp-files-preview,
+  .lp-loop-visual,
+  .lp-finding,
+  .lp-repair,
+  .cf-story-device,
+  .cf-story-object,
+  .cf-demo-editor,
+  .cf-demo-test-result,
+  .ed-proof-grid > section,
+  .ed-route-preview .cf-frame,
+  .ed-stages details,
+  .ed-verdict,
+  .cf-contact-form-stage,
+  [data-slot="card"]
+):not(.lh-hero *) {
+  box-shadow: none !important;
+}
+
+/* The landing carries its own private palette (cool greys, white page, a royal blue); point it at
+   the system tokens so the whole page reads ivory and slate. Blue becomes ink: no chromatic accent. */
+.cf-premium.cf-ostack {
+  --ol-ink: var(--fg);
+  --ol-muted: var(--fg-muted);
+  --ol-surface: var(--bg);
+  --ol-blue: var(--fg);
+  background: var(--surface);
+}
+.cf-premium.cf-ostack :is(.lp-closing, .lp-preview-document, .lp-preview-window) { background: var(--surface); }
+
+/* Landing cards: cream on ivory with a warm hairline (DESIGN.md card-cream). The doubled root
+   class outranks the landing's own sheets (ostack-landing, landing-showcase), which load later
+   and paint cool grey-blue tints. The Coder card keeps its dark code panel. */
+.cf-premium.cf-ostack .lp-team .vui-agent-card,
+.cf-premium.cf-ostack .lp-team .vui-agent-card:nth-child(2n) {
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.cf-premium.cf-ostack .lp-team .vui-agent-card:not(:nth-child(3)) .vui-agent-artifact {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.cf-premium.cf-ostack .vui-agent-card:nth-child(2) .vui-agent-artifact li,
+.cf-premium.cf-ostack .vui-agent-card:is(:nth-child(1), :nth-child(4)) .vui-agent-artifact li:last-child {
+  background: var(--bg);
+  color: var(--fg-muted);
+}
+.cf-premium.cf-ostack .ol-product-shell {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* ── Band rhythm: cream sections, and the one dark band in true black ─── */
+.cf-premium.cf-ostack .lp-loop-section { background: #000; }
+.cf-premium.cf-ostack .lp-loop-visual { background: #0f0f0e; border-color: #ffffff1a; }
+.cf-premium.cf-ostack :is(.lp-finding, .lp-repair) { background: #1a1a18; color: #f5f3ee; }
+/* Warm greys on black instead of the landing's cool lavender text. */
+.cf-premium.cf-ostack .lp-repair-diff > code { background: #ffffff0d; color: #e3dacc; }
+.cf-premium.cf-ostack :is(.lp-repair > div:last-child, .lp-loop-workspace-head, .lp-return-path, .lp-repair-file) { color: #b0aea5; }
+
+/* Landing process panels: the cream card surface, not cool grey. */
+.cf-premium.cf-ostack .ol-process-panel { background: var(--bg); }
+
+
+
+/* The Coder card's code panel: warm near-black, matching the black band, instead of cool navy. */
+.cf-premium.cf-ostack .vui-agent-card:nth-child(3) .vui-agent-artifact { background: #1a1a18; }

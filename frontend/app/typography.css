@@ -1,0 +1,96 @@
+/* Three type roles across the product, after an editorial pattern:
+   - serif (Newsreader): headlines, sub-heads and reading text — what we say;
+   - sans (Hanken Grotesk): interface, labels, eyebrows and captions — what you do;
+   - mono (JetBrains Mono): code, ids, logs and data — what the machine produced.
+   Lead prose, legal pages and FAQ answers are set in design-system.css; this file owns
+   headlines and the remaining reading surfaces.
+   Rules are !important on purpose: dozens of page and component styles set a sans, a
+   heavy weight and tight tracking on their own headings, and this file is the one place
+   that decides how type looks. The Agent City game keeps its own compact sans HUD titles. */
+
+/* ── Headlines ─────────────────────────────────────────────────────────── */
+
+:is(h1, h2, .font-display):not(:where(.agent-city, .live-agent-city) *) {
+  font-family: var(--font-display-stack) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em !important;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+}
+
+/* Section headings run untracked; the optical size already tightens them. */
+:is(h2, h2.font-display):not(:where(.agent-city, .live-agent-city) *) {
+  letter-spacing: 0 !important;
+}
+
+/* The game's stylesheets ask for the display face by token; inside it, that means the sans. */
+:where(.agent-city, .live-agent-city) { --font-display-stack: var(--font-ui); }
+
+/* Emphasis inside a headline stays visible against the regular weight. */
+:is(h1, h2, .font-display) :is(strong, b) { font-weight: 600; }
+
+/* Sub-heads on marketing and editorial pages: serif medium, untracked. */
+:is(.cf-premium-marketing, .cf-editorial-page) h3,
+.cf-editorial-page .ed-stages summary strong {
+  font-family: var(--font-display-stack) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+/* ── Reading text ──────────────────────────────────────────────────────── */
+
+/* Hero leads: the sentence under a page's headline. */
+:is(
+  .lp-lead,
+  .cf-editorial-page .ed-hero-note > p,
+  .cf-editorial-page .ed-process-copy > p:not(.ed-small-note),
+  .mk-faq-page h1 + p
+) {
+  font-family: var(--font-display-stack) !important;
+  font-size: 20px !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
+}
+
+/* Section intros. design-system.css sets their face; page stylesheets shrink them on a
+   specificity tie, so the reading size is pinned here. */
+:is(
+  .lp-section-intro > p,
+  .lp-loop-copy > p,
+  .cf-editorial-page .ed-section-intro > p:not(.ed-small-note)
+) {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+}
+
+/* Bodies of numbered principles and pipeline stages. */
+:is(.cf-editorial-page .ed-principles p, .cf-editorial-page .ed-stage-body > p) {
+  font-family: var(--font-display-stack) !important;
+  font-size: 16.5px !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
+}
+
+/* Bold lead-ins inside reading text, as in "Safety and alignment." */
+:is(.lp-lead, .cf-editorial-page p, .cf-faq-reading p) :is(strong, b) { font-weight: 600; }
+
+@media (max-width: 640px) {
+  :is(
+    .lp-lead,
+    .cf-editorial-page .ed-hero-note > p,
+    .cf-editorial-page .ed-process-copy > p:not(.ed-small-note),
+    .mk-faq-page h1 + p
+  ) {
+    font-size: 18px !important;
+  }
+
+  :is(
+    .lp-section-intro > p,
+    .lp-loop-copy > p,
+    .cf-editorial-page .ed-section-intro > p:not(.ed-small-note)
+  ) {
+    font-size: 17px !important;
+  }
+}
