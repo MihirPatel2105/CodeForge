@@ -1,8 +1,9 @@
 // Build the app tile: the slab icon in ivory on a near-black rounded square.
 // Usage (from frontend/): node scripts/brand/build-app-tile.mjs icon.svg outDir [appDir]
 // Writes outDir/app-tile.svg and PNGs at 512/180/64/32/16. With appDir (app/), also writes the
-// Next.js icon files: icon.svg, icon.png (512), apple-icon.png (180, square: iOS rounds it
-// itself) and favicon.ico (16/32/48/64).
+// Next.js icon files: icon1.svg, icon.png (512), apple-icon.png (180, square: iOS rounds it
+// itself) and favicon.ico (16/32/48/64). The SVG is numbered because Next.js links only one
+// file per name: icon.svg beside icon.png would leave the SVG out of the page head.
 import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
 
@@ -39,7 +40,7 @@ function ico(images) {
 await writeFile(`${outDir}/app-tile.svg`, rounded);
 for (const size of [512, 180, 64, 32, 16]) await writeFile(`${outDir}/app-tile-${size}.png`, await png(rounded, size));
 if (appDir) {
-  await writeFile(`${appDir}/icon.svg`, rounded);
+  await writeFile(`${appDir}/icon1.svg`, rounded);
   await writeFile(`${appDir}/icon.png`, await png(rounded, 512));
   await writeFile(`${appDir}/apple-icon.png`, await png(tileSvg(0), 180));
   await writeFile(`${appDir}/favicon.ico`, ico(await Promise.all(ICO_SIZES.map(async (size) => ({ size, data: await png(rounded, size) })))));

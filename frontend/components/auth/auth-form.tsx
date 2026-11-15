@@ -19,6 +19,7 @@ import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
 import { VerifyStep } from "@/components/auth/verify-step";
 import { clearPendingPasswordMfa, savePendingPasswordMfa } from "@/lib/password-mfa";
 import { useAuthTransition } from "./auth-entry-transition";
+import { useRedirectIfSignedIn } from "./use-redirect-if-signed-in";
 
 type Mode = "signin" | "register";
 
@@ -53,6 +54,7 @@ const LABEL = "text-[13px] font-[650] text-fg";
  * only the copy, the endpoint and the extra registration fields differ. */
 export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
+  useRedirectIfSignedIn();
   const transition = useAuthTransition();
   const copy = COPY[mode];
   const registering = mode === "register";
