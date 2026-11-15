@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Menu } from "@base-ui/react/menu";
-import { Archive, ArchiveRestore, Ellipsis, LoaderCircle, Pencil, Play } from "lucide-react";
+import { Archive, ArchiveRestore, Ellipsis, LoaderCircle, Pencil, Play, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,9 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse } from "@/lib/types";
+import { DeleteProjectDialog } from "./delete-project-dialog";
 
 const ITEM =
   "flex cursor-default select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-[550] text-fg outline-none data-[highlighted]:bg-surface-2";
+const DANGER_ITEM =
+  "flex cursor-default select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-[550] text-danger outline-none data-[highlighted]:bg-danger/10";
 
 type Editable = Pick<ProjectResponse, "id" | "name" | "description" | "archived">;
 
@@ -22,10 +25,18 @@ function errorText(err: unknown, fallback: string): string {
   return err instanceof ApiError ? err.message : fallback;
 }
 
-/** The "⋯" menu on a project row: start a run, rename, archive or restore. */
-export function ProjectActions({ project, onChanged }: { project: Editable; onChanged: () => void }) {
+interface ProjectActionsProps {
+  project: Editable;
+  /** Runs stored with the project, so the delete dialog can say what goes with it. */
+  runCount: number;
+  onChanged: () => void;
+}
+
+/** The "⋯" menu on a project row: start a run, rename, archive or restore, delete. */
+export function ProjectActions({ project, runCount, onChanged }: ProjectActionsProps) {
   const router = useRouter();
   const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function setArchived(archived: boolean) {
     try {
@@ -74,11 +85,24 @@ export function ProjectActions({ project, onChanged }: { project: Editable; onCh
                   <><Archive className="size-3.5 text-fg-muted" aria-hidden />Archive</>
                 )}
               </Menu.Item>
+              <Menu.Item className={DANGER_ITEM} onClick={() => setDeleting(true)}>
+                <Trash2 className="size-3.5" aria-hidden />Delete
+              </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>
       </Menu.Root>
       <RenameDialog project={project} open={renaming} onOpenChange={setRenaming} onSaved={onChanged} />
+      <DeleteProjectDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        project={project}
+        runCount={runCount}
+        onDeleted={() => {
+          onChanged();
+          toast.success(`${project.name} deleted`);
+        }}
+      />
     </>
   );
 }

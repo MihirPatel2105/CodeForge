@@ -21,7 +21,7 @@ import { TimelinePanel } from "@/components/dashboard/timeline-panel";
 import { CodePanel, type CodeVersion } from "@/components/dashboard/code-panel";
 import { ProblemsPanel } from "@/components/dashboard/problems-panel";
 import { canOpenProblem, runProblems, type CodeLocation } from "@/lib/run-problems";
-import { buildHunks } from "@/lib/diff";
+import { previousVersion, versionWithChanges } from "@/lib/file-versions";
 import { TerminalPanel } from "@/components/dashboard/terminal-panel";
 import { TestsPanel } from "@/components/dashboard/tests-panel";
 import { ApprovalBar } from "@/components/dashboard/approval-bar";
@@ -127,25 +127,11 @@ export default function LiveRunPage() {
   function getVersion(path: string, iteration: number): CodeVersion | null {
     const content = fileContent[path];
     if (content == null) return null;
-    const previous = getPreviousVersion(path, iteration);
-    if (!previous) return { content };
-    const changed = buildHunks(previous.content, content, 0).flatMap((hunk) => hunk.lines);
-    return {
-      content,
-      changedLines: changed.flatMap((line) =>
-        line.kind === "added" && line.newLine != null ? [line.newLine] : [],
-      ),
-      changedLineCount: changed.filter((line) => line.kind !== "context").length,
-    };
+    return versionWithChanges(content, getPreviousVersion(path, iteration));
   }
 
   function getPreviousVersion(path: string, iteration: number): CodeVersion | null {
-    const previous = fileHistory
-      .filter((version) => version.iteration < iteration)
-      .sort((a, b) => b.iteration - a.iteration)
-      .find((version) => version.files.some((file) => file.path === path));
-    const content = previous?.files.find((file) => file.path === path)?.content;
-    return content != null ? { content } : null;
+    return previousVersion(fileHistory, path, iteration);
   }
 
   async function handleApprove(note: string) {

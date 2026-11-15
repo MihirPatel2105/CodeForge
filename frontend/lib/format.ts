@@ -31,6 +31,16 @@ export function formatBytes(bytes: number): string {
   return `${bytes.toLocaleString()} bytes`;
 }
 
+/** "Oct 26, 2026" in UTC, so server and browser render the same text. */
+export function formatUtcDate(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(parseApiTime(iso));
+}
+
 /** "Aug 13, 10:01" in the viewer's timezone, matching the live timeline. */
 export function formatWhen(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {

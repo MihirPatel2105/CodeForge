@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { formatWhen } from "@/lib/format";
-import { activityOf, monogram, passTrend, projectPassRate, stateOf } from "@/lib/project-insights";
+import { activityOf, passTrend, projectPassRate, stateOf } from "@/lib/project-insights";
 import { tone as toneClasses, type Tone } from "@/lib/tone";
 import type { ProjectOverviewItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -95,20 +95,14 @@ function ProjectLink({ project, className }: { project: ProjectOverviewItem; cla
 export function ProjectListRow({ project, onChanged }: RowProps) {
   const { stats } = project;
   return (
-    <li className={cn("cf-project-row group relative grid grid-cols-[36px_minmax(0,1fr)_32px] items-center gap-x-3.5 gap-y-2.5 border-b border-rule px-4 py-3.5 transition-colors last:border-b-0 hover:bg-surface-2/60 has-[[data-project-link]:focus-visible]:bg-surface-2/60 md:gap-x-4 md:px-5", LIST_COLUMNS)}>
-      <span className="grid size-9 place-items-center rounded-[10px] border border-border bg-bg font-mono text-[12px] font-[650] text-fg-muted md:hidden" aria-hidden>
-        {monogram(project.name)}
-      </span>
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="hidden size-9 shrink-0 place-items-center rounded-[10px] border border-border bg-bg font-mono text-[12px] font-[650] text-fg-muted md:grid" aria-hidden>
-          {monogram(project.name)}
-        </span>
+    <li className={cn("cf-project-row group relative grid grid-cols-[minmax(0,1fr)_32px] items-center gap-x-3.5 gap-y-2.5 border-b border-rule px-4 py-3.5 transition-colors last:border-b-0 hover:bg-surface-2/60 has-[[data-project-link]:focus-visible]:bg-surface-2/60 md:gap-x-4 md:px-5", LIST_COLUMNS)}>
+      <div className="flex min-w-0 items-center">
         <ProjectLink project={project} />
       </div>
-      <div className="col-start-3 row-start-1 md:col-start-auto md:row-start-auto md:order-last">
-        <ProjectActions project={project} onChanged={onChanged} />
+      <div className="col-start-2 row-start-1 md:col-start-auto md:row-start-auto md:order-last">
+        <ProjectActions project={project} runCount={project.stats.total} onChanged={onChanged} />
       </div>
-      <div className="col-span-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-[50px] md:contents">
+      <div className="col-span-2 flex flex-wrap items-center gap-x-4 gap-y-2 md:contents">
         <StatusPill project={project} />
         <ProjectHeartbeat runs={project.recent_runs} />
         <PassRate project={project} />
@@ -130,11 +124,8 @@ export function ProjectTile({ project, onChanged }: RowProps) {
   return (
     <li className="cf-project-tile group relative flex h-full flex-col gap-4 rounded-2xl border border-border bg-surface p-5 transition-[border-color,box-shadow] duration-200 hover:border-accent-bd hover:shadow-[0_14px_36px_rgba(27,41,70,0.08)] has-[[data-project-link]:focus-visible]:border-accent-bd">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-bg font-mono text-[12.5px] font-[650] text-fg-muted" aria-hidden>
-          {monogram(project.name)}
-        </span>
         <ProjectLink project={project} className="flex-1" />
-        <ProjectActions project={project} onChanged={onChanged} />
+        <ProjectActions project={project} runCount={project.stats.total} onChanged={onChanged} />
       </div>
       <div className="flex items-center justify-between gap-3">
         <StatusPill project={project} />

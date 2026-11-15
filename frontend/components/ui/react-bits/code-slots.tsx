@@ -41,7 +41,11 @@ export interface CodeSlotsProps {
   slotColor?: string;
   digitColor?: string;
   dangerColor?: string;
+  /** Exposed as --cs-border for a consumer's own slot border; unused by default. */
+  borderColor?: string;
   slotSize?: number;
+  /** Fixed slot height; by default it follows the width. Digits then size from the height. */
+  slotHeight?: number;
   gap?: number;
   radius?: number;
   bounce?: number;
@@ -99,7 +103,9 @@ const CodeSlots: React.FC<CodeSlotsProps> = ({
   slotColor = '#27272a',
   digitColor = '#18181b',
   dangerColor = '#ff3b30',
+  borderColor,
   slotSize = 44,
+  slotHeight,
   gap = 8,
   radius = 12,
   bounce = 0.2,
@@ -143,7 +149,8 @@ const CodeSlots: React.FC<CodeSlotsProps> = ({
   );
   const { mvs, drops } = springs;
   const pitch = slotSize + gap;
-  const height = Math.round(slotSize * 1.18);
+  const height = slotHeight ?? Math.round(slotSize * 1.18);
+  const fontSize = slotHeight ? Math.round(slotHeight * 0.36) : Math.round(slotSize * 0.5);
   const washRadius = Math.min(radius, slotSize / 2);
 
   const drive = useCallback(
@@ -444,11 +451,12 @@ const CodeSlots: React.FC<CodeSlotsProps> = ({
           '--cs-slot': slotColor,
           '--cs-digit': digitColor,
           '--cs-danger': dangerColor,
+          '--cs-border': borderColor ?? 'transparent',
           '--cs-size': `${slotSize}px`,
           '--cs-height': `${height}px`,
           '--cs-gap': `${gap}px`,
           '--cs-radius': `${Math.min(radius, slotSize / 2)}px`,
-          '--cs-font': `${Math.round(slotSize * 0.5)}px`
+          '--cs-font': `${fontSize}px`
         } as CSSProperties
       }
     >
@@ -534,6 +542,7 @@ function Slot({ mv, drop, char, active, rise, sink }: SlotProps) {
   const ink = useTransform(() => clamp01(mv.get()) * (1 - clamp01(drop.get() / SINK_FADE)));
   return (
     <span
+      data-slot=""
       className="relative h-[var(--cs-height)] w-[var(--cs-size)] overflow-hidden rounded-[var(--cs-radius)] bg-[var(--cs-slot)] select-none [transition:background-color_200ms_ease] data-[active]:[background-color:color-mix(in_srgb,var(--cs-ink)_8%,var(--cs-slot))] in-data-[status=error]:[background-color:color-mix(in_srgb,var(--cs-danger)_20%,var(--cs-slot))] in-data-[status=error]:data-[active]:[background-color:color-mix(in_srgb,var(--cs-danger)_20%,var(--cs-slot))] [@media(hover:hover)_and_(pointer:fine)]:group-hover/row:in-data-[status=idle]:not-in-data-[disabled]:not-data-[active]:[background-color:color-mix(in_srgb,var(--cs-ink)_4%,var(--cs-slot))]"
       data-active={active ? '' : undefined}
       data-filled={char ? '' : undefined}

@@ -5,14 +5,10 @@ import "./workspace-design.css";
 
 import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
 import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
-import { Notice } from "@/components/ui/notice";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { DeletionDialog } from "@/components/ui/deletion-dialog";
+import { ArrowLeft } from "lucide-react";
 import { runStats } from "@/lib/run-stats";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
@@ -53,7 +49,6 @@ export function ProjectDetail({
   const [ragEnabled, setRagEnabled] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const { user } = useSession();
   const draftKey = user ? `codeforge:draft:${user.id}:${project.id}` : null;
   const [loadedDraft, setLoadedDraft] = useState<string | null>(null);
@@ -165,100 +160,8 @@ export function ProjectDetail({
             onLoadMore={onLoadMore}
           />
         </div>
-
-        {/* Deleting sits at the very bottom, well past the things you came here to do.
-            It is irreversible and takes the run history and stored code with it, so it
-            should never be the thing your hand lands on. */}
-        <section className="cf-delete-zone mt-14 flex flex-wrap items-center justify-between gap-5 px-5 py-5 md:px-6">
-          <div className="flex items-start gap-3.5">
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-danger-bd bg-surface text-danger">
-              <Trash2 className="h-4 w-4" aria-hidden />
-            </span>
-            <div>
-              <h2 className="font-display text-[15px] font-[650] tracking-[-0.025em] text-fg">
-                Delete project
-              </h2>
-              <p className="mt-1.5 max-w-[68ch] text-[12.5px] leading-[1.55] text-fg-muted">
-                Removes this project, its {stats.total === 1 ? "run" : "runs"} and every
-                generated file stored against {stats.total === 1 ? "it" : "them"}. This
-                cannot be undone.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setDeleteOpen(true)}
-            className="cf-delete-trigger"
-          >
-            <Trash2 size={14} aria-hidden />Delete project
-          </button>
-        </section>
-
-        <DeleteProjectDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          project={project}
-          runCount={stats.total}
-        />
       </main>
     </div>
-  );
-}
-
-/**
- * Confirming a project deletion.
- *
- * Typing the name is deliberate friction, matching the account-deletion dialog. A plain
- * "are you sure?" is dismissed reflexively; having to reproduce the name makes you look
- * at which project you are about to destroy — which is the actual failure mode when two
- * projects are called something similar.
- */
-function DeleteProjectDialog({
-  open,
-  onOpenChange,
-  project,
-  runCount,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  project: ProjectResponse;
-  runCount: number;
-}) {
-  const router = useRouter();
-  const [confirmation, setConfirmation] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const matches = confirmation.trim() === project.name;
-
-  async function handleDelete() {
-    if (!matches || deleting) return;
-    setError(null);
-    setDeleting(true);
-    try {
-      await api.deleteProject(project.id);
-      // `replace`, so Back cannot return to a project that no longer exists.
-      router.replace("/projects");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't delete the project.");
-      setDeleting(false);
-    }
-  }
-
-  return (
-    <DeletionDialog open={open} onClose={() => { onOpenChange(false); setConfirmation(""); setError(null); }} busy={deleting}
-      title="Delete this project?" description="Permanently remove this project and the work stored with it."
-      target={project.name} targetLabel="Project to delete"
-      impact={runCount === 0 ? "Every generated file stored with this project will be removed. There is no undo." : `${runCount} ${runCount === 1 ? "run" : "runs"}, generated code, and test output will be removed. There is no undo.`}>
-      <div className="cf-deletion-fields"><div className="cf-deletion-field">
-        <label htmlFor="confirm-project">Type <strong>{project.name}</strong> to confirm</label>
-        <Input id="confirm-project" value={confirmation} onChange={e => setConfirmation(e.target.value)} autoComplete="off" disabled={deleting} />
-      </div>{error && <Notice>{error}</Notice>}</div>
-      <div className="cf-deletion-actions">
-        <Button type="button" variant="outline" onClick={() => { onOpenChange(false); setConfirmation(""); setError(null); }} disabled={deleting}>Cancel</Button>
-        <Button type="button" onClick={handleDelete} disabled={!matches || deleting} className="cf-deletion-submit"><Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete project"}</Button>
-      </div>
-    </DeletionDialog>
   );
 }
 
