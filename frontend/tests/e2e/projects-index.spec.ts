@@ -97,6 +97,28 @@ test("a run bar names its run on hover and opens it on click", async ({ page }) 
   await expect(page).toHaveURL(/\/runs\/e-1$/);
 });
 
+// The tooltip is portalled to <body>; without its own stacking layer, the neighbouring row's run bars
+// and "more actions" button (positioned, z-index 10) painted over it wherever they overlapped.
+test("a run tooltip sits above the neighbouring project's bars and actions", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openProjects(page);
+  await row(page, "Community Event Planner").locator(".cf-heartbeat-bar").first().hover();
+  const tip = page.locator(".cf-heartbeat-tip");
+  await expect(tip).toBeVisible();
+  const covered = await tip.evaluate((popup) => {
+    const box = popup.getBoundingClientRect();
+    const hits: string[] = [];
+    for (let fx = 0.08; fx < 1; fx += 0.12) {
+      for (let fy = 0.12; fy < 1; fy += 0.2) {
+        const top = document.elementFromPoint(box.left + box.width * fx, box.top + box.height * fy);
+        if (top && !popup.contains(top)) hits.push(`${top.tagName}.${[...top.classList].slice(0, 2).join(".")}`);
+      }
+    }
+    return hits;
+  });
+  expect(covered).toEqual([]);
+});
+
 test("status chips ask the server for the matching projects", async ({ page }) => {
   const mock: Mock = { requests: [], patches: [] };
   await openProjects(page, mock);

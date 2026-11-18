@@ -38,7 +38,9 @@ export function ProjectHeartbeat({ runs, className }: { runs: RunSummary[]; clas
               data-status={run.status}
             />
             <Tooltip.Portal>
-              <Tooltip.Positioner side="top" sideOffset={8} collisionPadding={12}>
+              {/* Its own layer above the cards: the bars and "more actions" button are positioned at
+                  z-index 10, and without this they painted over the tip where rows overlap. */}
+              <Tooltip.Positioner side="top" sideOffset={8} collisionPadding={12} className="isolate z-50">
                 <Tooltip.Popup className="cf-heartbeat-tip max-w-[260px] rounded-xl border border-border bg-surface px-3 py-2 text-[12px] shadow-[0_12px_32px_rgba(22,24,28,0.14)]">
                   <span className="block font-[650] text-fg">{displayStatus(run.status, null).label}</span>
                   <span className="mt-0.5 line-clamp-2 block text-fg-muted">{run.prompt}</span>
