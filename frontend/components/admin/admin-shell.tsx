@@ -1,6 +1,7 @@
 "use client";
 
 import "./admin-premium.css";
+import "./admin-editorial.css";
 
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -40,7 +41,7 @@ const NAV = [
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   return (
-    <div className="cf-admin min-h-screen bg-bg">
+    <div className="cf-admin ae-admin min-h-screen bg-bg">
       <AppHeader />
       <div className="cf-operations-layout mx-auto flex w-full max-w-[1540px] gap-8">
         <aside className="cf-operations-nav sticky top-[88px] hidden h-fit w-[220px] shrink-0 rounded-3xl border border-border px-3 py-6 lg:block">
@@ -75,7 +76,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
         <div className="min-w-0 flex-1">
           <nav
-            className="flex gap-1 overflow-x-auto border-b border-rule bg-surface px-4 py-3 lg:hidden"
+            className="cf-admin-mobile-nav flex gap-1 overflow-x-auto border-b border-rule bg-surface px-4 py-3 lg:hidden"
             aria-label="Admin navigation"
           >
             {NAV.map(({ href, label, exact }) => {
@@ -117,8 +118,8 @@ export function AdminPageHeader({
     <header className="cf-admin-page-header flex flex-col justify-between gap-5 pb-8 sm:flex-row sm:items-end">
       <div>
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-ok" aria-hidden />
-          <span className={ADMIN_LABEL}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
+          <span className="cf-admin-live-dot h-2 w-2 rounded-full bg-ok" aria-hidden />
+          <span className={cn(ADMIN_LABEL, "cf-admin-eyebrow")}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
         </div>
         <h1 className="font-display mt-3 text-[36px] font-[650] tracking-[-0.055em] text-fg md:text-[46px]">
           {title}
@@ -142,8 +143,8 @@ export function AdminSectionHeading({
   id: string;
 }) {
   return (
-    <div>
-      <span className={ADMIN_LABEL}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
+    <div className="cf-admin-section-heading">
+      <span className={cn(ADMIN_LABEL, "cf-admin-eyebrow")}>{eyebrow.replace(/^\d+ \/ /, "")}</span>
       <h2 id={id} className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">
         {title}
       </h2>

@@ -1,0 +1,137 @@
+/* Admin control centre in the Anthropic-style language (docs/design/ANTHROPIC_DESIGN.md): paper
+   page, white hairline cards without shadows, serif titles and figures, small uppercase labels
+   (product UI), ink links and navigation, and colour only for state (health, run outcome,
+   priority). The layout shares the header's page edge (--page-max / --page-gutter).
+   Geometry the site-wide tests pin stays as it is: fields keep the 8px control corner, actions
+   the 12px action corner. Applied by .ae-admin on .cf-admin (admin-shell.tsx); it also works on
+   any ancestor. */
+
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) {
+  --xa-hair: color-mix(in srgb, var(--fg) 10%, transparent);
+  --xa-hair-strong: color-mix(in srgb, var(--fg) 18%, transparent);
+  --xa-card: color-mix(in srgb, var(--surface) 35%, white);
+  --xa-quiet: color-mix(in srgb, var(--fg) 6%, var(--surface));
+  --xa-quiet-hover: color-mix(in srgb, var(--fg) 4%, var(--surface));
+  --xa-serif: var(--font-brand-serif), Georgia, serif;
+  background: var(--surface);
+}
+:root.dark :is(.ae-admin .cf-admin, .cf-admin.ae-admin) { --xa-card: color-mix(in srgb, var(--fg) 4%, var(--surface)); }
+
+/* ---------- One page edge: nav under the logo, content ending under the account button ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-layout {
+  max-width: none; margin: 0; gap: clamp(32px, 4vw, 64px);
+  padding: 32px max(var(--page-gutter), calc((100% - var(--page-max)) / 2)) 0;
+}
+
+/* ---------- Side navigation: a plain list on paper ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) aside.cf-operations-nav {
+  width: 208px; padding: 0; border: 0; border-radius: 0; background: transparent; top: 104px;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-brand { gap: 12px; padding: 4px 0 22px; border-bottom-color: var(--xa-hair); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-brand-icon { width: 36px; height: 36px; border-color: var(--xa-hair-strong); border-radius: 10px; background: transparent; color: var(--fg); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-brand-title { font: 400 19px/1.1 var(--xa-serif); letter-spacing: -.01em; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-brand-caption { margin-top: 4px; font-size: 12.5px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-nav nav { margin-top: 14px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-nav nav a {
+  min-height: 40px; gap: 12px; padding: 0 12px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--fg-muted); font-size: 14px; font-weight: 450;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-nav nav a:hover { background: var(--xa-quiet-hover); color: var(--fg); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-nav nav a[aria-current="page"] { background: var(--xa-quiet); color: var(--fg); font-weight: 500; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-nav-indicator { display: none; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-workspace-link { margin: 20px 0 0; padding: 18px 12px 0; border-top-color: var(--xa-hair); font-size: 13.5px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-workspace-link:hover { color: var(--fg); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-mobile-nav { margin-inline: calc(-1 * var(--page-gutter)); padding-inline: var(--page-gutter); border-bottom-color: var(--xa-hair); background: transparent; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-mobile-nav a { border-radius: 10px; color: var(--fg-muted); font-size: 13.5px; font-weight: 450; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-mobile-nav a[aria-current="page"] { background: var(--xa-quiet); color: var(--fg); font-weight: 500; }
+
+/* ---------- Page and section heads ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main { padding: 0 0 96px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header { margin-bottom: 0; padding-bottom: 32px; border-bottom-color: var(--xa-hair); }
+/* The dot is always green, so it carries no state: dropped. */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-live-dot { display: none; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-eyebrow { color: var(--fg-muted); font-size: 11.5px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header > div > div > span.cf-admin-eyebrow { color: var(--fg-muted); font-size: 11.5px; letter-spacing: .08em; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header h1 {
+  margin-top: 14px; font-family: var(--xa-serif); font-size: clamp(36px, 3.4vw, 50px); line-height: 1.06; letter-spacing: -.015em;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header p { max-width: 60ch; margin-top: 14px; color: var(--fg-muted); font-size: 16px; line-height: 1.6; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header button { height: 40px; border-color: var(--xa-hair-strong); border-radius: var(--ui-radius-action, 12px); background: transparent; font-size: 14px; font-weight: 500; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-page-header button:hover:not(:disabled) { background: var(--xa-quiet); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-section-heading h2,
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) #operator-queue-heading {
+  margin-top: 8px; font-family: var(--xa-serif); font-size: clamp(24px, 2vw, 30px); font-weight: 400; line-height: 1.15; letter-spacing: -.01em;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-section-heading p { color: var(--fg-muted); font-size: 14px; line-height: 1.6; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main > section { padding-top: 56px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main > section:first-of-type { padding-top: 40px; }
+
+/* ---------- Cards: white, hairline, no shadow ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main :is(.rounded-3xl, .rounded-2xl).border {
+  border-color: var(--xa-hair); border-radius: 18px; background: var(--xa-card); box-shadow: none;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main :is(.border-rule, .divide-border > *, .divide-rule > *) { border-color: var(--xa-hair); }
+
+/* ---------- Metrics: serif figures, labels above, hairlines between ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metrics { border: 1px solid var(--xa-hair); border-radius: 18px; background: var(--xa-hair); box-shadow: none; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric { min-height: 156px; padding: 24px 26px; background: var(--xa-card); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric:hover { background: var(--xa-quiet-hover); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric:has(.cf-admin-metric-link:focus-visible) { outline-color: var(--fg); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric dt { color: var(--fg-muted); font-size: 11.5px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric dd {
+  margin-top: 28px; font-family: var(--xa-serif); font-size: 46px; font-weight: 400; line-height: 1; letter-spacing: -.02em; font-variant-numeric: lining-nums tabular-nums;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric-hint { margin-top: 12px; font-family: var(--font-ui), sans-serif; font-size: 13px; letter-spacing: 0; color: var(--fg-muted); }
+
+/* ---------- Needs attention ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-attention { margin-top: 0; padding: 28px 30px 26px; border-color: var(--xa-hair); background: var(--xa-card); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) section.cf-admin-attention { margin-top: 56px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-attention h2 + p { color: var(--fg-muted); font-size: 14px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-queue-item { border: 1px solid var(--xa-hair); border-radius: 14px; background: transparent; }
+
+/* ---------- Tables: uppercase heads on the card, hairline rows ---------- */
+/* premium-system.css fills every admin table and list with --bg; on a white card that reads as a grey slab. */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main table { background: transparent; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main thead { background: var(--xa-card); }
+
+/* Each table scrolls inside its own panel, so long lists never stretch the page. The header row
+   stays pinned; a sticky row loses its collapsed border, so the line under it is a shadow.
+   Scrolling is contained: reaching the panel's end never moves the page. That takes both
+   overscroll-behavior (native chaining) and data-lenis-prevent on the panel (smooth scrolling
+   would otherwise hand the leftover wheel delta to the page itself). */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-table-scroll {
+  max-height: min(62vh, 580px); overflow: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--xa-hair-strong) transparent;
+}
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-table-scroll thead { position: sticky; top: 0; z-index: 2; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-table-scroll th { border-bottom: 0; box-shadow: inset 0 -1px 0 var(--xa-hair); }
+/* Data cells (quality, loops, dates, emails) stay on one line; the panel scrolls sideways instead. */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main td.font-mono { white-space: nowrap; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main th { padding-block: 14px; border-color: var(--xa-hair); color: var(--fg-muted); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main tbody tr { border-color: var(--xa-hair); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main tbody tr:hover { background: var(--xa-quiet-hover); }
+
+/* ---------- Status pills: state colour stays; sans instead of tiny mono ---------- */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main span.rounded-full.font-mono.uppercase { font-family: var(--font-ui), sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; white-space: nowrap; }
+
+/* ---------- Links and actions ---------- */
+/* Outline buttons (Refresh queue, Inspect run, paging, Export CSV): a hairline outline on the card, no fill. */
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main .cf-button.bg-background { border-color: var(--xa-hair-strong); background: transparent; color: var(--fg); font-weight: 500; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main .cf-button.bg-background:hover:not(:disabled) { background: var(--xa-quiet); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main .cf-button.bg-background.text-accent { color: var(--fg); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main a.text-accent { color: var(--fg); text-decoration: underline; text-decoration-color: var(--xa-hair-strong); text-underline-offset: 4px; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main a.text-accent:hover { text-decoration-color: currentColor; }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main .cf-field { border-color: var(--xa-hair-strong); background: var(--xa-card); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) main .cf-field:focus-visible { border-color: var(--fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 10%, transparent); }
+:is(.ae-admin .cf-admin, .cf-admin.ae-admin) :is(a, button, input, select, summary):focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+
+@media (max-width: 1023px) {
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-operations-layout { padding-top: 0; }
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) main { padding-top: 32px; }
+}
+@media (max-width: 639px) {
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric { min-height: 128px; }
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric { padding: 18px; }
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-metric dd { margin-top: 20px; font-size: 34px; }
+  :is(.ae-admin .cf-admin, .cf-admin.ae-admin) .cf-admin-attention { padding: 20px 18px; }
+}

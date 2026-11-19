@@ -76,26 +76,35 @@ function MetricGrid({ overview, loading }: { overview: AdminOverviewResponse | n
   const totals = overview?.totals;
   const completionRate = totals?.runs ? Math.round((totals.succeeded_runs / totals.runs) * 100) : 0;
   const metrics = [
-    { label: "users", value: totals?.users, icon: Users, className: "text-fg-faint" },
-    { label: "total runs", value: totals?.runs, icon: Workflow, className: "text-fg-faint" },
-    { label: "active now", value: totals?.active_runs, icon: Activity, className: "text-accent" },
-    { label: "awaiting approval", value: totals?.awaiting_approval, icon: AlertTriangle, className: "text-warn" },
-    { label: "successful", value: totals?.succeeded_runs, icon: CheckCircle2, className: "text-ok", hint: `${completionRate}% of all runs` },
-    { label: "failed", value: totals?.failed_runs, icon: AlertTriangle, className: "text-danger" },
-    { label: "L5 outcomes", value: totals?.l5_runs, icon: CheckCircle2, className: "text-ok" },
-    { label: "fallback runs", value: totals?.runs_with_provider_fallbacks, icon: ServerCog, className: "text-warn" },
+    { label: "users", value: totals?.users, icon: Users, className: "text-fg-faint", href: "/admin/users" },
+    { label: "total runs", value: totals?.runs, icon: Workflow, className: "text-fg-faint", href: "/admin/runs" },
+    { label: "active now", value: totals?.active_runs, icon: Activity, className: "text-accent", href: "#operator-queue-heading" },
+    { label: "awaiting approval", value: totals?.awaiting_approval, icon: AlertTriangle, className: "text-warn", href: "/admin/runs?status=awaiting_approval" },
+    { label: "successful", value: totals?.succeeded_runs, icon: CheckCircle2, className: "text-ok", href: "/admin/runs?status=succeeded", hint: `${completionRate}% of all runs` },
+    { label: "failed", value: totals?.failed_runs, icon: AlertTriangle, className: "text-danger", href: "/admin/incidents" },
+    { label: "L5 outcomes", value: totals?.l5_runs, icon: CheckCircle2, className: "text-ok", href: "/admin/runs?acceptance_level=L5" },
+    { label: "fallback runs", value: totals?.runs_with_provider_fallbacks, icon: ServerCog, className: "text-warn", href: "/admin/system" },
   ];
   return (
     <dl className="cf-admin-metrics mt-5 grid overflow-hidden rounded-3xl border border-border bg-surface sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map(({ label, value, icon: Icon, className, hint }, index) => (
-        <div key={label} className={cn("cf-admin-metric min-h-[136px] p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "xl:border-t-0", index % 4 !== 0 && "xl:border-l", index % 4 === 0 && "xl:border-l-0", index > 3 && "xl:border-t")}>
-          <Link href={label === "users" ? "/admin/users" : label === "awaiting approval" ? "/admin/runs?status=awaiting_approval" : label === "successful" ? "/admin/runs?status=succeeded" : label === "failed" ? "/admin/incidents" : label === "active now" ? "#operator-queue-heading" : label === "L5 outcomes" ? "/admin/runs?acceptance_level=L5" : label === "fallback runs" ? "/admin/system" : "/admin/runs"} className="block rounded-xl focus-visible:outline-2 focus-visible:outline-accent">
-          <div className="flex items-center justify-between gap-4"><dt className={ADMIN_LABEL}>{label}</dt><Icon className={cn("h-4 w-4", className)} aria-hidden /></div>
-          <dd aria-busy={loading} className="font-display mt-5 text-[30px] font-[650] tracking-[-0.05em] text-fg">{loading || value == null ? "—" : value.toLocaleString()}</dd>
-          {hint && !loading && value != null ? <p className="mt-1 font-mono text-[10px] text-fg-faint">{hint}</p> : null}
-          </Link>
+      {metrics.map(({ label, value, icon: Icon, className, href, hint }, index) => {
+        const shown = loading || value == null ? "—" : value.toLocaleString();
+        return (
+        <div key={label} className={cn("cf-admin-metric relative min-h-[136px] p-5", index % 2 === 1 && "sm:border-l", index > 1 && "sm:border-t", index < 4 && "xl:border-t-0", index % 4 !== 0 && "xl:border-l", index % 4 === 0 && "xl:border-l-0", index > 3 && "xl:border-t")}>
+          {/* The label is the card's link, stretched over the card: the whole card stays clickable
+              while dt and dd remain direct children of their group, as a description list requires. */}
+          <dt className={cn(ADMIN_LABEL, "flex items-center justify-between gap-4")}>
+            {/* The link's name carries the figure too, so a link list reads "awaiting approval 1". */}
+            <Link href={href} aria-label={`${label} ${shown}`} className="cf-admin-metric-link after:absolute after:inset-0 after:content-['']">{label}</Link>
+            <Icon className={cn("h-4 w-4", className)} aria-hidden />
+          </dt>
+          <dd aria-busy={loading} className="font-display mt-5 text-[30px] font-[650] tracking-[-0.05em] text-fg">
+            {shown}
+            {hint && !loading && value != null ? <span className="cf-admin-metric-hint mt-1 block font-mono text-[10px] tracking-normal text-fg-faint">{hint}</span> : null}
+          </dd>
         </div>
-      ))}
+        );
+      })}
     </dl>
   );
 }
