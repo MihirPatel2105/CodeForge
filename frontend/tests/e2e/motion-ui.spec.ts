@@ -16,24 +16,22 @@ test("all sections are available before scrolling and reduced motion stays still
 
   const stack = page.locator("#how");
   await expect(stack).toBeAttached();
-  await expect(stack).toHaveCSS("opacity", "1");
   await expect(page.locator("html")).toHaveClass(/lenis/);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
 
   await stack.scrollIntoViewIfNeeded();
-  await expect(stack.getByRole("heading", { name: "Five specialists. One real sandbox." })).toBeVisible();
+  await expect(stack.getByRole("heading", { name: "Six stages. One clear job each." })).toBeVisible();
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(stack.locator(".vui-agent-card")).toHaveCount(6);
-  // Reduced motion must expose even the repair panel below the viewport.
-  await expect(page.locator(".lp-repair")).toHaveCSS("opacity", "1");
-  await expect(page.locator(".lp-repair")).toHaveCSS("transform", "none");
-  await expect(stack.getByRole("heading", { name: "A clear plan. Before the code." })).toBeVisible();
-  await expect(stack.getByText("Requirements match", { exact: true })).toBeVisible();
+  await expect(stack.locator(".el-card")).toHaveCount(6);
+  // Reduced motion must expose even the repair walkthrough below the viewport.
+  await expect(page.locator(".el-loop")).toHaveCSS("opacity", "1");
+  await expect(stack.getByRole("heading", { name: "Architect", exact: true })).toBeVisible();
+  await expect(stack.getByText("API design", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 720 });
-  await expect(stack.getByText("Failure cases", { exact: true })).toBeVisible();
+  await expect(stack.getByText("Real results", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -85,29 +83,26 @@ test("homepage preview grows without moving subsequent sections and resets for r
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
 
-test("homepage product preview leads into the split build process", async ({ page }) => {
+test("homepage product preview leads into the stages and the build walkthrough", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   const teaser = page.getByRole("link", { name: "Follow the Library build", exact: true });
   await expect(teaser).toHaveAttribute("href", "#build-story");
   await expect(page.locator(".lp-pipeline-content")).toHaveCount(0);
-  const order = await page.evaluate(() => {
-    const hero = document.getElementById("overview")!;
-    const next = hero.nextElementSibling;
-    return [next?.className, next?.nextElementSibling?.className, next?.nextElementSibling?.nextElementSibling?.id];
-  });
-  expect(order).toEqual(["lp-product-section", "ol-technology", "how"]);
+  // Under the hero: the statement, the sample run, the tools line, then the six stages.
+  const order = await page.evaluate(() => [...document.querySelector("#overview + .el-body")!.children].slice(0, 4).map(element => element.id || element.classList[0]));
+  expect(order).toEqual(["el-statement", "el-product", "el-tools", "how"]);
   await teaser.focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#cf-story-title")).toBeInViewport();
-  await expect(page.getByRole("navigation", { name: "Walkthrough chapters" }).getByRole("button")).toHaveCount(4);
-  await expect(page.locator("#build-story").getByRole("link", { name: "Inspect this result", exact: true })).toHaveAttribute("href", "/demo/library");
+  await expect(page.locator("#el-steps-title")).toBeInViewport();
+  await expect(page.locator("#build-story li")).toHaveCount(4);
+  await expect(page.locator("#example-apis").getByRole("link", { name: "Watch the replay" }).first()).toHaveAttribute("href", "/demo/library");
 });
 
 test("all agent cards remain readable when motion preference changes", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const cards = page.locator(".vui-agent-card");
+  const cards = page.locator("#how .el-card");
   await expect(cards).toHaveCount(6);
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const card of await cards.all()) {
@@ -148,7 +143,7 @@ test("mobile FAQ stays readable during rapid toggles and reduced-motion changes"
   const question = page.getByRole("button", { name: "What can I build?" });
   await question.click();
   const answer = page.locator(`[id="${await question.getAttribute("aria-controls")}"]`);
-  await expect(answer.getByText(/CodeForge focuses on CRUD REST APIs/)).toBeVisible();
+  await expect(answer.getByText(/CRUD REST APIs: applications that create/)).toBeVisible();
   await question.click();
   await question.click();
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -170,11 +165,11 @@ test("switch and disabled buttons preserve keyboard behavior on the project comp
   await toggle.focus();
   await page.keyboard.press("Space");
   await expect(toggle).not.toBeChecked();
-  await expect(page.getByText("Agents use this prompt alone")).toBeVisible();
+  await expect(page.getByText("Not using examples")).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.keyboard.press("Space");
   await expect(toggle).toBeChecked();
-  await expect(page.getByText("Agents see 6 similar APIs")).toBeVisible();
+  await expect(page.getByText("Learning from example APIs")).toBeVisible();
   const start = page.getByRole("button", { name: /Start run/ });
   await expect(start).toBeDisabled();
   await page.getByLabel("Describe the API").fill("Build a library API");
