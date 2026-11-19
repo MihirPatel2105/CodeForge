@@ -75,8 +75,8 @@ test("the passkey screen uses the shared form styling, not the old card's accent
   const form = page.locator(".pa-form");
   await expect(form.getByText("Your workspace", { exact: true })).toHaveCount(0);
   const action = form.getByRole("button", { name: "Continue with passkey" });
-  await expect(action).toHaveCSS("border-radius", "8px");
-  await expect(action).toHaveCSS("height", "52px");
+  await expect(action).toHaveCSS("border-radius", "12px");
+  await expect(action).toHaveCSS("height", "44px");
   await expect(form.locator(".pa-passkey-icon")).toHaveCSS("border-radius", "8px");
   await expect(form.getByRole("link", { name: "Sign in with password" })).toHaveCSS("color", "rgb(20, 20, 19)");
 });
@@ -88,8 +88,8 @@ test("forgot password uses the shared form styling, not the old card's accents",
   const form = page.locator(".pa-form");
   await expect(form.getByText("Account recovery", { exact: true })).toHaveCount(0);
   const action = form.getByRole("button", { name: "Send reset link" });
-  await expect(action).toHaveCSS("border-radius", "8px");
-  await expect(action).toHaveCSS("height", "52px");
+  await expect(action).toHaveCSS("border-radius", "12px");
+  await expect(action).toHaveCSS("height", "44px");
   await expect(form.getByLabel("Email", { exact: true })).toHaveCSS("border-radius", "8px");
   await expect(form.locator("details")).toHaveCSS("border-radius", "8px");
   await expect(form.getByRole("link", { name: "Sign in", exact: true })).toHaveCSS("color", "rgb(20, 20, 19)");
@@ -102,19 +102,19 @@ test("reset password uses the shared form styling, not the old card's accents", 
   const form = page.locator(".pa-form");
   await expect(form.getByText("Account recovery", { exact: true })).toHaveCount(0);
   const action = form.getByRole("button", { name: "Save new password" });
-  await expect(action).toHaveCSS("border-radius", "8px");
-  await expect(action).toHaveCSS("height", "52px");
+  await expect(action).toHaveCSS("border-radius", "12px");
+  await expect(action).toHaveCSS("height", "44px");
   for (const label of ["New password", "Confirm new password"]) {
     await expect(form.getByLabel(label, { exact: true })).toHaveCSS("border-radius", "8px");
   }
   await expect(form.getByRole("link", { name: "Sign in", exact: true })).toHaveCSS("color", "rgb(20, 20, 19)");
 });
 
-// Every remaining auth screen shares the form styling: 52px actions with 8px corners, no pills,
-// no dot eyebrows. Each case names the screen's main action.
+// Every remaining auth screen shares the form styling: 44px actions with 12px corners (the site's
+// primary button), no pills, no dot eyebrows. Each case names the screen's main action.
 const CONTROL = async (control: import("@playwright/test").Locator) => {
-  await expect(control).toHaveCSS("border-radius", "8px");
-  await expect(control).toHaveCSS("height", "52px");
+  await expect(control).toHaveCSS("border-radius", "12px");
+  await expect(control).toHaveCSS("height", "44px");
 };
 
 test("the sign-in verify step uses the shared form styling", async ({ page }) => {

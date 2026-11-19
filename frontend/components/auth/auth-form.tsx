@@ -226,7 +226,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
                     {error && <Notice>{error}</Notice>}
 
-                    <Button type="submit" disabled={submitting} className="mt-1 h-12 w-full rounded-xl text-[14px] font-[650] shadow-sm transition-transform active:scale-[0.99]">
+                    <Button type="submit" disabled={submitting} className="mt-1 h-11 w-full rounded-xl text-[14px] font-[650] shadow-sm transition-transform active:scale-[0.99]">
                       {submitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                       {submitting ? copy.busy : copy.submit}
                     </Button>
@@ -239,7 +239,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                         if (!transition || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
                         event.preventDefault();
                         transition.navigate("/login/passkey");
-                      }} className="flex h-[52px] items-center justify-center gap-2 rounded-[var(--ui-radius-control)] border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                      }} className="flex h-11 items-center justify-center gap-2 rounded-[var(--ui-radius-action)] border border-border-strong bg-surface text-[14px] font-[650] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                         <KeyRound className="h-4 w-4" aria-hidden /> Sign in with a passkey
                       </Link>
                     </>

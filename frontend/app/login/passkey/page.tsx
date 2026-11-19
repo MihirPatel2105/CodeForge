@@ -74,7 +74,7 @@ export default function PasskeyLoginPage() {
             type="button"
             onClick={signIn}
             disabled={busy}
-            className="mt-8 h-[52px] w-full gap-2 rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
+            className="mt-8 h-11 w-full gap-2 rounded-[var(--ui-radius-action)] text-[14px] font-[650]"
           >
             {busy && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />}
             {busy ? "Waiting for passkey…" : "Continue with passkey"}

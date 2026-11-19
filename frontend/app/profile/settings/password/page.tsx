@@ -24,8 +24,8 @@ export default function ChangePasswordPage() {
       description="Choose a new password for your account. This browser stays signed in; all other sessions are signed out."
     >
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
-          <span className="text-[12px] font-[650] text-accent">
+        <section className="ax-acct-card rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
+          <span className="ax-acct-kicker text-[12px] font-[650] text-accent">
             Update credentials
           </span>
           <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">
@@ -37,9 +37,9 @@ export default function ChangePasswordPage() {
           <ChangePasswordForm />
         </section>
 
-        <aside className="overflow-hidden rounded-3xl border border-border bg-surface">
-          <div className="border-b border-rule bg-bg px-5 py-4">
-            <p className="text-[12px] font-[650] text-fg-muted">
+        <aside className="ax-acct-card overflow-hidden rounded-3xl border border-border bg-surface">
+          <div className="ax-acct-flat border-b border-rule bg-bg px-5 py-4">
+            <p className="ax-acct-kicker text-[12px] font-[650] text-fg-muted">
               After you save
             </p>
           </div>
@@ -57,7 +57,7 @@ export default function ChangePasswordPage() {
               <span className="text-[13px] leading-5 text-fg-muted">Your passkeys and 2FA settings stay as they are.</span>
             </li>
           </ul>
-          <div className="flex items-center gap-2 border-t border-rule bg-bg px-5 py-4 text-[12px] font-[650] text-fg-muted">
+          <div className="ax-acct-flat flex items-center gap-2 border-t border-rule bg-bg px-5 py-4 text-[12px] font-[650] text-fg-muted">
             Your current session remains active
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </div>

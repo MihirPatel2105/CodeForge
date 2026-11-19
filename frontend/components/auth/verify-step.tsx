@@ -223,7 +223,7 @@ export function VerifyStep({
         type="button"
         disabled={submitting || code.length < LENGTH}
         onClick={() => void submit(code)}
-        className="mt-6 h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
+        className="mt-6 h-11 w-full rounded-[var(--ui-radius-action)] text-[14px] font-[650]"
       >
         {submitting ? "Verifying…" : "Verify and continue"}
       </Button>

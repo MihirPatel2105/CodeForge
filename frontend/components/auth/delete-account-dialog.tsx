@@ -1,22 +1,16 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
-import { DeletionDialog } from "@/components/ui/deletion-dialog";
-import { Notice } from "@/components/ui/notice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AlertCircle, LoaderCircle } from "lucide-react";
+import { pausePageScroll } from "@/components/layout/app-scroll";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { api, clearToken, ApiError } from "@/lib/api";
 import { DELETE_CONFIRMATION } from "@/lib/types";
-
-const FIELD =
-  "h-11 rounded-lg border-border-strong bg-surface px-[13px] text-[14.5px] " +
-  "focus-visible:border-fg focus-visible:ring-0 focus-visible:ring-offset-0";
-
-const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text-fg-faint";
+import "@/components/ui/axd-dialog.css";
 
 /**
  * The confirmation for closing an account.
@@ -28,6 +22,9 @@ const LABEL = "font-mono text-[11px] font-[600] uppercase tracking-[0.11em] text
  *
  * Both are re-checked by the server. These are here so the mistake is caught before the
  * request, not so the server can trust the client.
+ *
+ * Styled like the project dialogs (the `axd` system); only the red submit and the impact
+ * line mark it as destructive.
  */
 export function DeleteAccountDialog({ email, onClose }: { email: string; onClose: () => void }) {
   const router = useRouter();
@@ -37,6 +34,8 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
   const [deleting, setDeleting] = useState(false);
 
   const armed = password.length > 0 && confirmation.trim() === DELETE_CONFIRMATION;
+
+  useEffect(() => pausePageScroll(), []);
 
   async function handleDelete(e: React.FormEvent) {
     e.preventDefault();
@@ -56,15 +55,19 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
   }
 
   return (
-    <DeletionDialog open onClose={onClose} busy={deleting} title="Delete your account"
-      description="Permanently close your account and remove everything you have built in this workspace."
-      target={email} targetLabel="Account to delete" impact="All your projects, runs, and generated files will be removed. This cannot be undone.">
-        <form onSubmit={handleDelete}>
-          <div className="cf-deletion-fields">
-          <div className="cf-deletion-field">
-            <Label htmlFor="delete_password" className={LABEL}>
-              Confirm your password
-            </Label>
+    <Dialog open onOpenChange={(next) => { if (!next && !deleting) onClose(); }}>
+      <DialogContent className="cf-workspace-dialog axd p-0 sm:max-w-[480px]" data-lenis-prevent showCloseButton={!deleting}>
+        <DialogHeader className="axd-head">
+          <DialogTitle className="axd-title">Delete your account</DialogTitle>
+          <DialogDescription className="axd-lede">
+            Permanently close <strong className="font-[550] text-fg">{email}</strong> and remove everything you have built in this workspace.
+          </DialogDescription>
+        </DialogHeader>
+        <form className="axd-form" onSubmit={handleDelete}>
+          <p className="axd-impact"><AlertCircle size={16} aria-hidden /><span>All your projects, runs, and generated files will be removed. This cannot be undone.</span></p>
+
+          <div className="axd-field">
+            <Label htmlFor="delete_password" className="axd-label">Confirm your password</Label>
             <Input
               id="delete_password"
               type="password"
@@ -74,14 +77,12 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
               disabled={deleting}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={FIELD}
+              className="axd-input"
             />
           </div>
 
-          <div className="cf-deletion-field">
-            <Label htmlFor="delete_confirmation" className={LABEL}>
-              Type {DELETE_CONFIRMATION} to confirm
-            </Label>
+          <div className="axd-field">
+            <Label htmlFor="delete_confirmation" className="axd-label">Type <strong>{DELETE_CONFIRMATION}</strong> to confirm</Label>
             <Input
               id="delete_confirmation"
               autoComplete="off"
@@ -90,30 +91,22 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
               placeholder={DELETE_CONFIRMATION}
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
-              className={cn(FIELD, "font-mono tracking-[0.08em]")}
+              className="axd-input"
             />
           </div>
 
-          {error && (
-            <Notice>
-              {error}
-            </Notice>
-          )}
+          {error && <p role="alert" className="axd-error">{error}</p>}
 
-          </div>
-          <div className="cf-deletion-actions">
-            <Button type="button" variant="outline" onClick={onClose} disabled={deleting}>Cancel</Button>
-            <Button
-              type="submit"
-              disabled={!armed || deleting}
-              className="cf-deletion-submit"
-            >
-              <Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete account"}
+          <div className="axd-actions">
+            <Button type="button" variant="ghost" onClick={onClose} disabled={deleting}>Cancel</Button>
+            <Button type="submit" disabled={!armed || deleting} className="axd-submit axd-danger">
+              {deleting && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden />}
+              {deleting ? "Deleting…" : "Delete account"}
             </Button>
-
           </div>
         </form>
-    </DeletionDialog>
+      </DialogContent>
+    </Dialog>
   );
 }
 

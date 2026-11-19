@@ -120,9 +120,9 @@ export default function PasskeysPage() {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <form
             onSubmit={addPasskey}
-            className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-7"
+            className="ax-acct-card rounded-3xl border border-border bg-surface px-6 py-7 md:px-7"
           >
-            <span className="text-[12px] font-[650] text-accent">
+            <span className="ax-acct-kicker text-[12px] font-[650] text-accent">
               New passkey
             </span>
             <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Add a passkey</h2>
@@ -191,13 +191,13 @@ export default function PasskeysPage() {
               </Button>
             </div>
           </form>
-          <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-7">
+          <section className="ax-acct-card rounded-3xl border border-border bg-surface px-6 py-7 md:px-7">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-[12px] font-[650] text-fg-muted">Saved methods</span>
+                <span className="ax-acct-kicker text-[12px] font-[650] text-fg-muted">Saved methods</span>
                 <h2 className="font-display mt-2 text-[22px] font-[650] tracking-[-0.04em] text-fg">Your passkeys</h2>
               </div>
-              <span className="rounded-lg border border-border bg-bg px-2.5 py-1 text-[12px] font-[650] text-fg-muted">
+              <span className="ax-acct-kicker rounded-lg border border-border bg-bg px-2.5 py-1 text-[12px] font-[650] text-fg-muted">
                 {passkeys.length} / 10
               </span>
             </div>
@@ -208,7 +208,7 @@ export default function PasskeysPage() {
                 Passkeys could not be loaded. Refresh this page to try again.
               </p>
             ) : passkeys.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-dashed border-border-strong bg-bg px-5 py-8 text-center">
+              <div className="ax-acct-card mt-6 rounded-xl border border-dashed border-border-strong bg-bg px-5 py-8 text-center">
                 <Fingerprint className="mx-auto h-7 w-7 text-fg-faint" aria-hidden />
                 <p className="mt-3 text-[14px] font-[600] text-fg">No passkeys yet</p>
                 <p className="mx-auto mt-1 max-w-[34ch] text-[12px] leading-5 text-fg-muted">
@@ -223,7 +223,7 @@ export default function PasskeysPage() {
                     className="flex flex-wrap items-center justify-between gap-4 py-4"
                   >
                     <div className="flex min-w-0 items-start gap-3">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
+                      <span className="ax-acct-glyph grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent">
                         <KeyRound className="h-4 w-4" aria-hidden />
                       </span>
                       <div className="min-w-0">
