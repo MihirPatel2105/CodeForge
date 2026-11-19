@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+// These components belong to the previous landing page, which /preview/hero-relief still renders.
+const OLD_LANDING = "/preview/hero-relief";
+
 for (const width of [1440, 390]) {
   test(`landing headings reveal with scroll and reverse at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto(OLD_LANDING);
     const title = page.getByRole("heading", { name: "See what a finished API looks like.", exact: true });
     const words = title.locator("[data-reveal-word]");
     await expect(words).toHaveCount(7);

@@ -1,13 +1,9 @@
-import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDown, ArrowRight, ArrowUpRight, RotateCcw } from "lucide-react";
-import { MarketingHero } from "@/components/marketing/marketing-hero";
-import { SiteHeader } from "@/components/marketing/site-header";
-import { SiteFooter } from "@/components/marketing/marketing-actions";
+import { ArrowDown, ArrowRight, RotateCcw } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button-link";
+import { EditorialPage, PageHead, SplitSection } from "@/components/marketing/editorial-marketing";
 import { HowRunRoute } from "@/components/marketing/how-run-route";
-import "@/components/marketing/premium-landing.css";
-import "@/components/marketing/editorial-pages.css";
 
 export const metadata: Metadata = {
   title: "How it works · CodeForge",
@@ -23,35 +19,68 @@ const stages = [
   { name: "Sandbox", job: "Let execution give the verdict.", body: "The code and tests run together in an isolated Docker container with networking disabled. Test failures return to the Coder for repair.", input: "Application and tests", output: "Runtime output and test results" },
 ];
 
+const TECHNOLOGY = [
+  ["Orchestration", "LangGraph with a durable checkpointer"],
+  ["Generated API", "FastAPI, MongoDB and Beanie"],
+  ["Verification", "pytest in an isolated Docker sandbox"],
+  ["Run dashboard", "Source files, review findings and live event history"],
+] as const;
+
 export default function HowItWorksPage() {
   return (
-    <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-how-page">
-      <SiteHeader />
-      <main>
-        <MarketingHero>
-          <div className="ed-wrap ed-hero ed-process-hero">
-            <div className="ed-process-copy mk-hero-copy"><span className="ed-kicker">How CodeForge works</span><h1>From your idea<br />to a tested API.</h1><p>A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back.</p><div className="ed-actions"><ButtonLink size="lg" href="#stages" className="lp-button">Follow the process <ArrowDown size={16} aria-hidden /></ButtonLink><Link href="/demo/library" className="lp-text-link">Open the demo <ArrowUpRight size={16} aria-hidden /></Link></div><span className="ed-small-note">Five agents. Two human checkpoints. One isolated sandbox.</span></div>
-            <div className="ed-route-preview"><HowRunRoute /></div>
-          </div>
-        </MarketingHero>
+    <EditorialPage className="em-how-page">
+      <PageHead
+        label="How CodeForge works"
+        title={<>From your idea to a tested API.</>}
+        lede="A plan you approve. Code you can inspect. Tests that actually run. Follow the handoffs, including the moments when the work goes back."
+        actions={<>
+          <ButtonLink href="#stages" className="el-primary">Follow the process<ArrowDown size={16} aria-hidden /></ButtonLink>
+          <Link href="/demo/library" className="el-link" style={{ marginTop: 0 }}>Open the demo <ArrowRight size={16} aria-hidden /></Link>
+        </>}
+        aside={<HowRunRoute />}
+      />
 
-        <nav className="ed-chapters ed-wrap" aria-label="Process chapters"><a href="#stages"><span>01</span> Meet the stages <ArrowDown size={14} aria-hidden /></a><a href="#evidence"><span>02</span> Inspect the result <ArrowDown size={14} aria-hidden /></a><a href="#technology"><span>03</span> Under the surface <ArrowDown size={14} aria-hidden /></a></nav>
+      <SplitSection
+        id="stages"
+        title="A clear job at every handoff."
+        lede="Each stage receives something and produces something. Two of them wait for you."
+        extra={<p className="el-step-meta" style={{ display: "flex", gap: 10, marginTop: 28 }}><RotateCcw size={16} aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />Review findings and failed tests return to the Coder. Each repair loop has its own limit of three attempts.</p>}
+      >
+        <ol className="el-steps">
+          {stages.map(stage => (
+            <li key={stage.name}>
+              <p><strong>{stage.name}. {stage.job}</strong> {stage.body}</p>
+              <span className="el-step-meta">{stage.input} → {stage.output}{stage.approval ? ` · ${stage.approval}` : ""}</span>
+            </li>
+          ))}
+        </ol>
+      </SplitSection>
 
-        <section id="stages" className="ed-section ed-band"><div className="ed-wrap ed-stage-grid">
-          <div className="ed-section-intro ed-sticky"><span className="ed-kicker">01 / The handoffs</span><h2>A clear job<br />at every handoff.</h2><p>Open a stage to see what it receives, what it produces, and where you take control.</p><div className="ed-loop-note"><RotateCcw size={18} aria-hidden /><p>Review findings and failed tests return to the Coder. Each repair loop has its own limit of three attempts.</p></div></div>
-          <ol className="ed-stages">{stages.map((stage, index) => <li key={stage.name}><details><summary><span className="ed-index">0{index + 1}</span><span><span className="ed-stage-name">{stage.name}</span><strong>{stage.job}</strong>{stage.approval && <span className="ed-approval-label">{stage.approval}</span>}</span><span className="ed-stage-expand" aria-hidden>+</span></summary><div className="ed-stage-body"><p>{stage.body}</p><dl><div><dt>Receives</dt><dd>{stage.input}</dd></div><div><dt>Produces</dt><dd>{stage.output}</dd></div></dl></div></details></li>)}</ol>
-        </div></section>
+      <SplitSection
+        id="evidence"
+        title="Evidence comes with the result."
+        lede="A passed run keeps its source, findings and test output together. If a run reaches a repair limit, you can still inspect what it produced and where it stopped."
+        extra={<Link href="/demo/library" className="el-link">Inspect an example run <ArrowRight size={16} aria-hidden /></Link>}
+      >
+        <figure className="em-panel" style={{ margin: 0 }} aria-label="Example test output from the Library demo">
+          <pre className="em-terminal"><span>$ pytest -q</span>{"\n"}........{"\n"}<strong>8 passed in 1.42s</strong>{"\n"}<span>Process exited with code 0</span></pre>
+          <ol className="el-steps" style={{ marginTop: 24 }}>
+            <li><p><strong>You decide twice.</strong> Approve the requirements, then the architecture. Request changes if either misses your intent.</p></li>
+            <li><p><strong>The sandbox tests the result.</strong> Generated code runs with networking disabled. A passing suite reports what those tests checked.</p></li>
+          </ol>
+          <figcaption className="el-step-meta">Library demo · example test output</figcaption>
+        </figure>
+      </SplitSection>
 
-        <section id="evidence" className="ed-section ed-tinted"><div className="ed-wrap ed-proof-grid">
-          <div className="ed-section-intro"><span className="ed-kicker">02 / The evidence</span><h2>Evidence comes<br />with the result.</h2><p>A passed run keeps its source, findings and test output together. If a run reaches a repair limit, you can still inspect what it produced and where it stopped.</p><Link href="/demo/library" className="lp-text-link">Inspect an example run <ArrowUpRight size={16} aria-hidden /></Link></div>
-          <figure className="ed-verdict"><figcaption>Library demo / Example test output</figcaption><div className="ed-verdict-output"><p>$ pytest -q</p><p>........</p><strong>8 passed in 1.42s</strong><p>Process exited with code 0</p></div><div className="ed-verdict-notes"><p><strong>You decide twice.</strong> Approve requirements, then approve the architecture. Request changes if either misses your intent.</p><p><strong>The sandbox tests the result.</strong> Generated code executes with networking disabled. A passing suite reports what those tests checked.</p></div></figure>
-        </div></section>
+      <SplitSection id="technology" title="The tools behind each run." lede="Open-source components, wired together so every step leaves a record.">
+        <dl className="em-list">{TECHNOLOGY.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      </SplitSection>
 
-        <section id="technology" className="ed-section ed-band"><div className="ed-wrap ed-tech-grid"><div className="ed-section-intro"><span className="ed-kicker">03 / The foundation</span><h2>The tools behind<br />each run.</h2></div><dl className="ed-tech">{[["Orchestration", "LangGraph with a durable checkpointer"], ["Generated API", "FastAPI, MongoDB and Beanie"], ["Verification", "pytest in an isolated Docker sandbox"], ["Run dashboard", "Source files, review findings and live event history"]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div></section>
-
-        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">See the handoffs happen</span><h2>Watch the work.<br />Inspect the result.</h2></div><ButtonLink size="lg" href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></ButtonLink></section>
-      </main>
-      <SiteFooter />
-    </div>
+      <section className="el-section el-closing" aria-labelledby="how-closing-title">
+        <h2 id="how-closing-title">Watch the work. Inspect the result.</h2>
+        <p>A full run, replayed: the plan, the code, the review and the tests.</p>
+        <div className="el-closing-actions"><ButtonLink href="/demo/library" className="el-primary">Explore the demo<ArrowRight size={16} aria-hidden /></ButtonLink></div>
+      </section>
+    </EditorialPage>
   );
 }

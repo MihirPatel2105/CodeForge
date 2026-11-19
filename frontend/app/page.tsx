@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PremiumLanding } from "@/components/marketing/premium-landing";
+import { EditorialLanding } from "@/components/marketing/editorial-landing";
 
 export const metadata: Metadata = {
   title: "CodeForge — From an idea to an API",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
-  return <PremiumLanding />;
+  return <EditorialLanding />;
 }

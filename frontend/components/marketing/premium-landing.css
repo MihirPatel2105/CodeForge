@@ -13,7 +13,7 @@
 .lp-hero h1 { font-size: var(--lp-display); line-height: 1.02; letter-spacing: -.065em; font-weight: 700; margin: 0; }
 .lp-lead { color: var(--lp-muted); font-size: clamp(17px,1.8vw,21px); line-height: 1.6; margin: 28px auto 0; max-width: 650px; }
 .lp-actions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 28px; margin-top: 28px; }
-.lp-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; border-radius: var(--ui-radius-action); padding: 14px 26px; background: var(--lp-accent); color: var(--lp-paper); font-weight: 600; font-size: 15px; text-decoration: none; transition: background-color var(--ui-duration-standard) var(--ui-ease), color var(--ui-duration-standard) var(--ui-ease); }
+.lp-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; border-radius: var(--ui-radius-action); padding: 0 20px; background: var(--lp-accent); color: var(--lp-paper); font-weight: 600; font-size: 14px; text-decoration: none; transition: background-color var(--ui-duration-standard) var(--ui-ease), color var(--ui-duration-standard) var(--ui-ease); }
 .lp-button:hover { background: color-mix(in srgb,var(--lp-accent) 92%,var(--lp-paper)); }
 
 .lp-text-link { display: inline-flex; align-items: center; gap: 10px; color: var(--lp-accent); min-height: 48px; font-weight: 600; font-size: 15px; text-decoration: none; }

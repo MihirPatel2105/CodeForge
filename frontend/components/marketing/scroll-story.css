@@ -81,7 +81,7 @@
 .cf-story-cta > span { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #e6e6eb; transition: transform 240ms cubic-bezier(.22,.61,.36,1); }
 .cf-story-cta:hover > span { transform: translateX(3px); }
 .cf-story-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
-.cf-story-start { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 12px 18px; background: var(--accent); color: var(--surface); font-size: 12px; font-weight: 550; }
+.cf-story-start { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 0 20px; background: var(--accent); color: var(--surface); font-size: 14px; font-weight: 600; }
 .cf-story-start:hover { background: #35353a; }
 .cf-story-scroll-hint { position: absolute; left: 0; bottom: 0; display: flex; align-items: center; gap: 6px; color: #75757d; font-size: 9px; }
 .cf-scroll-story :is(button,a):focus-visible { outline: 2px solid #1d1d1f; outline-offset: 6px; border-radius: 3px; }
@@ -156,7 +156,7 @@
   .cf-story-result-note { padding-top: 18px; }
   .cf-story-bottom { padding-top: 20px; }
   .cf-story-actions { flex-direction: column-reverse; width: 100%; gap: 18px; }
-  .cf-story-start { width: 100%; font-size: 14px; min-height: 48px; }
+  .cf-story-start { width: 100%; font-size: 14px; min-height: 44px; }
   .cf-story-cta { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
