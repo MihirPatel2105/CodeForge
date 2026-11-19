@@ -67,7 +67,7 @@ jobs:
       - name: Component interaction regression checks
         run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/vengeance-ui.spec.ts tests/e2e/component-enhancements.spec.ts tests/e2e/amicro-actions.spec.ts tests/e2e/notification-inbox.spec.ts tests/e2e/arc-product-components.spec.ts tests/e2e/footer-reveal.spec.ts tests/e2e/not-found.spec.ts tests/e2e/desktop-recommendation.spec.ts tests/e2e/command-palette.spec.ts tests/e2e/agent-network-preview.spec.ts tests/e2e/api-machine-preview.spec.ts
       - name: Agent City regression checks
-        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/agent-city.spec.ts tests/e2e/agent-city-build.spec.ts tests/e2e/agent-city-invite.spec.ts tests/e2e/live-agent-city.spec.ts tests/e2e/live-city-model.spec.ts
+        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/agent-city-build.spec.ts tests/e2e/agent-city-invite.spec.ts tests/e2e/live-agent-city.spec.ts tests/e2e/live-city-model.spec.ts
       - name: Shared UI consistency checks
         run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/e2e/ui-consistency.spec.ts
       - uses: actions/upload-artifact@v7

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
 import { matchesTimeline, type TimelineFilters, type TimelineView } from "@/lib/timeline-filter";
-import { cn } from "@/lib/utils";
 import { preferredScrollBehavior } from "@/lib/motion";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";

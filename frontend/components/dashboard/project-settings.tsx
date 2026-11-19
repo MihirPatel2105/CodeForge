@@ -44,7 +44,7 @@ export function ProjectSettings({ project, onSaved }: { project: ProjectResponse
         </DialogHeader>
         <div className="axd-form">
           <div className="axd-field">
-            <Label htmlFor={`manage-name-${project.id}`} className="axd-label">Name</Label>
+            <Label htmlFor={`manage-name-${project.id}`} className="axd-label">Project name</Label>
             <Input id={`manage-name-${project.id}`} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} className="axd-input" />
           </div>
           <div className="axd-field">
