@@ -3,7 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 const AXE = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 
-// The project page: a prompt studio beside a run history list.
+// The project page (Anthropic-style): a run summary sentence, the prompt card, and the run
+// history as a quiet list.
 
 const user = { id: "studio-user", email: "user@example.com", first_name: "Regular", last_name: "User", created_at: "2026-09-23T00:00:00Z", is_admin: false };
 const project = { id: "studio-project", name: "Contact Directory", description: "Contacts", created_at: "2026-09-23T00:00:00Z", archived: false };
@@ -68,9 +69,11 @@ test("run history shows one readable row per run, grouped by day", async ({ page
   await expect(list.getByRole("link", { name: /^Open run:/ })).toHaveCount(4);
   await expect(list.getByRole("heading", { level: 3 })).toHaveText([/^(Today|Oct 30)$/, "Oct 4"]);
 
+  // One status signal per run: the word, beside a dot in its colour.
   const failed = list.getByRole("listitem").filter({ hasText: "phone format check" });
   await expect(failed.locator(".cf-run-outcome")).toHaveText("Providers unavailable");
   await expect(failed.locator(".cf-run-meta")).toContainText("20s");
+  await expect(failed.locator(".cf-run-outcome")).toHaveCount(1);
 
   const passed = list.getByRole("listitem").filter({ hasText: "search by name" });
   await expect(passed.locator(".cf-run-outcome")).toHaveText("Passed");
@@ -80,11 +83,20 @@ test("run history shows one readable row per run, grouped by day", async ({ page
   await expect(improved.getByRole("link", { name: "Improves an earlier run", exact: true })).toHaveAttribute("href", "/runs/run-passed");
 });
 
-test("the health strip summarises recent runs", async ({ page }) => {
+test("the run summary reads as a sentence with its details beneath", async ({ page }) => {
   await openProject(page);
-  const strip = page.getByRole("img", { name: /^Runs:/ });
-  await expect(strip).toHaveAttribute("aria-label", "Runs: 2 passed, 1 failed, 1 other");
+  const summary = page.locator(".cf-run-summary");
+  await expect(summary.getByText("2 of 4", { exact: true })).toBeVisible();
+  await expect(summary).toContainText("2 of 4 runs passed.");
+  await expect(summary.getByRole("listitem")).toHaveText(["1 failed", "1 stopped or still running", /^0\.5 repair loops on average/]);
   await expect(page.locator(".cf-run-health-rate")).toHaveText("50% passed");
+});
+
+test("the prompt card no longer lists the agent steps or the saved-draft note", async ({ page }) => {
+  await openProject(page);
+  await page.getByLabel("Describe the API").fill("Draft text");
+  await expect(page.getByRole("list", { name: "What happens next" })).toHaveCount(0);
+  await expect(page.getByText("Draft saved on this device")).toHaveCount(0);
 });
 
 test("quick filters send the matching outcomes to the server", async ({ page }) => {
@@ -95,6 +107,10 @@ test("quick filters send the matching outcomes to the server", async ({ page }) 
   await filters.getByRole("button", { name: /^Failed/ }).click();
   await expect(filters.getByRole("button", { name: /^Failed/ })).toHaveAttribute("aria-pressed", "true");
   await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["failed_max_loops", "failed_sandbox", "failed_llm"]);
+
+  // Cancelled and rejected runs, which no other tab covers.
+  await filters.getByRole("button", { name: "Other", exact: true }).click();
+  await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["cancelled", "rejected"]);
 
   await filters.getByRole("button", { name: /^All/ }).click();
   await expect.poll(() => requests.at(-1)?.searchParams.has("outcomes") || requests.at(-1)?.searchParams.has("outcome")).toBe(false);

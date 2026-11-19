@@ -10,7 +10,7 @@
 
 /* ── Headlines ─────────────────────────────────────────────────────────── */
 
-:is(h1, h2, .font-display):not(:where(.agent-city, .live-agent-city) *) {
+:is(h1, h2, .font-display):not(:where(.live-agent-city) *) {
   font-family: var(--font-display-stack) !important;
   font-weight: 400 !important;
   letter-spacing: -0.01em !important;
@@ -19,12 +19,12 @@
 }
 
 /* Section headings run untracked; the optical size already tightens them. */
-:is(h2, h2.font-display):not(:where(.agent-city, .live-agent-city) *) {
+:is(h2, h2.font-display):not(:where(.live-agent-city) *) {
   letter-spacing: 0 !important;
 }
 
 /* The game's stylesheets ask for the display face by token; inside it, that means the sans. */
-:where(.agent-city, .live-agent-city) { --font-display-stack: var(--font-ui); }
+:where(.live-agent-city) { --font-display-stack: var(--font-ui); }
 
 /* Emphasis inside a headline stays visible against the regular weight. */
 :is(h1, h2, .font-display) :is(strong, b) { font-weight: 600; }

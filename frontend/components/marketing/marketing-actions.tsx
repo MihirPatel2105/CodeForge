@@ -29,7 +29,7 @@ export function ClosingBanner() {
       <h2 className="font-display max-w-[22ch] text-[25px] font-[600] leading-[1.2] tracking-[-0.04em] text-fg md:text-[30px]">
         {user ? "Your agents are standing by." : "One sentence in. A tested API out."}
       </h2>
-      <ButtonLink size="lg" href={user ? "/projects" : "/signup"} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-accent px-6 text-[14px] font-[600] text-surface shadow-sm transition-[transform,background-color,box-shadow] duration-200   focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent ">
+      <ButtonLink size="lg" href={user ? "/projects" : "/signup"} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-[var(--ui-radius-action)] bg-accent px-6 text-[14px] font-[600] text-surface shadow-sm transition-[transform,background-color,box-shadow] duration-200   focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent ">
         {user ? "Go to projects" : "Create an account"}
       </ButtonLink>
     </div>
@@ -61,7 +61,7 @@ export function SiteFooter() {
         window.scrollTo({ top: document.documentElement.scrollHeight - window.innerHeight, behavior: "instant" });
       }
     }}>
-      <div className="mx-auto w-full max-w-[1536px] px-3 pb-6 pt-10 min-[601px]:px-4 sm:px-6 md:px-10 lg:px-14">
+      <div className="cf-page pb-6 pt-10">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))] lg:gap-x-14">
           <div className="col-span-2 border-b border-rule pb-9 md:col-span-3 lg:col-span-1 lg:border-0 lg:pb-0">
             <Link
@@ -93,7 +93,6 @@ export function SiteFooter() {
             heading="Product"
             links={[
               { href: "/how-it-works", label: "How it works" },
-              { href: "/playground/agent-city", label: "Agent City playground" },
               { href: "/demo/library", label: "Watch a run" },
               { href: "/how-it-works#technology", label: "Technology" },
               { href: "/about", label: "About" },

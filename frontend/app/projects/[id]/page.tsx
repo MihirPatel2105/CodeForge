@@ -116,7 +116,7 @@ export default function ProjectDetailPage() {
     return (
       <div className="cf-project-detail min-h-screen bg-bg" aria-label="Loading project" aria-live="polite">
         <AppHeader />
-        <main className="mx-auto w-full max-w-[1320px] px-6 pb-20 pt-8 md:px-10 lg:px-14">
+        <main className="cf-page pb-20 pt-8">
           <div className="h-3 w-24 animate-pulse rounded bg-border" />
           <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-surface">
             <div className="p-6 md:p-8">

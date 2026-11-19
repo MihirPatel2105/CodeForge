@@ -1,13 +1,9 @@
-import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { MarketingHero } from "@/components/marketing/marketing-hero";
-import { SiteHeader } from "@/components/marketing/site-header";
-import { SiteFooter } from "@/components/marketing/marketing-actions";
+import { ArrowRight } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button-link";
+import { EditorialPage, PageHead, SplitSection } from "@/components/marketing/editorial-marketing";
 import { AboutProcessProof } from "@/components/marketing/about-process-proof";
-import "@/components/marketing/premium-landing.css";
-import "@/components/marketing/editorial-pages.css";
 
 export const metadata: Metadata = {
   title: "About · CodeForge",
@@ -20,42 +16,59 @@ const principles = [
   ["Ask the runtime.", "A convincing explanation is not a test result. The application and its generated tests run in an isolated Docker sandbox. Findings and failed tests return to the Coder for another pass."],
 ];
 
+const SCOPE = [
+  ["Generated application", "FastAPI · MongoDB · Beanie"],
+  ["Verification", "pytest inside an isolated Docker sandbox"],
+  ["Your next step", "Test in the browser, publish the API, or download the source"],
+] as const;
+
 export default function AboutPage() {
   return (
-    <div className="cf-premium cf-premium-marketing cf-editorial-page mk-page ed-about-page">
-      <SiteHeader />
-      <main>
-        <MarketingHero>
-          <div className="ed-hero ed-wrap ed-about-masthead mk-hero-copy">
-            <div className="ed-kicker">About CodeForge</div>
-            <div className="ed-about-lead">
-              <h1>Build with AI.<br />Know what<br />you’re shipping.</h1>
-              <div className="ed-hero-note"><p>Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result.</p><div className="lp-actions"><ButtonLink size="lg" href="/demo/library" className="lp-button">Watch a run <ArrowRight size={16} aria-hidden /></ButtonLink><Link className="lp-text-link" href="/how-it-works">How CodeForge works <ArrowRight size={16} aria-hidden /></Link></div></div>
-            </div>
-            <dl className="ed-facts"><div><dt>Specialized agents</dt><dd>05</dd></div><div><dt>Your approval checkpoints</dt><dd>02</dd></div><div><dt>Execution environment</dt><dd>Isolated sandbox</dd></div></dl>
-          </div>
-        </MarketingHero>
+    <EditorialPage className="em-about-page">
+      <PageHead
+        label="About CodeForge"
+        title={<>Build with AI. Know what you’re shipping.</>}
+        lede="Code is easier to generate than it is to trust. CodeForge makes the work behind an API visible: the plan, the decisions, the review and the test result."
+        actions={<>
+          <ButtonLink href="/demo/library" className="el-primary">Watch a run<ArrowRight size={16} aria-hidden /></ButtonLink>
+          <Link href="/how-it-works" className="el-link" style={{ marginTop: 0 }}>How CodeForge works <ArrowRight size={16} aria-hidden /></Link>
+        </>}
+      />
+      <dl className="em-facts">
+        <div><dt>Specialised agents</dt><dd>5</dd></div>
+        <div><dt>Approval checkpoints for you</dt><dd>2</dd></div>
+        <div><dt>Isolated sandbox per run</dt><dd>1</dd></div>
+      </dl>
 
-        <section className="ed-section ed-tinted">
-          <div className="ed-wrap ed-about-showcase">
-            <div className="ed-section-intro"><span className="ed-kicker">01 / The product</span><h2>A working API.<br />A visible build trail.</h2><p>Open the source. Read the review. Inspect the tests and terminal output. The result comes with the work that led to it.</p><p className="ed-small-note">The library example shows the format. Each generated run has its own code, findings and test results.</p><Link className="lp-text-link" href="/demo/library">Explore the recorded example <ArrowUpRight size={16} aria-hidden /></Link></div>
-            <AboutProcessProof />
-          </div>
-        </section>
+      <SplitSection
+        id="product"
+        title="A working API. A visible build trail."
+        lede="Open the source. Read the review. Inspect the tests and terminal output. The result comes with the work that led to it."
+        extra={<p className="el-step-meta">The Library example shows the format. Each generated run has its own code, findings and test results.</p>}
+      >
+        <AboutProcessProof />
+      </SplitSection>
 
-        <section className="ed-section ed-band"><div className="ed-wrap ed-principle-grid">
-          <div className="ed-section-intro"><span className="ed-kicker">02 / Our approach</span><h2>The first answer<br />is a starting point.</h2><p>Generation is one step. Understanding the request, challenging the code and running the tests matter just as much.</p></div>
-          <ol className="ed-principles">{principles.map(([title, body], index) => <li key={title}><span className="ed-index">0{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div></li>)}</ol>
-        </div></section>
+      <SplitSection id="approach" title="The first answer is a starting point." lede="Generation is one step. Understanding the request, challenging the code and running the tests matter just as much.">
+        <ol className="el-steps">
+          {principles.map(([title, text]) => <li key={title}><p><strong>{title}</strong> {text}</p></li>)}
+        </ol>
+      </SplitSection>
 
-        <section className="ed-section ed-band"><div className="ed-wrap ed-scope-grid">
-          <div className="ed-section-intro"><span className="ed-kicker">03 / Our focus</span><h2>One clear promise.</h2><p>CodeForge builds CRUD REST APIs over one or two entities. That focus gives every run a consistent path from requirements to execution.</p></div>
-          <div className="ed-scope"><div><span>Generated application</span><p>FastAPI · MongoDB · Beanie</p></div><div><span>Verification</span><p>pytest inside an isolated Docker sandbox</p></div><div><span>Your next step</span><p>Test in the browser, publish the API, or download the source.</p></div><Link className="lp-text-link" href="/how-it-works#technology">Explore the technology <ArrowUpRight size={16} aria-hidden /></Link></div>
-        </div></section>
+      <SplitSection
+        id="focus"
+        title="One clear promise."
+        lede="CodeForge builds CRUD REST APIs over one or two entities. That focus gives every run a consistent path from requirements to execution."
+        extra={<Link href="/how-it-works#technology" className="el-link">Explore the technology <ArrowRight size={16} aria-hidden /></Link>}
+      >
+        <dl className="em-list">{SCOPE.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      </SplitSection>
 
-        <section className="ed-wrap ed-closing"><div><span className="ed-kicker">Make the process visible</span><h2>Follow an idea through<br />to its test result.</h2></div><ButtonLink size="lg" href="/demo/library" className="lp-button">Explore the demo <ArrowRight size={16} aria-hidden /></ButtonLink></section>
-      </main>
-      <SiteFooter />
-    </div>
+      <section className="el-section el-closing" aria-labelledby="about-closing-title">
+        <h2 id="about-closing-title">Follow an idea through to its test result.</h2>
+        <p>Start with one sentence, or watch a finished run first.</p>
+        <div className="el-closing-actions"><ButtonLink href="/demo/library" className="el-primary">Explore the demo<ArrowRight size={16} aria-hidden /></ButtonLink></div>
+      </section>
+    </EditorialPage>
   );
 }

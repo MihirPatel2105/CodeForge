@@ -60,21 +60,8 @@ export function SettingsNavigation() {
 }
 
 export function SecurityHighlightList({ children }: { children: ReactNode }) {
-  const [bounds, setBounds] = useState<{ top: number; height: number } | null>(null);
-  const reduced = useMotionPreference();
-  const highlight = (target: HTMLElement, list: HTMLElement) => {
-    const row = target.closest("li");
-    if (!row) return;
-    const rect = row.getBoundingClientRect();
-    setBounds({ top: rect.top - list.getBoundingClientRect().top, height: rect.height });
-  };
-  return <div className="relative isolate overflow-hidden">
-    {bounds && <motion.div aria-hidden className="pointer-events-none absolute inset-x-0 -z-10 bg-surface-2" initial={false}
-      animate={{ top: bounds.top, height: bounds.height }} transition={{ duration: reduced ? 0 : 0.16 }} />}
-    <ul className="divide-y divide-rule" onPointerLeave={(event) => { if (!event.currentTarget.contains(document.activeElement)) setBounds(null); }}
-      onPointerMove={(event) => highlight(event.target as HTMLElement, event.currentTarget)}
-      onFocusCapture={(event) => highlight(event.target as HTMLElement, event.currentTarget)}
-      onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setBounds(null); }}>
+  return <div className="overflow-hidden">
+    <ul className="divide-y divide-rule [&>li]:transition-colors [&>li]:duration-150 [&>li:hover]:bg-fg/5 [&>li:focus-within]:bg-fg/5">
       {children}
     </ul>
   </div>;

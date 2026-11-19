@@ -27,7 +27,8 @@ export function EvidenceWorkbench({ code, timeline, terminal, tests, result, nav
 
   return (
     <ResizablePanelGroup orientation="vertical" className="cf-evidence-workbench cf-responsive-workbench" style={{ height: "var(--run-workbench-height)" }}>
-      <ResizablePanel id="code-evidence" defaultSize="60%" minSize="360px">
+      {/* 52% leaves the timeline room to show several events; the code keeps at least 360px. */}
+      <ResizablePanel id="code-evidence" defaultSize="52%" minSize="360px">
       <div ref={codeRef} className="cf-workbench-editor" data-lenis-prevent role="region" aria-label="Generated code">{code}</div>
       </ResizablePanel>
       <ResizableHandle withHandle aria-label="Resize code and execution panels" />

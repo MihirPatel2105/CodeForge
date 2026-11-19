@@ -11,21 +11,18 @@ for (const width of [1440, 390, 320]) {
     await expect(page.getByRole("heading", HEADLINE)).toBeVisible();
     await expect(page.locator(".ol-announcement, .ol-desktop-nav")).toHaveCount(0);
     await expect(page.locator("[data-launch-header]")).toHaveCSS("height", width < 640 ? "64px" : "76px");
-    // The top bar keeps capsule pills; page buttons take the 8px control corner.
+    // The top bar keeps capsule pills; page buttons take the 12px primary-action corner.
     const pill = page.locator('[data-launch-header] a[href="/signup"]');
     const pillShape = await pill.evaluate(element => ({ radius: parseFloat(getComputedStyle(element).borderRadius), height: element.getBoundingClientRect().height }));
     expect(pillShape.radius).toBeGreaterThanOrEqual(pillShape.height / 2);
-    for (const button of await page.locator("main .lp-button").all()) {
-      await expect(button).toHaveCSS("border-radius", "8px");
-    }
+    await expect(page.locator("#start-building .el-primary")).toHaveCSS("border-radius", "12px");
     const start = page.locator("[data-launch-header]").getByRole("link", { name: "Get started", exact: true });
     await expect(start).toHaveAttribute("href", "/signup");
-    await page.locator(".lp-product-section").scrollIntoViewIfNeeded();
+    await page.locator(".el-product").scrollIntoViewIfNeeded();
     await expect(page.locator(".ol-product-workspace")).toBeVisible();
     await expect(page.locator(".ol-product-outcome [role=status]")).not.toBeEmpty();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(page.locator(".ol-product-shell")).toHaveCSS("transform", "none");
-    await expect(page.locator(".ol-tech-track")).toHaveCSS("animation-name", "none");
     const preview = page.locator(".ol-product-shell");
     await preview.scrollIntoViewIfNeeded();
     const before = await preview.boundingBox();
@@ -51,8 +48,9 @@ test("without WebGL the hero keeps a lit horizon and the page still navigates", 
   await expect(hero.locator(".lh-orbit")).toHaveCount(1);
   await expect(hero.locator(".lh-node-label")).toHaveCount(0);
   await page.getByRole("link", { name: "Follow the Library build", exact: true }).click();
-  await expect(page.locator("#cf-story-title")).toBeInViewport();
-  await expect(page.locator(".ol-process-panel")).toHaveCount(4);
+  // "Follow the build" lands on the step-by-step walkthrough.
+  await expect(page.locator("#el-steps-title")).toBeInViewport();
+  await expect(page.locator("#build-story li")).toHaveCount(4);
 });
 
 test("signed-in header keeps CodeForge account actions and capsule Projects button", async ({ page }) => {

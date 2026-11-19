@@ -233,7 +233,7 @@ export function ContactForm() {
       <Button
         type="submit"
         disabled={!canSend || submitting}
-        className="mt-1 h-[50px] w-full rounded-xl text-[14px] font-[650]"
+        className="mt-1 h-11 w-full rounded-xl text-[14px] font-[650]"
       >
         {submitting ? "Sending…" : "Send message"}
       </Button>

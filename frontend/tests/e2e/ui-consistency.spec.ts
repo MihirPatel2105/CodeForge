@@ -24,8 +24,8 @@ test("marketing, authentication, security, and admin actions share geometry and 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.route("**/api/backend/**", route => route.fulfill({ status: 401, json: {} }));
   const cases = [
-    { path: "/contact", action: () => page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }), height: 52 },
-    { path: "/login", action: () => page.getByRole("button", { name: "Sign in", exact: true }), height: 52 },
+    { path: "/contact", action: () => page.getByRole("main").getByRole("link", { name: "Sign in", exact: true }), height: 44 },
+    { path: "/login", action: () => page.getByRole("button", { name: "Sign in", exact: true }), height: 44 },
     { path: "/profile/settings/password", action: () => page.getByRole("button", { name: "Change password", exact: true }), height: 44 },
     { path: "/profile/settings/passkeys", action: () => page.getByRole("button", { name: "Add passkey", exact: true }), height: 44 },
     { path: "/admin/runs", action: () => page.getByRole("button", { name: "Apply", exact: true }), height: 40 },
@@ -34,8 +34,8 @@ test("marketing, authentication, security, and admin actions share geometry and 
     if (entry.path === "/profile/settings/password") await session(page);
     await page.goto(entry.path);
     await expect(entry.action()).toBeVisible();
-    // Actions share the 8px control corner (DESIGN.md); only the top bar keeps capsule pills.
-    await expect(entry.action()).toHaveCSS("border-radius", "8px");
+    // Actions share the 12px primary-action corner (DESIGN.md); only the top bar keeps capsule pills.
+    await expect(entry.action()).toHaveCSS("border-radius", "12px");
     await expect(entry.action()).toHaveCSS("height", `${entry.height}px`);
     const fields = page.locator("main .cf-field:visible");
     for (const field of await fields.all()) await expect(field).toHaveCSS("border-radius", "8px");

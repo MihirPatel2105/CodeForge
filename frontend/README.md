@@ -20,6 +20,22 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Testing
+
+End-to-end tests use Playwright. Run them against a production build, the way CI does:
+
+```bash
+npm run test:e2e:prod
+npm run test:e2e:prod -- tests/e2e/auth-horizon.spec.ts --workers=3
+```
+
+This builds a temporary copy of the app (your running `npm run dev` is not touched), serves it
+on port 3100 (`E2E_PROD_PORT` to change), runs Playwright, then stops the server and deletes the
+copy. Prefer it over `E2E_BASE_URL=http://localhost:3000 npm run test:e2e` against the dev server:
+under parallel load the dev server can briefly answer a real page with a 404 while it compiles,
+which shows up as random "element not found" failures. The security-header test also needs a
+production build.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

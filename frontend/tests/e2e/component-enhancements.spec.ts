@@ -35,7 +35,8 @@ test("mobile navigation opens, closes, restores focus and follows a link", async
 test("demo carousel supports keyboard, arrows and native horizontal scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  // The carousel belongs to the previous landing page, which /preview/hero-relief still renders.
+  await page.goto("/preview/hero-relief");
   const region = page.getByRole("region", { name: "Example APIs" });
   const slides = page.getByLabel("Swipe through API examples");
   const inventory = region.getByRole("group", { name: "1 of 3: Inventory", exact: true });

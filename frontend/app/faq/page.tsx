@@ -1,10 +1,8 @@
-import { ButtonLink } from "@/components/ui/button-link";
 import type { Metadata } from "next";
-import { ArrowRight, Box, CircleHelp, Clock3, Coins, MessageSquare, ShieldCheck } from "lucide-react";
-import { MarketingHero } from "@/components/marketing/marketing-hero";
-import { SiteHeader } from "@/components/marketing/site-header";
-import { SiteFooter } from "@/components/marketing/marketing-actions";
-import { FaqColumn } from "@/components/marketing/faq-column";
+import { ArrowRight } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button-link";
+import { EditorialPage, PageHead, SplitSection } from "@/components/marketing/editorial-marketing";
+import { FaqItem } from "@/components/marketing/editorial-landing-sections";
 
 export const metadata: Metadata = {
   title: "FAQ · CodeForge",
@@ -61,54 +59,46 @@ const FAQ = [
 ] as const;
 
 const QUICK_FACTS = [
-  { icon: Box, value: "1–2", label: "entities per API" },
-  { icon: ShieldCheck, value: "02", label: "human approvals" },
-  { icon: Clock3, value: "03", label: "attempts per loop" },
-  { icon: Coins, value: "$0", label: "free-tier models" },
+  { value: "1–2", label: "Entities per API" },
+  { value: "2", label: "Approvals by you" },
+  { value: "3", label: "Attempts per repair loop" },
+  { value: "$0", label: "Model cost" },
+] as const;
+
+const TOPICS = [
+  { title: "Building and running", categories: ["building", "execution", "results", "timing"] },
+  { title: "Control and recovery", categories: ["control", "recovery", "retrieval"] },
+  { title: "Cost and privacy", categories: ["cost", "privacy"] },
 ] as const;
 
 export default function FaqPage() {
   return (
-    <div className="cf-subpage cf-premium-marketing mk-page mk-faq-page min-h-screen bg-surface">
-      <SiteHeader />
-      <main>
-        <MarketingHero className="cf-faq-stage">
-          <div className="mk-hero-copy cf-entrance-copy mx-auto max-w-[960px] px-6 py-20 text-center md:px-10 md:py-28">
-            <span className="inline-flex items-center gap-2 text-[13px] font-[650] text-accent"><CircleHelp size={16} aria-hidden />Frequently asked questions</span>
-            <h1 className="font-display mx-auto mt-6 max-w-[16ch] text-[48px] font-[700] leading-[1.04] tracking-[-0.065em] text-fg md:text-[76px]">A little more clarity.</h1>
-            <p className="mx-auto mt-6 max-w-[52ch] text-[17px] leading-7 text-fg-muted">What you can build, how the agents work, and what happens next. All the details, in one place.</p>
-            <ButtonLink size="lg" href="#questions" className="cf-marketing-action cf-marketing-primary mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-surface hover:bg-accent/90">Explore the answers<ArrowRight size={16} aria-hidden /></ButtonLink>
-          </div>
-          <dl className="mk-hero-copy cf-faq-facts mx-auto grid max-w-[960px] grid-cols-2 gap-6 px-6 pb-14 sm:grid-cols-4 md:px-10">
-            {QUICK_FACTS.map(({ icon: Icon, value, label }) => (
-              <div key={label} className="text-center">
-                <Icon className="mx-auto size-5 text-accent" aria-hidden />
-                <dd className="mt-4 text-[32px] font-[650] tracking-[-.05em] text-fg">{value}</dd>
-                <dt className="mt-1 text-[13px] text-fg-muted">{label}</dt>
-              </div>
-            ))}
-          </dl>
-        </MarketingHero>
+    <EditorialPage className="em-faq-page">
+      <PageHead
+        label="Frequently asked questions"
+        title="A little more clarity."
+        lede="What you can build, how the agents work, and what happens when something goes wrong."
+      />
+      <dl className="em-facts" style={{ ["--em-cols" as string]: 4 }}>
+        {QUICK_FACTS.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}
+      </dl>
 
-        <section id="questions" className="bg-bg">
-          <div className="cf-faq-reading mx-auto w-full max-w-[960px] px-6 py-16 md:px-10 md:py-24">
-            <h2 className="font-display text-[32px] font-[650] tracking-[-.05em] text-fg">The details that matter.</h2>
-            <div className="mt-8"><FaqColumn items={FAQ} start={1} /></div>
-          </div>
-        </section>
-
-        <section className="mk-page-closing border-b border-rule bg-surface">
-          <div className="mx-auto grid w-full max-w-[1536px] gap-10 px-6 py-16 md:px-10 lg:grid-cols-[1fr_auto] lg:items-center lg:px-14 lg:py-20">
-            <div>
-              <span className="text-[12px] font-[650] text-accent">Still uncertain?</span>
-              <h2 className="font-display mt-4 max-w-[22ch] text-[28px] font-[650] leading-[1.2] tracking-[-0.045em] text-fg md:text-[36px]">Ask about your use case or report a surprising run.</h2>
-              <p className="mt-4 max-w-[58ch] text-[14px] leading-[1.7] text-fg-muted">Specific prompts, unexpected agent decisions and confusing failures are the most useful messages.</p>
+      <SplitSection id="questions" title="The details that matter." lede="Open a question for the short answer. The how-it-works page has the long ones.">
+        <div className="el-faq">
+          {TOPICS.map(topic => (
+            <div key={topic.title} role="group" aria-label={topic.title}>
+              <p className="em-topic" aria-hidden>{topic.title}</p>
+              {FAQ.filter(item => (topic.categories as readonly string[]).includes(item.category)).map(item => <FaqItem key={item.q} question={item.q} answer={item.a} />)}
             </div>
-            <ButtonLink size="lg" href="/contact" className="inline-flex min-h-12 w-fit items-center gap-2 rounded-full bg-accent px-6 text-[14px] font-[650] text-bg transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"><MessageSquare className="h-4 w-4" aria-hidden />Contact us</ButtonLink>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
+          ))}
+        </div>
+      </SplitSection>
+
+      <section className="el-section el-closing" aria-labelledby="faq-closing-title">
+        <h2 id="faq-closing-title">Still uncertain?</h2>
+        <p>Ask about your use case or report a run that surprised you. Specific prompts and confusing failures are the most useful messages.</p>
+        <div className="el-closing-actions"><ButtonLink href="/contact" className="el-primary">Contact us<ArrowRight size={16} aria-hidden /></ButtonLink></div>
+      </section>
+    </EditorialPage>
   );
 }

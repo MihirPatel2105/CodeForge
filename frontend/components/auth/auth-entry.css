@@ -11,7 +11,7 @@
 .pa-form h1 { font-size: 38px; line-height: 1.12; letter-spacing: -.05em; overflow-wrap: anywhere; }
 .pa-form .cf-auth-eyebrow { display: none; }
 .pa-form input:not([type=checkbox]) { height: 52px; border-radius: var(--ui-radius-control); background: var(--bg); box-shadow: none; }
-.pa-form button[type=submit] { min-height: 52px; background: var(--accent); color: var(--surface); box-shadow: none; }
+.pa-form button[type=submit] { min-height: 44px; border-radius: var(--ui-radius-action); background: var(--accent); color: var(--surface); box-shadow: none; }
 .pa-form button[type=submit]:disabled { opacity: .5; cursor: not-allowed; }
 .pa-form .cf-auth-rules { background: var(--bg); border: 0; border-radius: 12px; }
 .pa-form .cf-auth-footer { line-height: 1.7; }
@@ -54,7 +54,7 @@
   .pa-auth-shared .pa-form h1 + p { margin-top: 8px; }
   .pa-auth-shared .pa-form form { margin-top: 16px; gap: 10px; }
   .pa-auth-shared .pa-form input:not([type=checkbox]) { height: 46px; }
-  .pa-auth-shared .pa-form button[type=submit] { min-height: 46px; height: 46px; }
+  .pa-auth-shared .pa-form button[type=submit] { min-height: 44px; height: 44px; }
   .pa-auth-shared .cf-auth-rules { padding-block: 10px; }
   .pa-auth-shared .cf-auth-rules p { margin-bottom: 6px; }
   .pa-auth-shared .cf-auth-rules ul { row-gap: 4px; }

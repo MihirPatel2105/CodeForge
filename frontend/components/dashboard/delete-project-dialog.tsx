@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { AlertCircle, LoaderCircle } from "lucide-react";
+import { pausePageScroll } from "@/components/layout/app-scroll";
 import { Button } from "@/components/ui/button";
-import { DeletionDialog } from "@/components/ui/deletion-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Notice } from "@/components/ui/notice";
+import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
+import "@/components/ui/axd-dialog.css";
 
 interface DeleteProjectDialogProps {
   open: boolean;
@@ -28,6 +30,9 @@ function impactText(runCount: number): string {
  * "are you sure?" is dismissed reflexively; having to reproduce the name makes you look
  * at which project you are about to destroy — which is the actual failure mode when two
  * projects are called something similar.
+ *
+ * Styled like the new/rename project dialogs (the `axd` system); only the red submit and
+ * the impact line mark it as destructive.
  */
 export function DeleteProjectDialog({ open, onOpenChange, project, runCount, onDeleted }: DeleteProjectDialogProps) {
   const [confirmation, setConfirmation] = useState("");
@@ -36,13 +41,18 @@ export function DeleteProjectDialog({ open, onOpenChange, project, runCount, onD
 
   const matches = confirmation.trim() === project.name;
 
+  useEffect(() => {
+    if (open) return pausePageScroll();
+  }, [open]);
+
   function close() {
     onOpenChange(false);
     setConfirmation("");
     setError(null);
   }
 
-  async function handleDelete() {
+  async function handleDelete(event: FormEvent) {
+    event.preventDefault();
     if (!matches || deleting) return;
     setError(null);
     setDeleting(true);
@@ -60,29 +70,30 @@ export function DeleteProjectDialog({ open, onOpenChange, project, runCount, onD
   const inputId = `confirm-delete-${project.id}`;
 
   return (
-    <DeletionDialog
-      open={open}
-      onClose={close}
-      busy={deleting}
-      title="Delete this project?"
-      description="Permanently remove this project and the work stored with it."
-      target={project.name}
-      targetLabel="Project to delete"
-      impact={impactText(runCount)}
-    >
-      <div className="cf-deletion-fields">
-        <div className="cf-deletion-field">
-          <label htmlFor={inputId}>Type <strong>{project.name}</strong> to confirm</label>
-          <Input id={inputId} value={confirmation} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" disabled={deleting} />
-        </div>
-        {error && <Notice>{error}</Notice>}
-      </div>
-      <div className="cf-deletion-actions">
-        <Button type="button" variant="outline" onClick={close} disabled={deleting}>Cancel</Button>
-        <Button type="button" onClick={handleDelete} disabled={!matches || deleting} className="cf-deletion-submit">
-          <Trash2 size={14} aria-hidden />{deleting ? "Deleting…" : "Delete project"}
-        </Button>
-      </div>
-    </DeletionDialog>
+    <Dialog open={open} onOpenChange={(next) => { if (!next && !deleting) close(); }}>
+      <DialogContent className="cf-workspace-dialog axd p-0 sm:max-w-[480px]" data-lenis-prevent showCloseButton={!deleting}>
+        <DialogHeader className="axd-head">
+          <DialogTitle className="axd-title">Delete this project?</DialogTitle>
+          <DialogDescription className="axd-lede">
+            Permanently remove <strong className="font-[550] text-fg">{project.name}</strong> and the work stored with it.
+          </DialogDescription>
+        </DialogHeader>
+        <form className="axd-form" onSubmit={handleDelete}>
+          <p className="axd-impact"><AlertCircle size={16} aria-hidden /><span>{impactText(runCount)}</span></p>
+          <div className="axd-field">
+            <Label htmlFor={inputId} className="axd-label">Type <strong>{project.name}</strong> to confirm</Label>
+            <Input id={inputId} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" disabled={deleting} className="axd-input" />
+          </div>
+          {error && <p role="alert" className="axd-error">{error}</p>}
+          <div className="axd-actions">
+            <Button type="button" variant="ghost" onClick={close} disabled={deleting}>Cancel</Button>
+            <Button type="submit" disabled={!matches || deleting} className="axd-submit axd-danger">
+              {deleting && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden />}
+              {deleting ? "Deleting…" : "Delete project"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

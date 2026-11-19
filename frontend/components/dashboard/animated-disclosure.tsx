@@ -15,7 +15,7 @@ export function AnimatedDisclosure({ title, children, className = "" }: {
   const contentId = useId();
 
   return (
-    <section className={`rounded-lg border border-border bg-bg text-[12px] leading-5 text-fg-muted ${className}`}>
+    <section className={`cf-disclosure rounded-lg border border-border bg-bg text-[12px] leading-5 text-fg-muted ${className}`}>
       <button
         type="button"
         aria-expanded={open}

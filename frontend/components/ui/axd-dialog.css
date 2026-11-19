@@ -1,0 +1,50 @@
+/* Project dialogs (new, rename), Anthropic-style: a serif title and one line of context, plain
+   fields on ivory, and the actions on the right with no footer band. */
+.cf-workspace-dialog.axd { gap: 0; border-radius: 22px; background: var(--surface); box-shadow: 0 1px 2px rgb(20 20 19 / .05), 0 28px 80px -24px rgb(20 20 19 / .35); }
+.cf-workspace-dialog.axd > .axd-head { padding: 30px 32px 6px; background: transparent; }
+.cf-workspace-dialog .axd-title { font-family: var(--font-brand-serif), serif; font-size: 30px; font-weight: 400; line-height: 1.15; letter-spacing: -.015em; color: var(--fg); }
+.axd-lede { margin-top: 8px; font-size: 14.5px; line-height: 1.55; color: var(--fg-muted); }
+.axd-form { display: grid; gap: 18px; padding: 20px 32px 28px; }
+.axd-field { display: grid; gap: 8px; }
+.axd .axd-label { font-size: 13.5px; font-weight: 550; color: var(--fg); }
+.axd .axd-label span { margin-left: 4px; font-weight: 400; color: var(--fg-faint); }
+.axd .axd-input {
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent); border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 40%, white); box-shadow: none;
+  font-size: 15px; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.axd input.axd-input { height: 44px; padding: 0 14px; }
+.axd textarea.axd-input { min-height: 96px; padding: 12px 14px; }
+.axd .axd-input:focus-visible { border-color: var(--fg-muted); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 8%, transparent); outline: none; }
+.axd-error { font-size: 13.5px; color: var(--danger); }
+.axd-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.axd .axd-actions button { height: 40px; border-radius: 12px; padding: 0 16px; font-size: 14px; }
+.axd .axd-submit { min-width: 132px; }
+/* Destructive variant (delete project): same shape, red submit and a quiet impact line. */
+.axd-impact { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; line-height: 1.55; color: var(--fg-muted); }
+.axd-impact svg { flex-shrink: 0; margin-top: 2px; color: var(--danger); }
+.axd .axd-actions .axd-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.axd .axd-actions .axd-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 88%, #000); }
+.axd .axd-actions .axd-danger:disabled { opacity: .4; }
+/* Dark mode: the dialog sits on a black backdrop, so it needs a raised surface and a visible
+   edge, and the fields need a fill derived from the ink colour (not a hard-coded white mix,
+   which turned them mid-grey under white text). */
+:root.dark .cf-workspace-dialog.axd {
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / .5), 0 28px 80px -20px rgb(0 0 0 / .85);
+}
+:root.dark .axd .axd-input {
+  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+  background: color-mix(in srgb, var(--fg) 6%, var(--surface-2));
+  color: var(--fg);
+}
+:root.dark .axd .axd-input::placeholder { color: var(--fg-faint); opacity: 1; }
+:root.dark .axd .axd-input:focus-visible { border-color: var(--fg-muted); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 14%, transparent); }
+:root.dark .axd .axd-actions .axd-danger:disabled { opacity: .5; }
+@media (max-width: 639px) {
+  .cf-workspace-dialog.axd > .axd-head { padding: 26px 22px 4px; }
+  .axd-form { padding: 18px 22px 22px; }
+  .cf-workspace-dialog .axd-title { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .axd .axd-input { transition: none; } }

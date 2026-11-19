@@ -21,7 +21,7 @@ for (const width of [1440, 375]) {
     await page.mouse.wheel(0, 700);
     await expect.poll(() => history.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
     expect(await page.evaluate(() => scrollY)).toBe(before);
-    if (width === 1440) await expect(history.locator(".sticky")).toHaveCSS("position", "sticky");
+    if (width === 1440) await expect(history.getByRole("heading", { level: 3 }).first()).toHaveCSS("position", "sticky");
     await history.evaluate(element => element.scrollTop = element.scrollHeight);
     await history.hover();
     await page.mouse.wheel(0, 700);

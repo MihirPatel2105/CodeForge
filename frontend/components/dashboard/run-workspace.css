@@ -8,6 +8,8 @@
 .cf-overview-eyebrow { display:flex; flex-wrap:wrap; align-items:center; gap:12px; color:var(--fg-muted); font-size:11px; font-weight:550; }
 .cf-overview-eyebrow > span + span { color:var(--fg-faint); font-size:10px; font-weight:400; }
 .cf-run-overview h1.cf-run-request { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; max-width:82ch; margin:7px 0 10px; font:650 22px/1.35 var(--font-ui); letter-spacing:-.035em; overflow-wrap:anywhere; color:var(--fg); }
+/* "Show full request" lifts the two-line clamp on the title instead of repeating the request. */
+.cf-run-overview h1.cf-run-request[data-expanded] { display:block; -webkit-line-clamp:unset; overflow:visible; }
 .cf-overview-state { display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; min-height:26px; color:var(--fg-muted); font-size:12px; }
 .cf-overview-status { display:inline-flex; align-items:center; gap:6px; border-radius:100px; padding:4px 9px; font-size:11px; font-weight:600; line-height:1.4; }
 .cf-overview-status > span { width:5px; height:5px; border-radius:50%; background:currentColor; }

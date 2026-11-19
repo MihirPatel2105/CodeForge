@@ -41,7 +41,7 @@ export function MfaRecoveryForm({ token }: { token?: string }) {
     <p className="cf-auth-eyebrow">Account support</p>
     <h1 className="mt-4 font-display text-[34px] leading-[1.12] text-fg sm:text-[40px]">Contact us about your authenticator</h1>
     <p className="mt-4 text-sm leading-6 text-fg-muted">First contact our team using the Contact page or email codeforge.sdlc@gmail.com. If you cannot sign in to use the Contact form, email us directly. Include your registered email and explain what happened. Never send your password or recovery codes.</p>
-    <div className="mt-6 flex flex-wrap gap-4"><ButtonLink href="/contact" size="lg" className="h-[52px] rounded-[var(--ui-radius-control)]">Open Contact page</ButtonLink><a href="mailto:codeforge.sdlc@gmail.com?subject=Authenticator%20recovery%20help" className="inline-flex items-center text-sm underline">Email recovery support</a></div>
+    <div className="mt-6 flex flex-wrap gap-4"><ButtonLink href="/contact" size="lg" className="h-11 rounded-[var(--ui-radius-action)]">Open Contact page</ButtonLink><a href="mailto:codeforge.sdlc@gmail.com?subject=Authenticator%20recovery%20help" className="inline-flex items-center text-sm underline">Email recovery support</a></div>
     <ol className="mt-6 list-decimal space-y-3 pl-5 text-sm leading-6 text-fg-muted"><li>We manually review your support message.</li><li>If appropriate, we email a private invitation to request a recovery review.</li><li>Open that invitation and submit your registered email. Your request then appears in the admin dashboard.</li><li>After final approval, use a separate recovery link with your password and an unused recovery code to connect a new authenticator.</li></ol>
     <Link href="/login" className="mt-6 block text-sm underline">Back to sign in</Link>
   </AuthEntryShell>;
@@ -66,7 +66,7 @@ export function MfaRecoveryForm({ token }: { token?: string }) {
           <Label htmlFor="new-authenticator-code">New authenticator code</Label><VerificationCode id="new-authenticator-code" value={code} onChange={setCode} disabled={busy} />
         </>}
         {error && <><Notice>{error}</Notice>{token && !setup && <Link href="/recover-2fa" className="text-sm underline">Contact recovery support</Link>}</>}
-        <Button type="submit" disabled={busy || Boolean(setup && code.length !== 6)} className="mt-2 h-[52px] rounded-[var(--ui-radius-control)]">{busy ? "Please wait…" : setup ? "Confirm new authenticator" : "Verify recovery details"}</Button>
+        <Button type="submit" disabled={busy || Boolean(setup && code.length !== 6)} className="mt-2 h-11 rounded-[var(--ui-radius-action)]">{busy ? "Please wait…" : setup ? "Confirm new authenticator" : "Verify recovery details"}</Button>
       </form>
     </>}
     {!codes && <Link href="/login" className="mt-6 block text-sm underline">Back to sign in</Link>}
@@ -95,7 +95,7 @@ export function RecoveryReviewRequest({ inviteToken }: { inviteToken: string }) 
       <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
         <Label htmlFor="review-request-email">Registered email</Label><Input id="review-request-email" type="email" autoComplete="email" required disabled={busy} value={email} onChange={e => setEmail(e.target.value)} className="h-12" />
         {error && <Notice>{error}</Notice>}
-        <Button type="submit" disabled={busy} className="h-[52px] rounded-[var(--ui-radius-control)]">{busy ? "Submitting…" : "Submit recovery review request"}</Button>
+        <Button type="submit" disabled={busy} className="h-11 rounded-[var(--ui-radius-action)]">{busy ? "Submitting…" : "Submit recovery review request"}</Button>
       </form>
     </>}
     <Link href="/recover-2fa" className="mt-6 block text-sm underline">Need help? Contact support</Link>

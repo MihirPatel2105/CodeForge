@@ -120,6 +120,7 @@ export function ResultSummary({ snapshot, onDownload, downloadState = "idle", on
     >
       <div className="cf-result-copy flex min-w-0 flex-1 flex-col gap-[6px]">
         <span
+          data-tone={meta.tone}
           className={cn(
             "w-fit rounded-full px-3 py-1 text-[12px] font-[700] text-surface",
             meta.tone === "ok" && "bg-ok",

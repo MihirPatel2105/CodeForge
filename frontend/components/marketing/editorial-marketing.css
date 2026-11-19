@@ -1,0 +1,89 @@
+/* Marketing pages (how it works, about, FAQ, contact, legal) on the home page's el-* system.
+   Only page-specific pieces live here; cards, splits, steps and questions come from editorial-landing.css. */
+
+.el-subpage .em-main { display: block; width: 100%; background: var(--surface); }
+.el-subpage .el-body { padding-top: clamp(56px, 7vw, 104px); }
+
+/* ---------- Page head ---------- */
+.em-head { padding-bottom: clamp(40px, 5vw, 64px); border-bottom: 1px solid var(--el-hair); }
+.em-head-split { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: 48px 72px; align-items: center; }
+.em-head-centered { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.em-label { margin: 0; color: var(--fg-muted); font-size: 15px; }
+.em-head h1 {
+  max-width: 15ch; margin: 18px 0 0; color: var(--fg);
+  font: 400 clamp(44px, 5.6vw, 80px)/1.04 var(--el-serif); letter-spacing: -.01em; text-wrap: balance;
+}
+.em-head-centered h1 { margin-inline: auto; }
+.em-lede { max-width: 50ch; margin: 24px 0 0; color: var(--fg-muted); font-size: 19px; line-height: 1.55; text-wrap: pretty; }
+.em-head-centered .em-lede { margin-inline: auto; }
+.em-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 32px; }
+.em-head-centered .em-actions { justify-content: center; }
+.em-aside { min-width: 0; }
+
+/* Figures in a row under a hairline: serif number, small label. */
+.em-facts { display: grid; grid-template-columns: repeat(var(--em-cols, 3), minmax(0, 1fr)); gap: 24px; margin: clamp(40px, 5vw, 56px) 0 0; padding: 0; }
+.em-facts > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; padding-top: 18px; border-top: 1px solid var(--el-hair); }
+/* Markup reads label then value; the value shows first. */
+.em-facts dd { margin: 0; color: var(--fg); font: 400 clamp(30px, 3vw, 40px)/1 var(--el-serif); font-variant-numeric: lining-nums tabular-nums; }
+.em-facts dt { margin-top: 10px; color: var(--fg-muted); font-size: 14.5px; }
+
+/* A white hairline panel for figures and forms. */
+.em-panel { padding: 28px 32px; border: 1px solid var(--el-hair); border-radius: 18px; background: var(--el-card); }
+.em-panel-title { margin: 0 0 18px; color: var(--fg); font: 400 24px/1.2 var(--el-serif); }
+
+/* Terminal-style evidence block. */
+.em-terminal { margin: 0; padding: 22px 24px; border-radius: 14px; background: #141413; color: #e8e6dc; font: 400 14px/1.8 var(--font-mono-stack, ui-monospace, monospace); }
+.em-terminal strong { color: #7fd1a8; font-weight: 500; }
+.em-terminal span { color: #9c9a92; }
+
+/* Plain list with hairlines between rows (used for definitions and contact methods). */
+.em-list { margin: 0; padding: 0; list-style: none; }
+.em-list > * { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 18px 0; border-top: 1px solid var(--el-hair); }
+.em-list > *:last-child { border-bottom: 1px solid var(--el-hair); }
+.em-list dt, .em-list .em-key { color: var(--fg); font-size: 16px; }
+.em-list dd, .em-list .em-value { margin: 0; color: var(--fg-muted); font-size: 16px; text-align: right; }
+.em-list a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--el-hair-strong); text-underline-offset: 4px; }
+.em-list a:hover { text-decoration-color: currentColor; }
+
+/* Questions grouped by topic. */
+.em-topic { margin: 0; padding: 36px 0 6px; color: var(--fg-muted); font-size: 15px; }
+.em-topic:first-child { padding-top: 0; }
+
+/* ---------- Legal pages: sticky contents on the left, reading column on the right ---------- */
+.em-legal { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); gap: 48px 96px; align-items: start; margin-top: clamp(48px, 6vw, 80px); }
+.em-toc { position: sticky; top: 112px; }
+.em-toc p { margin: 0 0 14px; color: var(--fg-muted); font-size: 14px; }
+.em-toc ol { margin: 0; padding: 0; list-style: none; }
+.em-toc li { border-top: 1px solid var(--el-hair); }
+.em-toc li:last-child { border-bottom: 1px solid var(--el-hair); }
+.em-toc a { display: block; padding: 11px 0; color: var(--fg-muted); font-size: 15px; }
+.em-toc a:hover { color: var(--fg); }
+.em-legal-body section { padding: 0 0 40px; scroll-margin-top: 112px; }
+.em-legal-body h2 { margin: 0; color: var(--fg); font: 400 clamp(26px, 2.4vw, 32px)/1.2 var(--el-serif); letter-spacing: -.01em; }
+.em-legal-body p { max-width: 68ch; margin: 14px 0 0; color: var(--fg-muted); font-size: 17px; line-height: 1.75; }
+.em-legal-body a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--el-hair-strong); text-underline-offset: 4px; }
+
+/* ---------- Contact ---------- */
+.em-contact-form { padding: 32px; }
+.em-open { display: inline-flex; align-items: center; gap: 8px; color: var(--ok); font-size: 14px; }
+.em-open::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+@media (max-width: 1023px) {
+  /* minmax(0, 1fr): wide children such as code samples must shrink, not push the page sideways. */
+  .em-head-split, .em-legal, .el-subpage .el-split { grid-template-columns: minmax(0, 1fr); }
+  .em-toc { position: static; }
+}
+@media (max-width: 639px) {
+  .em-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .em-panel, .em-contact-form { padding: 22px 20px; }
+  .em-lede { font-size: 17px; }
+  .em-list > * { flex-direction: column; gap: 4px; }
+  .em-list dd, .em-list .em-value { text-align: left; }
+}
+
+/* Skip link: hidden until focused by keyboard. */
+.el-subpage .lp-skip {
+  position: absolute; left: 16px; top: 12px; z-index: 100; padding: 10px 14px; border-radius: 10px;
+  background: var(--fg); color: var(--surface); font-size: 14px; transform: translateY(-160%);
+}
+.el-subpage .lp-skip:focus-visible { transform: none; outline: 2px solid var(--fg); outline-offset: 2px; }

@@ -9,10 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PIPELINE_STAGES } from "@/lib/pipeline";
 import { matchesTimeline, type TimelineFilters, type TimelineView } from "@/lib/timeline-filter";
-import { cn } from "@/lib/utils";
 import { preferredScrollBehavior } from "@/lib/motion";
 import { useMotionPreference } from "@/lib/use-motion-preference";
-import { typeScale } from "@/lib/type-scale";
 import { TimelineEntry, type TimelineEntryData } from "./timeline-entry";
 import "./timeline-refinement.css";
 
@@ -103,15 +101,8 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
 
   return (
     <div className="cf-evidence-timeline cf-timeline-refined flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface">
-      <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3">
-        <span className={cn(typeScale.label, "flex items-center gap-2 text-fg-muted")}>
-          <Clock3 className="h-4 w-4 text-accent" aria-hidden />
-          Live timeline
-        </span>
-        <span role="status" aria-label="Timeline results" className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] tabular-nums text-fg-faint">{filtering ? `${visible.length} of ${entries.length} events` : `${entries.length} ${entries.length === 1 ? "event" : "events"}`}</span>
-      </div>
-
-      <div className="shrink-0 border-b border-border px-3 py-2">
+      {/* One row: filters on the left, the event count on the right. The tab above already says "Timeline". */}
+      <div className="cf-timeline-filter flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
       <MorphingPopover label={filtering ? "Filters active" : "Filter activity"} title="Filter activity">
       <motion.div layout={!reducedMotion} initial={reducedMotion ? false : { opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .2 }} className="space-y-3">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(100px,130px)] gap-2">
@@ -137,6 +128,7 @@ export function TimelinePanel({ entries, connectionLost }: TimelinePanelProps) {
           <Button variant="ghost" size="sm" disabled={!filtering} onClick={clearFilters} className="h-8 px-2 text-xs">Clear filters</Button>
         </div>
       </motion.div></MorphingPopover>
+        <span role="status" aria-label="Timeline results" className="cf-timeline-count rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-[650] tabular-nums text-fg-faint">{filtering ? `${visible.length} of ${entries.length} events` : `${entries.length} ${entries.length === 1 ? "event" : "events"}`}</span>
       </div>
 
       {connectionLost && (

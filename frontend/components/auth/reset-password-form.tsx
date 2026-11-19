@@ -190,7 +190,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             <Button
               type="submit"
               disabled={submitting}
-              className="mt-1 h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]"
+              className="mt-1 h-11 w-full rounded-[var(--ui-radius-action)] text-[14px] font-[650]"
             >
               {submitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
               {submitting ? "Saving…" : "Save new password"}

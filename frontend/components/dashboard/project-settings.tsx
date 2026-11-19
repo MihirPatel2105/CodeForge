@@ -1,14 +1,15 @@
 "use client";
-import { Notice } from "@/components/ui/notice";
 import { useState } from "react";
+import { toast } from "sonner";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { StatefulButton } from "@/components/ui/stateful-button";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import "@/components/ui/axd-dialog.css";
 
 export function ProjectSettings({ project, onSaved }: { project: ProjectResponse; onSaved: (project: ProjectResponse) => void }) {
   const [open, setOpen] = useState(false);
@@ -31,12 +32,32 @@ export function ProjectSettings({ project, onSaved }: { project: ProjectResponse
     }
     finally { setBusy(false); }
   }
-  return <><Button variant="outline" className="cf-manage-project mt-4" onClick={() => { setName(project.name); setDescription(project.description); setOpen(true); }}>Manage project{project.archived ? " · Archived" : ""}</Button>
-    <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Manage project</DialogTitle></DialogHeader>
-      <label className="text-sm">Project name<Input value={name} maxLength={120} onChange={e => setName(e.target.value)} /></label>
-      <label className="text-sm">Description<Textarea value={description} maxLength={2000} onChange={e => setDescription(e.target.value)} /></label>
-      <p className="text-sm text-fg-muted">Archiving moves this workspace out of your active list. Its runs and published APIs remain available.</p>
-      {error && <Notice>{error}</Notice>}
-      <div className="flex flex-wrap gap-2"><StatefulButton label="Save changes" pendingLabel="Saving…" successLabel="Saved" disabled={busy || !name.trim()} onAction={() => save(Boolean(project.archived))} /><StatefulButton variant="outline" label={project.archived ? "Restore project" : "Archive project"} pendingLabel="Saving…" disabled={busy || !name.trim()} onAction={() => save(!project.archived)} /></div>
-    </DialogContent></Dialog></>;
+  return <>
+    <Button variant="outline" className="cf-manage-project mt-4" onClick={() => { setName(project.name); setDescription(project.description); setOpen(true); }}>Manage project{project.archived ? " · Archived" : ""}</Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="cf-workspace-dialog axd p-0 sm:max-w-[480px]">
+        <DialogHeader className="axd-head">
+          <DialogTitle className="axd-title">Manage project</DialogTitle>
+          <DialogDescription className="axd-lede">
+            Archiving moves this workspace out of your active list. Its runs and published APIs remain available.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="axd-form">
+          <div className="axd-field">
+            <Label htmlFor={`manage-name-${project.id}`} className="axd-label">Project name</Label>
+            <Input id={`manage-name-${project.id}`} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} className="axd-input" />
+          </div>
+          <div className="axd-field">
+            <Label htmlFor={`manage-description-${project.id}`} className="axd-label">Description <span>optional</span></Label>
+            <Textarea id={`manage-description-${project.id}`} value={description} maxLength={2000} onChange={(event) => setDescription(event.target.value)} className="axd-input" />
+          </div>
+          {error && <p role="alert" className="axd-error">{error}</p>}
+          <div className="axd-actions">
+            <StatefulButton variant="ghost" label={project.archived ? "Restore project" : "Archive project"} pendingLabel="Saving…" disabled={busy || !name.trim()} onAction={() => save(!project.archived)} />
+            <StatefulButton className="axd-submit" label="Save changes" pendingLabel="Saving…" successLabel="Saved" disabled={busy || !name.trim()} onAction={() => save(Boolean(project.archived))} />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>;
 }

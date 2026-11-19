@@ -59,7 +59,8 @@
 
 .lh-bar {
   display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px;
-  height: 100%; padding-inline: clamp(16px, 5.4vw, 80px);
+  /* Same edges as page content: see One page edge in app/premium-system.css. */
+  height: 100%; padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2));
 }
 .lh-start, .lh-end { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .lh-end { justify-content: flex-end; }

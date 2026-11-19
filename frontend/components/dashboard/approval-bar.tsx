@@ -95,11 +95,11 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
       <DialogContent className="cf-approval-dialog" showCloseButton={!locked}>
       <div className="cf-approval-review">
       <div className="flex items-start gap-3.5 border-b border-warn-bd/65 bg-warn-soft px-5 py-4 sm:px-6">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
+        <span className="cf-approval-icon grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-warn-bd bg-surface text-warn">
           <ShieldCheck className="h-5 w-5" aria-hidden />
         </span>
         <div className="min-w-0">
-          <span className={cn(typeScale.label, "text-warn")} role="status">Awaiting your approval</span>
+          <span className={cn(typeScale.label, "cf-approval-kicker text-warn")} role="status">Awaiting your approval</span>
           <DialogTitle className="mt-0.5 text-[19px] font-[700] tracking-[-0.03em] text-fg">{title}</DialogTitle>
           <DialogDescription className="mt-1 text-[13px] leading-5 text-fg-muted">Review this checkpoint before the agents continue.</DialogDescription>
         </div>
@@ -109,7 +109,7 @@ export function ApprovalBar({ approval, onApprove, onReject, onRevise, busy = fa
       {chips.length > 0 && (
         <div className="cf-approval-facts grid gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6">
           {chips.map((chip) => (
-            <div key={chip.label} className="min-w-0 rounded-2xl border border-border bg-surface-2/45 px-3.5 py-2.5">
+            <div key={chip.label} className="cf-approval-fact min-w-0 rounded-2xl border border-border bg-surface-2/45 px-3.5 py-2.5">
               <span className={cn(typeScale.label, "block text-[10.5px] text-fg-faint")}>{chip.label}</span>
               <span className="mt-1 block break-words text-[13.5px] font-[600] leading-5 text-fg">{chip.value}</span>
             </div>

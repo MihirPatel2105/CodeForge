@@ -24,14 +24,14 @@ export function AgentCityInvite({ runId, snapshot, connected }: { runId: string;
 
   if (!eligible || !visible) return null;
   return (
-    <aside aria-label="Agent City invitation" className="fixed bottom-4 right-4 z-30 w-[calc(100vw-2rem)] max-w-sm rounded-xl border border-border bg-surface p-5 text-fg shadow-lg motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
+    <aside aria-label="Agent City invitation" className="cf-city-invite fixed bottom-4 right-4 z-30 w-[calc(100vw-2rem)] max-w-sm rounded-xl border border-border bg-surface p-5 text-fg shadow-lg motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
       <button type="button" aria-label="Dismiss Agent City invitation" className="absolute right-3 top-3 rounded-lg p-2 text-fg-muted hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent" onClick={() => setVisible(false)}><X size={16} /></button>
       <div role="status" className="pr-7">
         <span className="mb-3 flex items-center gap-2 text-xs font-medium text-fg-muted"><Building2 size={17} /> Live Agent City</span>
         <h2 className="text-base font-semibold tracking-tight">Watch your idea take shape.</h2>
         <p className="mt-2 text-sm leading-6 text-fg-muted">Follow your agents through a living city. Inspect their work and watch each repair travel back to the Coder.</p>
       </div>
-      <a href={`/playground/agent-city?run=${encodeURIComponent(runId)}`} onClick={() => setVisible(false)} className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Watch in Agent City <ArrowRight size={16} aria-hidden /></a>
+      <a href={`/playground/agent-city?run=${encodeURIComponent(runId)}`} onClick={() => setVisible(false)} className="cf-city-invite-link mt-4 flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-surface hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Watch in Agent City <ArrowRight size={16} aria-hidden /></a>
       <p className="mt-2 text-xs leading-5 text-fg-muted">The same run, streamed live. Your build continues while you explore.</p>
     </aside>
   );

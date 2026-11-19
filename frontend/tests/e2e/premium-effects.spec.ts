@@ -14,10 +14,9 @@ test("headline remains accessible and resolves immediately when motion is reduce
   await expect(headline).toBeVisible();
   const line = headline.locator("span").last();
   await expect(line).toHaveCSS("opacity", "1");
-  const cta = page.locator("#start-building .cf-specular");
+  const cta = page.locator("#start-building .el-primary");
   await cta.scrollIntoViewIfNeeded();
-  await cta.hover();
-  await expect.poll(() => cta.evaluate(node => node.style.getPropertyValue("--light-x"))).not.toBe("");
+  await expect(cta).toBeVisible();
   await page.screenshot({ path: "/tmp/codeforge-premium-effects-desktop.png" });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(line).toHaveCSS("animation-name", "none");

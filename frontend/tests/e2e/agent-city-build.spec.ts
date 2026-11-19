@@ -23,11 +23,12 @@ for (const status of ["succeeded", "failed_sandbox", "cancelled"]) {
   });
 }
 
-test("ordinary playground visits do not monitor unrelated runs", async ({ page }) => {
-  let requests = 0;
-  await page.route("**/api/backend/runs/**", route => { requests++; return route.fulfill({ json: {} }); });
+test("Agent City without a run sends visitors to their projects and watches nothing", async ({ page }) => {
+  // The projects page loads its own data after the redirect; Agent City must never open a run stream.
+  let streams = 0;
+  await page.route("**/api/backend/runs/**", route => { if (route.request().url().includes("/stream")) streams++; return route.fulfill({ json: {} }); });
   await page.goto("/playground/agent-city");
-  await expect(page.getByRole("heading", { name: "Agent City" })).toBeVisible();
-  await expect(page.getByRole("complementary", { name: "API build update" })).not.toBeVisible();
-  expect(requests).toBe(0);
+  await expect(page).toHaveURL(/\/(projects|login)/);
+  await expect(page.locator(".agent-city, .live-agent-city")).toHaveCount(0);
+  expect(streams).toBe(0);
 });

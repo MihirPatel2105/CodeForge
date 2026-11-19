@@ -62,10 +62,14 @@ for (const width of [1440, 375]) {
       await page.goto(`/profile/settings/${path}`);
       await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
       await expect(page.getByRole("link", { name: "Back to settings", exact: true })).toHaveAttribute("href", "/profile/settings");
-      await expect(page.getByRole("navigation", { name: "Security settings" })).toHaveCSS("border-radius", "14px");
+      // The switcher is a row of underlined text tabs, and the page head is a serif title on the
+      // page rather than a tinted card.
+      const nav = page.getByRole("navigation", { name: "Security settings" });
+      await expect(nav.locator('a[aria-current="page"]')).toHaveCSS("border-bottom-width", "2px");
+      await expect(nav).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       const hero = page.locator("header.cf-account-hero");
-      const leftInset = await hero.evaluate(element => element.firstElementChild!.getBoundingClientRect().left - element.getBoundingClientRect().left);
-      expect(leftInset).toBeGreaterThanOrEqual(20);
+      await expect(hero).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+      expect(await hero.locator("h1").evaluate(element => getComputedStyle(element).fontFamily)).toContain("Newsreader");
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }
   });

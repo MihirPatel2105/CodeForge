@@ -1,9 +1,12 @@
 import { test, expect } from "@playwright/test";
 
+// These components belong to the previous landing page, which /preview/hero-relief still renders.
+const OLD_LANDING = "/preview/hero-relief";
+
 test("process navigation scrolls to the matching artifact and follows scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto(OLD_LANDING);
   const process = page.locator("#build-story");
   await process.scrollIntoViewIfNeeded();
   for (const index of [0, 1, 2, 3, 1, 0]) {
@@ -21,7 +24,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 1280, height: 72
   test(`all process artifacts stay reachable at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
+    await page.goto(OLD_LANDING);
     for (const panel of await page.locator(".ol-process-panel").all()) {
       await panel.scrollIntoViewIfNeeded();
       await expect(panel.getByRole("heading", { level: 3 })).toBeVisible();
@@ -37,7 +40,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 1280, height: 72
 test("process descriptions interpolate open and closed, and reduced motion settles immediately", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
+  await page.goto(OLD_LANDING);
   const process = page.locator("#build-story");
   await process.getByRole("button", { name: "01 Describe", exact: true }).click();
   await expect(process.locator(".ol-process-reveal").first()).toHaveCSS("opacity", "1");

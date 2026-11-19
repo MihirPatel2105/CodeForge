@@ -21,7 +21,7 @@ test("homepage explanation link works without hover previews or the removed sear
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
-test("run outcomes combine, search, and remove without losing pagination filters", async ({ page }) => {
+test("outcome tabs keep their filter across pages and reset pagination when changed", async ({ page }) => {
   await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
   await page.route("**/api/backend/**", route => route.fulfill({ status: 404, json: {} }));
   await page.route("**/api/backend/auth/me", route => route.fulfill({ json: { id: "preview", first_name: "Preview", is_admin: false } }));
@@ -32,21 +32,13 @@ test("run outcomes combine, search, and remove without losing pagination filters
     return route.fulfill({ json: { items: [], stats: { total: 10, succeeded: 4, failed: 2, avg_loops: 1 }, next_cursor: url.searchParams.has("cursor") ? null : "next-page" } });
   });
   await page.goto("/projects/filters");
-  const input = page.getByRole("combobox", { name: "Filter run outcomes" });
-  await input.fill("suc");
-  await page.getByRole("option", { name: "succeeded", exact: true }).click();
-  await input.fill("sandbox");
-  await page.getByRole("option", { name: /sandbox/ }).click();
-  await input.press("Escape");
-  await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["succeeded", "failed_sandbox"]);
+  const tabs = page.getByRole("group", { name: "Quick outcome filters" });
+  await tabs.getByRole("button", { name: /^Failed/ }).click();
+  await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["failed_max_loops", "failed_sandbox", "failed_llm"]);
   await page.getByRole("button", { name: "Load more runs" }).click();
   await expect.poll(() => requests.at(-1)?.searchParams.get("cursor")).toBe("next-page");
-  expect(requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["succeeded", "failed_sandbox"]);
-  await page.screenshot({ path: "/tmp/codeforge-outcome-filter.png", fullPage: true });
-  await page.getByRole("button", { name: "Remove succeeded", exact: true }).click();
-  await expect.poll(() => requests.at(-1)?.searchParams.get("outcome")).toBe("failed_sandbox");
+  expect(requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["failed_max_loops", "failed_sandbox", "failed_llm"]);
+  await tabs.getByRole("button", { name: "Other", exact: true }).click();
+  await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["cancelled", "rejected"]);
   expect(requests.at(-1)?.searchParams.has("cursor")).toBe(false);
-  await input.fill("suc");
-  await input.press("ArrowDown"); await input.press("Enter");
-  await expect.poll(() => requests.at(-1)?.searchParams.getAll("outcomes")).toEqual(["failed_sandbox", "succeeded"]);
 });

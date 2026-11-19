@@ -115,6 +115,7 @@ export default function VerifyLoginPage() {
                   key={option}
                   type="button"
                   variant="outline"
+                  shape="compact"
                   aria-pressed={method === option}
                   disabled={busy}
                   onClick={() => { setMethod(option); setCode(""); setError(null); setNotice(null); }}
@@ -134,7 +135,7 @@ export default function VerifyLoginPage() {
                 <VerificationCode id="login-verification-code" value={code} onChange={setCode} autoFocus disabled={busy} invalid={Boolean(error)} />
                 <p className="mt-2 text-[12px] leading-5 text-fg-muted">Enter the current six-digit code from your authenticator app.</p>
               </div>
-              <Button type="submit" disabled={busy || code.length !== 6} className="h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]">
+              <Button type="submit" disabled={busy || code.length !== 6} className="h-11 w-full rounded-[var(--ui-radius-action)] text-[14px] font-[650]">
                 {busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                 {busy ? "Verifying…" : "Verify and sign in"}
               </Button>
@@ -142,7 +143,7 @@ export default function VerifyLoginPage() {
           ) : (
             <div className="mt-7">
               <p className="text-[13px] leading-5 text-fg-muted">Your device or password manager may ask for a PIN or biometric check.</p>
-              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-5 h-[52px] w-full gap-2 rounded-[var(--ui-radius-control)] text-[14px] font-[650]">
+              <Button type="button" onClick={verifyPasskey} disabled={busy} className="mt-5 h-11 w-full gap-2 rounded-[var(--ui-radius-action)] text-[14px] font-[650]">
                 {busy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Fingerprint className="h-4 w-4" aria-hidden />}
                 {busy ? "Waiting for passkey…" : "Verify with passkey"}
               </Button>

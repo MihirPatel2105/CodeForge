@@ -20,9 +20,9 @@
 }
 /* Editorial heroes size their kicker at 16px; as a dateline it reads at 14px. */
 .mk-page.cf-editorial-page .mk-hero-copy .ed-kicker { font-size:14px; }
-/* Primary action: slate ink with ivory text, 8px corners, no glow (DESIGN.md button-primary). */
+/* Primary action: slate ink with ivory text, 12px corners, no glow (DESIGN.md button-primary). */
 .mk-page .mk-hero-copy :is(.lp-button,.cf-marketing-primary) {
- min-height:52px; padding:14px 25px; border-radius:var(--ui-radius-action);
+ min-height:44px; padding:0 20px; border-radius:var(--ui-radius-action);
  background:var(--fg); color:var(--surface); font-size:14px; font-weight:650; box-shadow:none;
  transition:background-color var(--ui-duration-standard) var(--ui-ease);
 }

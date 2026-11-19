@@ -35,7 +35,7 @@ export function SignInAlertReview({ token }: { token: string }) {
             <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-danger"><ShieldAlert className="h-5 w-5" aria-hidden /></span>
             <h1 className="mt-6 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">All sessions ended</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">Your account has been signed out on every device. Reset your password before signing in again.</p>
-            <ButtonLink href="/forgot-password" size="lg" className="mt-7 h-[52px] w-full rounded-[var(--ui-radius-control)]">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></ButtonLink>
+            <ButtonLink href="/forgot-password" size="lg" className="mt-7 h-11 w-full rounded-[var(--ui-radius-action)]">Reset password <ArrowRight className="h-4 w-4" aria-hidden /></ButtonLink>
           </>
         ) : result === "me" ? (
           <>
@@ -50,8 +50,8 @@ export function SignInAlertReview({ token }: { token: string }) {
             <h1 className="mt-6 font-display text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">Was this sign-in you?</h1>
             <p className="mt-3 text-[15px] leading-6 text-fg-muted">A new browser signed in to your account. Review the activity and choose what to do.</p>
             <div className="mt-7 flex flex-col gap-3">
-              <Button type="button" size="lg" disabled={pending} onClick={() => void respond("me")} className="h-[52px] w-full rounded-[var(--ui-radius-control)] text-[14px] font-[650]">{pending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}Yes, it was me</Button>
-              <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => void respond("not_me")} className="h-[52px] w-full rounded-[var(--ui-radius-control)] border-danger-bd text-[14px] font-[650] text-danger hover:bg-danger-soft">No, sign out all devices</Button>
+              <Button type="button" size="lg" disabled={pending} onClick={() => void respond("me")} className="h-11 w-full rounded-[var(--ui-radius-action)] text-[14px] font-[650]">{pending && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" aria-hidden />}Yes, it was me</Button>
+              <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => void respond("not_me")} className="h-11 w-full rounded-[var(--ui-radius-action)] border-danger-bd text-[14px] font-[650] text-danger hover:bg-danger-soft">No, sign out all devices</Button>
             </div>
             <p className="mt-5 text-[13px] leading-5 text-fg-muted">This link works once and expires after 24 hours. If this wasn&apos;t you, all sessions will end and you&apos;ll need to reset your password.</p>
             {error ? <Notice className="mt-4">{error}</Notice> : null}

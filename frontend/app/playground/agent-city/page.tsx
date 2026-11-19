@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { AgentCity } from "./agent-city";
+import { redirect } from "next/navigation";
 import { LiveAgentCity } from "./live-agent-city";
-import "./city.css";
 import "./live-city.css";
+import "./city-editorial.css";
 
 export const metadata: Metadata = {
   title: "Agent City · CodeForge",
@@ -16,5 +16,6 @@ export default async function AgentCityPage({ searchParams }: { searchParams: Pr
     return <LiveAgentCity key={query.run} runId={valid ? query.run : null} invalidRun={!valid} />;
   }
   if (typeof query.demo === "string") return <LiveAgentCity runId={null} demoSlug={query.demo} />;
-  return <AgentCity />;
+  // Agent City only shows a real run, opened from that run's page; there is no standalone playground.
+  redirect("/projects");
 }

@@ -15,9 +15,9 @@ export function ProblemsPanel({ problems, canOpen, onOpen, error }: {
       {error && <p role="status" className="mt-2 text-sm text-fg-muted">Could not refresh findings. Showing the last available results.</p>}
       {!problems.length && !error && <p className="cf-problems-empty">No recorded findings. Reviewer findings and test failures will appear here.</p>}
       <ul className="mt-3 max-h-64 space-y-2 overflow-auto">
-        {problems.map(problem => <li key={problem.id} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border p-3">
+        {problems.map(problem => <li key={problem.id} className="cf-problem-item flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border p-3">
           <div className="min-w-0 flex-1 basis-52">
-            <p className={`text-xs font-semibold ${problem.severity === "blocking" || problem.severity === "test" ? "text-danger" : "text-fg-muted"}`}>{problem.source} · {problem.severity === "test" ? "Failure" : problem.severity === "blocking" ? "Blocking" : problem.severity === "warning" ? "Warning" : "Suggestion"}</p>
+            <p className={`cf-problem-source text-xs font-semibold ${problem.severity === "blocking" || problem.severity === "test" ? "text-danger" : "text-fg-muted"}`}>{problem.source} · {problem.severity === "test" ? "Failure" : problem.severity === "blocking" ? "Blocking" : problem.severity === "warning" ? "Warning" : "Suggestion"}</p>
             <p className="mt-1 break-words text-sm text-fg">{problem.message}</p>
             {!canOpen(problem) && <p className="mt-1 text-xs text-fg-muted">Source location unavailable for the displayed code.</p>}
           </div>

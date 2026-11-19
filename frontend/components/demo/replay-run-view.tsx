@@ -20,6 +20,7 @@ import type { CodeForgeEvent } from "@/lib/types";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { useDemoPlayback } from "@/lib/use-demo-playback";
 import { useCurrentUser } from "@/lib/use-current-user";
+import "@/components/dashboard/run-editorial.css";
 
 const EVENT_INTERVAL_MS = 980;
 
@@ -67,9 +68,9 @@ export function ReplayRunView({ replayKey, title, events, getVersion, getPreviou
   const progress = ((eventIndex + 1) / events.length) * 100;
 
   return (
-    <div className="cf-run-page cf-run-refined min-h-screen bg-bg">
+    <div className="cf-run-page cf-run-refined min-h-screen bg-bg" data-run-look="editorial">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-7 sm:px-6 lg:px-8">
+      <main className="cf-page pb-20 pt-7">
         <div className="cf-run-navigation">
           <Link
             href={copy.back.href}
@@ -94,7 +95,7 @@ export function ReplayRunView({ replayKey, title, events, getVersion, getPreviou
                   onClick={() => setPlaying((current) => !current)}
                   disabled={!controlsReady || isComplete}
                   aria-label={playing ? "Pause" : "Continue"}
-                  className="inline-flex min-h-9 items-center rounded-full bg-accent px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
+                  className="cf-demo-button cf-demo-button--primary inline-flex min-h-9 items-center rounded-full bg-accent px-3 py-2 text-[12px] font-[650] text-surface disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <span className="inline-grid items-center" aria-hidden="true">
                     <motion.span
@@ -115,7 +116,7 @@ export function ReplayRunView({ replayKey, title, events, getVersion, getPreviou
                   type="button"
                   onClick={replay}
                   disabled={!controlsReady}
-                  className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-[650] text-fg hover:border-accent-bd hover:text-accent"
+                  className="cf-demo-button inline-flex min-h-9 items-center gap-2 rounded-lg border border-border-strong bg-surface px-3 py-2 text-[12px] font-[650] text-fg hover:border-accent-bd hover:text-accent"
                 >
                   <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                   Replay
@@ -124,7 +125,7 @@ export function ReplayRunView({ replayKey, title, events, getVersion, getPreviou
                   type="button"
                   onClick={skipToResult}
                   disabled={!controlsReady || isComplete}
-                  className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] font-[650] text-fg-muted hover:border-border-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
+                  className="cf-demo-button inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] font-[650] text-fg-muted hover:border-border-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <SkipForward className="h-3.5 w-3.5" aria-hidden />
                   Skip

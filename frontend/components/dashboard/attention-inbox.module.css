@@ -104,3 +104,29 @@
 .panel button:focus-visible, .panel a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 @media (max-width: 380px) { .viewSwitch button { padding-inline: 7px; } .markAll span { display: inline; } .preferences { padding: 12px 16px; } }
 @media (prefers-reduced-motion: reduce) { .panel[data-open], .panel[data-closed] { animation: none; } }
+
+/* Anthropic style (html[data-ui="editorial"], always set by app/layout.tsx): a serif title,
+   the filters as underlined text tabs, hairlines and no tinted chips. */
+:global(:root[data-ui="editorial"]) .panel { border-color: color-mix(in srgb, var(--fg) 10%, transparent); border-radius: 20px; box-shadow: 0 2px 6px rgb(20 20 19 / .04), 0 28px 72px -24px rgb(20 20 19 / .3); }
+:global(:root[data-ui="editorial"]) .header { padding: 26px 26px 14px; }
+:global(:root[data-ui="editorial"]) .header h2 { font-family: var(--font-brand-serif), serif; font-size: 26px; font-weight: 400; letter-spacing: -.015em; }
+:global(:root[data-ui="editorial"]) .count { min-width: 0; height: auto; padding: 0; background: transparent; color: var(--fg-faint); font-size: 14px; }
+:global(:root[data-ui="editorial"]) .header p { font-size: 13.5px; }
+:global(:root[data-ui="editorial"]) .toolbar { min-height: 0; padding: 0 26px; border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); }
+:global(:root[data-ui="editorial"]) .viewSwitch { justify-content: flex-start; gap: 20px; }
+:global(:root[data-ui="editorial"]) .viewSwitch button { height: auto; margin-bottom: -1px; padding: 10px 0 11px; border-radius: 0; border-bottom: 2px solid transparent; font-size: 13.5px; }
+:global(:root[data-ui="editorial"]) .viewSwitch .viewActive { border-bottom-color: var(--fg); }
+:global(:root[data-ui="editorial"]) .viewHighlight { display: none; }
+:global(:root[data-ui="editorial"]) .list { padding: 8px 12px 12px; }
+:global(:root[data-ui="editorial"]) .item { border-radius: 12px; }
+:global(:root[data-ui="editorial"]) .itemTitle strong { font-size: 14.5px; }
+:global(:root[data-ui="editorial"]) .itemPreview { font-size: 13px; }
+:global(:root[data-ui="editorial"]) .eventIcon { width: 28px; height: 28px; }
+:global(:root[data-ui="editorial"]) .details { padding-left: 39px; }
+:global(:root[data-ui="editorial"]) .itemActions :is(button, a) { border-color: color-mix(in srgb, var(--fg) 14%, transparent); border-radius: 10px; }
+:global(:root[data-ui="editorial"]) .empty strong { font-family: var(--font-brand-serif), serif; font-size: 20px; font-weight: 400; }
+:global(:root[data-ui="editorial"]) .empty p { font-size: 13.5px; }
+:global(:root[data-ui="editorial"]) :is(.footer, .preferences, .notice) { padding-inline: 26px; border-top-color: color-mix(in srgb, var(--fg) 10%, transparent); }
+:global(:root[data-ui="editorial"]) .preferences strong { font-size: 13.5px; }
+:global(:root[data-ui="editorial"]) .preferences p { font-size: 12.5px; }
+:global(:root[data-ui="editorial"]) .viewSwitch button:focus-visible { outline-offset: -2px; }

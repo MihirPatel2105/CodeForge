@@ -38,7 +38,7 @@ test("project search filters names and descriptions without changing portfolio t
   const search = page.getByRole("searchbox", { name: "Search projects" });
   await expect(page.locator('a[href="/projects/project-1"]')).toBeVisible();
   await expect(page.locator('a[href="/projects/project-2"]')).toBeVisible();
-  await expect(page.locator("main dl .vui-number .sr-only").first()).toHaveText("2");
+  await expect(page.locator(".cf-projects-summary")).toHaveText("2 projects, no runs yet.");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
   await search.focus();
@@ -46,7 +46,8 @@ test("project search filters names and descriptions without changing portfolio t
   await expect(page.locator('a[href="/projects/project-1"]')).toBeVisible();
   await expect(page.locator('a[href="/projects/project-2"]')).toHaveCount(0);
   await expect(page.getByRole("status")).toHaveText("1 of 1 matching projects shown");
-  await expect(page.locator("main dl .vui-number .sr-only").first()).toHaveText("2");
+  // The summary counts every project, not just the ones the search shows.
+  await expect(page.locator(".cf-projects-summary")).toHaveText("2 projects, no runs yet.");
 
   await search.fill("missing");
   await expect(page.getByRole("heading", { name: "No matching projects" })).toBeVisible();

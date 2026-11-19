@@ -8,7 +8,7 @@ import "./account.css";
 export function AccountShell({ page, children }: { page: "profile" | "settings"; children: ReactNode }) {
   return <div className="cf-account account-workspace min-h-screen">
     <AppHeader />
-    <div className="account-frame">
+    <div className="account-frame cf-page">
       <nav className="account-tabs" aria-label="Account navigation">
         <Link href="/profile" aria-current={page === "profile" ? "page" : undefined}>Profile</Link>
         <Link href="/profile/settings" aria-current={page === "settings" ? "page" : undefined}>Settings</Link>

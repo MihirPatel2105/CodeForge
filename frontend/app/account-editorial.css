@@ -1,0 +1,172 @@
+/* Anthropic-style command palette, profile, settings and security pages.
+   Scoped to html[data-ui="editorial"], which app/layout.tsx always sets; the scope keeps these
+   rules above the older account stylesheets they refine. Language: serif headings on the page, hairline surfaces instead of dark bands and tinted
+   cards, small uppercase labels, quiet icons, colour only for state. */
+
+:root[data-ui="editorial"] {
+  --ax-hair: color-mix(in srgb, var(--fg) 10%, transparent);
+  --ax-hair-strong: color-mix(in srgb, var(--fg) 18%, transparent);
+  --ax-field: color-mix(in srgb, var(--surface) 40%, white);
+}
+
+/* ---------- Command palette ---------- */
+:root[data-ui="editorial"] .cf-command-dialog[data-slot="dialog-content"] {
+  width: 620px; border-radius: 20px; background: var(--surface);
+  box-shadow: 0 0 0 1px var(--ax-hair), 0 2px 6px rgb(20 20 19 / .04), 0 32px 80px -24px rgb(20 20 19 / .35);
+}
+:root[data-ui="editorial"] .cf-command-search { padding: 20px 22px; border-bottom: 1px solid var(--ax-hair); }
+:root[data-ui="editorial"] .cf-command-search input { font-size: 17px; font-weight: 400; letter-spacing: -.01em; }
+:root[data-ui="editorial"] .cf-command-hotkey { border: 0; background: transparent; color: var(--fg-faint); font-size: 11px; }
+:root[data-ui="editorial"] .cf-command-dismiss { border: 0; border-radius: 8px; }
+/* Scopes become text tabs on one line. */
+:root[data-ui="editorial"] .cf-command-scopes { flex-direction: row; align-items: center; gap: 0; padding: 0 22px; border-bottom: 1px solid var(--ax-hair); }
+:root[data-ui="editorial"] .cf-command-scopes > span { display: none; }
+:root[data-ui="editorial"] .cf-command-scopes > div { gap: 22px; }
+:root[data-ui="editorial"] .cf-command-scopes button {
+  min-height: 0; margin-bottom: -1px; padding: 12px 0 11px; border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: transparent; font-size: 13.5px; color: var(--fg-muted);
+}
+:root[data-ui="editorial"] .cf-command-scopes button svg { display: none; }
+:root[data-ui="editorial"] .cf-command-scopes button:hover { background: transparent; color: var(--fg); }
+:root[data-ui="editorial"] .cf-command-scopes button[aria-pressed="true"] { border-color: transparent transparent var(--fg); background: transparent; color: var(--fg); }
+:root[data-ui="editorial"] .cf-command-scopes button:focus-visible { outline-offset: -2px; border-radius: 4px; }
+:root[data-ui="editorial"] .cf-command-results { padding: 6px 10px 10px; }
+:root[data-ui="editorial"] .cf-command-group { padding: 16px 12px 6px; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+:root[data-ui="editorial"] .cf-command-option { min-height: 52px; padding: 8px 12px; border-radius: 12px; }
+:root[data-ui="editorial"] .cf-command-option[aria-selected="true"],
+:root[data-ui="editorial"] .cf-command-selection { background: color-mix(in srgb, var(--fg) 5%, transparent); }
+:root[data-ui="editorial"] .cf-command-icon { width: 22px; height: 22px; background: transparent; color: var(--fg-faint); }
+:root[data-ui="editorial"] .cf-command-label { font-size: 14.5px; font-weight: 500; }
+:root[data-ui="editorial"] .cf-command-detail { font-size: 13px; }
+:root[data-ui="editorial"] .cf-command-empty-icon { border: 0; background: transparent; }
+:root[data-ui="editorial"] .cf-command-empty p { font-family: var(--font-brand-serif), serif; font-size: 20px; font-weight: 400; }
+:root[data-ui="editorial"] .cf-command-footer { padding: 12px 22px; border-top: 1px solid var(--ax-hair); font-size: 12px; color: var(--fg-faint); }
+:root[data-ui="editorial"] .cf-command-footer kbd { border: 1px solid var(--ax-hair); border-bottom-width: 1px; border-radius: 6px; background: transparent; font-size: 11px; }
+:root[data-ui="editorial"] .cf-command-trigger { border-color: var(--ax-hair); border-radius: 12px; }
+
+/* ---------- Account shell: Profile / Settings tabs ---------- */
+:root[data-ui="editorial"] .account-workspace .account-tabs { gap: 28px; padding-block: 0; margin-top: 28px; border-bottom: 1px solid var(--ax-hair); }
+:root[data-ui="editorial"] .account-workspace .account-tabs a {
+  margin-bottom: -1px; padding: 12px 0; border-radius: 0; border-bottom: 2px solid transparent;
+  background: transparent; box-shadow: none; color: var(--fg-muted); font-size: 14.5px; font-weight: 400;
+}
+:root[data-ui="editorial"] .account-workspace .account-tabs a:hover { color: var(--fg); }
+:root[data-ui="editorial"] .account-workspace .account-tabs a[aria-current="page"] { background: transparent; color: var(--fg); border-bottom-color: var(--fg); }
+
+/* Page heads: the dark bands become a serif title on the page. */
+:root[data-ui="editorial"] .account-workspace :is(.profile-page-intro, .settings-premium-hero) {
+  padding: 8px 0 28px; border: 0; border-bottom: 1px solid var(--ax-hair); border-radius: 0; background: transparent;
+}
+:root[data-ui="editorial"] .account-workspace .profile-page-intro p,
+:root[data-ui="editorial"] .account-workspace .settings-premium-hero h1 {
+  color: var(--fg); font-family: var(--font-brand-serif), serif; font-size: clamp(32px, 3.4vw, 40px);
+  font-weight: 400; letter-spacing: -.02em; line-height: 1.1;
+}
+:root[data-ui="editorial"] .account-workspace .profile-page-intro { align-items: baseline; }
+:root[data-ui="editorial"] .account-workspace .profile-page-intro > span,
+:root[data-ui="editorial"] .account-workspace .settings-premium-hero > div > p { color: var(--fg-muted); font-size: 16px; }
+:root[data-ui="editorial"] .account-workspace .settings-hero-eyebrow { color: var(--fg-faint); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; }
+:root[data-ui="editorial"] .account-workspace .settings-hero-eyebrow svg { display: none; }
+:root[data-ui="editorial"] .account-workspace .settings-account-pass { border-color: var(--ax-hair); border-radius: 18px; background: transparent; box-shadow: none; }
+:root[data-ui="editorial"] .account-workspace .settings-account-monogram { width: 40px; height: 40px; font-size: 15px; }
+
+/* Shared panels: hairline, no shadow, generous padding; headings in the serif. */
+:root[data-ui="editorial"] .account-workspace .account-main :is(.profile-premium-panel, .settings-premium-panel) {
+  border: 1px solid var(--ax-hair); border-radius: 18px; background: var(--surface); box-shadow: none;
+}
+:root[data-ui="editorial"] .account-workspace :is(.profile-panel-heading h2, .settings-section-heading h2, .settings-premium-panel h3),
+:root[data-ui="editorial"] .cf-security-settings main :is(h2, h3) {
+  font-family: var(--font-brand-serif), serif; font-weight: 400; letter-spacing: -.01em;
+}
+:root[data-ui="editorial"] .account-workspace .profile-panel-heading h2 { font-size: 26px; }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-section-heading h2 { font-size: 30px; font-weight: 400; }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-panel h3 { font-size: 20px; font-weight: 400; }
+:root[data-ui="editorial"] .account-workspace .profile-kicker {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint);
+}
+/* Icon tiles go quiet: the icon alone, in the faint ink. */
+:root[data-ui="editorial"] .account-workspace .profile-security-icon {
+  border: 0; background: transparent; color: var(--fg-muted);
+}
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-panel .ax-acct-link,
+:root[data-ui="editorial"] .account-workspace :is(.profile-text-link, .profile-identity-settings) {
+  color: var(--fg); text-decoration: underline; text-decoration-color: var(--ax-hair-strong); text-underline-offset: 4px;
+}
+/* Settings rail: plain text links, the current one in full ink with a marker. */
+:root[data-ui="editorial"] .settings-rail-label { font-family: var(--font-brand-serif), serif; font-size: 20px; font-weight: 400; }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a { padding: 9px 14px; font-size: 14px; color: var(--fg-muted); }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a > span { background: transparent; }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a[aria-current="location"] {
+  color: var(--fg); font-weight: 500; box-shadow: inset 2px 0 0 var(--fg); border-radius: 0;
+}
+/* Danger zone: a red hairline and a red label, no pink fill. */
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-panel.ax-acct-panel--danger { border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+
+/* Profile identity and metrics. */
+:root[data-ui="editorial"] .account-workspace .profile-card-monogram { width: 96px; height: 96px; font-family: var(--font-brand-serif), serif; font-size: 36px; font-weight: 400; }
+:root[data-ui="editorial"] .account-workspace .profile-premium-identity .profile-name { font-family: var(--font-brand-serif), serif; font-size: 30px; font-weight: 400; letter-spacing: -.015em; }
+:root[data-ui="editorial"] .account-workspace .profile-premium-metrics dd { font-family: var(--font-brand-serif), serif; font-size: 40px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
+:root[data-ui="editorial"] .account-workspace .profile-premium-metrics dt { font-size: 12.5px; color: var(--fg-muted); }
+:root[data-ui="editorial"] .account-workspace .profile-premium-metrics > div + div { border-left-color: var(--ax-hair); }
+:root[data-ui="editorial"] .account-workspace .profile-premium-details > div { border-color: var(--ax-hair); }
+
+/* ---------- Security pages (password, passkeys, two-factor) ---------- */
+:root[data-ui="editorial"] .cf-security-settings { background: var(--surface); }
+:root[data-ui="editorial"] .cf-account.cf-security-settings > main > header.cf-account-hero {
+  display: block; padding: 18px 0 28px; border: 0; border-bottom: 1px solid var(--ax-hair); border-radius: 0;
+  background: transparent; box-shadow: none;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-hero-icon { display: none; }
+:root[data-ui="editorial"] .cf-security-settings .cf-security-eyebrow {
+  color: var(--fg-faint); font-size: 11.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-title {
+  font-family: var(--font-brand-serif), serif; font-size: clamp(36px, 4vw, 48px); font-weight: 400; letter-spacing: -.02em; line-height: 1.1;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-lede { font-size: 16px; line-height: 1.6; }
+/* The section switcher becomes underlined text tabs. */
+:root[data-ui="editorial"] .cf-security-settings .cf-security-nav {
+  gap: 28px; margin-top: 0; padding: 0; border: 0; border-bottom: 1px solid var(--ax-hair); border-radius: 0; background: transparent;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-nav a {
+  min-height: 0; margin-bottom: -1px; padding: 14px 0 12px; border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: transparent; color: var(--fg-muted); font-size: 14.5px; font-weight: 400;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-nav a svg { display: none; }
+:root[data-ui="editorial"] .cf-security-settings .cf-security-nav a[aria-current="page"] { color: var(--fg); border-bottom-color: var(--fg); }
+:root[data-ui="editorial"] .cf-security-settings .cf-security-content { margin-top: 36px; }
+/* Cards on these pages: hairlines, no fills, no shadows; tinted status cards keep only a coloured
+   label. The ax-acct-* names are set in the page components. */
+:root[data-ui="editorial"] .cf-security-settings .cf-security-content .ax-acct-card {
+  border-color: var(--ax-hair); border-radius: 18px; background: var(--surface); box-shadow: none;
+}
+:root[data-ui="editorial"] .cf-security-settings .cf-security-content .ax-acct-flat { background: transparent; }
+:root[data-ui="editorial"] .cf-security-settings .cf-security-content .ax-acct-danger-edge { border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+:root[data-ui="editorial"] .cf-security-settings .cf-security-content :is(h2, h3) { font-size: 24px; font-weight: 400; }
+
+/* Fields across the account pages: plain, light, hairline. */
+:root[data-ui="editorial"] :is(.account-workspace, .cf-security-settings) :is(input:not([type="checkbox"]):not([type="radio"]), textarea) {
+  border: 1px solid var(--ax-hair-strong); background: var(--ax-field);
+}
+/* Same specificity as the rule above plus :focus-visible, so the ring always wins. */
+:root[data-ui="editorial"] :is(.account-workspace, .cf-security-settings) :is(input:not([type="checkbox"]):not([type="radio"]), textarea):focus-visible {
+  border-color: var(--fg-muted); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 8%, transparent); outline: none;
+}
+
+@media (max-width: 760px) {
+  :root[data-ui="editorial"] .account-workspace .account-tabs { margin-top: 12px; }
+  :root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-rail .cf-settings-nav a[aria-current="location"] { box-shadow: inset 0 -2px 0 var(--fg); }
+  :root[data-ui="editorial"] .cf-security-settings .cf-security-nav { gap: 20px; overflow-x: auto; flex-wrap: nowrap; }
+}
+
+/* Shared by the security pages and the settings panels: quiet icon tiles and small uppercase labels.
+   A --faint kicker is set in the faint ink; the danger label keeps red. */
+:root[data-ui="editorial"] :is(.cf-security-settings .cf-security-content, .cf-account .account-main--settings .settings-premium-panel) .ax-acct-glyph {
+  border: 0; background: transparent; color: var(--fg-muted);
+}
+:root[data-ui="editorial"] :is(.cf-security-settings .cf-security-content, .cf-account .account-main--settings .settings-premium-panel) .ax-acct-glyph svg { color: currentColor; }
+:root[data-ui="editorial"] :is(.cf-security-settings .cf-security-content, .cf-account .account-main--settings .settings-premium-panel) .ax-acct-kicker {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+:root[data-ui="editorial"] :is(.cf-security-settings .cf-security-content, .cf-account .account-main--settings .settings-premium-panel) .ax-acct-kicker--faint { color: var(--fg-faint); }
+:root[data-ui="editorial"] .cf-account .account-main--settings .settings-premium-panel .ax-acct-hair { border-color: var(--ax-hair); }

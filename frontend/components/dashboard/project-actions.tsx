@@ -6,13 +6,14 @@ import { Menu } from "@base-ui/react/menu";
 import { Archive, ArchiveRestore, Ellipsis, LoaderCircle, Pencil, Play, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse } from "@/lib/types";
 import { DeleteProjectDialog } from "./delete-project-dialog";
+import "@/components/ui/axd-dialog.css";
 
 const ITEM =
   "flex cursor-default select-none items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-[550] text-fg outline-none data-[highlighted]:bg-surface-2";
@@ -154,28 +155,27 @@ function RenameDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="cf-workspace-dialog rounded-xl border-border p-0">
-        <div className="border-b border-rule bg-surface-2 px-6 py-5">
-          <DialogHeader>
-            <DialogTitle className="font-display text-[22px] tracking-[-0.04em]">Rename project</DialogTitle>
-          </DialogHeader>
-        </div>
-        <form className="flex flex-col gap-4 px-6 pb-6" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`rename-${project.id}`} className="text-[12px] font-[650] text-fg-muted">Name</Label>
-            <Input id={`rename-${project.id}`} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} />
+      <DialogContent className="cf-workspace-dialog axd p-0 sm:max-w-[480px]">
+        <DialogHeader className="axd-head">
+          <DialogTitle className="axd-title">Rename project</DialogTitle>
+        </DialogHeader>
+        <form className="axd-form" onSubmit={handleSubmit}>
+          <div className="axd-field">
+            <Label htmlFor={`rename-${project.id}`} className="axd-label">Name</Label>
+            <Input id={`rename-${project.id}`} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} className="axd-input" />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`describe-${project.id}`} className="text-[12px] font-[650] text-fg-muted">Description (optional)</Label>
-            <Textarea id={`describe-${project.id}`} value={description} onChange={(event) => setDescription(event.target.value)} />
+          <div className="axd-field">
+            <Label htmlFor={`describe-${project.id}`} className="axd-label">Description <span>optional</span></Label>
+            <Textarea id={`describe-${project.id}`} value={description} onChange={(event) => setDescription(event.target.value)} className="axd-input" />
           </div>
-          {error && <p role="alert" className="text-[13px] text-danger">{error}</p>}
-          <DialogFooter className="mt-2 border-t border-rule pt-5">
-            <Button type="submit" disabled={saving} className="min-w-[120px]">
+          {error && <p role="alert" className="axd-error">{error}</p>}
+          <div className="axd-actions">
+            <DialogClose render={<Button type="button" variant="ghost" />}>Cancel</DialogClose>
+            <Button type="submit" disabled={saving} className="axd-submit">
               {saving && <LoaderCircle className="size-4 motion-safe:animate-spin" aria-hidden />}
               {saving ? "Saving…" : "Save"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

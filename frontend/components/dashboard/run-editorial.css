@@ -1,0 +1,409 @@
+/* Anthropic-style run (agents) screen. Same vocabulary as the account and project pages: a serif
+   title on the page, hairlines instead of filled cards, small uppercase labels, quiet icons, and
+   colour kept for state. Applied by data-run-look="editorial" on the .cf-run-page wrapper of the run
+   page and the sample replay. */
+
+[data-run-look="editorial"] {
+  --rx-hair: color-mix(in srgb, var(--fg) 10%, transparent);
+  --rx-hair-strong: color-mix(in srgb, var(--fg) 18%, transparent);
+  --rx-serif: var(--font-brand-serif), Georgia, serif;
+}
+
+/* ---------- Overview: the request becomes the page title ---------- */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-overview {
+  padding: 10px 0 0; border: 0; border-radius: 0; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-eyebrow {
+  gap: 14px; color: var(--fg-faint); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-eyebrow > span + span { font-size: 11px; font-weight: 500; }
+/* The title is the user's request, often a long sentence: a calm serif size, at most two lines. */
+.cf-run-page[data-run-look="editorial"] .cf-overview-heading { align-items: flex-start; }
+.cf-run-page[data-run-look="editorial"] .cf-overview-actions { margin-top: 22px; }
+.cf-run-page[data-run-look="editorial"] .cf-run-overview h1.cf-run-request {
+  max-width: 58ch; margin: 10px 0 12px; color: var(--fg);
+  font: 400 clamp(24px, 2.2vw, 30px)/1.25 var(--rx-serif); letter-spacing: -.015em;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-state { gap: 10px 22px; font-size: 13.5px; }
+.cf-run-page[data-run-look="editorial"] .cf-overview-status {
+  gap: 8px; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 13.5px; font-weight: 500;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-status > span { width: 7px; height: 7px; }
+.cf-run-page[data-run-look="editorial"] .cf-overview-elapsed svg { color: var(--fg-faint); }
+.cf-run-page[data-run-look="editorial"] .cf-overview-footer {
+  min-height: 0; margin-top: 18px; padding-block: 0 10px; border-top: 0; border-bottom: 1px solid var(--rx-hair);
+}
+/* Figures read as "6/6 stages": a serif number and a small label on one baseline. */
+.cf-run-page[data-run-look="editorial"] .cf-overview-facts { gap: 8px 32px; padding-block: 0; }
+.cf-run-page[data-run-look="editorial"] .cf-overview-facts > div { flex-direction: row; align-items: baseline; gap: 7px; }
+.cf-run-page[data-run-look="editorial"] .cf-overview-facts dt {
+  order: 2; color: var(--fg-faint); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-facts dd {
+  order: 1; font: 400 20px/1 var(--rx-serif); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.01em;
+}
+.cf-run-page[data-run-look="editorial"] .cf-overview-footer .cf-request-toggle {
+  min-height: 28px; color: var(--fg); font-size: 13px; text-decoration: underline; text-decoration-color: var(--rx-hair-strong); text-underline-offset: 4px;
+}
+.cf-run-page[data-run-look="editorial"] .cf-run-request-details p { max-width: 72ch; padding: 14px 0 4px; color: var(--fg-muted); font-size: 15px; line-height: 1.65; }
+
+/* ---------- Section heads: a kicker and a serif title, no band ---------- */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-pipeline {
+  margin-top: 40px; overflow: visible; border: 0; border-radius: 0; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-pipeline > div:first-child {
+  padding: 0 0 10px; border-bottom: 1px solid var(--rx-hair); background: transparent;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-pipeline > div:first-child > div > span {
+  display: block; color: var(--fg-faint); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined :is(.cf-run-pipeline h2, .cf-run-workbench-title h2) {
+  margin: 4px 0 0; font: 400 26px/1.15 var(--rx-serif); letter-spacing: -.015em;
+}
+.cf-run-page[data-run-look="editorial"] .cf-run-pipeline > div:first-child > span,
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-workbench-title > span {
+  color: var(--fg-faint); font-size: 12.5px;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-pipeline-viewport { padding: 16px 0 4px; }
+
+/* ---------- Pipeline: six quiet stages on hairlines ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step {
+  min-height: 76px; padding: 12px 14px; border: 1px solid var(--rx-hair); border-radius: 14px;
+  background: var(--surface); box-shadow: none;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step::before,
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step::after { display: none; }
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step:hover { border-color: var(--rx-hair-strong); }
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step[aria-pressed="true"] { border-color: var(--fg); }
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step[data-state="working"] {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step[data-state="failed"] { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+/* While a loop fires, the Coder and the stage that sent work back keep the loop colour, selected or not. */
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step.cf-agent-step-loop,
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step.cf-agent-step-loop[aria-pressed="true"] {
+  border-color: var(--loop); box-shadow: 0 0 0 3px color-mix(in srgb, var(--loop) 14%, transparent);
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step .cf-agent-step-icon,
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step[aria-pressed="true"] .cf-agent-step-icon {
+  border: 0; background: transparent; color: var(--fg-muted); box-shadow: none;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step[aria-pressed="true"] .cf-agent-step-icon { color: var(--fg); }
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step-name {
+  font: 400 17px/1.2 var(--rx-serif); letter-spacing: -.01em; color: var(--fg);
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step-pass {
+  color: var(--loop); font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-arrow svg { color: var(--rx-hair-strong); }
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-pipeline-idle-note,
+[data-run-look="editorial"] .cf-pipeline-loop-reason { font-size: 12px; }
+.cf-run-page[data-run-look="editorial"] .cf-stage-inspection-bar { margin-top: 6px; padding-top: 10px; border-top-color: var(--rx-hair); }
+.cf-run-page[data-run-look="editorial"] .cf-stage-inspection-current { gap: 10px; font-size: 13px; }
+.cf-run-page[data-run-look="editorial"] .cf-stage-inspection-current strong { font-weight: 500; }
+.cf-run-page[data-run-look="editorial"] .cf-stage-inspection-actions button {
+  background: transparent; color: var(--fg); font-size: 13px;
+  text-decoration: underline; text-decoration-color: var(--rx-hair-strong); text-underline-offset: 4px;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-detail {
+  border: 1px solid var(--rx-hair); border-radius: 18px; background: var(--surface); box-shadow: none;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-detail-heading {
+  border-bottom: 1px solid var(--rx-hair); background: transparent;
+  color: var(--fg-faint); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-detail-body h3 {
+  font: 400 22px/1.3 var(--rx-serif); letter-spacing: -.01em;
+}
+.cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-detail-body dt {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint);
+}
+
+/* ---------- Workspace: hairline frame, text tabs ---------- */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-workbench-section { margin-top: 32px; }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-workbench-title {
+  align-items: flex-end; margin-bottom: 14px; padding: 0 0 10px; border-bottom: 1px solid var(--rx-hair);
+}
+.cf-run-page[data-run-look="editorial"] .cf-evidence-workbench.cf-responsive-workbench {
+  border: 1px solid var(--rx-hair-strong); border-radius: 18px; box-shadow: none;
+}
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console { border-top-color: var(--rx-hair-strong); }
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading { background: var(--surface); border-bottom-color: var(--rx-hair); }
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger] {
+  color: var(--fg-muted); font-size: 14px; font-weight: 400;
+}
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger] svg { display: none; }
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger][data-active],
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger][aria-selected="true"] {
+  border-color: transparent; border-radius: 0; background: transparent; color: var(--fg);
+  /* A rule along the tab's bottom edge, not a text underline, which would also run under the count chip. */
+  font-weight: 500; box-shadow: inset 0 -2px 0 var(--fg);
+}
+/* Keyboard focus keeps the tab's 3px ring alongside the bottom rule (both are box-shadows). */
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-heading [data-slot=tabs-trigger]:is([data-active], [aria-selected="true"]):focus-visible {
+  box-shadow: inset 0 -2px 0 var(--fg), 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+.cf-run-page[data-run-look="editorial"] .cf-workbench-test-summary {
+  border: 0; background: transparent; font-size: 13px;
+}
+
+/* ---------- Result: one serif sentence and serif figures ---------- */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-result-section { margin-top: clamp(40px, 5vw, 64px); }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-summary {
+  padding: 28px 0 0; border: 0; border-top: 1px solid var(--rx-hair); border-radius: 0; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > span {
+  display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; border-radius: 0; background: transparent;
+  color: var(--fg-muted); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > span::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > span[data-tone="ok"] { color: var(--ok); }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > span[data-tone="warn"] { color: var(--warn); }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > span[data-tone="danger"] { color: var(--danger); }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > p:first-of-type {
+  font: 400 clamp(26px, 2.6vw, 32px)/1.2 var(--rx-serif); letter-spacing: -.015em;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-copy > p:last-of-type { font-size: 15px; line-height: 1.65; }
+/* Two columns: the sentence on the left; on the right the figures line up with the top of the
+   headline, and the actions sit on their own row beneath them. */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 28px 36px;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div:not(.cf-result-actions) { min-width: 64px; }
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-actions {
+  flex-basis: 100%; justify-content: flex-end; margin-left: 0;
+}
+@media (min-width: 1024px) {
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-summary {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 56px; align-items: start;
+  }
+  /* The status label above the headline is about 22px tall; this puts the figures level with the headline. */
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics { justify-content: flex-end; margin-top: 24px; }
+}
+@media (max-width: 1023px) {
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-actions { justify-content: flex-start; }
+}
+@media (max-width: 639px) {
+  /* All four figures on one line at phone width. */
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics { gap: 20px 22px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div:not(.cf-result-actions) { min-width: 0; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div > span:first-child { font-size: 26px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div > span:last-child { font-size: 10px; letter-spacing: .1em; }
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div > span:first-child {
+  font: 400 32px/1 var(--rx-serif); font-variant-numeric: lining-nums tabular-nums;
+}
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-result-metrics > div > span:last-child {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+
+/* ---------- Approval checkpoint: a hairline note, not a coloured band ---------- */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-approval-compact {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent); border-left: 3px solid var(--warn); border-radius: 18px;
+  background: var(--surface); box-shadow: 0 12px 32px -24px color-mix(in srgb, var(--fg) 40%, transparent);
+}
+
+@media (max-width: 639px) {
+  .cf-run-page[data-run-look="editorial"] .cf-run-overview h1.cf-run-request { font-size: 24px; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-actions { margin-top: 0; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-facts { gap: 12px 28px; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-facts dd { font-size: 19px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined :is(.cf-run-pipeline h2, .cf-run-workbench-title h2) { font-size: 26px; }
+}
+
+/* ---------- Timeline header and replay controls ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-timeline-count {
+  padding: 0; border-radius: 0; background: transparent; color: var(--fg-faint); font-size: 12.5px; font-weight: 400;
+}
+.cf-run-page[data-run-look="editorial"] .cf-timeline-filter { padding: 10px 24px; border-bottom-color: var(--rx-hair); }
+/* A shorter tab bar leaves more of the console for the timeline itself. */
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-workbench-console-heading,
+.cf-run-page[data-run-look="editorial"].cf-run-refined .cf-workbench-console-heading [data-slot=tabs-list] { min-height: 48px; height: 48px; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-filter [data-slot=popover-trigger] {
+  border-color: var(--rx-hair-strong); border-radius: var(--ui-radius-action, 12px); background: transparent; font-weight: 500;
+}
+.cf-run-page[data-run-look="editorial"] .cf-demo-button {
+  border-radius: var(--ui-radius-action, 12px); font-size: 13px; font-weight: 500;
+}
+.cf-run-page[data-run-look="editorial"] .cf-demo-button:not(.cf-demo-button--primary) { border-color: var(--rx-hair-strong); background: transparent; }
+
+.cf-run-page[data-run-look="editorial"] .cf-stage-inspection-actions button:hover,
+.cf-run-page[data-run-look="editorial"] .cf-overview-footer .cf-request-toggle:hover { text-decoration-color: currentColor; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-filter [data-slot=popover-trigger]:hover,
+.cf-run-page[data-run-look="editorial"] .cf-demo-button:not(.cf-demo-button--primary):hover:not(:disabled) {
+  border-color: var(--fg-muted); background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+
+/* Short laptop screens (1280×720 and similar): the generated code must still open in view for the
+   demo, so the two small uppercase labels go and the title and gaps tighten; the order and the
+   hairlines between sections stay. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .cf-run-page[data-run-look="editorial"] .cf-run-overview h1.cf-run-request { margin: 0 0 8px; font-size: 22px; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-eyebrow { display: none; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-actions { margin-top: 0; }
+  .cf-run-page[data-run-look="editorial"] .cf-overview-footer { margin-top: 12px; padding-bottom: 8px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined :is(.cf-run-pipeline, .cf-run-workbench-section) { margin-top: 18px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-pipeline > div:first-child > div > span { display: none; }
+  .cf-run-page[data-run-look="editorial"] .cf-stage-inspection-bar { min-height: 30px; margin-top: 2px; padding-top: 4px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-pipeline > div:first-child { padding-bottom: 8px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined :is(.cf-run-pipeline h2, .cf-run-workbench-title h2) { font-size: 22px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-pipeline-viewport { padding-block: 12px 2px; }
+  .cf-run-page[data-run-look="editorial"] .cf-pipeline-compact .cf-agent-step { min-height: 62px; padding-block: 8px; }
+  .cf-run-page[data-run-look="editorial"].cf-run-refined .cf-run-workbench-title { margin-bottom: 8px; padding-bottom: 6px; }
+}
+
+/* ---------- Timeline events: rows on hairlines; state is a thin rule on the left, never a fill ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-panel .cf-timeline-refined [role=log] { gap: 0; padding: 4px 24px 16px; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined :is(.cf-timeline-group, .cf-timeline-message, .cf-timeline-finding, .cf-timeline-loop) {
+  align-self: stretch; width: 100%; box-sizing: border-box;
+}
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-group {
+  padding: 0 0 8px; border: 0; border-bottom: 1px solid var(--rx-hair); border-radius: 0; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-group-heading { padding: 14px 0 4px; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-group-heading > span:first-child { font-size: 13px; font-weight: 500; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-group-heading > span:last-child { font-size: 12px; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-group .cf-timeline-group-message { padding: 6px 0; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message:not(.cf-timeline-group-message) {
+  padding: 14px 0; border: 0; border-bottom: 1px solid var(--rx-hair); border-radius: 0; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message::after { display: none; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message > span:first-child { box-shadow: none; }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message p { font-weight: 400; }
+/* Failures, rejections and approvals: a 2px rule in the state colour and a little inset. */
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message:is([data-variant=failed], [data-variant=rejected], [data-variant=approval-required]),
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined :is(.cf-timeline-finding, .cf-timeline-loop) {
+  padding: 14px 0 14px 16px; border: 0; border-bottom: 1px solid var(--rx-hair); border-radius: 0; background: transparent;
+  box-shadow: inset 2px 0 0 var(--rx-state, var(--danger));
+}
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-message[data-variant=approval-required] { --rx-state: var(--warn); }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined .cf-timeline-loop { --rx-state: var(--loop); }
+.cf-run-page[data-run-look="editorial"] .cf-timeline-refined :is(.cf-timeline-finding, .cf-timeline-loop) > p { font-weight: 400; }
+.cf-run-page[data-run-look="editorial"] .cf-finding-badge {
+  padding: 0; border-radius: 0; background: transparent; color: var(--danger);
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-run-page[data-run-look="editorial"] .cf-finding-file { padding: 0; background: transparent; }
+.cf-run-page[data-run-look="editorial"] .cf-loop-icon { width: auto; height: auto; border-radius: 0; background: transparent; color: var(--loop); }
+.cf-run-page[data-run-look="editorial"] .cf-loop-label { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+
+/* ---------- Tests and Problems tabs ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-workbench-console-panel .cf-evidence-tests { padding: 22px 24px; gap: 12px; }
+.cf-run-page[data-run-look="editorial"] .cf-tests-score { font: 400 40px/1 var(--rx-serif); font-variant-numeric: lining-nums tabular-nums; }
+.cf-run-page[data-run-look="editorial"] :is(.cf-tests-failure, .cf-tests-output) {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent); border-radius: 12px; background: transparent;
+}
+.cf-run-page[data-run-look="editorial"] .cf-evidence-problems { margin: 0; padding: 20px 24px; border: 0; border-radius: 0; background: transparent; }
+.cf-run-page[data-run-look="editorial"] .cf-evidence-problems h3 { font: 400 22px/1.2 var(--rx-serif); }
+.cf-run-page[data-run-look="editorial"] .cf-evidence-problems ul { max-height: none; }
+.cf-run-page[data-run-look="editorial"] .cf-problem-item { padding: 14px 0; border: 0; border-bottom: 1px solid var(--rx-hair); border-radius: 0; }
+.cf-run-page[data-run-look="editorial"] .cf-problem-source { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+
+/* ---------- Agent City invitation ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-city-invite {
+  border-color: var(--rx-hair-strong); border-radius: 18px; box-shadow: 0 18px 48px -28px color-mix(in srgb, var(--fg) 45%, transparent);
+}
+.cf-run-page[data-run-look="editorial"] .cf-city-invite h2 { font: 400 22px/1.25 var(--rx-serif); letter-spacing: -.01em; }
+.cf-run-page[data-run-look="editorial"] .cf-city-invite-link { border-radius: var(--ui-radius-action, 12px); }
+
+/* ---------- Versions ---------- */
+.cf-run-page[data-run-look="editorial"] .cf-version-composer {
+  border-color: var(--rx-hair); border-radius: 18px; background: transparent; box-shadow: none;
+}
+
+/* ---------- Approval dialog (rendered in a portal, so not under .cf-run-page; only the run page opens it) ---------- */
+.cf-approval-dialog .cf-approval-review > div:first-child > .cf-approval-icon { border: 0; background: transparent; }
+.cf-approval-dialog .cf-approval-kicker { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+.cf-approval-dialog [data-slot=dialog-title] { font-family: var(--font-brand-serif), Georgia, serif; font-weight: 400; letter-spacing: -.015em; }
+.cf-approval-dialog .cf-approval-fact > span:first-child { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+.cf-approval-dialog .cf-approval-actions { background: transparent; border-top-color: color-mix(in srgb, var(--fg) 10%, transparent); }
+.cf-approval-dialog .cf-approval-actions :is(button, input) { border-radius: var(--ui-radius-action, 12px); }
+.cf-run-page[data-run-look="editorial"] .cf-evidence-tests > div:first-child > span:first-child {
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+
+/* ======================================================================================
+   Use, Try and Publish pages (.cf-api-flow): the same language as the run page. Titles on
+   the page rather than in a card, hairline panels, wells without fills, text labels.
+   ====================================================================================== */
+.cf-api-flow[data-run-look="editorial"] .cf-api-intro {
+  padding: 8px 0 28px; border: 0; border-bottom: 1px solid var(--rx-hair); border-radius: 0; background: transparent; box-shadow: none;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-intro h1 {
+  font: 400 clamp(34px, 3.6vw, 46px)/1.1 var(--rx-serif); letter-spacing: -.02em;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-intro p { color: var(--fg-muted); font-size: 16px; line-height: 1.6; }
+/* Status: a dot and a word in the state colour, no pill. */
+.cf-api-flow[data-run-look="editorial"] .cf-api-status {
+  padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 13.5px; font-weight: 500;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-beta-badge {
+  padding: 2px 7px; border-color: var(--rx-hair-strong); border-radius: 6px; background: transparent; color: var(--fg-muted);
+  font-size: 10.5px; font-weight: 500; letter-spacing: .12em;
+}
+/* Panels and wells. */
+.cf-api-flow[data-run-look="editorial"] .cf-api-panel {
+  border-color: var(--rx-hair); border-radius: 18px; background: var(--surface); box-shadow: none;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-panel :is(h2, h3) { font-family: var(--rx-serif); font-weight: 400; letter-spacing: -.01em; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-panel-title { font-size: 21px; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-well {
+  border-color: var(--rx-hair); border-radius: 12px; background: transparent;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-label {
+  color: var(--fg-faint); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-disclosure { border-color: var(--rx-hair); border-radius: 12px; background: transparent; }
+/* Fields: plain, light, hairline (the account pages use the same treatment). */
+.cf-api-flow[data-run-look="editorial"] :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  border: 1px solid var(--rx-hair-strong); background: color-mix(in srgb, var(--surface) 40%, white); box-shadow: none;
+}
+/* A clear keyboard cue: full-ink border plus a visible ring (fields have no global outline fallback). */
+.cf-api-flow[data-run-look="editorial"] :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select):focus-visible {
+  border-color: var(--fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 25%, transparent); outline: none;
+}
+:root.dark .cf-api-flow[data-run-look="editorial"] :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { background: transparent; }
+
+/* ---------- Use: three quiet option cards ---------- */
+.cf-api-flow[data-run-look="editorial"] .cf-use-option-card,
+.cf-api-flow[data-run-look="editorial"] .cf-use-option-card:first-child {
+  border: 1px solid var(--rx-hair); border-radius: 18px; background: var(--surface); box-shadow: none;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-use-option-card:hover { border-color: var(--rx-hair-strong); }
+.cf-api-flow[data-run-look="editorial"] .cf-use-option-card h2 { font: 400 26px/1.2 var(--rx-serif); letter-spacing: -.015em; }
+.cf-api-flow[data-run-look="editorial"] .cf-use-card-top > span {
+  font-family: inherit; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint);
+}
+.cf-api-flow[data-run-look="editorial"] .cf-use-card-top svg { color: var(--fg-muted); stroke-width: 1.4; }
+.cf-api-flow[data-run-look="editorial"] .cf-use-runtime { border: 0; border-top: 1px solid var(--rx-hair); border-radius: 0; box-shadow: none; background: transparent; }
+.cf-api-flow[data-run-look="editorial"] .cf-use-runtime h2 { font: 400 22px/1.25 var(--rx-serif); }
+
+/* ---------- Try: the response view switch becomes a quiet outlined control ---------- */
+.cf-api-flow[data-run-look="editorial"] .cf-response-segments {
+  --rs-track: transparent !important;
+  --rs-thumb: color-mix(in srgb, var(--fg) 13%, transparent) !important;
+  box-shadow: inset 0 0 0 1px var(--rx-hair-strong); border-radius: 12px;
+}
+
+/* ---------- Publish guide: endpoint rows, shell and language switches ---------- */
+.cf-api-flow[data-run-look="editorial"] .cf-api-endpoint {
+  border-color: var(--rx-hair); background: transparent; box-shadow: none; transform: none;
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-endpoint[aria-pressed="true"] {
+  border-color: var(--fg); background: transparent; color: var(--fg); box-shadow: inset 2px 0 0 var(--fg);
+}
+.cf-api-flow[data-run-look="editorial"] .cf-api-shell { background: transparent; color: var(--fg-muted); transform: none; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-shell[aria-pressed="true"] { color: var(--fg); box-shadow: inset 0 -2px 0 var(--fg); border-radius: 0; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-langs { gap: 20px; padding: 0; border-radius: 0; background: transparent; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-langs [data-slot=tabs-trigger] { padding-inline: 0; border-radius: 0; color: var(--fg-muted); font-weight: 400; }
+.cf-api-flow[data-run-look="editorial"] .cf-api-langs [data-slot=tabs-trigger][data-active] { color: var(--fg); font-weight: 500; box-shadow: inset 0 -2px 0 var(--fg); }
+.cf-api-flow[data-run-look="editorial"] .cf-api-lang-thumb { display: none; }
+
+@media (max-width: 639px) {
+  .cf-api-flow[data-run-look="editorial"] .cf-api-intro h1 { font-size: 32px; }
+}

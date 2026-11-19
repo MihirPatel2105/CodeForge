@@ -1,0 +1,111 @@
+/* Projects page, Anthropic-style: a serif lead sentence, text tabs and one quiet tool line,
+   soft hairline cards (or a plain list), colour spent only on run state. Scoped to .axp-page. */
+
+/* Preview-only version switch. */
+.axp-switch { position: fixed; top: 14px; right: 14px; z-index: 60; display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); box-shadow: 0 8px 24px -14px rgb(20 20 19 / .3); }
+.axp-switch button { padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 550; color: var(--fg-muted); }
+.axp-switch button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+
+/* Header */
+.axp-page .axp-head h1 { font-family: var(--font-brand-serif), serif; font-size: clamp(40px, 5vw, 56px); font-weight: 400; line-height: 1.05; letter-spacing: -.02em; }
+.axp-page .axp-summary { margin-top: 12px; font-family: var(--font-brand-serif), serif; font-size: 21px; line-height: 1.4; color: var(--fg-muted); text-wrap: balance; }
+.axp-summary strong { font-weight: 400; color: var(--fg); font-variant-numeric: lining-nums tabular-nums; }
+.axp-page .axp-new { height: 40px; border-radius: 12px; padding: 0 16px; }
+
+/* Toolbar: status tabs on the left, view, search and layout on the right, one hairline under all. */
+.axp-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 28px; margin-top: 36px; border-bottom: 1px solid var(--rule); }
+.axp-tabs { display: flex; gap: 24px; overflow-x: auto; padding-top: 4px; scrollbar-width: none; }
+.axp-tabs::-webkit-scrollbar { display: none; }
+.axp-tabs button { flex: none; margin-bottom: -1px; padding: 0 0 13px; border-bottom: 2px solid transparent; font-size: 14.5px; color: var(--fg-muted); transition: color .15s ease, border-color .15s ease; }
+.axp-tabs button:hover { color: var(--fg); }
+.axp-tabs button[aria-pressed="true"] { border-bottom-color: var(--fg); color: var(--fg); }
+.axp-tools { display: flex; flex-wrap: nowrap; align-items: center; gap: 18px; padding-bottom: 9px; }
+.axp-view { display: inline-flex; gap: 14px; font-size: 13.5px; }
+.axp-view button { color: var(--fg-faint); transition: color .15s ease; }
+.axp-view button:hover, .axp-view button[aria-pressed="true"] { color: var(--fg); }
+.axp-view button[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+.axp-search { display: inline-flex; flex: 0 1 230px; align-items: center; gap: 8px; min-width: 0; color: var(--fg-faint); }
+.axp-search svg { width: 15px; height: 15px; flex: none; }
+.axp-search input { width: 100%; min-width: 0; border: 0; background: transparent; font-size: 14px; color: var(--fg); outline: none; }
+.axp-search:focus-within { color: var(--fg-muted); }
+.axp-search:focus-within input::placeholder { color: var(--fg-muted); }
+.axp-search kbd { padding: 0 6px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono-stack); font-size: 11px; }
+.axp-layout { display: inline-flex; gap: 2px; }
+.axp-layout button { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--fg-faint); transition: color .15s ease, background-color .15s ease; }
+.axp-layout button:hover { color: var(--fg); }
+.axp-layout button[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 6%, transparent); color: var(--fg); }
+.axp-layout svg { width: 16px; height: 16px; }
+:is(.axp-tabs, .axp-view, .axp-layout, .axp-switch) button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 6px; }
+.axp-search:has(input:focus-visible) { outline: 2px solid var(--fg); outline-offset: 4px; border-radius: 6px; }
+
+/* Results */
+.axp-results { margin-top: 18px; }
+.axp-count { margin-bottom: 16px; font-size: 13px; color: var(--fg-faint); }
+.axp-empty { padding: 48px 0; font-family: var(--font-brand-serif), serif; font-size: 20px; color: var(--fg-muted); }
+.axp-keys { margin-top: 28px; font-size: 12px; color: var(--fg-faint); text-align: right; }
+.axp-keys kbd { font-family: var(--font-mono-stack); }
+/* Keyboard hints mean nothing on a touch screen, and the search box needs the room. */
+@media (hover: none) { .axp-keys, .axp-search kbd { display: none; } }
+
+/* Shared pieces */
+.axp-link { display: block; min-width: 0; outline: none; }
+.axp-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.axp-link:focus-visible::after { outline: 2px solid var(--fg); outline-offset: -2px; }
+.axp-name { display: block; overflow: hidden; font-size: 16px; font-weight: 550; letter-spacing: -.01em; color: var(--fg); text-overflow: ellipsis; white-space: nowrap; }
+.axp-desc { display: -webkit-box; margin-top: 4px; overflow: hidden; font-size: 14px; line-height: 1.5; color: var(--fg-muted); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.axp-status { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-muted); white-space: nowrap; }
+.axp-status i { width: 7px; height: 7px; border-radius: 999px; background: var(--fg-faint); }
+.axp-status[data-tone="ok"] i { background: var(--ok); }
+.axp-status[data-tone="danger"] i { background: var(--danger); }
+.axp-status[data-tone="warn"] i { background: var(--warn); }
+.axp-status[data-tone="warn"] { color: var(--warn); }
+.axp-status[data-tone="accent"] i { background: var(--fg); animation: axp-pulse 1.6s ease-in-out infinite; }
+@keyframes axp-pulse { 50% { opacity: .3; } }
+.axp-runs { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+.axp-page time { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg-faint); white-space: nowrap; }
+/* The run bars, slimmer and quieter than before; they still open each run on hover. */
+.axp-heartbeat { gap: 2px; }
+.axp-heartbeat .cf-heartbeat-bar { width: 4px; height: 12px; border-radius: 2px; opacity: .85; }
+.axp-heartbeat .cf-heartbeat-bar:hover { height: 16px; opacity: 1; }
+
+/* Cards */
+.axp-grid { display: grid; gap: 16px; }
+@media (min-width: 640px) { .axp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .axp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.axp-card {
+  position: relative; display: flex; flex-direction: column; gap: 18px; min-height: 196px; padding: 22px 22px 18px;
+  border: 1px solid color-mix(in srgb, var(--fg) 9%, transparent); border-radius: 18px; background: var(--surface);
+  box-shadow: 0 1px 2px rgb(20 20 19 / .03);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.axp-card:hover { border-color: color-mix(in srgb, var(--fg) 18%, transparent); box-shadow: 0 1px 2px rgb(20 20 19 / .04), 0 12px 32px -14px rgb(20 20 19 / .16); transform: translateY(-1px); }
+.axp-card-top { display: flex; align-items: flex-start; gap: 10px; }
+.axp-card-top .axp-link { flex: 1; }
+.axp-card-pulse { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; }
+.axp-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--rule); }
+
+/* List */
+.axp-list-head, .axp-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 112px 150px 104px 32px; align-items: center; column-gap: 20px; }
+.axp-list-head { padding: 0 0 10px; border-bottom: 1px solid var(--rule); font-size: 12px; color: var(--fg-faint); }
+.axp-row { position: relative; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.axp-row::before { content: ""; position: absolute; inset: 0 -12px; z-index: 0; border-radius: 10px; transition: background-color .15s ease; pointer-events: none; }
+.axp-row:hover::before { background: color-mix(in srgb, var(--fg) 3.5%, transparent); }
+.axp-row .axp-desc { -webkit-line-clamp: 1; }
+.axp-row .axp-link::after { inset: 0 -12px; }
+
+@media (max-width: 767px) {
+  .axp-tools { width: 100%; justify-content: space-between; }
+  .axp-search { flex: 1 1 auto; }
+  .axp-list-head { display: none; }
+  /* Phone: name and menu on one line, then status, results and date as one wrapping line. */
+  .axp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .axp-row > .axp-link { flex: 1 1 calc(100% - 52px); }
+  .axp-row > :last-child { order: 1; }
+  .axp-row > :not(.axp-link):not(:last-child) { order: 2; }
+  .axp-row > .axp-heartbeat { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .axp-card, .axp-row::before, .axp-tabs button, .axp-view button, .axp-layout button { transition: none; }
+  .axp-card:hover { transform: none; }
+  .axp-status[data-tone="accent"] i { animation: none; }
+}

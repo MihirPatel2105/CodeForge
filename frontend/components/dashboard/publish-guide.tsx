@@ -85,16 +85,16 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
   const requestCopyId = `request-${selectedIndex}-${language}-${shell}`;
 
   return (
-    <section className="min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-guide-heading">
+    <section className="cf-api-panel min-w-0 rounded-3xl border border-border bg-surface p-5 sm:p-6" aria-labelledby="publish-guide-heading">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 id="publish-guide-heading" className="font-display text-[21px] font-[650] text-fg">Make a request</h3>
         <p className="text-[13px] leading-5 text-fg-muted">Set your key, choose an endpoint, then copy an example.</p>
       </div>
-      <div className="mt-5 rounded-lg border border-border bg-bg p-4">
+      <div className="cf-api-well mt-5 rounded-lg border border-border bg-bg p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[12px] font-[700] text-fg">1. Set your key in a terminal</p>
           <div className="flex gap-1" role="group" aria-label="Choose terminal shell">
-            {(["Bash / zsh", "PowerShell"] as const).map((option) => <button key={option} type="button" onClick={() => setShell(option)} aria-pressed={shell === option} className={`rounded-md px-2.5 py-1 text-[11px] font-[650] transition-[color,background-color,transform] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none ${shell === option ? "bg-accent-soft text-accent" : "text-fg-muted hover:bg-surface hover:text-fg"}`}>{option}</button>)}
+            {(["Bash / zsh", "PowerShell"] as const).map((option) => <button key={option} type="button" onClick={() => setShell(option)} aria-pressed={shell === option} className={`cf-api-shell rounded-md px-2.5 py-1 text-[11px] font-[650] transition-[color,background-color,transform] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none ${shell === option ? "bg-accent-soft text-accent" : "text-fg-muted hover:bg-surface hover:text-fg"}`}>{option}</button>)}
           </div>
         </div>
         <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
@@ -109,7 +109,7 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
             <div className="mt-2 flex max-h-56 flex-wrap gap-1.5 overflow-y-auto lg:flex-col lg:flex-nowrap" role="group" aria-label="Published endpoints">
               {operations.map((item, index) => (
                 <button key={`${item.method}-${item.path}`} type="button" onClick={() => setSelected(index)} aria-pressed={selectedIndex === index}
-                  className={`inline-flex max-w-full min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-left font-mono text-[11px] transition-[color,background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none lg:w-full ${selectedIndex === index ? "border-accent-bd bg-accent-soft text-fg shadow-[inset_3px_0_0_var(--accent)]" : "border-border bg-bg text-fg-muted hover:border-accent-bd hover:bg-accent-soft/30 hover:text-fg"}`}>
+                  className={`cf-api-endpoint inline-flex max-w-full min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-left font-mono text-[11px] transition-[color,background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none motion-reduce:transition-none lg:w-full ${selectedIndex === index ? "border-accent-bd bg-accent-soft text-fg shadow-[inset_3px_0_0_var(--accent)]" : "border-border bg-bg text-fg-muted hover:border-accent-bd hover:bg-accent-soft/30 hover:text-fg"}`}>
                   <span className="shrink-0 font-[700] text-accent">{item.method}</span><span className="truncate">{item.path}</span>
                 </button>
               ))}
@@ -122,8 +122,8 @@ export function PublishGuide({ url, status, apiKey, operations, copied, onCopy }
             {language === "Python" && <p className="mt-1 text-[12px] text-fg-muted">Install the HTTP client with <code>pip install requests</code>.</p>}
             <Tabs value={language} onValueChange={value => setLanguage(value as Language)} className="mt-3">
               <div className="flex flex-wrap items-center gap-2"><LayoutGroup>
-                <TabsList aria-label="Request example language">{(["cURL", "Node.js", "Python"] as const).map(item => <TabsTrigger key={item} value={item} className="isolate">
-                  {language === item && <motion.span layoutId="request-language" transition={{ duration: reduced ? 0 : .2 }} className="absolute inset-0 -z-10 rounded-full bg-background shadow-sm" aria-hidden />}
+                <TabsList className="cf-api-langs" aria-label="Request example language">{(["cURL", "Node.js", "Python"] as const).map(item => <TabsTrigger key={item} value={item} className="isolate">
+                  {language === item && <motion.span layoutId="request-language" transition={{ duration: reduced ? 0 : .2 }} className="cf-api-lang-thumb absolute inset-0 -z-10 rounded-full bg-background shadow-sm" aria-hidden />}
                   {item === "cURL" && shell === "PowerShell" ? "PowerShell" : item}
                 </TabsTrigger>)}</TabsList></LayoutGroup>
                 <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => onCopy(snippet, requestCopyId)} aria-label={copied === requestCopyId ? "Request example copied" : "Copy request example"}><CopyFeedback copied={copied === requestCopyId} label="Copy" /></Button>

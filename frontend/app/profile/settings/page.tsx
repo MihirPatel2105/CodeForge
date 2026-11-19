@@ -33,6 +33,8 @@ import { api, getToken, clearToken, ApiError } from "@/lib/api";
 
 const LABEL =
   "text-[12px] font-[650] text-fg-muted";
+/** A panel label; account-editorial.css turns it into a faint uppercase kicker. */
+const KICKER = `${LABEL} ax-acct-kicker ax-acct-kicker--faint`;
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -121,7 +123,7 @@ export default function SettingsPage() {
           <SettingsPanel className="mt-6 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/55">
             <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="flex items-start gap-4 px-6 py-6 md:px-7">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
+                <span className="ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface">
                   <ShieldCheck className="h-4 w-4 text-accent" aria-hidden />
                 </span>
                 <div>
@@ -217,12 +219,12 @@ export default function SettingsPage() {
 
         <div className="mt-4 grid items-start gap-5 xl:grid-cols-2">
           <SettingsPanel className="rounded-3xl border border-border bg-surface">
-            <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
+            <div className="ax-acct-hair flex items-start gap-4 border-b border-rule px-6 py-5">
+              <span className="ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <Laptop className="h-4 w-4 text-accent" aria-hidden />
               </span>
               <div>
-                <span className={LABEL}>Session control</span>
+                <span className={KICKER}>Session control</span>
                 <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Active sessions
                 </h3>
@@ -262,15 +264,15 @@ export default function SettingsPage() {
           </SettingsPanel>
 
           <SettingsPanel className="rounded-3xl border border-border bg-surface">
-            <div className="flex items-start gap-4 border-b border-rule px-6 py-5">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
+            <div className="ax-acct-hair flex items-start gap-4 border-b border-rule px-6 py-5">
+              <span className="ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-bg">
                 <MonitorSmartphone
                   className="h-4 w-4 text-accent"
                   aria-hidden
                 />
               </span>
               <div>
-                <span className={LABEL}>Device activity</span>
+                <span className={KICKER}>Device activity</span>
                 <h3 className="font-display mt-1.5 text-[21px] font-[650] tracking-[-0.04em] text-fg">
                   Signed-in browsers
                 </h3>
@@ -299,7 +301,7 @@ export default function SettingsPage() {
           className={
             user?.is_admin
               ? "mt-4 overflow-hidden rounded-3xl border border-accent-bd bg-accent-soft/35"
-              : "mt-4 overflow-hidden rounded-3xl border border-danger-bd bg-danger-soft/35"
+              : "ax-acct-panel--danger mt-4 overflow-hidden rounded-3xl border border-danger-bd bg-danger-soft/35"
           }
         >
           <div className="flex flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-7">
@@ -307,8 +309,8 @@ export default function SettingsPage() {
               <span
                 className={
                   user?.is_admin
-                    ? "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface"
-                    : "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-danger-bd bg-surface"
+                    ? "ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-bd bg-surface"
+                    : "ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-danger-bd bg-surface"
                 }
               >
                 {user?.is_admin ? (
@@ -321,8 +323,8 @@ export default function SettingsPage() {
                 <span
                   className={
                     user?.is_admin
-                    ? "text-[12px] font-[650] text-accent"
-                    : "text-[12px] font-[650] text-danger"
+                    ? "ax-acct-kicker ax-acct-kicker--faint text-[12px] font-[650] text-accent"
+                    : "ax-acct-kicker text-[12px] font-[650] text-danger"
                   }
                 >
                   {user?.is_admin ? "Protected account" : "Danger zone"}
@@ -424,7 +426,7 @@ function SecurityMethodRow({
     <li data-method={label} className="flex flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
       <div className="flex min-w-0 items-start gap-4">
         <span
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}
+          className={`ax-acct-glyph grid h-10 w-10 shrink-0 place-items-center rounded-lg border ${highlighted ? "border-accent-bd bg-accent-soft" : "border-border bg-bg"}`}
         >
           <Icon className="h-4 w-4 text-accent" aria-hidden />
         </span>
@@ -432,8 +434,8 @@ function SecurityMethodRow({
           <span
             className={
               highlighted
-                ? "text-[12px] font-[650] text-accent"
-                : LABEL
+                ? "ax-acct-kicker ax-acct-kicker--faint text-[12px] font-[650] text-accent"
+                : KICKER
             }
           >
             {label}
@@ -455,7 +457,7 @@ function SecurityMethodRow({
       </div>
       <ButtonLink variant="outline"
         href={href}
-        className="group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-3xl border border-border-strong px-4 text-[13px] font-[650] text-fg transition-colors hover:border-accent-bd hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:self-auto"
+        className="ax-acct-link group inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-3xl border border-border-strong px-4 text-[13px] font-[650] text-fg transition-colors hover:border-accent-bd hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:self-auto"
       >
         {action}
         <ArrowRight

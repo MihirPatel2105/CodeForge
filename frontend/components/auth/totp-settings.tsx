@@ -31,8 +31,11 @@ import { Input } from "@/components/ui/input";
 import { setSessionTotpEnabled } from "@/lib/use-current-user";
 import { api, ApiError, setToken } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import "@/components/ui/axd-dialog.css";
 
 const LABEL = "text-[12px] font-[650]";
+/** A small status label; account-editorial.css turns it into an uppercase kicker. */
+const KICKER = `${LABEL} ax-acct-kicker`;
 const METHOD_BUTTON = "relative z-10 h-full min-w-0 gap-2 rounded-lg border-0 bg-transparent px-2 text-[12px] font-[650] shadow-none hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 focus-visible:ring-2 focus-visible:ring-inset";
 
 export function TotpSettings({
@@ -166,21 +169,21 @@ export function TotpSettings({
       <section
         className={cn(
           "overflow-hidden rounded-2xl border",
-          enabled ? "border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
+          enabled ? "ax-acct-flat border-ok-bd bg-ok-soft/45" : "border-border bg-surface",
         )}
       >
         <div className="flex flex-col justify-between gap-5 px-6 py-6 md:flex-row md:items-center md:px-7">
           <div className="flex items-start gap-4">
-            <span className={cn("grid h-12 w-12 shrink-0 place-items-center rounded-xl border", enabled ? "border-ok-bd bg-surface text-ok" : "border-border bg-bg text-fg-faint")}>
+            <span className={cn("ax-acct-glyph grid h-12 w-12 shrink-0 place-items-center rounded-xl border", enabled ? "border-ok-bd bg-surface text-ok" : "border-border bg-bg text-fg-faint")}>
               {enabled ? <ShieldCheck className="h-5 w-5" aria-hidden /> : <ShieldOff className="h-5 w-5" aria-hidden />}
             </span>
             <div>
-              <span className={cn(LABEL, enabled ? "text-ok" : "text-fg-muted")}>Security status</span>
+              <span className={cn(KICKER, enabled ? "text-ok" : "text-fg-muted")}>Security status</span>
               <h2 className="font-display mt-1.5 text-[22px] font-[650] tracking-[-0.045em] text-fg">{enabled ? "Authenticator codes are on" : "Authenticator codes are off"}</h2>
               <p className="mt-2 max-w-[62ch] text-[13px] leading-5 text-fg-muted">{enabled ? "After your password, choose an authenticator code or a saved passkey. Direct passkey sign-in needs no extra code." : "Add a rotating authenticator code as another way to verify after your password."}</p>
             </div>
           </div>
-          <span className={cn("inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-[650]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
+          <span className={cn("ax-acct-kicker inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-[650]", enabled ? "border-ok-bd bg-surface text-ok" : "border-warn-bd bg-warn-soft text-warn")}>
             <span className={cn("h-1.5 w-1.5 rounded-full", enabled ? "bg-ok" : "bg-warn")} aria-hidden />
             {enabled ? "Enabled" : "Action recommended"}
           </span>
@@ -188,7 +191,7 @@ export function TotpSettings({
       </section>
 
       {recoveryCodes.length > 0 ? (
-        <section className="rounded-xl border border-warn-bd bg-warn-soft px-6 py-6 md:px-8" aria-label="Recovery codes">
+        <section className="ax-acct-card rounded-xl border border-warn-bd bg-warn-soft px-6 py-6 md:px-8" aria-label="Recovery codes">
           <h2 className="font-display text-[21px] font-[650] text-fg">Save your recovery codes now</h2>
           <p className="mt-2 text-[13px] leading-5 text-fg-muted">These codes appear only once. Store them somewhere private. Each code can verify an admin-approved recovery request if you lose your authenticator.</p>
           <ol className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -200,18 +203,18 @@ export function TotpSettings({
 
       {!enabled ? (
         <>
-          <ol className="grid overflow-hidden rounded-3xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
+          <ol className="ax-acct-card grid overflow-hidden rounded-3xl border border-border bg-surface md:grid-cols-3" aria-label="Two-factor setup progress">
             <SetupStep number="01" label="Confirm identity" state={enrolling ? "complete" : "active"} />
             <SetupStep number="02" label="Add authenticator" state={verificationStage ? "complete" : enrolling ? "active" : "pending"} />
             <SetupStep number="03" label="Verify code" state={verificationStage ? "active" : "pending"} />
           </ol>
 
           {!enrolling ? (
-            <section className="grid overflow-hidden rounded-3xl border border-border bg-surface lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="ax-acct-card grid overflow-hidden rounded-3xl border border-border bg-surface lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="px-6 py-7 md:px-8 md:py-8">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
-                  <div><span className={cn(LABEL, "text-accent")}>step 01</span><h2 className="font-display mt-1 text-[21px] font-[650] tracking-[-0.04em] text-fg">Confirm your password</h2></div>
+                  <span className="ax-acct-glyph grid h-10 w-10 place-items-center rounded-lg border border-accent-bd bg-accent-soft text-accent"><LockKeyhole className="h-4 w-4" aria-hidden /></span>
+                  <div><span className={cn(KICKER, "text-accent")}>step 01</span><h2 className="font-display mt-1 text-[21px] font-[650] tracking-[-0.04em] text-fg">Confirm your password</h2></div>
                 </div>
                 <p className="mt-5 max-w-[60ch] text-[13px] leading-6 text-fg-muted">Re-enter your current password before CodeForge creates a new authenticator secret.</p>
                 <label htmlFor="totp-current-password" className={cn(LABEL, "mt-6 block text-fg-faint")}>current password</label>
@@ -221,8 +224,8 @@ export function TotpSettings({
                   {busy ? "Creating setup…" : "Continue securely"}
                 </Button>
               </div>
-              <aside className="border-t border-rule bg-bg px-6 py-7 lg:border-l lg:border-t-0">
-                <span className={cn(LABEL, "text-fg-faint")}>before you begin</span>
+              <aside className="ax-acct-flat border-t border-rule bg-bg px-6 py-7 lg:border-l lg:border-t-0">
+                <span className={cn(KICKER, "text-fg-faint")}>before you begin</span>
                 <ul className="mt-4 space-y-4 text-[12px] leading-5 text-fg-muted">
                   <SecurityNote text="Use Google Authenticator, Microsoft Authenticator, Authy, or another TOTP app." />
                   <SecurityNote text="The setup key is shown only while enrollment is in progress." />
@@ -232,8 +235,8 @@ export function TotpSettings({
             </section>
           ) : (
             <>
-              <section className="rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
-                <span className={cn(LABEL, "text-accent")}>step 02</span>
+              <section className="ax-acct-card rounded-3xl border border-border bg-surface px-6 py-7 md:px-8">
+                <span className={cn(KICKER, "text-accent")}>step 02</span>
                 <div className="mt-2 flex items-start gap-3">
                   <QrCode className="mt-1 h-5 w-5 shrink-0 text-accent" aria-hidden />
                   <div>
@@ -248,15 +251,14 @@ export function TotpSettings({
               </section>
 
               <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
-                <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto rounded-3xl border border-border bg-surface p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)] sm:max-w-[540px]">
-                  <DialogHeader className="border-b border-rule px-6 py-6 pr-14">
-                    <span className={cn(LABEL, "text-accent")}>{setupStage === "method" ? "step 02 · authenticator setup" : "step 03 · verification"}</span>
-                    <DialogTitle className="font-display text-[23px] font-[650] tracking-[-0.045em] text-fg">{setupStage === "method" ? "Add CodeForge to your app" : "Verify your authenticator"}</DialogTitle>
-                    <DialogDescription className="text-[13px] leading-5 text-fg-muted">{setupStage === "method" ? `Select one setup method for ${accountEmail}.` : "Enter the current code from your authenticator app to enable two-factor protection."}</DialogDescription>
+                <DialogContent className="cf-workspace-dialog axd max-h-[calc(100dvh-2rem)] overflow-y-auto p-0 sm:max-w-[500px]">
+                  <DialogHeader className="axd-head">
+                    <DialogTitle className="axd-title">{setupStage === "method" ? "Add CodeForge to your app" : "Verify your authenticator"}</DialogTitle>
+                    <DialogDescription className="axd-lede">{setupStage === "method" ? `Select one setup method for ${accountEmail}.` : "Enter the current code from your authenticator app to enable two-factor protection."}</DialogDescription>
                   </DialogHeader>
 
                   {setupStage === "method" ? (
-                    <div className="px-6 py-6">
+                    <div className="axd-form">
                       <div role="group" aria-label="Authenticator setup method" className="relative grid h-12 w-full grid-cols-2 rounded-3xl border border-border bg-bg p-1">
                         <span
                           aria-hidden
@@ -300,7 +302,7 @@ export function TotpSettings({
                     </div>
                   ) : (
                     <form onSubmit={(event) => { event.preventDefault(); void verify(); }}>
-                      <div className="px-6 py-6">
+                      <div className="axd-form">
                         <div className="flex items-start gap-3">
                           <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
                           <p id="totp-code-help" className="text-[13px] leading-5 text-fg-muted">Enter the current six-digit code shown for CodeForge. Codes refresh every 30 seconds.</p>
@@ -309,14 +311,14 @@ export function TotpSettings({
                         <VerificationCode id="totp-verification-code" describedBy="totp-code-help" value={code} onChange={setCode} disabled={busy} invalid={Boolean(error)} />
                         {error ? <Notice className="mt-4">{error}</Notice> : null}
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
+                      <div className="axd-actions !justify-between px-8 pb-7 max-sm:px-[22px]">
                         <Button type="button" variant="ghost" onClick={() => { setError(null); setSetupStage("method"); }} className="h-10 rounded-lg px-2 text-fg-muted">Back to setup</Button>
                         <Button type="submit" disabled={busy || code.length !== 6} className="h-10 gap-2 rounded-lg px-4"><ShieldCheck className="h-4 w-4" aria-hidden />{busy ? "Verifying…" : "Verify and enable 2FA"}</Button>
                       </div>
                     </form>
                   )}
 
-                  {setupStage === "method" ? <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule bg-bg px-6 py-4">
+                  {setupStage === "method" ? <div className="axd-actions !justify-between px-8 pb-7 max-sm:px-[22px]">
                     <Button type="button" variant="ghost" onClick={startSetup} disabled={busy || !password} className="h-10 gap-2 rounded-lg px-2 text-fg-muted">
                       <RefreshCw className={cn("h-3.5 w-3.5", busy && "animate-spin")} aria-hidden />
                       Generate new key
@@ -330,7 +332,7 @@ export function TotpSettings({
         </>
       ) : (
         <div className="space-y-6">
-        <section className="rounded-3xl border border-border bg-surface px-6 py-6 md:px-8">
+        <section className="ax-acct-card rounded-3xl border border-border bg-surface px-6 py-6 md:px-8">
           <h2 className="font-display text-[21px] font-[650] text-fg">Recovery codes</h2>
           <p className="mt-2 text-[12.5px] leading-5 text-fg-muted">If you did not save your codes, generate a new set. This immediately invalidates every previous code.</p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -339,19 +341,19 @@ export function TotpSettings({
           </div>
           <Button type="button" variant="outline" onClick={regenerateRecoveryCodes} disabled={busy || !recoveryPassword || recoveryTotp.length !== 6} className="mt-4">Generate new recovery codes</Button>
         </section>
-        <section className="rounded-3xl border border-danger-bd bg-surface">
-          <div className="border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(LABEL, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">Confirm with your password and an authenticator code. If you lost the authenticator, request account recovery using the link below.</p></div>
+        <section className="ax-acct-card rounded-3xl border border-danger-bd bg-surface">
+          <div className="ax-acct-flat ax-acct-danger-edge border-b border-danger-bd bg-danger-soft/45 px-6 py-5 md:px-8"><span className={cn(KICKER, "text-danger")}>sensitive action</span><h2 className="font-display mt-2 text-[21px] font-[650] tracking-[-0.04em] text-fg">Disable two-factor authentication</h2><p className="mt-2 max-w-[70ch] text-[12.5px] leading-5 text-fg-muted">Confirm with your password and an authenticator code. If you lost the authenticator, request account recovery using the link below.</p></div>
           <div className="grid gap-4 px-6 py-6 md:grid-cols-2 md:px-8">
             <div><label htmlFor="totp-disable-password" className={cn(LABEL, "text-fg-faint")}>current password</label><Input id="totp-disable-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter current password" className="mt-2 h-11 rounded-lg bg-bg" /></div>
             <div><label htmlFor="totp-disable-code" className={cn(LABEL, "text-fg-faint")}>authenticator code</label><VerificationCode id="totp-disable-code" value={code} onChange={setCode} disabled={busy} /></div>
             <Link href="/recover-2fa" className="text-sm underline md:col-span-2">Lost your authenticator? Request recovery</Link>
-            <Button variant="outline" onClick={disable} disabled={busy || !password || code.length !== 6} className="h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
+            <Button variant="outline" onClick={disable} disabled={busy || !password || code.length !== 6} className="ax-acct-danger-edge h-11 gap-2 rounded-lg border-danger-bd text-danger md:col-span-2 md:w-fit"><ShieldOff className="h-4 w-4" aria-hidden />{busy ? "Disabling…" : "Disable 2FA"}</Button>
           </div>
         </section>
         </div>
       )}
 
-      <section className="flex flex-col gap-4 rounded-3xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
+      <section className="ax-acct-card flex flex-col gap-4 rounded-3xl border border-border bg-surface px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
         <div className="flex items-start gap-3">
           <Fingerprint className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
           <div>
@@ -369,7 +371,7 @@ export function TotpSettings({
 }
 
 function SetupStep({ number, label, state }: { number: string; label: string; state: "complete" | "active" | "pending" }) {
-  return <li className="flex items-center gap-3 border-b border-rule px-5 py-4 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><span className={cn("grid h-8 w-8 place-items-center rounded-full border font-mono text-[10px] font-[700]", state === "complete" ? "border-ok-bd bg-ok-soft text-ok" : state === "active" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint")}>{state === "complete" ? <Check className="h-3.5 w-3.5" aria-hidden /> : number}</span><div><span className={cn(LABEL, state === "active" ? "text-accent" : state === "complete" ? "text-ok" : "text-fg-faint")}>{state}</span><p className="mt-0.5 text-[12px] font-[650] text-fg">{label}</p></div></li>;
+  return <li className="flex items-center gap-3 border-b border-rule px-5 py-4 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><span className={cn("ax-acct-glyph grid h-8 w-8 place-items-center rounded-full border font-mono text-[10px] font-[700]", state === "complete" ? "border-ok-bd bg-ok-soft text-ok" : state === "active" ? "border-accent-bd bg-accent-soft text-accent" : "border-border bg-bg text-fg-faint")}>{state === "complete" ? <Check className="h-3.5 w-3.5" aria-hidden /> : number}</span><div><span className={cn(KICKER, state === "active" ? "text-accent" : state === "complete" ? "text-ok" : "text-fg-faint")}>{state}</span><p className="ax-acct-kicker mt-0.5 text-[12px] font-[650] text-fg">{label}</p></div></li>;
 }
 
 function SecurityNote({ text }: { text: string }) {

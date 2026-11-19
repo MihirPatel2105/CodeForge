@@ -1,0 +1,135 @@
+/* The project page, Anthropic-style: editorial and quiet. No cards; serif headings set straight on the
+   page, one soft writing surface, hairlines instead of boxes, colour only for run state. */
+
+.cf-project-detail .ax-heading { font-family: var(--font-brand-serif), serif; font-size: clamp(28px, 3vw, 34px); font-weight: 400; line-height: 1.15; letter-spacing: -.015em; color: var(--fg); }
+.ax-lede { max-width: 44ch; margin-top: 10px; font-size: 16px; line-height: 1.6; color: var(--fg-muted); }
+
+/* The project header: name and description on the left, the run summary in the right column. */
+.ax-hero { display: grid; gap: 28px; }
+@media (min-width: 1024px) {
+  .ax-hero { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); align-items: end; column-gap: 56px; }
+}
+/* The run summary: one confident serif statement, the detail as a quiet list beneath. It sits on
+   the dark header, so the state colours are lifted to stay legible there. */
+.cf-project-detail .ax-summary {
+  --danger: #f0827c; --loop: #b49cfb;
+  display: grid; gap: 14px; padding-top: 22px; border-top: 1px solid var(--border);
+}
+@media (min-width: 1024px) {
+  .cf-project-detail .ax-summary { padding: 0 0 4px 32px; border-top: 0; border-left: 1px solid var(--border); }
+}
+.cf-project-detail .ax-summary-lead { font-family: var(--font-brand-serif), serif; font-size: 28px; font-weight: 400; line-height: 1.2; letter-spacing: -.01em; color: var(--fg-muted); text-wrap: balance; }
+.ax-summary-lead strong { font-weight: 400; color: var(--fg); font-variant-numeric: lining-nums tabular-nums; }
+.ax-summary-detail { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ax-summary-detail li { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.ax-summary-detail i { width: 6px; height: 6px; border-radius: 999px; background: var(--fg-faint); }
+.ax-summary-detail [data-tone="danger"] i { background: var(--danger); }
+.ax-summary-detail [data-tone="loop"] i { background: var(--loop); }
+
+/* Room between the project header and the two columns; premium-system.css sets 32px for all
+   workspaces, which is too tight under the dark header. */
+.cf-project-detail .ax-workspace { margin-top: clamp(56px, 6vw, 80px); gap: clamp(40px, 6vw, 88px); }
+/* No cards here: undo the live workspace's card radius and shadow. */
+.cf-project-detail .ax-workspace > section { border-radius: 0; box-shadow: none; }
+
+/* Composer */
+@media (min-width: 1024px) { .ax-composer { position: sticky; top: 88px; } }
+.ax-revising { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; font-size: 14px; color: var(--fg-muted); }
+.ax-revising a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+.ax-input {
+  margin-top: 24px; border: 1px solid color-mix(in srgb, var(--fg) 9%, transparent); border-radius: 20px; background: var(--surface);
+  box-shadow: 0 1px 2px rgb(20 20 19 / .03), 0 6px 24px -6px rgb(20 20 19 / .07);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+/* Focus shows only for the writing itself (not the switch or button), at a contrast that reads. */
+.ax-input:has(#prompt:focus-visible) { border-color: var(--fg-muted); box-shadow: 0 0 0 1px var(--fg-muted), 0 10px 32px -8px rgb(20 20 19 / .12); }
+.cf-project-detail .ax-input #prompt {
+  min-height: 150px; padding: 20px 22px 4px; border: 0; border-radius: 20px 20px 0 0; background: transparent;
+  font-size: 16.5px; line-height: 1.65; box-shadow: none; resize: vertical;
+}
+.cf-project-detail .ax-input #prompt:focus-visible { outline: none; box-shadow: none; }
+.ax-input-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 12px 22px; }
+.ax-examples { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-muted); cursor: pointer; }
+.ax-examples svg { width: 15px; height: 15px; }
+.ax-input-end { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
+.ax-count { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fg-faint); }
+.cf-project-detail .ax-start { height: 38px; gap: 8px; padding: 0 14px 0 16px; border-radius: 12px; font-size: 14px; font-weight: 550; }
+.ax-start svg { width: 16px; height: 16px; }
+.ax-notices { display: grid; gap: 8px; margin-top: 12px; }
+.ax-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; border-radius: 14px; background: var(--warn-soft); font-size: 13.5px; color: var(--warn); }
+.ax-confirm span { flex: 1; min-width: 12rem; }
+.ax-starts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 18px; padding-left: 4px; font-size: 14px; color: var(--fg-faint); }
+.ax-starts button { color: var(--fg-muted); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--fg) 22%, transparent); text-underline-offset: 4px; transition: color .15s ease, text-decoration-color .15s ease; }
+.ax-starts button:hover { color: var(--fg); text-decoration-color: currentColor; }
+.ax-starts .ax-starts-more { color: var(--fg-faint); text-decoration: none; }
+
+/* Runs */
+.ax-runs { min-width: 0; }
+.ax-runs-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.ax-runs-rate { font-size: 14px; color: var(--fg-faint); }
+.ax-runs-rate .cf-run-health-rate { color: var(--fg); }
+.ax-tabs { display: flex; gap: 22px; margin-top: 22px; padding-top: 4px; overflow-x: auto; border-bottom: 1px solid var(--rule); scrollbar-width: none; }
+.ax-tabs::-webkit-scrollbar { display: none; }
+.ax-tabs button { flex: none; margin-bottom: -1px; padding: 0 0 12px; border-bottom: 2px solid transparent; font-size: 14px; color: var(--fg-muted); transition: color .15s ease, border-color .15s ease; }
+.ax-tabs button:hover { color: var(--fg); }
+.ax-tabs button[aria-pressed="true"] { border-bottom-color: var(--fg); color: var(--fg); }
+.ax-tabs button:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; border-radius: 4px; }
+.ax-tabs button span { margin-left: 6px; font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--fg-faint); }
+.ax-search { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 2px; border-bottom: 1px solid var(--rule); color: var(--fg-faint); transition: border-color .15s ease; }
+.ax-search:focus-within { border-bottom-color: var(--fg-muted); }
+.ax-search svg { width: 16px; height: 16px; flex: none; }
+.ax-search input { width: 100%; min-width: 0; border: 0; background: transparent; font-size: 15px; color: var(--fg); outline: none; }
+.ax-searching { padding: 10px 0; font-size: 13px; color: var(--fg-muted); }
+/* Padding gives the row highlight room inside the scroll box instead of overhanging it. */
+.ax-scroll { max-height: min(64dvh, 640px); margin-inline: -12px; padding-inline: 12px; overflow-y: auto; overscroll-behavior: contain; }
+.ax-scroll:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.cf-project-detail .ax-day h3 {
+  position: sticky; top: 0; z-index: 2; padding: 22px 0 4px; background: var(--surface); /* the page colour, so rows hide behind it */
+  font-family: var(--font-brand-serif), serif; font-size: 15px; font-style: italic; font-weight: 400; color: var(--fg-faint);
+}
+.ax-run { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.ax-run-link { position: absolute; inset: 0 -12px; /* into .ax-scroll padding */ z-index: 0; border-radius: 10px; transition: background-color .15s ease; }
+.ax-run:hover .ax-run-link { background: color-mix(in srgb, var(--fg) 3.5%, transparent); }
+.ax-run-link:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+.ax-run-prompt {
+  grid-column: 1; overflow: hidden; white-space: nowrap; font-size: 15.5px; color: var(--fg);
+  mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent); -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+}
+.ax-run-meta { grid-column: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 4px; font-size: 13px; color: var(--fg-faint); }
+.ax-run { --tone: var(--fg-faint); }
+.ax-run[data-tone="ok"] { --tone: var(--ok); }
+.ax-run[data-tone="danger"] { --tone: var(--danger); }
+.ax-run[data-tone="warn"] { --tone: var(--warn); }
+.ax-run[data-tone="accent"] { --tone: var(--fg); }
+.ax-run-status { display: inline-flex; align-items: center; gap: 7px; color: var(--fg-muted); }
+.ax-run-status i { width: 7px; height: 7px; border-radius: 999px; background: var(--tone); }
+.ax-run[data-tone="accent"] .ax-run-status i { animation: ax-pulse 1.6s ease-in-out infinite; }
+@keyframes ax-pulse { 50% { opacity: .3; } }
+.ax-run-loops { color: var(--loop); }
+.ax-run-parent { position: relative; z-index: 1; text-decoration: underline; text-underline-offset: 3px; }
+.ax-run-end { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.ax-run-end time { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--fg-faint); white-space: nowrap; transition: opacity .15s ease; }
+.cf-project-detail .ax-reuse { position: relative; z-index: 1; height: 30px; gap: 6px; padding: 0 10px; font-size: 13px; transition: opacity .15s ease; }
+.ax-reuse svg { width: 13px; height: 13px; }
+/* With a pointer, the time and Reuse share one spot and cross-fade; touch shows both. */
+@media (hover: hover) {
+  .ax-run-end { display: grid; justify-items: end; }
+  .ax-run-end > * { grid-area: 1 / 1; }
+  .ax-reuse { opacity: 0; }
+  .ax-run:is(:hover, :focus-within) .ax-reuse { opacity: 1; }
+  .ax-run:is(:hover, :focus-within) time { opacity: 0; }
+}
+.ax-more { padding: 18px 0; }
+
+@media (max-width: 639px) {
+  .cf-project-detail .ax-summary-lead { font-size: 24px; }
+  .ax-input-bar { padding-left: 16px; }
+  .cf-project-detail .ax-input #prompt { padding: 16px 16px 4px; }
+  .ax-run { grid-template-columns: minmax(0, 1fr); }
+  .ax-run-end { grid-column: 1; grid-row: auto; display: flex; justify-content: space-between; margin-top: 6px; }
+  .ax-run-end > * { grid-area: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ax-input, .ax-starts button, .ax-tabs button, .ax-run-link, .ax-run-end time, .ax-reuse { transition: none; }
+  .ax-run[data-tone="accent"] .ax-run-status i { animation: none; }
+}

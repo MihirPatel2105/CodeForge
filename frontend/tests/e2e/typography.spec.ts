@@ -64,23 +64,24 @@ test("page headlines carry light tracking; sub-heads are serif medium", async ({
   });
   expect(tracking).toBeCloseTo(-0.01, 3);
 
-  const h3 = page.locator(".ed-principles h3").first();
-  expect(await h3.evaluate((el) => getComputedStyle(el).fontFamily)).toContain(SERIF);
-  await expect(h3).toHaveCSS("font-weight", "500");
+  // Principles open with a serif lead-in, set heavier than the sentence that follows it.
+  const lead = page.locator("#approach .el-steps strong").first();
+  expect(await lead.evaluate((el) => getComputedStyle(el).fontFamily)).toContain(SERIF);
+  await expect(lead).toHaveCSS("font-weight", "600");
 });
 
 test("reading text on editorial pages is set in the serif", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/about");
-  for (const selector of [".ed-hero-note > p", ".ed-principles p"]) {
+  for (const selector of ["#approach .el-steps p", "#product .el-split-head h2"]) {
     const family = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
     expect(family, selector).toContain(SERIF);
   }
 });
 
-test("the Agent City game keeps its own sans HUD titles", async ({ page }) => {
+test("Agent City titles use the serif like the rest of the product", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/playground/agent-city");
+  await page.goto("/playground/agent-city?demo=library");
   const title = page.getByRole("heading", { level: 1 }).first();
-  expect(await title.evaluate((element) => getComputedStyle(element).fontFamily)).not.toContain(SERIF);
+  expect(await title.evaluate((element) => getComputedStyle(element).fontFamily)).toContain(SERIF);
 });
