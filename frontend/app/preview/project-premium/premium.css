@@ -1,0 +1,157 @@
+/* Proposed project workspace. Scoped under .cf-project-detail so it overrides the live
+   workspace rules (workspace-design.css) exactly as it would once applied. */
+
+/* Preview-only: the Current / Proposed switch and a static stand-in for "Manage project". */
+.pp-switch { position: fixed; top: 14px; right: 14px; z-index: 60; display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); box-shadow: 0 8px 24px -14px rgb(20 20 19 / .3); }
+.pp-switch button { padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 550; color: var(--fg-muted); }
+.pp-switch button[aria-pressed="true"] { background: var(--fg); color: var(--surface); }
+.pp-static-button { display: inline-flex; align-items: center; height: 40px; margin-top: 16px; padding: 0 16px; border: 1px solid; border-radius: 10px; font-size: 14px; font-weight: 600; }
+
+/* Shared */
+.cf-project-detail .pp-eyebrow { font-size: 11.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint); }
+.cf-project-detail .pp-title { margin-top: 6px; font-family: var(--font-brand-serif), serif; font-size: 26px; font-weight: 400; line-height: 1.15; letter-spacing: -.01em; color: var(--fg); }
+.cf-project-detail .pp-workspace > .pp-card {
+  border: 1px solid var(--border); border-radius: 20px; background: var(--surface);
+  box-shadow: 0 1px 2px rgb(20 20 19 / .04), 0 16px 40px -28px rgb(20 20 19 / .28);
+}
+.pp-card [data-tone], .pp-row { --tone: var(--fg-muted); --tone-soft: var(--surface-2); }
+.pp-card [data-tone="ok"], .pp-row[data-tone="ok"] { --tone: var(--ok); --tone-soft: var(--ok-soft); }
+.pp-card [data-tone="danger"], .pp-row[data-tone="danger"] { --tone: var(--danger); --tone-soft: var(--danger-soft); }
+.pp-card [data-tone="warn"], .pp-row[data-tone="warn"] { --tone: var(--warn); --tone-soft: var(--warn-soft); }
+.pp-card [data-tone="accent"], .pp-row[data-tone="accent"] { --tone: var(--fg); --tone-soft: var(--surface-2); }
+
+/* Stats strip: one baseline, tabular figures, the outcome mix as a small bar under the run count. */
+.pp-stats { background: var(--surface); }
+.pp-stats dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pp-stats dl > div { padding: 22px 28px 20px; }
+.pp-stats dl > div + div { border-left: 1px solid var(--rule); }
+.pp-stats dt { font-size: 12.5px; font-weight: 500; color: var(--fg-muted); }
+.cf-project-detail .pp-stats dd { margin-top: 10px; font-family: var(--font-brand-serif), serif; font-size: 34px; font-weight: 400; line-height: 1; letter-spacing: -.01em; font-variant-numeric: lining-nums tabular-nums; color: var(--fg); }
+.pp-mix { display: flex; gap: 2px; width: min(120px, 100%); height: 4px; margin-top: 14px; }
+.pp-mix i { border-radius: 2px; }
+.pp-mix i { display: block; background: var(--border-strong); }
+.pp-mix i[data-tone="ok"] { background: var(--ok); }
+.pp-mix i[data-tone="danger"] { background: var(--danger); }
+
+/* Prompt composer */
+.pp-composer-head { padding: 28px 28px 18px; }
+.pp-lede { max-width: 46ch; margin-top: 8px; font-size: 14.5px; line-height: 1.6; color: var(--fg-muted); }
+.pp-editor {
+  margin: 0 20px; border: 1px solid var(--border); border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 45%, var(--surface));
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.pp-editor:focus-within { border-color: var(--fg-muted); background: var(--surface); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fg) 6%, transparent); }
+.cf-project-detail .pp-editor #prompt {
+  min-height: 168px; padding: 18px 18px 6px; border: 0; border-radius: 14px 14px 0 0; background: transparent;
+  font-size: 16px; line-height: 1.65; box-shadow: none; resize: vertical;
+}
+.cf-project-detail .pp-editor #prompt:focus-visible { box-shadow: none; outline: none; }
+.pp-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 16px; }
+.pp-examples { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; color: var(--fg-muted); cursor: pointer; }
+.pp-toolbar-end { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+.pp-count { font-family: var(--font-mono-stack); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg-faint); }
+.pp-kbd { padding: 2px 6px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono-stack); font-size: 11px; color: var(--fg-faint); }
+@media (hover: none) { .pp-kbd { display: none; } }
+.cf-project-detail .vui-generate.pp-start { width: auto; height: 40px; min-height: 40px; padding: 0 18px; border-radius: 10px; font-size: 14px; }
+.pp-banner, .pp-confirm, .pp-notices { margin: 0 20px 12px; }
+.pp-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 13px; }
+.pp-banner a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.pp-banner button { color: var(--fg-muted); }
+.pp-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; border: 1px solid var(--warn-bd, var(--border)); border-radius: 12px; background: var(--warn-soft); font-size: 13px; color: var(--warn); }
+.pp-confirm span { flex: 1; min-width: 12rem; }
+.pp-notices { display: grid; gap: 8px; margin-top: 10px; }
+.pp-templates { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 16px 28px 26px; }
+.pp-templates-label { margin-right: 4px; font-size: 12.5px; color: var(--fg-faint); }
+.pp-template {
+  padding: 5px 11px; border: 1px solid var(--border); border-radius: 999px; font-size: 12.5px; color: var(--fg-muted);
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.pp-more-templates { padding: 5px 8px; font-size: 12.5px; font-weight: 550; color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+.pp-template:hover { border-color: var(--border-strong); background: var(--surface-2); color: var(--fg); }
+.pp-template:focus-visible, .pp-more-templates:focus-visible, .pp-segments button:focus-visible, .pp-banner :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* Run ledger */
+.pp-ledger { min-width: 0; overflow: hidden; }
+@media (min-width: 1024px) { .pp-composer { position: sticky; top: 88px; } }
+.pp-ledger-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 28px 28px 18px; }
+.pp-heartbeat { display: inline-flex; align-items: center; gap: 12px; padding-bottom: 4px; }
+.pp-heartbeat [role="img"] { display: inline-flex; align-items: flex-end; gap: 3px; }
+.pp-heartbeat i { display: block; width: 3px; height: 14px; border-radius: 2px; background: var(--tone); opacity: .9; }
+.pp-heartbeat i[data-tone="neutral"] { background: var(--border-strong); opacity: .7; }
+.pp-heartbeat .cf-run-health-rate { font-family: var(--font-mono-stack); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--fg-faint); }
+.pp-filters { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 20px 16px; }
+.pp-segments { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: color-mix(in srgb, var(--bg) 60%, var(--surface)); }
+.pp-segments button { padding: 6px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 550; color: var(--fg-muted); transition: background-color .15s ease, color .15s ease; }
+.pp-segments button:hover { color: var(--fg); }
+.pp-segments button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(20 20 19 / .08), 0 0 0 1px var(--border); }
+.pp-segments button span { margin-left: 5px; font-family: var(--font-mono-stack); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--fg-faint); }
+.pp-search { display: flex; flex: 1 1 180px; align-items: center; gap: 8px; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: 11px; color: var(--fg-faint); transition: border-color .15s ease; }
+.pp-search:focus-within { border-color: var(--fg-muted); }
+.pp-search svg { width: 15px; height: 15px; flex: none; }
+.pp-search input { width: 100%; min-width: 0; border: 0; background: transparent; font-size: 14px; color: var(--fg); outline: none; }
+.pp-searching { padding: 0 28px 10px; font-size: 13px; color: var(--fg-muted); }
+.pp-scroll { max-height: min(62dvh, 600px); overflow-y: auto; overscroll-behavior: contain; border-top: 1px solid var(--rule); scrollbar-gutter: stable; }
+.pp-scroll:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+.cf-project-detail .pp-day {
+  position: sticky; top: 0; z-index: 2; padding: 16px 28px 6px; background: var(--surface);
+  font-family: var(--font-ui); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-faint);
+}
+.pp-row { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 28px; transition: background-color .15s ease; }
+.pp-row + .pp-row::before { content: ""; position: absolute; top: 0; right: 28px; left: 70px; border-top: 1px solid var(--rule); }
+.pp-row:hover { background: color-mix(in srgb, var(--fg) 3%, var(--surface)); }
+.pp-row-link { position: absolute; inset: 0; z-index: 0; }
+.pp-row-link:focus-visible { outline: 2px solid var(--fg); outline-offset: -3px; }
+.pp-row-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 999px; background: var(--tone-soft); color: var(--tone); }
+.pp-row-icon svg { width: 14px; height: 14px; }
+.pp-row-body { min-width: 0; }
+.pp-row-prompt {
+  overflow: hidden; white-space: nowrap; font-size: 14.5px; font-weight: 550; color: var(--fg);
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+.pp-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 3px; font-size: 12px; color: var(--fg-faint); }
+.pp-row-outcome { font-weight: 600; color: var(--tone); }
+.pp-row[data-tone="neutral"] .pp-row-outcome { color: var(--fg-muted); }
+.pp-row-loops { color: var(--loop); }
+.pp-row-meta .pp-mono, .pp-row-end time { font-family: var(--font-mono-stack); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.pp-row-parent { position: relative; z-index: 1; text-decoration: underline; text-underline-offset: 3px; }
+.pp-row-end { display: grid; grid-template-columns: auto 15px; align-items: center; justify-items: end; gap: 6px; color: var(--fg-faint); }
+.pp-row-end > time, .pp-row-end > .pp-reuse { grid-area: 1 / 1; }
+.pp-row-end time { white-space: nowrap; }
+.cf-project-detail .pp-reuse { position: relative; z-index: 1; height: 30px; gap: 6px; padding: 0 10px; font-size: 12px; }
+.pp-row-arrow { grid-area: 1 / 2; width: 15px; height: 15px; opacity: 0; transform: translate(-4px, 4px); transition: opacity .15s ease, transform .2s ease; }
+.pp-row:hover .pp-row-arrow { opacity: 1; transform: none; }
+@media (hover: hover) {
+  /* Time and Reuse share one cell and cross-fade, so the prompt never changes width and the
+     button stays in the accessibility tree. */
+  .pp-row-end time, .pp-reuse { transition: opacity .15s ease; }
+  .pp-reuse { opacity: 0; }
+  .pp-row:is(:hover, :focus-within) .pp-reuse { opacity: 1; }
+  .pp-row:is(:hover, :focus-within) time { opacity: 0; }
+}
+.pp-more { padding: 16px 28px; border-top: 1px solid var(--rule); }
+
+@media (max-width: 639px) {
+  .pp-stats dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pp-stats dl > div { padding: 18px 20px; }
+  .pp-stats dl > div:nth-child(3) { border-left: 0; }
+  .pp-stats dl > div:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+  .cf-project-detail .pp-stats dd { font-size: 28px; }
+  .pp-composer-head, .pp-ledger-head { padding: 22px 20px 14px; }
+  .pp-editor, .pp-banner, .pp-confirm, .pp-notices { margin-inline: 14px; }
+  .pp-templates { padding: 14px 20px 22px; }
+  .pp-filters { padding: 0 14px 14px; }
+  /* One scrollable row of tabs rather than a ragged two-line grid. */
+  .pp-segments { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .pp-segments::-webkit-scrollbar { display: none; }
+  .pp-segments button { flex: none; white-space: nowrap; }
+  .pp-row { grid-template-columns: 28px minmax(0, 1fr); gap: 2px 14px; padding: 12px 20px; }
+  .pp-row-end { grid-column: 2; display: flex; justify-content: flex-start; gap: 8px; }
+  .cf-project-detail .pp-reuse { height: 26px; padding: 0 6px; }
+  .pp-row + .pp-row::before { left: 62px; right: 20px; }
+  .cf-project-detail .pp-day { padding-inline: 20px; }
+  .pp-row-arrow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-editor, .pp-template, .pp-segments button, .pp-row, .pp-row-arrow, .pp-row-end time, .pp-reuse { transition: none; }
+}

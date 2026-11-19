@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 
 import "@/components/dashboard/run-dashboard.css";
+import "@/components/dashboard/run-editorial.css";
 import { ActionIcon } from "@/components/ui/action-icon";
 import { Notice } from "@/components/ui/notice";
 import { useEffect, useRef, useState } from "react";
@@ -71,9 +72,9 @@ export default function UseApiPage() {
   if (!sessionLoading && !user) return null;
 
   return (
-    <div className="cf-run-page cf-use-page min-h-screen bg-bg">
+    <div className="cf-run-page cf-use-page cf-api-flow min-h-screen bg-bg" data-run-look="editorial">
       <AppHeader />
-      <main data-run-flow-page className="mx-auto w-full max-w-[1200px] px-4 pb-14 pt-6 sm:px-6 lg:px-10">
+      <main data-run-flow-page className="cf-page pb-14 pt-6">
         <RunFlowLink href={`/runs/${id}`} className="inline-flex items-center gap-2 text-[12px] font-[650] text-fg-muted transition-colors hover:text-fg">
           <ArrowLeft className="size-4" aria-hidden /> Back to run
         </RunFlowLink>
@@ -83,7 +84,7 @@ export default function UseApiPage() {
             <h1 className="font-display text-[30px] font-[650] tracking-[-0.05em] text-fg md:text-[36px]">Use your API</h1>
             <p className="mt-1 max-w-[70ch] text-[14px] leading-6 text-fg-muted">Test an endpoint, connect another app, or download the runnable source.</p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok"><span className="size-1.5 rounded-full bg-ok" />Run complete</span>
+          <span className="cf-api-status inline-flex items-center gap-2 rounded-full border border-ok-bd bg-ok-soft px-3 py-1.5 text-[12px] font-[650] text-ok"><span className="size-1.5 rounded-full bg-ok" />Run complete</span>
         </header>
 
         <section className="cf-use-options mt-6 grid gap-3 md:grid-cols-3" aria-label="Ways to use your API">
@@ -97,7 +98,7 @@ export default function UseApiPage() {
             <span className="cf-use-card-top"><Radio aria-hidden /><span>02 / Connect an app</span></span>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <h2 className="font-display text-[19px] font-[650] text-fg">Publish API</h2>
-              <span className="rounded-full border border-accent-bd bg-accent-soft px-2 py-0.5 text-[10px] font-[700] uppercase tracking-wide text-accent">Beta</span>
+              <span className="cf-beta-badge rounded-full border border-accent-bd bg-accent-soft px-2 py-0.5 text-[10px] font-[700] uppercase tracking-wide text-accent">Beta</span>
             </div>
             <p className="mt-2 text-[12px] leading-5 text-fg-muted">Get a URL and private key for your backend to call.</p>
             <span className="mt-4 inline-flex items-center gap-1 text-[12px] font-[700] text-accent">Open publish guide <motion.span variants={arrowVariants} className="inline-flex" aria-hidden><ArrowRight className="size-3.5" /></motion.span></span>

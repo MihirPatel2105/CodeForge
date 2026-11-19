@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { motionSpring } from "@/lib/motion-tokens";
 import { useMotionPreference } from "@/lib/use-motion-preference";
 import { GradualScroll } from "@/components/ui/premium-effects";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -147,7 +146,6 @@ export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
             return <motion.div key={entry.id} initial={reduced ? false : { opacity: 0, transform: "translateY(4px)" }} animate={{ opacity: 1, transform: "none" }} transition={{ duration: reduced ? 0 : .18, delay: reduced ? 0 : Math.min(index * .018, .1) }}>
               {(index === 0 || results[index - 1].group !== entry.group) && <div className="cf-command-group" aria-hidden>{entry.group === "Workspace" ? "Quick actions" : entry.group}</div>}
               <div id={`${listId}-${entry.id}`} role="option" aria-selected={index === activeIndex} className="cf-command-option cf-animated-option" onPointerMove={() => setSelected(index)} onMouseDown={event => event.preventDefault()} onClick={() => execute(entry)}>
-                {index === activeIndex && <motion.span aria-hidden="true" className="cf-command-selection" layoutId={`${listId}-selection`} transition={reduced ? { duration: 0 } : motionSpring} />}
                 <span className="cf-command-icon"><Icon size={19} strokeWidth={1.65} aria-hidden /></span>
                 <span className="cf-command-copy"><span className="cf-command-label">{entry.label}</span><span className="cf-command-detail">{entry.detail}</span></span>
                 <span className="cf-command-enter" aria-hidden><CornerDownLeft size={15} /></span>

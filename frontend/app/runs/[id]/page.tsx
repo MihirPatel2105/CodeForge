@@ -2,8 +2,6 @@
 
 import { toast } from "sonner";
 
-import { DashboardThemeToggle } from "@/components/dashboard/dashboard-theme-toggle";
-
 import { Notice } from "@/components/ui/notice";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useEffect, useRef, useState } from "react";
@@ -32,6 +30,7 @@ import type { ApprovalPhase, FileHistoryVersion } from "@/lib/types";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import "@/components/dashboard/run-editorial.css";
 
 /**
  * The real Live Run screen (docs/UI_BRIEF.md §4) — the same components proven out
@@ -261,7 +260,7 @@ export default function LiveRunPage() {
   if (loading) return (
     <div className="cf-run-page cf-run-loading flex min-h-0 flex-1 flex-col bg-bg">
       <AppHeader />
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 pt-4! pb-0! sm:px-6 lg:px-8">
+      <main className="cf-page flex flex-1 flex-col pt-4! pb-0!">
         <Link href="/projects" className="inline-flex min-h-9 shrink-0 items-center self-start text-[13px] font-semibold text-fg-muted">Back to projects</Link>
         <LoadingScreen
           label="Loading run"
@@ -273,9 +272,9 @@ export default function LiveRunPage() {
   );
 
   return (
-    <div className="cf-run-page cf-run-refined min-h-screen bg-bg">
+    <div className="cf-run-page cf-run-refined min-h-screen bg-bg" data-run-look="editorial">
       <AppHeader />
-      <main data-run-flow-page className="mx-auto w-full max-w-[1600px] px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+      <main data-run-flow-page className="cf-page pb-20 pt-4">
         <div className="cf-run-navigation">
           <Link
             href="/projects"
@@ -288,7 +287,6 @@ export default function LiveRunPage() {
             <Link href={`/playground/agent-city?run=${encodeURIComponent(id)}`} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-fg-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
               <Building2 className="h-4 w-4" aria-hidden /> Agent City
             </Link>
-            <DashboardThemeToggle />
           </div>
         </div>
 

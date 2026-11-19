@@ -109,8 +109,7 @@
 .cf-evidence-problems li p:nth-child(3) { font-size:11px; margin-top:9px; color:var(--fg-faint); }
 .cf-evidence-problems button { font-size:11px; }
 .cf-run-page .cf-evidence-timeline,.cf-run-page .cf-evidence-code { border-radius:16px; }
-.cf-evidence-timeline > div:first-child { padding:18px 20px; }
-.cf-evidence-timeline > div:nth-child(2) { padding:16px; background:var(--surface-2); }
+.cf-evidence-timeline > .cf-timeline-filter { padding:16px; background:var(--surface-2); }
 .cf-evidence-timeline input,.cf-evidence-timeline select { background:var(--surface); border-color:var(--border); border-radius:8px; height:38px; }
 .cf-evidence-timeline [aria-label="Timeline view"] button { border-color:transparent; box-shadow:none; font-size:11px; }
 .cf-evidence-timeline [aria-label="Timeline view"] button[aria-pressed=false] { background:transparent; }
@@ -218,10 +217,7 @@
 .cf-workbench-console-panel { height:340px; min-width:0; overflow:auto; }
 .cf-workbench-console-panel[hidden] { display:none; }
 .cf-run-page .cf-workbench-console-panel .cf-evidence-timeline { border:0; border-radius:0; }
-.cf-workbench-console-panel .cf-evidence-timeline > div:first-child { padding:10px 24px; border-bottom:0; }
-.cf-workbench-console-panel .cf-evidence-timeline > div:first-child > span:first-child { font-size:11px; }
-.cf-workbench-console-panel .cf-evidence-timeline > div:nth-child(2) { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:var(--surface); }
-.cf-workbench-console-panel .cf-evidence-timeline > div:nth-child(2) > div:first-child { width:380px; max-width:100%; }
+.cf-workbench-console-panel .cf-evidence-timeline > .cf-timeline-filter { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 24px; background:var(--surface); }
 .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:12px 24px; }
 .cf-run-page .cf-workbench-console-panel .cf-evidence-terminal { height:100%; border-radius:0; }
 .cf-run-page .cf-workbench-console-panel .cf-evidence-tests { width:100%; border:0; border-radius:0; min-height:100%; align-items:stretch; padding:24px; }
@@ -233,7 +229,7 @@
  .cf-workbench-console-heading { flex-wrap:wrap; gap:0; padding:0 16px 12px; }
  .cf-workbench-console-heading [data-slot=tabs-list] { gap:22px; width:100%; }
  .cf-workbench-console-panel { height:380px; }
- .cf-workbench-console-panel .cf-evidence-timeline > div:nth-child(2) { padding:12px; }
+ .cf-workbench-console-panel .cf-evidence-timeline > .cf-timeline-filter { padding:12px; }
  .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:12px; }
 }
 .cf-workbench-console-panel { flex:none; }
@@ -397,6 +393,9 @@
 .cf-run-page .cf-evidence-code button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .cf-run-page .cf-evidence-code .cf-file-resizer { background:#171612; }
 .cf-run-page .cf-evidence-code .cf-file-resizer:hover { background:#43423e; }
+/* The global selection is black-on-white for light surfaces; on this dark panel it vanished. */
+.cf-run-page .cf-evidence-code ::selection,
+.cf-run-page .cf-evidence-code::selection { background:#3f66c7; color:#fff; text-shadow:none; }
 .cf-run-page .cf-file-rail li button[aria-pressed=true] { border-color:#faf9f540; color:#ecebe7; }
 .cf-run-page .cf-file-rail li button[aria-pressed=true] > span[aria-hidden] { background:#31302c; }
 .cf-run-page .cf-file-rail li button[data-motion-control] { padding-block:12px; }
@@ -411,7 +410,6 @@
 .cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger]::after { display:none; }
 .cf-run-page .cf-workbench-console-heading [data-slot=tabs-trigger]:focus-visible { outline:2px solid var(--fg); outline-offset:3px; }
 .cf-run-page .cf-workbench-test-summary { font-size:11px; padding:7px 10px; border:1px solid var(--border); border-radius:100px; }
-.cf-run-page .cf-workbench-console-panel .cf-evidence-timeline > div:first-child { padding-top:16px; }
 .cf-run-page .cf-workbench-console-panel .cf-evidence-timeline [role=log] { padding:16px 24px; gap:8px; }
 .cf-run-page .cf-timeline-message { position:relative; padding:14px 16px; column-gap:14px; flex-shrink:0; }
 .cf-run-page .cf-timeline-message > span:first-child { position:relative; box-shadow:0 0 0 4px var(--surface); z-index:1; }

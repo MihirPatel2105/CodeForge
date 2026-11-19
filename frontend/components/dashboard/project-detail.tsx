@@ -1,16 +1,13 @@
 "use client";
 
 import "./workspace-design.css";
+import "./project-editorial.css";
 
-
-import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
-import { AnimatedTooltip } from "@/components/ui/vengeance/animated-tooltip";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { runStats } from "@/lib/run-stats";
-import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/api";
 import type { ProjectResponse, RunSummary } from "@/lib/types";
 import { readLocal, writeLocal } from "@/lib/workspace-storage";
@@ -19,8 +16,7 @@ import { ProjectSettings } from "@/components/dashboard/project-settings";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { PromptStudio } from "@/components/dashboard/prompt-studio";
 import { RunHistoryList } from "@/components/dashboard/run-history-list";
-
-const LABEL = "text-[12px] font-[650] text-fg-muted";
+import { ProjectRunSummary } from "@/components/dashboard/run-summary";
 
 /** Project detail (design_handoff/README.md "Other screens"): prompt entry on the
  * left, run history on the right. "Start run" calls the real `POST /runs` and
@@ -98,7 +94,7 @@ export function ProjectDetail({
   return (
     <div className="cf-project-detail min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1320px] px-5 pb-20 pt-6 md:px-10 md:pt-8 lg:px-14">
+      <main className="cf-page pb-20 pt-6 md:pt-8">
         <Link
           href="/projects"
           className="inline-flex items-center gap-2 text-[13px] font-[600] text-fg-muted transition-colors hover:text-accent"
@@ -108,32 +104,24 @@ export function ProjectDetail({
         </Link>
 
         <section className="cf-project-detail-hero mt-4 overflow-hidden rounded-3xl border border-border bg-surface">
-            <div className="relative px-6 py-6 md:px-9 md:py-7">
-              <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
-                {project.name}
-              </h1>
-              <ProjectSettings project={project} onSaved={onProjectSaved} />
-              {project.description && (
-                <p className="mt-2 max-w-[80ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
-                  {project.description}
-                </p>
-              )}
+            <div className="ax-hero relative px-6 py-6 md:px-9 md:py-7">
+              <div className="ax-hero-main">
+                <h1 className="font-display text-[36px] font-[700] tracking-[-0.055em] text-fg md:text-[42px]">
+                  {project.name}
+                </h1>
+                <ProjectSettings project={project} onSaved={onProjectSaved} />
+                {project.description && (
+                  <p className="mt-2 max-w-[80ch] text-[14px] leading-[1.6] text-fg-muted md:text-[15px]">
+                    {project.description}
+                  </p>
+                )}
+              </div>
+              {/* Counts come from the server so they include runs on later pages. */}
+              <ProjectRunSummary stats={stats} />
             </div>
-
-            {/* Counts come from the server so they include runs on later pages. */}
-            <dl className="cf-project-detail-stats grid grid-cols-2 bg-surface-2/65 sm:grid-cols-4">
-              <Figure label="Runs" value={String(stats.total)} />
-              <Figure label="Succeeded" value={String(stats.succeeded)} bordered />
-              <Figure label="Failed" value={String(stats.failed)} bordered />
-              <Figure
-                label="Average loops"
-                value={stats.avgLoops == null ? "—" : stats.avgLoops.toFixed(1)}
-                bordered
-              />
-            </dl>
         </section>
 
-        <div className="cf-project-workspace mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:items-start">
+        <div className="cf-project-workspace ax-workspace mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:items-start">
           <PromptStudio
             prompt={prompt}
             onPromptChange={setPrompt}
@@ -161,32 +149,6 @@ export function ProjectDetail({
           />
         </div>
       </main>
-    </div>
-  );
-}
-
-function Figure({
-  label,
-  value,
-  bordered,
-}: {
-  label: string;
-  value: string;
-  bordered?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative flex min-h-[86px] flex-col justify-center px-5 py-3 sm:px-6",
-        bordered && (label === "Failed" ? "border-rule sm:border-l" : "border-l border-rule"),
-        label === "Failed" && "border-t border-rule sm:border-t-0",
-        label === "Average loops" && "border-t border-rule sm:border-t-0",
-      )}
-    >
-      <dt className={cn(LABEL, "text-[12px]")}>{label}{label === "Average loops" && <AnimatedTooltip label="average loops" content="Average repair iterations across this project's runs. A lower value means fewer repair passes, not necessarily a better API." />}</dt>
-      <dd className="font-display mt-1 text-[26px] font-[700] tracking-[-0.05em] text-fg">
-        {Number.isFinite(Number(value)) ? <AnimatedNumber value={Number(value)} formatter={() => value} /> : value}
-      </dd>
     </div>
   );
 }

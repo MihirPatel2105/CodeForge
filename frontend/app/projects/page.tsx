@@ -1,6 +1,8 @@
 "use client";
 
 import "@/components/dashboard/workspace-design.css";
+import "@/components/dashboard/projects-editorial.css";
+import "@/components/ui/axd-dialog.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -8,24 +10,21 @@ import { FolderPlus, LoaderCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { NeedsYouStrip } from "@/components/dashboard/needs-you-strip";
-import { LIST_COLUMNS, ProjectListRow, ProjectTile } from "@/components/dashboard/project-list-row";
+import { ProjectListHeader, ProjectListRow, ProjectsSummary, ProjectTile } from "@/components/dashboard/project-list-row";
 import { ProjectsToolbar, type ProjectLayout } from "@/components/dashboard/projects-toolbar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
 import { Textarea } from "@/components/ui/textarea";
-import { AnimatedNumber } from "@/components/ui/vengeance/animated-number";
 import { api, ApiError, getToken } from "@/lib/api";
 import { hasLiveRun, type ProjectState } from "@/lib/project-insights";
 import type { ProjectOverviewItem, ProjectResponse } from "@/lib/types";
 import { useProjectListKeys } from "@/lib/use-project-list-keys";
 import { readLocal, writeLocal } from "@/lib/workspace-storage";
-import { cn } from "@/lib/utils";
 
-const LABEL = "text-[12px] font-[650] text-fg-muted";
 const LAYOUT_KEY = "codeforge:projects:layout";
 const PAGE_SIZE = 20;
 const MAX_PAGE = 50;
@@ -148,31 +147,20 @@ export default function ProjectsPage() {
   );
   const query = search.trim();
   const filtered = Boolean(query || stateFilter);
-  const passed = totals.runs > 0 ? Math.round((totals.succeeded / totals.runs) * 100) : null;
 
   return (
-    <div className="cf-projects min-h-screen bg-bg">
+    <div className="cf-projects axp-page min-h-screen bg-bg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1240px] px-5 pb-20 pt-8 md:px-10 md:pt-10">
-        <header className="flex flex-wrap items-end justify-between gap-5">
+      <main className="cf-page pb-20 pt-8 md:pt-10">
+        <header className="axp-head flex flex-wrap items-end justify-between gap-5">
           <div>
             <h1 className="font-display text-fg">Projects</h1>
             {totals.projects > 0 && (
-              <dl className="mt-2 flex flex-wrap items-center gap-x-2 font-mono text-[12.5px] text-fg-muted">
-                <Total label="Projects" value={totals.projects} unit={totals.projects === 1 ? "project" : "projects"} />
-                <Total label="Runs" value={totals.runs} unit={totals.runs === 1 ? "run" : "runs"} separated />
-                <Total
-                  label="Successful runs"
-                  value={totals.succeeded}
-                  unit="passed"
-                  note={passed != null ? `(${passed}%)` : undefined}
-                  separated
-                />
-              </dl>
+              <ProjectsSummary projects={totals.projects} runs={totals.runs} succeeded={totals.succeeded} />
             )}
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger render={<Button className="h-10 gap-2 rounded-xl px-4 text-[13.5px]" />}>
+            <DialogTrigger render={<Button className="axp-new h-10 gap-2 rounded-xl px-4 text-[13.5px]" />}>
               <Plus className="size-4" aria-hidden />
               New project
             </DialogTrigger>
@@ -221,8 +209,8 @@ export default function ProjectsPage() {
         ) : projects == null ? null : projects.length === 0 && !filtered && !archived ? (
           <EmptyState onNewProject={() => setOpen(true)} />
         ) : (
-          <section className="mt-5" aria-label="Your projects">
-            <p role="status" className="mb-3 text-[12px] font-[550] text-fg-muted">
+          <section className="axp-results" aria-label="Your projects">
+            <p role="status" className="axp-count">
               {filtered
                 ? `${projects.length} of ${matchingProjects} matching projects shown`
                 : `${projects.length} of ${totals.projects} projects shown`}
@@ -237,16 +225,8 @@ export default function ProjectsPage() {
                 onShowActive={() => setArchived(false)}
               />
             ) : layout === "list" ? (
-              <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-                <div className={cn("hidden items-center gap-x-4 border-b border-rule bg-surface-2/70 px-5 py-2 text-[11.5px] font-[650] text-fg-faint md:grid", LIST_COLUMNS)} aria-hidden>
-                  <span>Project</span>
-                  <span>Status</span>
-                  <span>Recent runs</span>
-                  <span>Pass rate</span>
-                  <span>Runs</span>
-                  <span>Updated</span>
-                  <span />
-                </div>
+              <div className="axp-list">
+                <ProjectListHeader />
                 <ul aria-label="Projects">
                   {projects.map((project) => (
                     <ProjectListRow key={project.id} project={project} onChanged={refresh} />
@@ -254,7 +234,7 @@ export default function ProjectsPage() {
                 </ul>
               </div>
             ) : (
-              <ul aria-label="Projects" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <ul aria-label="Projects" className="axp-grid">
                 {projects.map((project) => (
                   <ProjectTile key={project.id} project={project} onChanged={refresh} />
                 ))}
@@ -280,31 +260,6 @@ export default function ProjectsPage() {
   );
 }
 
-function Total({
-  label,
-  value,
-  unit,
-  note,
-  separated,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-  note?: string;
-  separated?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <dt className="sr-only">{label}</dt>
-      <dd className="flex items-center gap-1.5">
-        {separated && <span aria-hidden>·</span>}
-        <span className="font-[650] text-fg"><AnimatedNumber value={value} /></span>
-        <span aria-hidden>{unit}</span>
-        {note && <span className="text-ok">{note}</span>}
-      </dd>
-    </div>
-  );
-}
 
 function FilteredEmpty({
   archived,
@@ -368,33 +323,25 @@ function LoadingState({ layout }: { layout: ProjectLayout }) {
     <div className="mt-5" aria-label="Loading projects" aria-live="polite">
       <div className="mb-3 h-3 w-36 animate-pulse rounded bg-border" />
       {layout === "list" ? (
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-          <div className="hidden h-[33px] border-b border-rule bg-surface-2/70 md:block" />
+        <div className="axp-list">
+          <div className="axp-list-head h-[29px]" />
           {rows.map((row) => (
-            <div key={row} className={cn("grid grid-cols-[36px_minmax(0,1fr)] items-center gap-x-4 border-b border-rule px-5 py-3.5 last:border-b-0", LIST_COLUMNS)}>
-              <div className="flex items-center gap-3 md:col-span-1">
-                <div className="size-9 shrink-0 animate-pulse rounded-[10px] bg-border" />
-                <div className="hidden flex-1 space-y-2 md:block">
-                  <div className="h-3.5 w-40 animate-pulse rounded bg-border" />
-                  <div className="h-3 w-56 max-w-full animate-pulse rounded bg-border/70" />
-                </div>
-              </div>
-              <div className="space-y-2 md:hidden">
+            <div key={row} className="axp-row grid">
+              <div className="space-y-2">
                 <div className="h-3.5 w-40 animate-pulse rounded bg-border" />
-                <div className="h-3 w-48 animate-pulse rounded bg-border/70" />
+                <div className="h-3 w-56 max-w-full animate-pulse rounded bg-border/70" />
               </div>
-              <div className="hidden h-6 w-20 animate-pulse rounded-full bg-border md:block" />
-              <div className="hidden h-4 w-24 animate-pulse rounded bg-border md:block" />
-              <div className="hidden h-3.5 w-10 animate-pulse rounded bg-border md:block" />
-              <div className="hidden h-3.5 w-6 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3.5 w-16 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3 w-20 animate-pulse rounded bg-border md:block" />
+              <div className="hidden h-3.5 w-24 animate-pulse rounded bg-border md:block" />
               <div className="hidden h-3.5 w-20 animate-pulse rounded bg-border md:block" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="axp-grid">
           {rows.map((row) => (
-            <div key={row} className="h-[184px] animate-pulse rounded-2xl border border-border bg-surface" />
+            <div key={row} className="axp-card h-[196px] animate-pulse" />
           ))}
         </div>
       )}
@@ -427,18 +374,14 @@ function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectRe
   }
 
   return (
-    <DialogContent className="cf-workspace-dialog rounded-xl border-border p-0 shadow-[0_30px_90px_rgba(22,24,28,0.2)]">
-      <div className="border-b border-rule bg-surface-2 px-6 py-5">
-        <DialogHeader>
-          <span className={LABEL}>create workspace</span>
-          <DialogTitle className="font-display mt-2 text-[22px] tracking-[-0.04em]">
-            New project
-          </DialogTitle>
-        </DialogHeader>
-      </div>
-      <form className="flex flex-col gap-4 px-6 pb-6" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-[6px]">
-          <Label htmlFor="project-name" className={LABEL}>
+    <DialogContent className="cf-workspace-dialog axd p-0 sm:max-w-[480px]">
+      <DialogHeader className="axd-head">
+        <DialogTitle className="axd-title">New project</DialogTitle>
+        <DialogDescription className="axd-lede">One project holds every run for one API. You can rename it later.</DialogDescription>
+      </DialogHeader>
+      <form className="axd-form" onSubmit={handleSubmit}>
+        <div className="axd-field">
+          <Label htmlFor="project-name" className="axd-label">
             Name
           </Label>
           <Input
@@ -447,26 +390,29 @@ function NewProjectDialogContent({ onCreated }: { onCreated: (project: ProjectRe
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Book Collection API"
+            className="axd-input"
           />
         </div>
-        <div className="flex flex-col gap-[6px]">
-          <Label htmlFor="project-description" className={LABEL}>
-            Description (optional)
+        <div className="axd-field">
+          <Label htmlFor="project-description" className="axd-label">
+            Description <span>optional</span>
           </Label>
           <Textarea
             id="project-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What is this API for?"
+            className="axd-input"
           />
         </div>
-        {error && <p className="text-[13px] text-danger">{error}</p>}
-        <DialogFooter className="mt-2 border-t border-rule pt-5">
-          <Button type="submit" disabled={submitting} className="min-w-[136px]">
+        {error && <p role="alert" className="axd-error">{error}</p>}
+        <div className="axd-actions">
+          <DialogClose render={<Button type="button" variant="ghost" />}>Cancel</DialogClose>
+          <Button type="submit" disabled={submitting} className="axd-submit">
             {submitting && <LoaderCircle className="h-4 w-4 motion-safe:animate-spin" aria-hidden />}
             {submitting ? "Creating project…" : "Create project"}
           </Button>
-        </DialogFooter>
+        </div>
       </form>
     </DialogContent>
   );

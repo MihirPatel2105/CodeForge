@@ -47,7 +47,7 @@ export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPa
     <div className="cf-evidence-tests flex min-h-[196px] w-full shrink-0 flex-col gap-2 rounded-2xl border border-border bg-surface p-4 xl:w-[300px]">
       <div className="flex items-center justify-between">
         <span className={cn(typeScale.label, "text-fg-faint")}>TESTS</span>
-        <span className={cn("font-mono text-[18px] font-bold", scoreTone)}>
+        <span className={cn("cf-tests-score font-mono text-[18px] font-bold", scoreTone)}>
           {tests ? `${tests.passed}/${tests.total}` : "—"}
         </span>
       </div>
@@ -78,7 +78,7 @@ export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPa
           {failures.map((f, index) => {
             const isOpen = expanded.has(f.name);
             return (
-              <div key={f.name} className="rounded-lg border border-danger-bd bg-danger-soft p-2">
+              <div key={f.name} className="cf-tests-failure rounded-lg border border-danger-bd bg-danger-soft p-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate font-mono text-[12.5px] font-[650] text-danger">{f.name}</span>
                   <MotionButton
@@ -105,7 +105,7 @@ export function TestsPanel({ tests, failures = [], terminalLines = [] }: TestsPa
       )}
 
       {tests && tests.failed > 0 && failures.length === 0 && liveFailureOutput.length > 0 && (
-        <div className="cf-run-scroll mt-1 max-h-[110px] overflow-y-auto rounded-lg border border-danger-bd bg-danger-soft p-2.5">
+        <div className="cf-tests-output cf-run-scroll mt-1 max-h-[110px] overflow-y-auto rounded-lg border border-danger-bd bg-danger-soft p-2.5">
           <p className="mb-2 font-mono text-[9px] font-[700] uppercase tracking-[0.1em] text-danger">
             Failure output
           </p>

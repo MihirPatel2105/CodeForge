@@ -88,6 +88,13 @@ test("rows show state, run history, pass rate and trend in activity order", asyn
   await expect(row(page, "Inventory")).toContainText("No runs yet");
 });
 
+test("the header sums up every project's runs in one sentence", async ({ page }) => {
+  await openProjects(page);
+  await expect(page.locator(".cf-projects-summary")).toHaveText("6 of 11 runs passed across 3 projects.");
+  // Status reads as a dot and a word, not a filled pill.
+  await expect(row(page, "Contact Directory").locator(".cf-project-status")).toHaveText("Needs you");
+});
+
 test("a run bar names its run on hover and opens it on click", async ({ page }) => {
   await openProjects(page);
   const bar = row(page, "Community Event Planner").locator(".cf-heartbeat-bar");

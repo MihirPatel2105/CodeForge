@@ -57,10 +57,12 @@ test("project cards and run history use the viewer's local time", async ({ page 
 
   await page.locator('a[href="/projects/project-2"]').click();
   await expect(page.getByText("Sep 25, 02:39")).toBeVisible();
-  await expect(page.getByText("1 of 2 runs")).toBeVisible();
+  // The loaded count lives in the history header; the summary above says "1 of 2 runs passed."
+  const history = page.locator("section").filter({ has: page.getByRole("heading", { name: "Run history" }) });
+  await expect(history.getByText("1 of 2 runs")).toBeVisible();
   await page.getByRole("button", { name: "Load more runs" }).click();
   await expect(page.getByText("More history")).toBeVisible();
   await expect.poll(() => pendingFirstPages).toBe(0);
   await expect(page.getByText("More history")).toBeVisible();
-  await expect(page.getByText("2 of 2 runs")).toBeVisible();
+  await expect(history.getByText("2 of 2 runs")).toBeVisible();
 });

@@ -67,6 +67,33 @@ test("stage inspection stays stable while live execution advances", async ({ pag
   expect(mutations).toBe(0);
 });
 
+test("a long request expands in the title on a real run instead of repeating underneath", async ({ page }) => {
+  const id = "long-request-run";
+  const prompt = "Build a CRUD API for books with title and author (required strings), year (integer), and genres (list of strings). Support create, list, get by ID, update, and delete. Reject empty titles and return 404 for missing books.";
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.addInitScript(() => { document.cookie = "codeforge_session_present=1; Path=/"; });
+  await page.route("**/api/backend/**", route => route.fulfill({ status: 404, json: {} }));
+  await page.route("**/api/backend/auth/me", route => route.fulfill({ json: { id: "user-1", first_name: "Regular", is_admin: false } }));
+  await page.route("**/api/backend/runs/attention", route => route.fulfill({ json: [] }));
+  await page.route(`**/api/backend/runs/${id}`, route => route.fulfill({ json: { id, project_id: "p", prompt, status: "running", state: {}, metrics: null, created_at: at, updated_at: at } }));
+  await page.route(`**/api/backend/runs/${id}/files`, route => route.fulfill({ json: { run_id: id, files: [] } }));
+  await page.route(`**/api/backend/runs/${id}/file-history`, route => route.fulfill({ json: { run_id: id, versions: [] } }));
+  await page.route(`**/api/backend/runs/${id}/stream`, route => route.fulfill({ contentType: "text/event-stream", body: `id: 1\ndata: ${JSON.stringify({ event: "run.started", run_id: id, prompt, at })}\n\n` }));
+  await page.goto(`/runs/${id}`);
+  const title = page.getByRole("heading", { level: 1 });
+  const toggle = page.getByRole("button", { name: "Show full request", exact: true });
+  await expect(title).toHaveText(prompt);
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  const clamped = await title.evaluate(element => element.clientHeight);
+  await toggle.click();
+  await expect(page.getByRole("button", { name: "Show less", exact: true })).toHaveAttribute("aria-expanded", "true");
+  // The title grows over the panel duration, so wait for it rather than reading it mid-motion.
+  await expect.poll(() => title.evaluate(element => element.clientHeight)).toBeGreaterThan(clamped);
+  // The request is shown once, in the title, not again in a panel below it.
+  await expect(page.locator(".cf-run-request-details")).toHaveCount(0);
+  await expect(page.getByText(prompt, { exact: true })).toHaveCount(1);
+});
+
 for (const width of [1440, 1024, 375, 320]) {
   test(`pipeline stays readable without horizontal scrolling at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
@@ -87,7 +114,8 @@ for (const width of [1440, 1024, 375, 320]) {
     }
     await page.screenshot({ path: `/tmp/codeforge-run-dashboard-${width}.png`, fullPage: true });
     if (width === 1440) {
-      await page.getByRole("button", { name: "Dark mode for agent dashboard", exact: true }).click();
+      // The theme control lives in the avatar menu now; switch the way next-themes does.
+      await page.evaluate(() => document.documentElement.classList.add("dark"));
       await expect(page.locator("html")).toHaveClass(/dark/);
       for (const id of ["sandbox", "reviewer"]) {
         const stage = page.locator(`[data-stage="${id}"]`);
@@ -97,7 +125,10 @@ for (const width of [1440, 1024, 375, 320]) {
           const numbers = (color: string) => Array.from(color.matchAll(/rgb\((\d+), (\d+), (\d+)\)/g), match => match.slice(1).map(Number));
           return {
             text: numbers(getComputedStyle(element.querySelector(".cf-agent-step-name")!).color)[0],
-            backgrounds: numbers(getComputedStyle(element).backgroundImage),
+            // Stage cards may be a gradient or a flat fill; check whichever paints the card.
+            backgrounds: numbers(getComputedStyle(element).backgroundImage).length
+              ? numbers(getComputedStyle(element).backgroundImage)
+              : numbers(getComputedStyle(element).backgroundColor),
           };
         });
         expect(colors.backgrounds.length).toBeGreaterThan(0);
