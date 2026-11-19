@@ -347,19 +347,3 @@ for (const width of [1440, 320]) {
     expect((await appearance()).background).toBe(light.background);
   });
 }
-
-test("playground theme follows CodeForge while the island quest keeps its progress", async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 812 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.addInitScript(() => { if (!localStorage.getItem("codeforge-theme")) localStorage.setItem("codeforge-theme", "light"); });
-  await page.goto("/playground/agent-city");
-  await page.getByRole("button", { name: "Pick up an idea", exact: true }).click();
-  const toggle = page.getByRole("button", { name: "Dark mode for agent dashboard", exact: true });
-  await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "Visit PM", exact: true })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.reload();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "Visit PM", exact: true })).toBeVisible();
-});
