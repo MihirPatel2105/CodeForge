@@ -8,7 +8,7 @@
   --premium-display: clamp(44px, 5.8vw, 76px);
   --premium-ease: cubic-bezier(.16, 1, .3, 1);
   --premium-duration: 220ms;
-  --ui-radius-action: 8px;
+  --ui-radius-action: 12px; /* primary actions: the New project button's corners, used site-wide */
   --ui-radius-control: 8px;
   --ui-radius-compact: 8px;
   --ui-duration-fast: 160ms;
@@ -305,3 +305,17 @@ html { scroll-padding-top: 80px; }
 
 .cf-project-workspace { margin-top: 32px; gap: 28px; }
 .cf-project-history-empty { min-height: 280px; padding-block: 48px; }
+
+/* ---------- One page edge ----------
+   The header and every page share these edges: page content starts under the logo and ends under
+   the account button. Content stops at --page-max on wide screens; below that the gutter applies.
+   Admin (sidebar layout), sign-in and Agent City are full-screen designs and opt out. */
+:root {
+  --page-max: 1310px;
+  --page-gutter: clamp(16px, 5.4vw, 80px);
+}
+/* :root raises specificity above page stylesheets that cap their own width (account.css, run-workspace.css). */
+:root .cf-page.cf-page {
+  box-sizing: border-box; width: 100%; max-width: none; margin-inline: 0;
+  padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2));
+}

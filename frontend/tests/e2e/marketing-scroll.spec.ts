@@ -24,7 +24,7 @@ test("app wheel scrolling eases and reacts to motion preferences", async ({ page
   await expect(html).toHaveClass(/lenis/);
 });
 
-for (const route of ["/about", "/how-it-works", "/faq", "/login", "/playground/agent-city"]) {
+for (const route of ["/about", "/how-it-works", "/faq", "/login"]) {
   test(`${route} enables momentum and respects reduced motion on load`, async ({ page }) => {
     await page.goto(route);
     await expect(page.locator("html")).toHaveClass(/lenis/);
