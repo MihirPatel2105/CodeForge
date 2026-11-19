@@ -31,7 +31,10 @@ export function LogoLockup({
         "--cf-logo-icon": ICON_WIDTH / LOCKUP_WIDTH,
       } as CSSProperties}
     >
-      {/* SVG artwork needs no resizing, so it bypasses the image optimiser. */}
+      {/* SVG artwork needs no resizing, so it bypasses the image optimiser. The image is invisible
+          (the symbol and word layers draw the logo) and only carries the alt text, so it sits out
+          of flow: the lockup is sized by its aspect ratio alone. In flow, Safari sized the box from
+          the SVG's natural 2285px width, which collapsed the header grid around the logo. */}
       <Image
         src={source}
         alt="CodeForge"
@@ -39,7 +42,7 @@ export function LogoLockup({
         width={LOCKUP_WIDTH}
         height={LOCKUP_HEIGHT}
         unoptimized
-        className="h-full w-full object-contain opacity-0"
+        className="absolute inset-0 h-full w-full object-contain opacity-0"
       />
       <span className="cf-logo-symbol" aria-hidden />
       <span className="cf-logo-word" aria-hidden />
