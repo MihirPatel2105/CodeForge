@@ -11,16 +11,10 @@ from pymongo.errors import DuplicateKeyError
 
 from app.api.auth import _record_failed_login, _replace_recovery_codes, _send_quietly
 from app.config import settings
+from app.core import email_templates
 from app.core.abuse_limits import check_reauthentication_limit
 from app.core.deps import AdminUser
-from app.core.email import (
-    _button_row,
-    _footnote,
-    _prose,
-    _shell,
-    send_email,
-    send_security_alert_email,
-)
+from app.core.email import send_email, send_security_alert_email
 from app.core.exceptions import AuthError, ConflictError, NotFoundError
 from app.core.security import (
     _totp,
@@ -170,31 +164,8 @@ async def invite_recovery(payload: RecoveryInvite, admin: AdminUser, request: Re
     )
     url = f"{settings.app_base_url}/recover-2fa/request/{token}"
     try:
-        await send_email(
-            to=user.email,
-            subject="Request recovery review · CodeForge",
-            text=(
-                "We reviewed your support message about a lost authenticator. "
-                f"Open {url} and enter your registered email to submit a recovery review request. "
-                "This invitation expires in 24 hours and does not recover or unlock your account. "
-                "Never email us your password or recovery codes."
-            ),
-            html=_shell(
-                eyebrow="Recovery support",
-                heading="Request a recovery review.",
-                rows=_prose(
-                    "We reviewed your support message about a lost authenticator. "
-                    "Open the form below and enter your registered email. "
-                    "Your submitted request will then appear in our admin review queue."
-                )
-                + _button_row(href=url, label="Request recovery review")
-                + _footnote(
-                    "This invitation expires in 24 hours and works once. "
-                    "It does not unlock your account. If you did not contact support, "
-                    "ignore it. Never email anyone your password or recovery codes."
-                ),
-            ),
-        )
+        mail = email_templates.recovery_invitation(to=user.email, url=url)
+        await send_email(to=user.email, subject=mail.subject, text=mail.text, html=mail.html)
     except Exception:
         await collection.update_one(
             {"_id": entry["_id"], "status": "invited"},
@@ -316,29 +287,8 @@ async def review_recovery(
         )
         try:
             url = f"{settings.app_base_url}/recover-2fa/{token}"
-            await send_email(
-                to=user.email,
-                subject="Recover your CodeForge authenticator",
-                text=(
-                    f"Your recovery request was approved. Open {url}\n"
-                    "This link expires in 15 minutes. You need your password and an unused "
-                    "recovery code. Never share them with support."
-                ),
-                html=_shell(
-                    eyebrow="Account recovery",
-                    heading="Reconnect your authenticator.",
-                    rows=_prose(
-                        "Your recovery request was approved. "
-                        "Have your password and an unused recovery code ready."
-                    )
-                    + _button_row(href=url, label="Recover two-factor access")
-                    + _footnote(
-                        "This link expires in 15 minutes. If you did not request recovery, "
-                        "do not use it and contact support. Never send your password or "
-                        "recovery codes to anyone."
-                    ),
-                ),
-            )
+            mail = email_templates.recovery_approved(to=user.email, url=url)
+            await send_email(to=user.email, subject=mail.subject, text=mail.text, html=mail.html)
         except Exception:
             await MfaRecovery.get_pymongo_collection().update_one(
                 {"_id": entry.id, "status": "approved"},
