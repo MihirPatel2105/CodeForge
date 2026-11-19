@@ -1,0 +1,85 @@
+/* Auth pages in the Anthropic-style language (docs/design/ANTHROPIC_DESIGN.md): serif titles,
+   sentence-case sans labels, white hairline fields, an ink primary button, a quiet secondary
+   button and ink links. Geometry stays on the site's shared tokens (DESIGN.md): actions are 44px
+   tall with the 12px action corner; fields, tiles and strips keep the 8px control corner.
+   Only the form side changes; the horizon band is left exactly as it is.
+   Applied by .ae-auth on the auth shell (auth-entry-shell.tsx); it also works on any ancestor. */
+
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) {
+  --ae-hair: color-mix(in srgb, var(--fg) 10%, transparent);
+  --ae-hair-strong: color-mix(in srgb, var(--fg) 20%, transparent);
+  --ae-field: color-mix(in srgb, var(--surface) 35%, white);
+  --ae-quiet: color-mix(in srgb, var(--fg) 6%, var(--surface));
+  --ae-quiet-hover: color-mix(in srgb, var(--fg) 10%, var(--surface));
+  --ae-serif: var(--font-brand-serif), Georgia, serif;
+}
+
+/* ---------- Title and lede ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form h1 {
+  /* 42px leaves "Reset your password" room in the 420px column and keeps the horizon headline the largest line. */
+  font-family: var(--ae-serif); font-size: clamp(34px, 2.9vw, 42px); line-height: 1.1; color: var(--fg);
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form h1 + p { margin-top: 12px; color: var(--fg-muted); font-size: 16.5px; line-height: 1.55; }
+
+/* ---------- Fields ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form label { color: var(--fg); font-size: 14px; font-weight: 500; letter-spacing: 0; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form label > span { color: var(--fg-faint); font-weight: 400; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form input:not([type=checkbox]) {
+  height: 48px; border: 1px solid var(--ae-hair-strong); border-radius: var(--ui-radius-control, 8px); background: var(--ae-field);
+  box-shadow: none; color: var(--fg); font-size: 16px;
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form input::placeholder { color: var(--fg-faint); }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form input:not([type=checkbox]):hover { border-color: color-mix(in srgb, var(--fg) 32%, transparent); }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form input:not([type=checkbox]):focus-visible {
+  border-color: var(--fg); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--fg) 10%, transparent);
+}
+/* Show / hide sits inside the field as plain muted text. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form button[aria-label$="password"] { height: 38px; border-radius: 9px; font-size: 13px; font-weight: 500; }
+
+/* ---------- Buttons ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form button[type=submit] {
+  height: 44px; min-height: 44px; border-radius: var(--ui-radius-action, 12px); background: var(--fg); color: var(--surface);
+  box-shadow: none; font-size: 15px; font-weight: 500;
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form button[type=submit]:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 86%, var(--surface)); }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form a[href="/login/passkey"] {
+  height: 44px; border: 0; border-radius: var(--ui-radius-action, 12px); background: var(--ae-quiet); color: var(--fg); font-size: 15px; font-weight: 500;
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form a[href="/login/passkey"]:hover { background: var(--ae-quiet-hover); }
+
+/* ---------- Links: ink with a light underline, never the accent colour ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form-content a:not([href="/login/passkey"]) {
+  color: var(--fg); font-weight: 500;
+  text-decoration: underline; text-decoration-color: var(--ae-hair-strong); text-underline-offset: 4px;
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form-content a:not([href="/login/passkey"]):hover { text-decoration-color: currentColor; }
+
+/* ---------- Divider, password rules, small print ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form-content > div.my-5 { color: var(--fg-faint); font-size: 13px; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form-content > div.my-5 > .h-px { background: var(--ae-hair); }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form .cf-auth-rules {
+  padding: 14px 0 0; border: 0; border-top: 1px solid var(--ae-hair); border-radius: 0; background: transparent;
+}
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form .cf-auth-rules > p { color: var(--fg-muted); font-size: 13px; font-weight: 400; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form .cf-auth-rules li > span:last-child { font-size: 13px; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .pa-form .cf-auth-footer { color: var(--fg-muted); font-size: 14.5px; }
+
+/* Icon tiles above verify and recovery titles: an outline on paper, not a filled chip. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) :is(.cf-auth-icon, .pa-passkey-icon) { border-color: var(--ae-hair-strong); background: transparent; }
+/* "Step 2 of 2": small sentence-case sans, not uppercase mono. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .cf-auth-step { font-family: var(--font-ui), sans-serif; font-size: 13.5px; letter-spacing: 0; text-transform: none; }
+/* Info strips (the email a code went to, a sent-link note, "Need help with 2FA?"): hairline rows, not filled boxes. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) :is(.cf-auth-strip, .cf-auth-help) { border-color: var(--ae-hair); background: transparent; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .cf-auth-help > summary { color: var(--fg); font-weight: 500; }
+/* The code boxes' caption is not a <label>, so it is matched to the real labels by name. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .cf-auth-code-label { font-size: 14px; font-weight: 500; }
+/* Resend is a quiet ink action, not an accent link. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .cf-auth-resend { font-weight: 500; }
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .cf-auth-resend:not(:disabled) { color: var(--fg); text-decoration: underline; text-decoration-color: var(--ae-hair-strong); text-underline-offset: 4px; }
+
+/* Keyboard focus: a thin ink ring with air around it, instead of the heavy accent outline. */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .ah-side :is(a, button, summary):focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+
+/* ---------- Page chrome on the form side ---------- */
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .ah-back,
+:is(.ae-auth .pa-auth, .pa-auth.ae-auth) .ah-footer { font-size: 14px; }

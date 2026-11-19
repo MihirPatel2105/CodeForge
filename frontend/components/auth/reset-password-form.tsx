@@ -79,7 +79,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <AuthEntryShell label="Set a new password" proof="recovery">
-          <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
+          <span className="cf-auth-icon grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
           <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
             Set a new password
           </h1>

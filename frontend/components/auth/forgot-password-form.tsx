@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
     <AuthEntryShell label={sent ? "Reset link requested" : "Request a password reset"} proof="recovery" compact>
           {sent ? (
             <>
-              <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
+              <span className="cf-auth-icon grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
                 <MailCheck className="h-5 w-5" aria-hidden />
               </span>
               <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
@@ -64,7 +64,7 @@ export function ForgotPasswordForm() {
                 If that address has an account, a reset link is on its way. Open the
                 email to choose a new password.
               </p>
-              <div className="mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
+              <div className="cf-auth-strip mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
                 <p className="text-[13px] leading-5 text-fg-muted">
                   The link works once and expires after 10 minutes. Existing sessions
                   stay active until the password is changed.
@@ -81,7 +81,7 @@ export function ForgotPasswordForm() {
             </>
           ) : (
             <>
-              <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
+              <span className="cf-auth-icon grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg"><KeyRound className="h-5 w-5" aria-hidden /></span>
               <h1 className="font-display mt-6 text-[34px] font-[700] leading-[1.12] tracking-[-0.05em] text-fg sm:text-[40px]">
                 Reset your password
               </h1>
@@ -125,7 +125,7 @@ export function ForgotPasswordForm() {
             </>
           )}
 
-          <details className="mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 text-[13px] text-fg-muted">
+          <details className="cf-auth-help mt-6 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 text-[13px] text-fg-muted">
             <summary className="cursor-pointer rounded-md py-3 font-[600] focus-visible:outline-2 focus-visible:outline-fg">Need help with 2FA?</summary>
             <p className="pb-3 text-[12px] leading-5">If you lost your authenticator, contact support first. Recovery still requires your password and a saved recovery code.</p>
             <Link href="/recover-2fa" className="mb-4 inline-flex min-h-11 items-center font-[650] text-fg underline underline-offset-4">Recover authenticator access</Link>
