@@ -13,7 +13,7 @@ not stored in this repo; keep it out, and use your licensed copy to rebuild.
 Usage:
     python -m venv .venv && .venv/bin/pip install fonttools uharfbuzz
     .venv/bin/python scripts/brand/wordmark-roundex.py path/to/Roundex.otf CODEFORGE 0.02 > wordmark.json
-    node scripts/brand/build-lockup.mjs wordmark.json v4 path/to/icon.svg
+    node scripts/brand/build-lockup.mjs wordmark.json v4
 """
 
 from __future__ import annotations
