@@ -83,7 +83,16 @@ tables. Density must serve scanning, not reduce demo readability.
 
 ## Shape and components
 
-Controls use a 12px base radius; panels use 24px and primary actions use pill shapes. Existing aliases: `sm` approximately 10px; `md` and `lg`
+Account surfaces (command palette, run updates, profile, settings and the password, passkeys and
+two-factor pages) follow the same editorial language: serif page titles set on the page instead of
+dark bands, underlined text tabs instead of pills, small uppercase labels, hairline panels without
+fills or shadows, icons without tiles, and colour only for state. The rules live in
+`frontend/app/account-editorial.css` (and the run-updates CSS module), scoped to
+`html[data-ui="editorial"]`, which the root layout always sets.
+
+Controls use a 12px base radius; panels use 24px. Primary actions (`--ui-radius-action`) use 12px
+corners and are 44px tall at 14px semibold, like the Projects page's New project button; dense
+toolbars may drop to 40px. Large hero calls to action use the same size, not a taller variant. Existing aliases: `sm` approximately 10px; `md` and `lg`
 12px; `xl` and `2xl` approximately 16px; full radius for pills and circles.
 Use semantic aliases rather than unrelated literal radii. Intentional line tabs
 and inherited inner corners are exceptions, not radius defects.
@@ -140,6 +149,9 @@ where necessary. Report browser verification separately from source inspection.
 - Cobalt example: https://www.usehallmark.com/examples/cobalt-01/
 - GitHub-inspired specification:
   https://github.com/nexu-io/open-design/blob/main/design-systems/github/DESIGN.md
+- Anthropic-style reference (principles and measurements only, no assets):
+  `docs/design/ANTHROPIC_DESIGN.md`. It is the basis for the editorial dashboard surfaces
+  and the home page below the hero (`components/marketing/editorial-landing*`).
 
 These are public inspiration references. CodeForge's own tokens and workflow
 remain authoritative. No external design source is a substitute for product
