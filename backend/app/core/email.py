@@ -7,17 +7,20 @@ no account with a third party, and the credential lives in `.env` like every oth
 `aiosmtplib` rather than the standard library's `smtplib`, which is blocking — a socket
 that stalls on a slow mail server would stall the whole event loop with it, and this call
 sits inside a request path (CLAUDE.md §6).
+
+What each message says and how it looks lives in `app/core/email_templates.py`; this
+module only decides when to send and hands the result to the mail server.
 """
 
 import logging
 from datetime import UTC, datetime
 from email.message import EmailMessage
 from email.utils import formatdate
-from html import escape as html_escape
 
 import aiosmtplib
 
 from app.config import settings
+from app.core import email_templates as templates
 from app.core.exceptions import CodeForgeError
 
 logger = logging.getLogger(__name__)
@@ -28,279 +31,6 @@ class EmailDeliveryError(CodeForgeError):
 
     status_code = 502
     code = "email_failed"
-
-
-# --------------------------------------------------------------------------- #
-# Theme
-# --------------------------------------------------------------------------- #
-# Email clients cannot use the app's CSS variables. Keep this snapshot aligned with
-# the light palette in `frontend/app/globals.css`.
-_BG = "#f8f8f8"  # --bg
-_SURFACE = "#ffffff"  # --surface
-_SURFACE_2 = "#f4f4f4"  # --surface-2
-_FG = "#171717"  # --fg
-_FG_MUTED = "#575757"  # --fg-muted
-_FG_FAINT = "#6b6b6b"  # --fg-faint
-_RULE = "#e5e5e5"  # --rule
-_BORDER_STRONG = "#cccccc"  # --border-strong
-_ACCENT_SOFT = "#f1f1f1"  # --accent-soft
-_ACCENT_BORDER = "#c9c9c9"  # --accent-bd
-
-_MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace"
-_SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-_RADIUS = "16px"
-
-# Email clients can fetch a public HTTPS image, but Gmail rejects the two embedded-image
-# techniques below. The lockup therefore lives on the frontend and is referenced through
-# `APP_BASE_URL`; deployed environments must set that value to the public frontend origin.
-# This keeps every email aligned with the product brand without adding an image attachment.
-#
-#   data: URI  — Gmail, Outlook and Yahoo refuse to render one in an <img src>. The mark
-#                arrived as a broken-image icon in every client that matters.
-#   cid: part  — renders correctly, but Gmail *silently drops the whole message* when it
-#                crosses accounts. Proved twice on 2026-08-20. First with three variants
-#                to one inbox: plain text arrived, HTML without an image arrived, the
-#                identical HTML with the PNG attached never appeared — not in the inbox,
-#                not in spam. Then again with that last variant sent on its own, in case
-#                the first run had merely been throttled as a burst. It did not arrive
-#                either. SMTP returned 2.0.0 OK every time.
-#
-# Note the asymmetry that makes this easy to misread: a message from this address *to
-# itself* is delivered with the attachment intact and the logo rendering perfectly. Only
-# the copy sent to a different account disappears. So "the logo works, I can see it" is
-# consistent with every recipient outside the sending account receiving nothing at all.
-#
-_BRAND = "#171717"
-
-
-def _brand_lockup_url() -> str | None:
-    base_url = settings.app_base_url.rstrip("/")
-    if base_url.startswith("https://"):
-        return f"{base_url}/brand/codeforge-lockup-light-v2.png"
-    # Mail clients cannot fetch localhost or assets in the private GitHub repo.
-    return None
-
-
-def _shell(*, eyebrow: str, heading: str, rows: str) -> str:
-    """Shared email frame: current palette, logo, title, and content.
-
-    Extracted the moment there was a second email — two copies of this table markup
-    would drift within a week, and the whole point is that a message from CodeForge
-    looks like CodeForge.
-
-    Tables and inline styles throughout. Mail clients strip `<style>` blocks, ignore
-    flexbox and grid, and Outlook renders through Word — so this is deliberately the
-    layout technique the rest of the codebase would never use.
-    """
-    logo_url = _brand_lockup_url()
-    brand = (
-        f'<img src="{html_escape(logo_url, quote=True)}" alt="CodeForge" width="170" height="42" '
-        'style="display:block;width:170px;height:auto;border:0;outline:none;text-decoration:none;">'
-        if logo_url
-        else f'<span style="font-family:{_SANS};font-size:26px;font-weight:800;'
-        f'letter-spacing:-0.05em;color:{_FG};">CodeForge</span>'
-    )
-    return f"""\
-<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:{_BG};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:{_BG};padding:40px 12px;">
-  <tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-           style="max-width:560px;background:{_SURFACE};border:1px solid {_RULE};
-                  border-radius:24px;box-shadow:0 12px 40px -20px #00000026;">
-      <tr><td style="padding:24px 24px 24px 24px;border-bottom:1px solid {_RULE};">
-        <a href="{html_escape(settings.app_base_url, quote=True)}" style="display:inline-block;text-decoration:none;">
-          {brand}
-        </a>
-      </td></tr>
-
-      <tr><td style="padding:28px 24px 0 24px;font-family:{_SANS};font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
-                     font-weight:650;color:{_FG_MUTED};">{html_escape(eyebrow.capitalize())}</td></tr>
-
-      <tr><td style="padding:12px 24px 0 24px;font-family:{_SANS};font-size:30px;
-                     font-weight:700;line-height:1.18;letter-spacing:-0.04em;color:{_FG};">
-        {html_escape(heading)}
-      </td></tr>
-
-{rows}
-
-      <tr><td style="padding:28px 24px 30px 24px;font-family:{_SANS};font-size:11px;
-                     line-height:1.5;color:{_FG_FAINT};">
-        <strong style="font-weight:600;color:{_FG};">CodeForge</strong><br>
-        Five agents. One API. You in control.
-      </td></tr>
-
-    </table>
-  </td></tr>
-</table>
-</body>
-</html>"""
-
-
-def _prose(text: str, *, top: int = 12) -> str:
-    return f"""      <tr><td style="padding:{top}px 24px 0 24px;font-family:{_SANS};font-size:15px;
-                     line-height:1.65;color:{_FG_MUTED};">
-        {text}
-      </td></tr>"""
-
-
-def _footnote(text: str) -> str:
-    """A rule, then small print — the same closing device the marketing pages use."""
-    return f"""      <tr><td style="padding:27px 24px 0 24px;">
-        <div style="border-top:1px solid {_RULE};"></div>
-      </td></tr>
-
-      <tr><td style="padding:15px 24px 0 24px;font-family:{_SANS};font-size:12.5px;
-                     line-height:1.6;color:{_FG_MUTED};">
-        {text}
-      </td></tr>"""
-
-
-def _verification_rows(*, code: str, minutes: int) -> str:
-    # The code framed as a value, not dressed up as a button: it is something to read
-    # and retype, and a button-shaped thing invites a click that does nothing.
-    return f"""{_prose("Enter this code to finish creating your account.")}
-
-      <tr><td style="padding:22px 24px 0 24px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
-                      background:{_ACCENT_SOFT};">
-          <tr><td align="center" style="padding:20px 12px;font-family:{_MONO};
-                     font-size:32px;font-weight:700;letter-spacing:0.18em;
-                     color:{_FG};">{html_escape(code)}</td></tr>
-        </table>
-      </td></tr>
-
-      <tr><td style="padding:13px 24px 0 24px;font-family:{_SANS};font-size:13px;
-                     color:{_FG_MUTED};">Expires in {minutes} minutes</td></tr>
-
-{
-        _footnote(
-            "If you did not try to create a CodeForge account, ignore this message "
-            "&mdash; nothing was created, and no account exists for this address."
-        )
-    }"""
-
-
-def _step_row(index: str, label: str, detail: str) -> str:
-    """One numbered step in the welcome message."""
-    return f"""      <tr><td style="padding:0 24px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="border-top:1px solid {_RULE};">
-          <tr>
-            <td valign="top" width="38" style="padding:15px 0;font-family:{_MONO};
-                       font-size:12px;font-weight:700;color:{_BRAND};">{index}</td>
-            <td valign="top" style="padding:13px 0;">
-              <div style="font-family:{_SANS};font-size:14px;font-weight:700;
-                          color:{_FG};">{label}</div>
-              <div style="margin-top:4px;font-family:{_SANS};font-size:13px;
-                          line-height:1.5;color:{_FG_MUTED};">{detail}</div>
-            </td>
-          </tr>
-        </table>
-      </td></tr>"""
-
-
-def _button_row(*, href: str, label: str, top: int = 22) -> str:
-    """A clear primary action for links back into the product."""
-    return f"""      <tr><td style="padding:{top}px 24px 0 24px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-          <tr><td style="background:{_FG};border-radius:999px;">
-            <a href="{html_escape(href, quote=True)}"
-               style="display:inline-block;padding:15px 26px;font-family:{_SANS};
-                      font-size:14px;font-weight:650;color:{_SURFACE};text-decoration:none;">
-              {label}
-            </a>
-          </td></tr>
-        </table>
-      </td></tr>"""
-
-
-def _reset_password_rows(*, reset_url: str, minutes: int) -> str:
-    safe_url = html_escape(reset_url, quote=True)
-    return f"""{
-        _prose(
-            "We received a request to reset the password for your CodeForge "
-            "account. Click below to choose a new one."
-        )
-    }
-
-{_button_row(href=reset_url, label="Reset password")}
-
-      <tr><td style="padding:14px 24px 0 24px;font-family:{_SANS};font-size:13px;
-                     color:{_FG_MUTED};">Expires in {minutes} minutes &middot; Single use</td></tr>
-
-      <tr><td style="padding:18px 24px 0 24px;font-family:{_SANS};font-size:12.5px;
-                     line-height:1.6;color:{_FG_FAINT};">
-        If the button does not work, paste this into your browser:<br>
-        <a href="{safe_url}" style="color:{_BRAND};word-break:break-all;">{safe_url}</a>
-      </td></tr>
-
-{
-        _footnote(
-            "If you did not request this, ignore this message &mdash; your password "
-            "will not change, and this link will expire on its own."
-        )
-    }"""
-
-
-def _welcome_rows(*, app_url: str) -> str:
-    steps = "\n\n".join(
-        (
-            _step_row("01", "Describe it", "One plain-English sentence about the API you want."),
-            _step_row("02", "Approve twice", "Once on the requirements, once on the design."),
-            _step_row(
-                "03",
-                "Watch it run",
-                "Five agents build and review it, then a container runs the tests for real.",
-            ),
-        )
-    )
-    return f"""{
-        _prose(
-            "Your account is ready. CodeForge turns a sentence into a working, "
-            "tested CRUD REST API &mdash; here is the shape of a run."
-        )
-    }
-
-      <tr><td style="height:22px;"></td></tr>
-
-{steps}
-
-{_button_row(href=f"{app_url}/projects", label="Start your first run", top=26)}
-
-{
-        _footnote(
-            "Every run is free to produce &mdash; CodeForge is built entirely on "
-            "free-tier models, so nothing here costs you anything."
-        )
-    }"""
-
-
-def _security_rows(*, when: str, body: str, warning: str) -> str:
-    """A notice about something that already happened to the account.
-
-    Every one of these carries a "if this wasn't you" line. A security email that only
-    says what happened is a receipt; the point of sending it is that the person who did
-    *not* do it finds out.
-    """
-    return f"""{_prose(html_escape(body))}
-
-      <tr><td style="padding:20px 24px 0 24px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-               style="border:1px solid {_RULE};border-radius:{_RADIUS};
-                      background:{_SURFACE_2};">
-          <tr><td style="padding:15px 17px 4px 17px;font-family:{_SANS};font-size:12px;
-                     font-weight:650;color:{_FG_MUTED};">When</td></tr>
-          <tr><td style="padding:0 17px 16px 17px;font-family:{_SANS};font-size:14px;
-                     color:{_FG};">{html_escape(when)}</td></tr>
-        </table>
-      </td></tr>
-
-{_footnote(warning)}"""
 
 
 def _build(
@@ -364,47 +94,39 @@ async def send_email(
         raise EmailDeliveryError("Could not send the verification email") from exc
 
 
-async def send_verification_code(*, to: str, code: str, first_name: str = "") -> None:
-    greeting = f"Hi {first_name}." if first_name else "Verify your email."
-    minutes = settings.otp_ttl_minutes
+async def send_rendered(
+    email: templates.RenderedEmail, *, to: str, reply_to: str | None = None
+) -> None:
+    """Send a message built by `app/core/email_templates.py`."""
     await send_email(
+        to=to, subject=email.subject, text=email.text, html=email.html, reply_to=reply_to
+    )
+
+
+def _stamp(moment: datetime | None = None) -> str:
+    """UTC, spelled out. A bare local time in an email is ambiguous to the reader and
+    wrong for anyone who has since travelled."""
+    return (moment or datetime.now(UTC)).astimezone(UTC).strftime("%d %b %Y at %H:%M UTC")
+
+
+async def send_verification_code(*, to: str, code: str, first_name: str = "") -> None:
+    await send_rendered(
+        templates.verification_code(
+            to=to, code=code, minutes=settings.otp_ttl_minutes, first_name=first_name
+        ),
         to=to,
-        subject=f"{code} is your CodeForge verification code",
-        text=(
-            f"{greeting}\n\n"
-            f"Enter this code to finish creating your CodeForge account:\n\n"
-            f"    {code}\n\n"
-            f"It expires in {minutes} minutes.\n\n"
-            f"If you did not try to create an account, ignore this message — nothing "
-            f"was created.\n"
-        ),
-        html=_shell(
-            eyebrow="verify your email",
-            heading=greeting,
-            rows=_verification_rows(code=code, minutes=minutes),
-        ),
     )
 
 
 async def send_password_reset_email(*, to: str, reset_url: str, first_name: str = "") -> None:
-    heading = f"{first_name}, reset your password." if first_name else "Reset your password."
-    minutes = settings.reset_token_ttl_minutes
-    await send_email(
+    await send_rendered(
+        templates.password_reset(
+            to=to,
+            reset_url=reset_url,
+            minutes=settings.reset_token_ttl_minutes,
+            first_name=first_name,
+        ),
         to=to,
-        subject="Reset your CodeForge password",
-        text=(
-            f"{heading}\n\n"
-            f"We received a request to reset the password for your CodeForge account.\n\n"
-            f"Reset it here: {reset_url}\n\n"
-            f"This link expires in {minutes} minutes and can only be used once.\n\n"
-            f"If you did not request this, ignore this message \u2014 your password will "
-            f"not change.\n"
-        ),
-        html=_shell(
-            eyebrow="password reset",
-            heading=heading,
-            rows=_reset_password_rows(reset_url=reset_url, minutes=minutes),
-        ),
     )
 
 
@@ -415,123 +137,40 @@ async def send_welcome_email(*, to: str, first_name: str = "") -> None:
     time this runs, so a mail server having a bad minute must not turn a successful
     sign-up into an error. See `_send_welcome_quietly` in the auth router.
     """
-    heading = f"Welcome, {first_name}." if first_name else "Welcome to CodeForge."
-    await send_email(
-        to=to,
-        subject="Your CodeForge account is ready",
-        text=(
-            f"{heading}\n\n"
-            f"Your account is ready. CodeForge turns a sentence into a working, tested "
-            f"CRUD REST API.\n\n"
-            f"    01  describe it     One plain-English sentence about the API you want.\n"
-            f"    02  approve twice   Once on the requirements, once on the design.\n"
-            f"    03  watch it run    Five agents build and review it, then a container\n"
-            f"                        runs the tests for real.\n\n"
-            f"Start your first run: {settings.app_base_url}/projects\n\n"
-            f"Every run is free to produce — CodeForge is built entirely on free-tier "
-            f"models.\n"
-        ),
-        html=_shell(
-            eyebrow="account created",
-            heading=heading,
-            rows=_welcome_rows(app_url=settings.app_base_url),
-        ),
-    )
-
-
-def _stamp() -> str:
-    """UTC, spelled out. A bare local time in an email is ambiguous to the reader and
-    wrong for anyone who has since travelled."""
-    return datetime.now(UTC).strftime("%d %b %Y at %H:%M UTC")
+    await send_rendered(templates.welcome(to=to, first_name=first_name), to=to)
 
 
 async def send_password_changed_email(*, to: str, first_name: str = "") -> None:
     """Tell the account its password moved. Never blocks the change itself."""
-    heading = (
-        f"{first_name}, your password was changed." if first_name else "Your password was changed."
-    )
-    when = _stamp()
-    warning = (
-        "If you did not do this, someone else may have access to your account. Sign in "
-        "and change your password again straight away."
-    )
-    body = (
-        "The password on your CodeForge account has been changed, and every other "
-        "browser that was signed in has been signed out."
-    )
-    await send_email(
-        to=to,
-        subject="Your CodeForge password was changed",
-        text=f"{heading}\n\n{body}\n\nWhen: {when}\n\n{warning}\n",
-        html=_shell(
-            eyebrow="security notice",
-            heading=heading,
-            rows=_security_rows(when=when, body=body, warning=warning),
-        ),
+    await send_rendered(
+        templates.password_changed(to=to, when=_stamp(), first_name=first_name), to=to
     )
 
 
 async def send_security_alert_email(*, to: str, title: str, detail: str) -> None:
-    when = _stamp()
-    await send_email(
-        to=to,
-        subject=f"CodeForge security alert: {title}",
-        text=f"{title}\n\n{detail}\n\nWhen: {when}\n",
-        html=_shell(
-            eyebrow="security alert",
-            heading=title,
-            rows=_security_rows(
-                when=when,
-                body=detail,
-                warning="If this was not expected, change the account password immediately.",
-            ),
-        ),
+    await send_rendered(
+        templates.security_alert(to=to, title=title, detail=detail, when=_stamp()), to=to
     )
 
 
 async def send_platform_alert_email(*, to: str, title: str, detail: str) -> None:
-    when = _stamp()
-    await send_email(
-        to=to,
-        subject=f"CodeForge platform alert: {title}",
-        text=f"{title}\n\n{detail}\n\nWhen: {when}\nCheck the admin monitoring page and backend logs.\n",
-        html=_shell(
-            eyebrow="platform alert",
-            heading=title,
-            rows=_security_rows(
-                when=when,
-                body=detail,
-                warning="Check the admin monitoring page and backend logs.",
-            ),
-        ),
+    await send_rendered(
+        templates.platform_alert(to=to, title=title, detail=detail, when=_stamp()), to=to
     )
 
 
 async def send_new_device_email(
     *, to: str, label: str, ip_address: str | None, occurred_at: datetime, review_url: str
 ) -> None:
-    when = occurred_at.astimezone(UTC).strftime("%d %b %Y at %H:%M UTC")
-    detail = f"Device: {label}\nTime: {when}\nIP address: {ip_address or 'Unavailable'}"
-    await send_email(
+    await send_rendered(
+        templates.new_sign_in(
+            to=to,
+            label=label,
+            ip_address=ip_address,
+            when=_stamp(occurred_at),
+            review_url=review_url,
+        ),
         to=to,
-        subject="New sign-in to your CodeForge account",
-        text=(
-            f"A new browser signed in to your CodeForge account.\n\n{detail}\n\n"
-            f"Was this you? Review this sign-in: {review_url}\n\n"
-            "If it was not you, use that page to sign out every device and then reset your password.\n"
-        ),
-        html=_shell(
-            eyebrow="new sign-in",
-            heading="A new browser signed in.",
-            rows=(
-                _security_rows(
-                    when=when,
-                    body=f"Device: {label}. IP address: {ip_address or 'Unavailable'}.",
-                    warning="If this was not you, sign out every device and reset your password.",
-                )
-                + _button_row(href=review_url, label="Review sign-in")
-            ),
-        ),
     )
 
 
@@ -544,82 +183,12 @@ async def send_account_deleted_email(
     receive from CodeForge — which is exactly why it states what was destroyed rather
     than just saying "done".
     """
-    heading = (
-        f"Your account is deleted, {first_name}." if first_name else "Your account is deleted."
-    )
-    when = _stamp()
-    warning = (
-        "If you did not do this, contact whoever runs this CodeForge instance. Nothing "
-        "can be restored from here — the data is gone, not archived."
-    )
-    body = (
-        f"Your CodeForge account and everything it owned has been permanently deleted: "
-        f"{projects} project(s), {runs} run(s), and every generated file stored against "
-        f"them. This address is free to sign up again whenever you like."
-    )
-    await send_email(
-        to=to,
-        subject="Your CodeForge account has been deleted",
-        text=f"{heading}\n\n{body}\n\nWhen: {when}\n\n{warning}\n",
-        html=_shell(
-            eyebrow="account deleted",
-            heading=heading,
-            rows=_security_rows(when=when, body=body, warning=warning),
+    await send_rendered(
+        templates.account_deleted(
+            to=to, when=_stamp(), first_name=first_name, projects=projects, runs=runs
         ),
+        to=to,
     )
-
-
-def _quote_block(text: str, *, top: int = 16) -> str:
-    """User-supplied text in a framed block.
-
-    Escaped, with newlines turned into breaks. This is the only place a stranger's
-    keystrokes become HTML, in a message we send to ourselves *and* back to them, so the
-    escaping lives here rather than at each call site.
-    """
-    body = html_escape(text).replace("\n", "<br>")
-    return f"""      <tr><td style="padding:{top}px 24px 0 24px;">
-        <div style="border:1px solid {_BORDER_STRONG};border-radius:{_RADIUS};
-                    background:{_SURFACE_2};padding:16px 18px;font-family:{_SANS};font-size:14px;
-                    line-height:1.65;color:{_FG};">{body}</div>
-      </td></tr>"""
-
-
-def _notice(text: str) -> str:
-    """A quiet tinted panel for something reassuring rather than actionable."""
-    return f"""      <tr><td style="padding:16px 24px 0 24px;">
-        <div style="background:{_ACCENT_SOFT};border:1px solid {_ACCENT_BORDER};border-radius:{_RADIUS};
-                    padding:14px 16px;font-family:{_SANS};font-size:13.5px;
-                    line-height:1.6;color:{_FG_MUTED};">{text}</div>
-      </td></tr>"""
-
-
-def _contact_rows(*, name: str, email: str, phone: str, message: str, when: str) -> str:
-    """Sender details as a labelled table, then the message itself in a framed block."""
-    details = [("From", name), ("Email", email)]
-    if phone:
-        details.append(("Phone", phone))
-    details.append(("Sent", when))
-
-    rows = "".join(
-        f"""        <tr>
-          <td style="padding:0 12px 9px 0;font-family:{_SANS};font-size:12px;
-                     font-weight:650;
-                     color:{_FG_FAINT};white-space:nowrap;vertical-align:top;">{label}</td>
-          <td style="padding:0 0 9px 0;font-family:{_SANS};font-size:13.5px;
-                     color:{_FG};">{html_escape(value)}</td>
-        </tr>"""
-        for label, value in details
-    )
-
-    return f"""      <tr><td style="padding:20px 24px 0 24px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-{rows}
-        </table>
-      </td></tr>
-
-{_quote_block(message)}
-
-{_footnote("Reply to this email and your answer goes straight to the sender.")}"""
 
 
 async def send_contact_message(*, name: str, email: str, phone: str, message: str) -> None:
@@ -629,53 +198,14 @@ async def send_contact_message(*, name: str, email: str, phone: str, message: st
     configuration is needed to receive it. `reply_to` carries the sender's address, so
     answering is one click and does not require copying anything out of the body.
     """
-    when = _stamp()
-    heading = f"{name} sent a message"
-    text_lines = [
-        heading,
-        "",
-        f"From:  {name}",
-        f"Email: {email}",
-    ]
-    if phone:
-        text_lines.append(f"Phone: {phone}")
-    text_lines += ["", message, "", f"Sent: {when}"]
-
-    await send_email(
-        to=settings.smtp_user or email,
-        subject=f"CodeForge contact — {name}",
-        text="\n".join(text_lines) + "\n",
-        html=_shell(
-            eyebrow="contact form",
-            heading=heading,
-            rows=_contact_rows(name=name, email=email, phone=phone, message=message, when=when),
+    to = settings.smtp_user or email
+    await send_rendered(
+        templates.contact_message(
+            to=to, name=name, email=email, phone=phone, message=message, when=_stamp()
         ),
+        to=to,
         reply_to=email,
     )
-
-
-def _contact_ack_rows(*, name: str, message: str) -> str:
-    greeting = f"Hi {html_escape(name)}, we" if name else "We"
-    return f"""{
-        _prose(
-            f"{greeting} received your message, and someone will reply within one or two "
-            "working days."
-        )
-    }
-{_prose("For reference, here is what you sent:", top=14)}
-{_quote_block(message, top=12)}
-{
-        _notice(
-            "No action is needed from you. If it becomes urgent, just reply to this "
-            "email &mdash; it reaches the same place."
-        )
-    }
-{
-        _footnote(
-            "You are getting this because this address was used on the CodeForge contact "
-            "form. If that was not you, ignore it &mdash; nothing was created or changed."
-        )
-    }"""
 
 
 async def send_contact_ack(*, to: str, name: str, message: str) -> None:
@@ -685,21 +215,4 @@ async def send_contact_ack(*, to: str, name: str, message: str) -> None:
     route. The copy of what they wrote is deliberate: it is the only record they have,
     since the form clears, and it is how they notice they sent the wrong thing.
     """
-    heading = "Thanks for getting in touch"
-    intro = f"Hi {name}, we received your message" if name else "We received your message"
-    await send_email(
-        to=to,
-        subject="We received your message — CodeForge",
-        text=(
-            f"{heading}\n\n"
-            f"{intro}, and someone will reply within one or two working days.\n\n"
-            f"For reference, here is what you sent:\n\n{message}\n\n"
-            "No action is needed from you. If it becomes urgent, just reply to this "
-            "email — it reaches the same place.\n"
-        ),
-        html=_shell(
-            eyebrow="contact",
-            heading=heading,
-            rows=_contact_ack_rows(name=name, message=message),
-        ),
-    )
+    await send_rendered(templates.contact_ack(to=to, name=name, message=message), to=to)

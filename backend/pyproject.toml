@@ -9,9 +9,10 @@ select = ["E", "F", "I", "UP", "B", "ASYNC"]
 known-first-party = ["app"]
 
 [tool.ruff.lint.per-file-ignores]
-# Embeds the mark as a base64 PNG data URI for the email templates — one legitimately
-# long line by nature, not a style lapse to fix.
+# Email HTML is table markup with inline styles (mail clients strip <style> blocks), so its
+# style strings are long by nature; splitting them mid-attribute would only hurt reading.
 "app/core/email.py" = ["E501"]
+"app/core/email_templates.py" = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -219,16 +219,13 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     makes Gmail silently drop the whole message when it crosses accounts. A hosted HTTPS
     image works across recipients and keeps the email identity aligned with the app.
     """
-    from app.core.email import _build, _shell
+    from app.core import email_templates
+    from app.core.email import _build
 
     monkeypatch.setattr(settings, "app_base_url", "http://localhost:3001")
 
-    message = _build(
-        "to@example.com",
-        "Subject",
-        "plain text",
-        _shell(eyebrow="test", heading="Test", rows=""),
-    )
+    email = email_templates.welcome(to="to@example.com")
+    message = _build("to@example.com", email.subject, email.text, email.html)
 
     types: list[str] = []
 
@@ -253,9 +250,10 @@ def test_email_uses_the_hosted_brand_lockup(monkeypatch):
     assert "CodeForge</span>" in html
 
     monkeypatch.setattr(settings, "app_base_url", "https://app.codeforge.example")
-    deployed_html = _shell(eyebrow="test", heading="Test", rows="")
-    deployed_logo_url = "https://app.codeforge.example/brand/codeforge-lockup-light-v2.png"
-    assert f'src="{deployed_logo_url}"' in deployed_html
+    deployed_html = email_templates.welcome(to="to@example.com").html
+    for variant in ("light", "dark"):  # header on paper, footer on ink
+        logo_url = f"https://app.codeforge.example/brand/codeforge-lockup-{variant}-email.png"
+        assert f'src="{logo_url}"' in deployed_html
 
 
 def test_every_message_carries_a_date(monkeypatch):
@@ -275,14 +273,13 @@ def test_every_message_carries_a_date(monkeypatch):
 
 
 def test_the_acknowledgement_renders_with_the_senders_words_escaped():
-    from app.core.email import _contact_ack_rows, _shell
+    from app.core import email_templates
 
-    html = _shell(
-        eyebrow="contact",
-        heading="Thanks for getting in touch",
-        rows=_contact_ack_rows(name="Priya", message="a <script>x</script>\nsecond line"),
-    )
-    assert "Hi Priya, we received your message" in html
+    html = email_templates.contact_ack(
+        to="priya@example.com", name="Priya", message="a <script>x</script>\nsecond line"
+    ).html
+    assert "Hello Priya," in html
+    assert "We’ve received your message" in html
     assert "<script>" not in html
     assert "&lt;script&gt;" in html
     assert "<br>" in html

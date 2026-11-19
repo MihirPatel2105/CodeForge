@@ -16,7 +16,7 @@ export function AdminRunTable({
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-surface">
       <div className="divide-y divide-border md:hidden">{runs.map(run => <article key={run.id} className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h3 className="text-sm font-semibold">{run.project_name}</h3><p className="mt-1 line-clamp-2 text-xs text-fg-muted">{run.prompt}</p></div><Link href={`/admin/runs/${run.id}`} aria-label={`Inspect run ${run.id}`} className="shrink-0 rounded-full border border-border p-2 text-accent"><ArrowUpRight className="size-4" aria-hidden /></Link></div><Link href={`/admin/users/${run.user_id}`} className="mt-3 block break-all text-xs text-accent">{run.user_email}</Link><div className="mt-3 flex flex-wrap gap-3 text-xs text-fg-muted"><span className={tone[(RUN_STATUS_META[run.status] ?? { tone: "neutral" }).tone].text}>{run.status.replaceAll("_", " ")}</span><span>{run.acceptance_level ?? "Not scored"}</span><span>{formatWhen(run.updated_at)}</span></div></article>)}{runs.length === 0 && <p className="p-5 text-sm text-fg-muted">{emptyLabel}</p>}</div>
-      <div className="hidden max-h-[65vh] overflow-auto md:block">
+      <div data-lenis-prevent className="cf-admin-table-scroll hidden max-h-[65vh] overflow-auto md:block">
         <table className="w-full min-w-[980px] border-collapse text-left">
           <thead className="sticky top-0 z-10 bg-surface-2">
             <tr>

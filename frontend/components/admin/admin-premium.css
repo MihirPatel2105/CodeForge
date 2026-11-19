@@ -23,9 +23,12 @@
 .cf-admin .cf-admin-page-header > div > div > span:last-child { color:var(--accent); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
 .cf-admin .cf-admin-page-header button { background:var(--bg);  font-size:12px; }
 .cf-admin .cf-admin-metrics { gap:1px; border-radius:18px; background:var(--border); box-shadow:0 4px 18px color-mix(in srgb,var(--fg) 3%,transparent); }
-.cf-admin .cf-admin-metric { border:0; background:var(--bg); padding:0; min-height:146px; }
-.cf-admin-metric > a { height:100%; padding:22px; border-radius:0; transition:background-color 180ms ease; }
-.cf-admin-metric > a:hover { background:var(--surface-2); }
+.cf-admin .cf-admin-metric { border:0; background:var(--bg); padding:22px; min-height:146px; transition:background-color 180ms ease; }
+/* The label link is stretched over the card (app/admin/page.tsx), so hover and focus belong to the card. */
+.cf-admin .cf-admin-metric:hover { background:var(--surface-2); }
+.cf-admin .cf-admin-metric-link { color:inherit; }
+.cf-admin .cf-admin-metric-link:focus-visible { outline:none; }
+.cf-admin .cf-admin-metric:has(.cf-admin-metric-link:focus-visible) { outline:2px solid var(--accent); outline-offset:-4px; border-radius:12px; }
 .cf-admin-metric dt { font-size:11px; font-weight:500; }
 .cf-admin-metric dd { font-variant-numeric:tabular-nums; font-size:34px; line-height:1; margin-top:24px; letter-spacing:-.045em; }
 .cf-admin-metric dd[aria-busy="true"] { color:var(--fg-faint); }
@@ -48,7 +51,7 @@
 @media(max-width:639px) {
  .cf-admin .cf-operations-layout { padding-inline:16px; }
  .cf-admin .cf-admin-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .cf-admin-metric > a { padding:16px; }
+ .cf-admin .cf-admin-metric { padding:16px; }
  .cf-admin .cf-admin-metric { min-height:126px; }
  .cf-admin-metric dd { font-size:28px; }
  .cf-admin .cf-admin-attention { padding:18px; }

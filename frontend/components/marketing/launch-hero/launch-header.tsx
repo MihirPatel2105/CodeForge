@@ -31,7 +31,10 @@ interface LaunchHeaderProps {
 let logoWasLeft: boolean | null = null;
 
 function useLogoLeft(left: boolean): boolean {
-  const [current, setCurrent] = useState(() => logoWasLeft ?? left);
+  // Only the move into the workspace bar glides: its left side is empty. Arriving on a page
+  // with the site menu, a glide from the left would slide the logo across Product, Demos and
+  // Company, so it starts in the centre instead.
+  const [current, setCurrent] = useState(() => (left ? (logoWasLeft ?? left) : false));
   useEffect(() => {
     logoWasLeft = left;
     const frame = requestAnimationFrame(() => setCurrent(left));

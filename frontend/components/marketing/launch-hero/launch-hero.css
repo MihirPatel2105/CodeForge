@@ -159,8 +159,20 @@ button.lh-pill { font: inherit; font-size: 14px; cursor: pointer; }
 .lh-header[data-tone="hero"] .lh-lockup { filter: brightness(0) invert(1); }
 
 @media (pointer: coarse) { .lh-pill { height: 44px; } }
+/* Tablet widths: a centred logo needs about 320px clear on each side for the three site
+   menus, which the bar no longer has. The logo leads the row instead, as on most sites. */
+@media (min-width: 640px) and (max-width: 959px) {
+  .lh-header:not([data-workspace]) .lh-bar { grid-template-columns: auto auto minmax(0, 1fr); }
+  .lh-header:not([data-workspace]) .lh-logo { order: -1; }
+}
+/* Narrow tablets: a slightly smaller lockup (phones use 25.7px) keeps menus and Get started on one row. */
+@media (min-width: 640px) and (max-width: 759px) {
+  .lh-header:not([data-workspace]) .lh-lockup { height: 28px; }
+}
 @media (max-width: 1040px) { .lh-pill[data-wide] { display: none; } }
-@media (max-width: 760px) { .lh-signin, .lh-admin { display: none; } }
+/* Below 840px the logo, three menus and both buttons no longer fit one row; Get started stays,
+   and its page links to sign-in. */
+@media (max-width: 839px) { .lh-signin, .lh-admin { display: none; } }
 
 /* Projects folds away on the projects list and unfolds elsewhere: width, padding and the
    flex gap collapse together so the neighbours slide over instead of jumping. */

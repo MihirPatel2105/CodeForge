@@ -152,10 +152,10 @@ export function VerifyStep({
 
   return (
     <div className="w-full">
-      <span className="grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
+      <span className="cf-auth-icon grid h-11 w-11 place-items-center rounded-[var(--ui-radius-control)] border border-border bg-bg text-fg">
         <MailCheck className="h-5 w-5" aria-hidden />
       </span>
-      <span className="mt-6 block font-mono text-[12px] uppercase tracking-[.08em] text-fg-muted">
+      <span className="cf-auth-step mt-6 block font-mono text-[12px] uppercase tracking-[.08em] text-fg-muted">
         Step 2 of 2
       </span>
 
@@ -165,7 +165,7 @@ export function VerifyStep({
       <p className="mt-3 text-[15px] leading-6 text-fg-muted">
         Enter the {LENGTH}-digit code we sent to finish creating your account.
       </p>
-      <div className="mt-5 flex items-center justify-between gap-4 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
+      <div className="cf-auth-strip mt-5 flex items-center justify-between gap-4 rounded-[var(--ui-radius-control)] border border-border bg-bg px-4 py-3">
         <span className="min-w-0 truncate text-[13px] font-[600] text-fg">{email}</span>
         <span className="flex shrink-0 items-center gap-1.5 text-[12px] text-fg-muted">
           <Clock3 className="h-3.5 w-3.5" aria-hidden />
@@ -174,7 +174,7 @@ export function VerifyStep({
       </div>
 
       <div className="mt-7 flex flex-col gap-2">
-        <span className={LABEL}>Verification code</span>
+        <span className={cn(LABEL, "cf-auth-code-label")}>Verification code</span>
         <div className="flex gap-2 sm:gap-[9px]" role="group" aria-label="Verification code">
           {digits.map((digit, i) => (
             <input
@@ -233,7 +233,7 @@ export function VerifyStep({
           type="button"
           onClick={() => void resend()}
           disabled={cooldown > 0}
-          className="min-h-11 rounded-lg px-1 text-[13px] font-[650] text-accent transition-colors hover:text-fg disabled:cursor-not-allowed disabled:text-fg-faint disabled:hover:text-fg-faint"
+          className="cf-auth-resend min-h-11 rounded-lg px-1 text-[13px] font-[650] text-accent transition-colors hover:text-fg disabled:cursor-not-allowed disabled:text-fg-faint disabled:hover:text-fg-faint"
         >
           {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
         </button>
