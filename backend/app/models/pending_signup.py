@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from beanie import Document
 from pydantic import EmailStr, Field
@@ -23,10 +23,15 @@ class PendingSignup(Document):
     last_name: str = ""
 
     code_hash: str  # never the code itself — this row is as guessable as its contents
+    # SHA-256 of the ticket returned to the browser that registered. Verification needs
+    # the ticket *and* the mailed code, so whoever owns the inbox can only ever confirm
+    # the sign-up their own browser started — never credentials someone else submitted
+    # for their address. Rotated on every registration, which voids earlier tickets.
+    ticket_hash: str = ""
     expires_at: datetime
     attempts: int = 0
-    last_sent_at: datetime = Field(default_factory=datetime.now)
-    created_at: datetime = Field(default_factory=datetime.now)
+    last_sent_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     class Settings:
         name = "pending_signups"

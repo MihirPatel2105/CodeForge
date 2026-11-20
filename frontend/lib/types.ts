@@ -109,11 +109,15 @@ export interface RegisterResponse {
   access_token: string | null;
   /** When the current code stops being accepted. Drives the resend countdown. */
   expires_at: string | null;
+  /** Proves this browser submitted the sign-up; sent back with the emailed code. Held in
+   * memory only. Absent on resend responses — a resend keeps the same ticket. */
+  signup_ticket?: string | null;
 }
 
 export interface VerifyEmailRequest {
   email: string;
   code: string;
+  signup_ticket: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -147,6 +151,8 @@ export interface ResetPasswordRequest {
 export interface ChangePasswordRequest {
   current_password: string;
   new_password: string;
+  /** Required by the server when the account has an authenticator enabled. */
+  totp_code?: string;
 }
 
 /** Typed, not clicked: a dialog you can dismiss with one button is too easy to get
@@ -156,6 +162,8 @@ export const DELETE_CONFIRMATION = "DELETE";
 export interface DeleteAccountRequest {
   password: string;
   confirmation: string;
+  /** Required by the server when the account has an authenticator enabled. */
+  totp_code?: string;
 }
 
 export interface DeleteAccountResponse {

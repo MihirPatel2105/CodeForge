@@ -69,7 +69,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   // Set only when the server asks for a code, which it does when it has SMTP configured.
   // Null keeps this screen on the details step, so a server without email verification
   // needs no special case here — it simply never sets it.
-  const [pending, setPending] = useState<{ email: string; expiresAt: string | null } | null>(null);
+  const [pending, setPending] = useState<{ email: string; expiresAt: string | null; ticket: string } | null>(null);
   const setLabel = transition?.setLabel;
   useEffect(() => {
     setLabel?.(pending ? "Verify your email" : copy.title);
@@ -99,7 +99,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
           password,
         });
         if (result.verification_required) {
-          setPending({ email: result.email, expiresAt: result.expires_at });
+          if (!result.signup_ticket) {
+            setError("The server did not return a sign-up session. Try again.");
+            return;
+          }
+          setPending({ email: result.email, expiresAt: result.expires_at, ticket: result.signup_ticket });
           return;
         }
         // Verification is switched off on this server: sign-up completed in one step
@@ -156,6 +160,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 <VerifyStep
                   email={pending.email}
                   expiresAt={pending.expiresAt}
+                  signupTicket={pending.ticket}
                   onStartOver={() => {
                     setPending(null);
                     setError(null);

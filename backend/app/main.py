@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pymongo.errors import DuplicateKeyError
 from redis.asyncio import Redis
 
 from app.api.admin import router as admin_router
@@ -27,7 +28,7 @@ from app.api.runs import router as runs_router
 from app.api.stream import router as stream_router
 from app.config import settings
 from app.core.abuse_limits import check_abuse_limit
-from app.core.exceptions import CodeForgeError
+from app.core.exceptions import CodeForgeError, ConflictError
 from app.core.monitoring import monitor_loop
 from app.db import connect, disconnect
 from app.rag import RetrievalUnavailableError, warm_index
@@ -44,7 +45,7 @@ class RequestIdFilter(logging.Filter):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    security_errors = settings.production_security_errors()
+    security_errors = settings.startup_security_errors()
     if security_errors:
         raise RuntimeError("Unsafe production configuration: " + "; ".join(security_errors))
     app.state.redis = None
@@ -115,6 +116,23 @@ async def codeforge_error_handler(request: Request, exc: CodeForgeError) -> JSON
             }
         },
     )
+
+
+async def duplicate_key_handler(request: Request, exc: DuplicateKeyError) -> JSONResponse:
+    """A unique index caught two requests racing to create the same thing — a double
+    submitted sign-up code, a double-clicked sign-in, a repeated sign-out. The loser is a
+    conflict, not a server fault: before this it surfaced as a bare 500."""
+    # The index's field names, never its values: the values can be an email address.
+    # Logged as an error with the route, so a genuine bug elsewhere is still visible
+    # rather than quietly reported to the client as "already done".
+    key_fields = sorted((exc.details or {}).get("keyPattern", {}))
+    logger.error(
+        "Unique index conflict on %s %s (fields: %s)",
+        request.method,
+        request.url.path,
+        ", ".join(key_fields) or "unknown",
+    )
+    return await codeforge_error_handler(request, ConflictError("Already done"))
 
 
 async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
@@ -199,6 +217,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="CodeForge", lifespan=lifespan)
     app.add_exception_handler(CodeForgeError, codeforge_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)
+    app.add_exception_handler(DuplicateKeyError, duplicate_key_handler)
 
     @app.middleware("http")
     async def request_context_middleware(request: Request, call_next):

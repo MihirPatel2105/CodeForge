@@ -226,7 +226,7 @@ async def start_run(run: Run, *, with_approvals: bool = True) -> None:
 
     state["revision_context"] = (run.state or {}).get("revision_context") or {}
     run.status = "running"
-    run.updated_at = datetime.now()
+    run.updated_at = datetime.now(UTC)
     await run.save()
 
     await events.run_started(run_id, run.prompt)

@@ -6,7 +6,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlsplit
 
-from fastapi import APIRouter, BackgroundTasks, Request, status
+from fastapi import APIRouter, BackgroundTasks, Request, Response, status
 from pydantic import BaseModel, Field
 from pymongo.errors import DuplicateKeyError
 from webauthn import (
@@ -42,7 +42,7 @@ from app.core.exceptions import (
     NotFoundError,
     RateLimitError,
 )
-from app.core.security import consume_totp, verify_password
+from app.core.security import require_second_factor, verify_password
 from app.models import PasskeyChallenge, PasskeyCredential, User
 
 router = APIRouter(prefix="/auth/passkeys", tags=["auth"])
@@ -105,10 +105,7 @@ async def _consume(challenge_id: str, purpose: str, user_id: str | None = None) 
 async def _reauth(user: User, password: str, totp_code: str | None) -> None:
     if not verify_password(password, user.hashed_password):
         raise AuthError("Your current password is not correct")
-    if user.totp_enabled and (
-        not user.totp_secret_encrypted or not totp_code or not await consume_totp(totp_code, user)
-    ):
-        raise AuthError("The two-factor code is not correct")
+    await require_second_factor(user, totp_code)
 
 
 class PasskeyReauth(BaseModel):
@@ -253,7 +250,9 @@ async def register_passkey(
     )
 
 
-@router.post("/{passkey_id}/delete", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/{passkey_id}/delete", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
 async def delete_passkey(
     passkey_id: str,
     payload: PasskeyReauth,

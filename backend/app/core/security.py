@@ -166,6 +166,19 @@ async def consume_totp(code: str, user: Any) -> bool:
     return result.modified_count == 1
 
 
+async def require_second_factor(user: Any, totp_code: str | None) -> None:
+    """Demand a fresh authenticator code from accounts that have 2FA switched on.
+
+    Destructive account changes (password, deletion, passkeys, authenticator) re-check
+    the password; with 2FA on, a stolen session plus a phished password must still not
+    be enough. Accounts without an authenticator are unaffected.
+    """
+    if not user.totp_enabled:
+        return
+    if not user.totp_secret_encrypted or not totp_code or not await consume_totp(totp_code, user):
+        raise AuthError("The two-factor code is not correct")
+
+
 def totp_uri(secret: str, email: str) -> str:
     from urllib.parse import quote
 

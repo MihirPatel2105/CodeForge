@@ -5,6 +5,7 @@ and mails a code, `verify-email` exchanges the code for an account and a session
 `User` document exists in between — see `models/pending_signup.py` for why.
 """
 
+import hmac
 import logging
 import secrets
 from collections.abc import Awaitable, Callable
@@ -48,6 +49,7 @@ from app.core.security import (
     hash_recovery_code,
     hash_reset_token,
     password_hash_needs_upgrade,
+    require_second_factor,
     totp_uri,
     verify_otp,
     verify_password,
@@ -120,6 +122,11 @@ async def _replace_recovery_codes(user_id: str) -> list[str]:
             code_hash=hash_recovery_code(code),
         ).insert()
     return codes
+
+
+# A real Argon2 hash of a random secret, compared against on the unknown-email login path
+# so it costs what a wrong password for a real account costs. Nothing can match it.
+_UNKNOWN_USER_HASH = hash_password(secrets.token_urlsafe(32))
 
 
 def _now() -> datetime:
@@ -197,6 +204,12 @@ async def register(payload: RegisterRequest, request: Request) -> RegisterRespon
         pending.first_name = payload.first_name
         pending.last_name = payload.last_name
 
+    # Replacing the credentials is safe only because the ticket rotates with them: the
+    # code mailed next can complete *this* registration and no other. Before tickets, a
+    # second registration for someone's pending address handed the owner a code that
+    # confirmed the second registrant's password.
+    ticket = generate_reset_token()
+    pending.ticket_hash = hash_reset_token(ticket)
     await _issue_code(pending)
     return RegisterResponse(
         email=pending.email,
@@ -205,6 +218,7 @@ async def register(payload: RegisterRequest, request: Request) -> RegisterRespon
         # as *local* time, so the browser's countdown would be wrong by the client's
         # timezone offset — in IST, expired before it was shown.
         expires_at=_as_utc(pending.expires_at),
+        signup_ticket=ticket,
     )
 
 
@@ -235,43 +249,61 @@ async def verify_email(
     payload: VerifyEmailRequest, background: BackgroundTasks, request: Request
 ) -> TokenResponse:
     pending = await PendingSignup.find_one(PendingSignup.email == payload.email)
-    if pending is None:
-        # Covers an unknown address, an expired row Mongo already swept, and a code
-        # that was already used. One message for all three: which one it was is not
-        # the caller's business.
+    ticket_hash = hash_reset_token(payload.signup_ticket)
+    if pending is None or not hmac.compare_digest(pending.ticket_hash, ticket_hash):
+        # Covers an unknown address, an expired row Mongo already swept, a code that was
+        # already used, and a sign-up since replaced by another registration. One message
+        # for all of them: which one it was is not the caller's business.
         raise NotFoundError("No pending sign-up for that email. Please sign up again.")
 
     if _as_utc(pending.expires_at) <= _now():
         await pending.delete()
         raise AuthError("That code has expired. Please sign up again.")
 
-    if pending.attempts >= settings.otp_max_attempts:
-        await pending.delete()
-        raise RateLimitError("Too many incorrect codes. Please sign up again.")
+    # Claim an attempt atomically *before* checking the code. A read-then-save counter let
+    # parallel guesses all read the same count: 40 at once had 25 evaluated against a cap
+    # of 5. The filter also pins the ticket, so a registration that replaced this row in
+    # the meantime makes the claim fail rather than letting the old code through.
+    pending_rows = PendingSignup.get_pymongo_collection()
+    row_filter = {"_id": pending.id, "ticket_hash": ticket_hash}
+    claimed = await pending_rows.find_one_and_update(
+        {**row_filter, "attempts": {"$lt": settings.otp_max_attempts}},
+        {"$inc": {"attempts": 1}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if claimed is None:
+        capped = await pending_rows.delete_one(
+            {**row_filter, "attempts": {"$gte": settings.otp_max_attempts}}
+        )
+        if capped.deleted_count:
+            raise RateLimitError("Too many incorrect codes. Please sign up again.")
+        raise NotFoundError("No pending sign-up for that email. Please sign up again.")
 
-    if not verify_otp(payload.code, pending.code_hash):
-        # Counted before the response is sent, so a client that gives up mid-request
-        # still spends the attempt.
-        pending.attempts += 1
-        await pending.save()
-        remaining = settings.otp_max_attempts - pending.attempts
+    if not verify_otp(payload.code, claimed["code_hash"]):
+        remaining = settings.otp_max_attempts - claimed["attempts"]
         raise AuthError(f"That code is not correct. {remaining} attempt(s) left.")
+
+    # Exactly one request may turn a correct code into an account. The rest find the row
+    # already gone — the code cannot be replayed, and two accounts cannot race in.
+    consumed = await pending_rows.find_one_and_delete(
+        {**row_filter, "code_hash": claimed["code_hash"]}
+    )
+    if consumed is None:
+        raise NotFoundError("No pending sign-up for that email. Please sign up again.")
 
     # Last check before creating the account: the address could have been registered by
     # another sign-up while this code was in the inbox.
     if await User.find_one(User.email == pending.email) is not None:
-        await pending.delete()
         raise ConflictError("An account with that email already exists")
 
     user = User(
-        email=pending.email,
-        hashed_password=pending.hashed_password,
-        first_name=pending.first_name,
-        last_name=pending.last_name,
+        email=consumed["email"],
+        hashed_password=consumed["hashed_password"],
+        first_name=consumed.get("first_name", ""),
+        last_name=consumed.get("last_name", ""),
         email_verified=True,
     )
     await user.insert()
-    await pending.delete()  # the code cannot be replayed
 
     # After the response, not before it: an SMTP round trip is seconds, and nobody
     # should watch a spinner for a message they have not opened yet. This is the one
@@ -291,18 +323,31 @@ async def verify_email(
 @router.post("/resend-code", response_model=RegisterResponse)
 async def resend_code(payload: ResendCodeRequest) -> RegisterResponse:
     pending = await PendingSignup.find_one(PendingSignup.email == payload.email)
-    if pending is None:
+    ticket_hash = hash_reset_token(payload.signup_ticket)
+    if pending is None or not hmac.compare_digest(pending.ticket_hash, ticket_hash):
         raise NotFoundError("No pending sign-up for that email. Please sign up again.")
 
     _require_off_cooldown(pending)
-    await _issue_code(pending)
+    code = generate_otp()
+    await send_verification_code(to=pending.email, code=code, first_name=pending.first_name)
+    expires_at = _now() + timedelta(minutes=settings.otp_ttl_minutes)
+    # A targeted update pinned to the ticket, not a whole-document save: a registration
+    # that replaced this row meanwhile must not have its credentials written back over.
+    # `attempts` is deliberately left alone — a resend is not a fresh budget of guesses;
+    # only a new registration (rate-limited separately) starts one.
+    updated = await PendingSignup.get_pymongo_collection().update_one(
+        {"_id": pending.id, "ticket_hash": ticket_hash},
+        {"$set": {"code_hash": hash_otp(code), "expires_at": expires_at, "last_sent_at": _now()}},
+    )
+    if updated.matched_count == 0:
+        raise NotFoundError("No pending sign-up for that email. Please sign up again.")
     return RegisterResponse(
         email=pending.email,
         verification_required=True,
         # Re-tagged as UTC before it leaves: a naive ISO string is parsed by JavaScript
         # as *local* time, so the browser's countdown would be wrong by the client's
         # timezone offset — in IST, expired before it was shown.
-        expires_at=_as_utc(pending.expires_at),
+        expires_at=expires_at,
     )
 
 
@@ -315,6 +360,10 @@ async def login(
     # cannot be used to enumerate registered addresses. An unverified sign-up has no
     # User document at all, so it lands here too — nothing extra to check.
     if user is None:
+        # Spend the same Argon2 work a real account would. Returning at once answered an
+        # unknown address in ~2 ms against ~19 ms for a known one, which told an attacker
+        # exactly which emails are registered despite the identical message.
+        verify_password(payload.password, _UNKNOWN_USER_HASH)
         raise AuthError("Incorrect email or password")
 
     now = _now()
@@ -690,7 +739,7 @@ async def reset_password(
     return await login_result(user, methods, background, request)
 
 
-@router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/sign-out", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def sign_out(user: CurrentUser, claims: TokenClaims) -> None:
     """End this session on the server, not just in the browser that asked.
 
@@ -720,7 +769,9 @@ async def sign_out(user: CurrentUser, claims: TokenClaims) -> None:
         await session.save()
 
 
-@router.post("/sign-out-everywhere", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/sign-out-everywhere", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
 async def sign_out_everywhere(user: CurrentUser) -> None:
     """End every session on every device, including the one calling this.
 
@@ -752,8 +803,10 @@ async def change_password(
 
     if verify_password(payload.new_password, user.hashed_password):
         # Not a security control — it just means the request did nothing, and silently
-        # succeeding would look identical to a change that worked.
+        # succeeding would look identical to a change that worked. Checked before the
+        # second factor so a no-op does not spend the user's authenticator code.
         raise ConflictError("The new password is the same as your current one")
+    await require_second_factor(user, payload.totp_code)
 
     user = await update_user(
         user, {"hashed_password": hash_password(payload.new_password)}, revoke=True
@@ -805,7 +858,9 @@ async def list_devices(user: CurrentUser, claims: TokenClaims) -> list[DeviceRes
     ]
 
 
-@router.post("/devices/{device_id}/sign-out", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/devices/{device_id}/sign-out", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
 async def sign_out_device(device_id: str, user: CurrentUser) -> None:
     from app.core.deps import get_owned
 
@@ -886,6 +941,7 @@ async def delete_account(
         # the password was wrong is fine — the caller already proved they hold a session
         # for this account — but there is no reason to phrase it differently.
         raise AuthError("Incorrect password")
+    await require_second_factor(user, payload.totp_code)
 
     # Read off the document before it is deleted — afterwards there is nothing to read
     # the address from, and this is the last message this address will ever get.

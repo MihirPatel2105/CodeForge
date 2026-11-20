@@ -402,7 +402,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
     if not payload.approved:
         run.status = "rejected"
         _record_terminal_metrics(run, "rejected")
-        run.updated_at = datetime.now()
+        run.updated_at = datetime.now(UTC)
         await run.save()
         await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
         await events.run_failed(str(run.id), "rejected", payload.note or "rejected by the user")
@@ -411,7 +411,7 @@ async def approve_run(run_id: str, payload: ApprovalRequest, user: CurrentUser) 
         )
 
     run.status = "running"
-    run.updated_at = datetime.now()
+    run.updated_at = datetime.now(UTC)
     await run.save()
     await events.approval_resolved(str(run.id), payload.phase, payload.approved, payload.note)
     await executor.resume_run(str(run.id))
@@ -448,7 +448,7 @@ async def cancel_run(run_id: str, user: CurrentUser) -> RunCreateResponse:
 
     run.status = "cancelled"
     _record_terminal_metrics(run, "cancelled")
-    run.updated_at = datetime.now()
+    run.updated_at = datetime.now(UTC)
     await run.save()
 
     # A run mid-node has an asyncio task; cancelling it raises CancelledError inside

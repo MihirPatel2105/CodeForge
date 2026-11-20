@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from beanie import Document
 from pydantic import EmailStr, Field
@@ -12,7 +12,9 @@ class User(Document):
     # still load; `last_name` is genuinely optional (see RegisterRequest).
     first_name: str = ""
     last_name: str = ""
-    created_at: datetime = Field(default_factory=datetime.now)
+    # Aware UTC: a bare `datetime.now()` is the host's local time, so a backend running
+    # outside a UTC container wrote IST and the profile showed it 5.5 h ahead.
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     # Bumped whenever every existing session should stop working — currently only a
     # password change. JWTs are stateless, so without a counter to compare against, a
     # password changed because it leaked would leave the leaked sessions alive for the

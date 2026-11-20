@@ -189,10 +189,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  resendCode: (email: string) =>
+  resendCode: (email: string, signupTicket: string) =>
     request<RegisterResponse>("/auth/resend-code", {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, signup_ticket: signupTicket }),
     }),
   login: (payload: LoginRequest) =>
     request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),

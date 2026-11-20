@@ -194,3 +194,45 @@ def totp_code(monkeypatch):
         return security._totp(secret, clock // 30)
 
     return next_code
+
+
+# Sign-up email fixtures, shared by every test that exercises the verified path.
+@pytest.fixture
+def db():
+    """A synchronous handle on the test database.
+
+    Beanie's client is bound to the event loop the app's lifespan created it on, and
+    awaiting a Beanie query from a test's own loop raises. These tests need to look at
+    and tamper with stored documents, so they do it through plain pymongo instead.
+    """
+    with MongoClient(settings.mongo_uri) as mongo:
+        yield mongo[settings.mongo_db]
+
+
+@pytest.fixture
+def outbox(monkeypatch):
+    """Switch verification on and capture every code that would have been mailed."""
+    monkeypatch.setattr(settings, "smtp_user", "codeforge@example.com")
+    monkeypatch.setattr(settings, "smtp_password", "app-password")
+
+    sent: list[dict] = []
+
+    async def fake_send(*, to: str, code: str, first_name: str = "") -> None:
+        sent.append({"to": to, "code": code, "first_name": first_name})
+
+    monkeypatch.setattr("app.api.auth.send_verification_code", fake_send)
+    return sent
+
+
+@pytest.fixture
+def welcomes(monkeypatch):
+    """Capture the welcome email. Stubbed for the same reason as the code itself — and
+    because it runs in a background task, an unstubbed one would reach for a real mail
+    server after the response had already been returned."""
+    sent: list[dict] = []
+
+    async def fake_send(*, to: str, first_name: str = "") -> None:
+        sent.append({"to": to, "first_name": first_name})
+
+    monkeypatch.setattr("app.api.auth.send_welcome_email", fake_send)
+    return sent

@@ -6,9 +6,9 @@ the Reviewer enforces on generated code applies to the platform itself.
 """
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import AfterValidator, BaseModel, BeforeValidator, EmailStr, Field, field_validator
 
 from app.graph.state import ApprovalPhase, RunMetrics, RunStatus
 from app.schemas.agents import GeneratedFile
@@ -16,6 +16,19 @@ from app.schemas.agents import GeneratedFile
 # --------------------------------------------------------------------------- #
 # Auth
 # --------------------------------------------------------------------------- #
+
+# Every email that arrives from a client is trimmed and lower-cased before it is used.
+# `EmailStr` lower-cases only the domain, so `Ada@x.com` and `ada@x.com` used to be two
+# accounts — and signing in with the "wrong" case failed and counted toward lockout.
+NormalizedEmail = Annotated[
+    EmailStr,
+    BeforeValidator(lambda value: value.strip() if isinstance(value, str) else value),
+    AfterValidator(lambda value: value.lower()),
+]
+
+# A 2FA code for re-authenticating a destructive change. Required by the route only when
+# the account has an authenticator enabled.
+OptionalTotpCode = Annotated[str | None, Field(default=None, min_length=6, max_length=8)]
 
 
 # Kept as data so the sign-up form and this validator cannot drift: the frontend ticks
@@ -66,7 +79,7 @@ class RegisterRequest(BaseModel):
     # Optional on purpose: plenty of people have one name, and a required surname would
     # simply lock them out.
     last_name: str = Field(default="", max_length=80)
-    email: EmailStr
+    email: NormalizedEmail
     password: str
 
     @field_validator("first_name", "last_name")
@@ -92,7 +105,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     password: str
 
 
@@ -148,11 +161,16 @@ class RegisterResponse(BaseModel):
     access_token: str | None = None
     # When the current code stops being accepted. Drives the resend countdown.
     expires_at: datetime | None = None
+    # Proof that this browser submitted these credentials; sent back with the code.
+    # Absent from /auth/resend-code responses: a resend never changes the ticket.
+    signup_ticket: str | None = None
 
 
 class VerifyEmailRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     code: str = Field(min_length=4, max_length=12)
+    # Returned by /auth/register to the browser that submitted the credentials.
+    signup_ticket: str = Field(min_length=32, max_length=128)
 
     @field_validator("code")
     @classmethod
@@ -165,11 +183,14 @@ class VerifyEmailRequest(BaseModel):
 
 
 class ResendCodeRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
+    # Only the browser that registered may ask for another code: without this, anyone
+    # who knew an address could rotate its owner's code every cooldown.
+    signup_ticket: str = Field(min_length=32, max_length=128)
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
 
 
 class ForgotPasswordResponse(BaseModel):
@@ -199,6 +220,7 @@ class ResetPasswordRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
+    totp_code: OptionalTotpCode
 
     @field_validator("new_password")
     @classmethod
@@ -219,6 +241,7 @@ DELETE_CONFIRMATION = "DELETE"
 class DeleteAccountRequest(BaseModel):
     password: str
     confirmation: str
+    totp_code: OptionalTotpCode
 
     @field_validator("confirmation")
     @classmethod

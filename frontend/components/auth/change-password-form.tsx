@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { api, setToken, ApiError } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { PASSWORD_RULES, passwordMeetsAllRules } from "@/lib/password-rules";
+import { AUTHENTICATOR_CODE_LENGTH, AuthenticatorCodeField } from "@/components/auth/authenticator-code-field";
 
 const FIELD =
   "h-12 rounded-xl border-border-strong bg-surface px-[14px] text-[14px] " +
@@ -25,9 +26,13 @@ const FIELD_LABEL = "text-[13px] font-[650] text-fg";
  *
  * The same four rules the sign-up form ticks off are shown here, from the same source,
  * so a rule can never be advertised in one place and enforced differently in another.
+ *
+ * With 2FA on, the server also wants a fresh authenticator code: a stolen session plus a
+ * phished password must not be enough to take the account.
  */
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ requiresTotp }: { requiresTotp: boolean }) {
   const [current, setCurrent] = useState("");
+  const [totpCode, setTotpCode] = useState("");
   const [next, setNext] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +40,10 @@ export function ChangePasswordForm() {
   const [saving, setSaving] = useState(false);
 
   const touched = next.length > 0;
-  const ready = current.length > 0 && passwordMeetsAllRules(next);
+  const ready =
+    current.length > 0 &&
+    passwordMeetsAllRules(next) &&
+    (!requiresTotp || totpCode.length === AUTHENTICATOR_CODE_LENGTH);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,19 +53,24 @@ export function ChangePasswordForm() {
     setError(null);
     setDone(false);
     try {
-      const { access_token } = await api.changePassword({
+      await api.changePassword({
         current_password: current,
         new_password: next,
+        ...(requiresTotp ? { totp_code: totpCode } : {}),
       });
-      // The server ends every session on a password change, including this one. Storing
-      // the replacement it hands back is what keeps this browser signed in — without
-      // this the next request would 401 and bounce the user to the login page.
-      setToken(access_token);
+      // The server ends every session on a password change, including this one, and
+      // hands back a replacement. The API proxy stores it in the session cookie as the
+      // response passes through, so this browser is already signed in again. Calling
+      // setToken() here as well announced a session change, which reset the shared
+      // session to "loading", unmounted this form and lost the confirmation below.
       setCurrent("");
       setNext("");
+      setTotpCode("");
       setDone(true);
     } catch (err) {
-      setError(messageFor(err));
+      setError(messageFor(err, requiresTotp));
+      // A code is spent once tried; the next attempt needs the next one.
+      setTotpCode("");
     } finally {
       setSaving(false);
     }
@@ -104,6 +117,16 @@ export function ChangePasswordForm() {
             </button>
           </div>
         </div>
+
+        {requiresTotp && (
+          <AuthenticatorCodeField
+            id="change_password_totp"
+            value={totpCode}
+            onChange={setTotpCode}
+            labelClassName={FIELD_LABEL}
+            inputClassName={FIELD}
+          />
+        )}
 
         <ul
           className="grid gap-x-5 gap-y-2 rounded-lg border border-rule bg-bg/70 px-4 py-3 sm:grid-cols-2"
@@ -161,11 +184,15 @@ export function ChangePasswordForm() {
   );
 }
 
-function messageFor(err: unknown): string {
+function messageFor(err: unknown, requiresTotp: boolean): string {
   if (!(err instanceof ApiError)) {
     return "Couldn't reach the server. Your password was not changed.";
   }
-  if (err.status === 401) return "Your current password is not correct.";
+  if (err.status === 401) {
+    return requiresTotp
+      ? "Your current password or authenticator code is not correct."
+      : "Your current password is not correct.";
+  }
   if (err.status === 409) return "That is already your password. Pick a different one.";
   if (err.status === 422) return "The new password does not meet all four requirements.";
   return err.message || "Something went wrong. Your password was not changed.";

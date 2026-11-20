@@ -29,10 +29,13 @@ const LABEL = "text-[13px] font-[650] text-fg";
 export function VerifyStep({
   email,
   expiresAt,
+  signupTicket,
   onStartOver,
 }: {
   email: string;
   expiresAt: string | null;
+  /** From the register response; ties the emailed code to this browser's sign-up. */
+  signupTicket: string;
   onStartOver: () => void;
 }) {
   const router = useRouter();
@@ -62,7 +65,7 @@ export function VerifyStep({
       setSubmitting(true);
       setError(null);
       try {
-        const { access_token } = await api.verifyEmail({ email, code: value });
+        const { access_token } = await api.verifyEmail({ email, code: value, signup_ticket: signupTicket });
         setToken(access_token);
         // A brand-new account lands on the landing page, not the dashboard: someone who
         // just signed up has no projects, so /projects would greet them with an empty
@@ -81,7 +84,7 @@ export function VerifyStep({
         // a disabled input silently does nothing.
       }
     },
-    [email, router],
+    [email, router, signupTicket],
   );
 
   // Submitting on completion rather than making you reach for a button — there is
@@ -139,7 +142,7 @@ export function VerifyStep({
     setError(null);
     setResent(false);
     try {
-      const response = await api.resendCode(email);
+      const response = await api.resendCode(email, signupTicket);
       setExpiry(response.expires_at);
       setCooldown(RESEND_COOLDOWN);
       setDigits(Array(LENGTH).fill(""));
@@ -281,7 +284,12 @@ function messageFor(err: unknown): string {
     return "Couldn't reach the server. Check your connection, then try again.";
   }
   // ApiError carries a safe message chosen by the client, never backend exception text.
-  if (err.status === 401 || err.status === 404 || err.status === 429) {
+  if (err.status === 404) {
+    // The pending sign-up is gone: expired, already used, or replaced by a newer sign-up
+    // for this address (which voids this browser's ticket). Only starting over helps.
+    return "This sign-up is no longer active. Go back and create your account again.";
+  }
+  if (err.status === 401 || err.status === 429) {
     return err.message || "That code was not accepted.";
   }
   if (err.status === 422) return "Enter the six digits from the email.";

@@ -136,6 +136,7 @@ test("the sign-in verify step uses the shared form styling", async ({ page }) =>
 test("the sign-up email code step uses the shared form styling", async ({ page }) => {
   await page.route("**/auth/register", (route) => route.fulfill({ json: {
     verification_required: true, email: "new@example.com", expires_at: new Date(Date.now() + 600_000).toISOString(),
+    signup_ticket: "t".repeat(43),
   } }));
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });

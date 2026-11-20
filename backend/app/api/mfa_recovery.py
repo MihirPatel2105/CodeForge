@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 
 from bson.errors import InvalidId
 from fastapi import APIRouter, BackgroundTasks, Request, Response
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
@@ -36,6 +36,7 @@ from app.models import (
     RecoveryCode,
     User,
 )
+from app.schemas.api import NormalizedEmail
 
 router = APIRouter(tags=["MFA recovery"])
 GENERIC = (
@@ -45,7 +46,7 @@ GENERIC = (
 
 
 class RecoveryRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     invite_token: str = Field(min_length=20, max_length=128)
 
 
@@ -56,7 +57,7 @@ class RecoveryReview(BaseModel):
 
 
 class RecoveryInvite(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     current_password: str = Field(min_length=1, max_length=256)
     reason: str = Field(min_length=3, max_length=240)
 
@@ -123,7 +124,7 @@ async def invite_recovery(payload: RecoveryInvite, admin: AdminUser, request: Re
         payload.current_password, admin.hashed_password
     ):
         raise AuthError("Confirm your password and provide a review reason.")
-    user = await User.find_one(User.email == str(payload.email).strip().lower())
+    user = await User.find_one(User.email == payload.email)
     if user is None:
         raise NotFoundError("Account not found")
     if str(user.id) == str(admin.id):
@@ -190,7 +191,7 @@ async def invite_recovery(payload: RecoveryInvite, admin: AdminUser, request: Re
 
 @router.post("/auth/mfa-recovery/request", response_model=RecoveryMessage)
 async def request_recovery(payload: RecoveryRequest, background: BackgroundTasks) -> dict:
-    user = await User.find_one(User.email == str(payload.email).strip().lower())
+    user = await User.find_one(User.email == payload.email)
     if user and user.email_verified and user.totp_enabled and not user.is_suspended:
         # The registered email must match the account bound to the staff-issued invite.
         created = await MfaRecovery.get_pymongo_collection().find_one_and_update(

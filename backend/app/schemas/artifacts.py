@@ -11,7 +11,7 @@ contract, so producers and consumers agree without importing each other.
 
 import re
 import unicodedata
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -41,7 +41,7 @@ class ArtifactMetadata(BaseModel):
     kind: ArtifactKind
     iteration: int = 0
     content_type: str = "application/octet-stream"
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class ArtifactRef(BaseModel):

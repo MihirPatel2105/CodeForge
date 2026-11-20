@@ -11,6 +11,7 @@ test("sign-up moves to email verification after a valid registration", async ({ 
         verification_required: true,
         email: "new@example.com",
         expires_at: new Date(Date.now() + 600_000).toISOString(),
+        signup_ticket: "t".repeat(43),
       }),
     });
   });

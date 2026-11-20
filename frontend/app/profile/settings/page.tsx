@@ -368,6 +368,7 @@ export default function SettingsPage() {
       {confirming && user && !user.is_admin && (
         <DeleteAccountDialog
           email={user.email}
+          requiresTotp={user.totp_enabled}
           onClose={() => setConfirming(false)}
         />
       )}

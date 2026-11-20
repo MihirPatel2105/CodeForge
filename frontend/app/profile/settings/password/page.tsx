@@ -34,7 +34,7 @@ export default function ChangePasswordPage() {
           <p className="mt-2 text-[13px] leading-5 text-fg-muted">
             Confirm your current password, then choose a different one.
           </p>
-          <ChangePasswordForm />
+          <ChangePasswordForm requiresTotp={user.totp_enabled} />
         </section>
 
         <aside className="ax-acct-card overflow-hidden rounded-3xl border border-border bg-surface">

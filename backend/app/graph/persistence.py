@@ -5,7 +5,7 @@ LangGraph's checkpointer is what makes a run *resumable*; this is what makes it
 Both are written at every node transition (FR-27).
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -49,5 +49,5 @@ async def save_state(state: dict[str, Any]) -> None:
     run.iterations = state.get("loop_count", run.iterations)
     if state.get("finished_at") is not None:
         run.metrics = score_run(state, status=run.status)
-    run.updated_at = datetime.now()
+    run.updated_at = datetime.now(UTC)
     await run.save()

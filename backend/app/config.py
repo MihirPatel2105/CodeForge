@@ -6,6 +6,12 @@ from urllib.parse import urlsplit
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Public in this repository, so anything signed with it can be forged by anyone.
+DEV_JWT_SECRET = "dev-secret-change-me"
+MIN_SECRET_LENGTH = 32
+_PLACEHOLDER_PREFIXES = ("dev-", "change-me")
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -21,7 +27,7 @@ class Settings(BaseSettings):
     docker_tls_verify: str = ""
     docker_cert_path: str = ""
 
-    jwt_secret: str = "dev-secret-change-me"
+    jwt_secret: str = DEV_JWT_SECRET
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24  # 24h; long enough to survive a demo session
 
@@ -87,12 +93,40 @@ class Settings(BaseSettings):
         """
         return bool(self.smtp_user and self.smtp_password)
 
+    def startup_security_errors(self) -> list[str]:
+        """Every reason to refuse to start, whatever CODEFORGE_ENV says.
+
+        The production checks only run when CODEFORGE_ENV=production, and the default is
+        development — so a deployment that forgot the flag used to start with the public
+        development JWT secret and accept forged tokens. That one check now runs for any
+        APP_BASE_URL that is not this machine.
+        """
+        errors = self.production_security_errors()
+        host = (urlsplit(self.app_base_url).hostname or "").lower()
+        local = host in _LOCAL_HOSTS or host.endswith(".localhost")
+        if not local and self._jwt_secret_is_weak() and not self._jwt_secret_reported(errors):
+            errors.append(
+                "JWT_SECRET is a public or short placeholder; set a unique secret of at "
+                "least 32 characters before serving a non-local APP_BASE_URL"
+            )
+        return errors
+
+    def _jwt_secret_is_weak(self) -> bool:
+        # The secret also derives the TOTP-encryption and rate-limit keys, so a guessable
+        # one exposes more than session forgery. `.env.example` ships `change-me`.
+        secret = self.jwt_secret
+        return len(secret) < MIN_SECRET_LENGTH or secret.startswith(_PLACEHOLDER_PREFIXES)
+
+    @staticmethod
+    def _jwt_secret_reported(errors: list[str]) -> bool:
+        return any(error.startswith("JWT_SECRET") for error in errors)
+
     def production_security_errors(self) -> list[str]:
         if self.codeforge_env != "production":
             return []
 
         errors: list[str] = []
-        if len(self.jwt_secret) < 32 or self.jwt_secret.startswith("dev-"):
+        if self._jwt_secret_is_weak():
             errors.append("JWT_SECRET must be a unique secret of at least 32 characters")
         if not self.email_verification_enabled:
             errors.append("SMTP_USER and SMTP_PASSWORD are required for verified sign-up")

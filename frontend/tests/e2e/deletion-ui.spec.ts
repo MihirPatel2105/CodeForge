@@ -123,3 +123,27 @@ for (const width of [1440, 375]) {
     await expect(page.getByRole("button", { name: "Delete project", exact: true })).toHaveCount(0);
   });
 }
+
+test("account deletion asks for the authenticator code when 2FA is on", async ({ page }) => {
+  await page.route("**/api/backend/auth/me", route => route.fulfill({ json: {
+    id: "deletion-user", email: "user@example.com", first_name: "Regular", last_name: "User",
+    created_at: "2026-09-23T00:00:00Z", is_admin: false, email_verified: true, totp_enabled: true,
+  } }));
+  let sent: unknown = null;
+  await page.route("**/api/backend/auth/delete-account", route => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ status: 401, json: { error: { code: "unauthorized", message: "No" } } });
+  });
+  await page.goto("/profile/settings");
+  await page.getByRole("button", { name: "Delete account", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Delete your account" });
+  const submit = dialog.getByRole("button", { name: "Delete account", exact: true });
+  await dialog.getByLabel("Confirm your password").fill("TestPassword123");
+  await dialog.getByLabel("Type DELETE to confirm").fill("DELETE");
+  await expect(submit).toBeDisabled();
+  await dialog.getByLabel("Authenticator code").fill("123 456");
+  await expect(submit).toBeEnabled();
+  await submit.click();
+  await expect(dialog.getByRole("alert")).toContainText("password or authenticator code is not correct");
+  expect(sent).toEqual({ password: "TestPassword123", confirmation: "DELETE", totp_code: "123456" });
+});

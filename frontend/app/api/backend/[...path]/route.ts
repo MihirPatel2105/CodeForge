@@ -93,6 +93,9 @@ function clearSession(response: NextResponse, request: NextRequest): void {
   response.cookies.set(PRESENT_COOKIE, "", { ...options, httpOnly: false, maxAge: 0 });
 }
 
+/** Successful calls to these end the browser's session, so the cookies go with them. */
+const SESSION_ENDING_PATHS = new Set(["/auth/sign-out", "/auth/sign-out-everywhere", "/auth/delete-account"]);
+
 function proxyError(status: number, code: string): NextResponse {
   return NextResponse.json(
     { error: { code, message: publicApiErrorMessage(status, code) } },
@@ -239,9 +242,14 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
     return response;
   }
 
+  // An empty success (204) is never JSON, whatever its content-type says: FastAPI labels
+  // empty 204s application/json, and parsing one threw, turning every successful
+  // sign-out into a 502 that skipped the cookie clearing below.
+  const emptyBody = upstream.status === 204 || upstream.headers.get("content-length") === "0";
   if (
     path.startsWith("/auth/") &&
     upstream.ok &&
+    !emptyBody &&
     upstream.headers.get("content-type")?.includes("application/json")
   ) {
     let payload: Record<string, unknown>;
@@ -266,15 +274,17 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
       response.cookies.set(PRESENT_COOKIE, "1", { ...cookieOptions(request), httpOnly: false });
       return response;
     }
-    return NextResponse.json(payload, { status: upstream.status, headers: responseHeaders });
+    const response = NextResponse.json(payload, { status: upstream.status, headers: responseHeaders });
+    // Delete-account answers with JSON (what was removed), so it lands here, not below.
+    if (SESSION_ENDING_PATHS.has(path)) clearSession(response, request);
+    return response;
   }
 
-  const response = new NextResponse(upstream.body, {
+  const response = new NextResponse(emptyBody ? null : upstream.body, {
     status: upstream.status,
     headers: responseHeaders,
   });
-  const signedOut = ["/auth/sign-out", "/auth/sign-out-everywhere", "/auth/delete-account"]
-    .includes(path);
+  const signedOut = SESSION_ENDING_PATHS.has(path);
   if (
     (upstream.ok && signedOut) ||
     (upstream.status === 401 && ["/auth/me", "/auth/sign-out"].includes(path))

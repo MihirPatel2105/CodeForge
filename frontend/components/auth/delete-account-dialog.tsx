@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, clearToken, ApiError } from "@/lib/api";
 import { DELETE_CONFIRMATION } from "@/lib/types";
+import { AUTHENTICATOR_CODE_LENGTH, AuthenticatorCodeField } from "@/components/auth/authenticator-code-field";
 import "@/components/ui/axd-dialog.css";
 
 /**
@@ -26,14 +27,25 @@ import "@/components/ui/axd-dialog.css";
  * Styled like the project dialogs (the `axd` system); only the red submit and the impact
  * line mark it as destructive.
  */
-export function DeleteAccountDialog({ email, onClose }: { email: string; onClose: () => void }) {
+type Props = {
+  email: string;
+  /** The account has an authenticator; the server will want a fresh code too. */
+  requiresTotp: boolean;
+  onClose: () => void;
+};
+
+export function DeleteAccountDialog({ email, requiresTotp, onClose }: Props) {
   const router = useRouter();
   const [password, setPassword] = useState("");
+  const [totpCode, setTotpCode] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const armed = password.length > 0 && confirmation.trim() === DELETE_CONFIRMATION;
+  const armed =
+    password.length > 0 &&
+    confirmation.trim() === DELETE_CONFIRMATION &&
+    (!requiresTotp || totpCode.length === AUTHENTICATOR_CODE_LENGTH);
 
   useEffect(() => pausePageScroll(), []);
 
@@ -44,12 +56,17 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
     setDeleting(true);
     setError(null);
     try {
-      await api.deleteAccount({ password, confirmation: confirmation.trim() });
+      await api.deleteAccount({
+        password,
+        confirmation: confirmation.trim(),
+        ...(requiresTotp ? { totp_code: totpCode } : {}),
+      });
       // The account is gone, so the token in this browser now points at nothing.
       clearToken();
       router.replace("/");
     } catch (err) {
-      setError(messageFor(err));
+      setError(messageFor(err, requiresTotp));
+      setTotpCode("");
       setDeleting(false);
     }
   }
@@ -81,6 +98,18 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
             />
           </div>
 
+          {requiresTotp && (
+            <AuthenticatorCodeField
+              id="delete_totp"
+              value={totpCode}
+              onChange={setTotpCode}
+              disabled={deleting}
+              className="axd-field"
+              labelClassName="axd-label"
+              inputClassName="axd-input"
+            />
+          )}
+
           <div className="axd-field">
             <Label htmlFor="delete_confirmation" className="axd-label">Type <strong>{DELETE_CONFIRMATION}</strong> to confirm</Label>
             <Input
@@ -110,11 +139,15 @@ export function DeleteAccountDialog({ email, onClose }: { email: string; onClose
   );
 }
 
-function messageFor(err: unknown): string {
+function messageFor(err: unknown, requiresTotp: boolean): string {
   if (!(err instanceof ApiError)) {
     return "Couldn't reach the server. Nothing was deleted.";
   }
-  if (err.status === 401) return "That password is not correct. Nothing was deleted.";
+  if (err.status === 401) {
+    return requiresTotp
+      ? "That password or authenticator code is not correct. Nothing was deleted."
+      : "That password is not correct. Nothing was deleted.";
+  }
   if (err.status === 422) return `Type ${DELETE_CONFIRMATION} exactly to confirm.`;
   return err.message || "Something went wrong. Nothing was deleted.";
 }
