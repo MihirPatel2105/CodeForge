@@ -18,12 +18,13 @@ for (const width of [1440, 390, 320]) {
     await expect(page.locator("#start-building .el-primary")).toHaveCSS("border-radius", "12px");
     const start = page.locator("[data-launch-header]").getByRole("link", { name: "Get started", exact: true });
     await expect(start).toHaveAttribute("href", "/signup");
+    // Under the hero: the product film, waiting behind its play button.
     await page.locator(".el-product").scrollIntoViewIfNeeded();
-    await expect(page.locator(".ol-product-workspace")).toBeVisible();
-    await expect(page.locator(".ol-product-outcome [role=status]")).not.toBeEmpty();
+    await expect(page.locator(".el-film-video")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Play the film/ })).toBeVisible();
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await expect(page.locator(".ol-product-shell")).toHaveCSS("transform", "none");
-    const preview = page.locator(".ol-product-shell");
+    await expect(page.locator(".el-film-stage")).toHaveCSS("transform", "none");
+    const preview = page.locator(".el-film-stage");
     await preview.scrollIntoViewIfNeeded();
     const before = await preview.boundingBox();
     await page.mouse.move(20, 250);

@@ -144,3 +144,41 @@
 @media (prefers-reduced-motion: reduce) {
   .el-faq-item button svg, .el-faq-answer { transition: none; }
 }
+
+/* Product film in place of the sample replay: full column width, 16:9, rounded like the cards. */
+/* The stage is scaled by scroll (product-film.tsx); overflow clip keeps the video inside its corners. */
+.el-film-frame { position: relative; }
+.el-film-stage {
+  position: relative; overflow: hidden; border-radius: 18px; background: #141413;
+  transform-origin: 50% 50%; will-change: transform;
+  box-shadow: 0 40px 80px -48px color-mix(in srgb, var(--fg) 45%, transparent);
+}
+/* border-radius: inherit too: Chrome does not always clip a transformed <video> to its parent's corners. */
+.el-film-video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: inherit; background: #141413; }
+/* Before the first play: one quiet ink pill over the poster; the native controls appear once it plays. */
+/* Bottom-left, clear of the film's own title in the middle of the poster. */
+.el-film-play {
+  position: absolute; left: clamp(14px, 2.4vw, 28px); bottom: clamp(14px, 2.4vw, 28px);
+  display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 22px;
+  border: 0; border-radius: 999px; background: color-mix(in srgb, #faf9f5 94%, transparent); color: #141413;
+  font: 500 15.5px var(--font-ui), sans-serif; cursor: pointer;
+  box-shadow: 0 12px 32px -12px rgb(20 20 19 / 45%); transition: transform 220ms var(--ui-ease, ease), background-color 220ms ease;
+}
+.el-film-play > span { color: #5e5d59; font-variant-numeric: tabular-nums; }
+.el-film-play:hover { background: #fff; transform: scale(1.03); }
+.el-film-play:focus-visible { outline: 2px solid #faf9f5; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .el-film-play { transition: none; } .el-film-play:hover { transform: none; } }
+/* Phones: a 72% panel would be too small to watch, so the film is simply full width there.
+   !important beats the inline scale Motion writes for the scroll effect. The old replay ran edge
+   to edge on phones; the film keeps the page margins so its corners and caption stay clear. */
+@media (max-width: 639px) {
+  .el-film-stage { transform: none !important; }
+  .el-product.el-film { margin-inline: 0; }
+  .el-film-play { height: 42px; padding: 0 16px; font-size: 14px; }
+}
+.el-page .el-film-caption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; text-align: left; }
+.el-film-follow {
+  display: inline-flex; align-items: center; gap: 6px; color: var(--fg); font-size: 14px; font-weight: 500;
+  text-decoration: underline; text-decoration-color: var(--el-hair-strong); text-underline-offset: 4px;
+}
+.el-film-follow:hover { text-decoration-color: currentColor; }

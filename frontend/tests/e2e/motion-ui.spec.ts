@@ -53,7 +53,8 @@ test("changing motion preference cancels scrolling reveals on the current page",
 test("homepage preview grows without moving subsequent sections and resets for reduced motion", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const preview = page.locator(".lp-product-scale");
+  // The product film (components/marketing/product-film.tsx) took over the preview's scroll growth.
+  const preview = page.locator(".el-film-stage");
   await expect(preview).toBeVisible();
   await expect.poll(() => page.locator(".lh-title span").last().evaluate(element => getComputedStyle(element).opacity)).toBe("1");
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
@@ -66,7 +67,7 @@ test("homepage preview grows without moving subsequent sections and resets for r
   expect(initialScale).toBeLessThan(0.95);
   // Scroll the preview well into view (the full-height hero puts it below the fold).
   await page.evaluate(() => {
-    const top = document.querySelector(".lp-product-scroll")!.getBoundingClientRect().top + window.scrollY;
+    const top = document.querySelector(".el-film-frame")!.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({ top: top - window.innerHeight / 2, behavior: "instant" });
   });
   await expect.poll(scale).toBeGreaterThan(initialScale + 0.02);
@@ -74,8 +75,6 @@ test("homepage preview grows without moving subsequent sections and resets for r
   expect(Math.abs(after - before)).toBeLessThan(1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(preview).toHaveCSS("transform", "none");
-  await expect(page.locator(".lp-product-scroll")).toHaveCSS("transform", "none");
-  await expect(page.locator(".lp-product-scroll")).toHaveCSS("opacity", "1");
   await expect(page.locator(".lh-title span").last()).toHaveCSS("animation-name", "none");
   await page.setViewportSize({ width: 320, height: 720 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
