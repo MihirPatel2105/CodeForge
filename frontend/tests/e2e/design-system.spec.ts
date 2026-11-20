@@ -20,7 +20,8 @@ test("pages paint slate ink on the ivory canvas", async ({ page }) => {
 test("landing cards are flat: a lighter step and a hairline, never a drop shadow", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  for (const selector of [".ol-product-shell", ".el-card", ".el-loop"]) {
+  // The product film is a frame, not a card, so its lift shadow is deliberate and not checked here.
+  for (const selector of [".el-card", ".el-loop"]) {
     const shadow = await style(page, selector, "box-shadow");
     expect(shadow, selector).toBe("none");
   }

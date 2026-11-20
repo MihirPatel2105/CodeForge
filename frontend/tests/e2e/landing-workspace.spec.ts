@@ -1,7 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The landing hero replays the scripted Library demo through the product's own reducer.
+// The sample replay (components/marketing/landing-product-preview.tsx) plays the scripted Library
+// demo through the product's own reducer. The home page now shows the product film in its place,
+// so these checks run on the preview page that still renders the replay.
 // The fake clock drives playback, so these checks never wait on real time.
+const REPLAY_PAGE = "/preview/hero-relief";
 
 // One replay tick. Stepping by ticks fires each scheduled event without simulating every
 // animation frame of the landing page, which `clock.runFor` would do far more slowly.
@@ -18,7 +21,7 @@ async function openLanding(page: Page, height = 1000) {
   await page.clock.install();
   await page.clock.pauseAt(Date.now() + 1_000);
   await page.setViewportSize({ width: 1440, height });
-  await page.goto("/");
+  await page.goto(REPLAY_PAGE);
 }
 
 async function revealWorkspace(page: Page) {
@@ -134,7 +137,7 @@ test("the hero labels the replay honestly and links to the full run", async ({ p
 for (const width of [390, 320]) {
   test(`the workspace fits without horizontal scroll at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto(REPLAY_PAGE);
     await workspace(page).scrollIntoViewIfNeeded();
     await expect(workspace(page).getByRole("tab", { name: "main.py", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
@@ -172,7 +175,7 @@ for (const width of [1440, 390]) {
     await page.clock.install();
     await page.clock.pauseAt(Date.now() + 1_000);
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto("/");
+    await page.goto(REPLAY_PAGE);
     await revealWorkspace(page);
     const region = workspace(page);
     const shell = page.locator(".ol-product-shell");

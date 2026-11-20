@@ -69,7 +69,8 @@ test("homepage teaser stays readable with reduced motion", async ({ page }) => {
   await expect(teaser).toBeVisible();
   await expect(page.getByRole("button", { name: /^(Pause|Play|Replay) walkthrough$/ })).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".lp-product-scale")).toHaveCSS("transform", "none");
+  // The product film replaced the sample replay under the hero; it holds still too.
+  await expect(page.locator(".el-film-stage")).toHaveCSS("transform", "none");
   const headline = page.getByRole("heading", { level: 1, name: "From an idea to a tested API" });
   await expect(headline).toBeVisible();
   const line = headline.locator("span").first();
