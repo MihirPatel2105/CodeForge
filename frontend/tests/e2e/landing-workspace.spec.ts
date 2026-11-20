@@ -36,7 +36,12 @@ async function advance(page: Page, ms: number) {
   }
 }
 
-async function advanceUntil(page: Page, done: () => Promise<boolean>, limitMs = FULL_REPLAY_MS) {
+// The replay schedules its next step only after React re-renders, so on a slow runner a tick can
+// land before that timer exists and move nothing. Allow a generous budget: the loop stops as soon
+// as `done` holds, so a healthy run never spends it.
+const UNTIL_LIMIT_MS = FULL_REPLAY_MS * 3;
+
+async function advanceUntil(page: Page, done: () => Promise<boolean>, limitMs = UNTIL_LIMIT_MS) {
   for (let elapsed = 0; elapsed < limitMs; elapsed += TICK_MS) {
     if (await done()) return;
     await page.clock.fastForward(TICK_MS);
