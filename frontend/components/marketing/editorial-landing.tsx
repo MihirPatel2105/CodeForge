@@ -44,7 +44,7 @@ export function EditorialLanding() {
           </motion.p>
 
           <motion.figure {...reveal} className="el-product el-film" aria-label="CodeForge product film">
-            {/* No autoplay: it has music, and loading 16 MB only on demand keeps the page light. */}
+            {/* No autoplay: it has music, and loading the 7 MB film only on demand keeps the page light. */}
             <ProductFilm />
             <figcaption className="el-film-caption">
               <span>CodeForge in 95 seconds: one prompt, five agents, a tested API.</span>
