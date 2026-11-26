@@ -11,6 +11,7 @@ prompt can be ignored and a schema cannot:
   that returns a raw Beanie document (CLAUDE.md §8, the predicted #1 failure mode).
 """
 
+import ast
 import json
 from typing import Any, Literal, get_origin
 
@@ -155,6 +156,91 @@ def _duplicates_document_id(source: str) -> bool:
             if not id_is_excluded:
                 return True
     return False
+
+
+_ROUTE_DECORATORS = frozenset({"get", "post", "put", "patch", "delete"})
+
+
+def _normalise_route_path(path: str) -> str:
+    return path.rstrip("/") or "/"
+
+
+def _collection_base(path: str) -> str | None:
+    """`/contacts/{contact_id}` -> `/contacts`; None when the path has no item segment."""
+    head, separator, _ = path.partition("/{")
+    if not separator or not head.strip("/"):
+        return None
+    return _normalise_route_path(head)
+
+
+def _missing_list_routes(routes: list[tuple[str, str]]) -> list[str]:
+    """Collection paths that have item routes but no `GET` list route, in first-seen order.
+
+    A collection is only usable — by a client, or by the downloaded admin UI, which
+    discovers collections from their list routes — when its records can be listed.
+    """
+    listed = {
+        _normalise_route_path(path)
+        for method, path in routes
+        if method == "GET" and "{" not in path
+    }
+    bases = dict.fromkeys(base for _, path in routes if (base := _collection_base(path)))
+    return [base for base in bases if base not in listed]
+
+
+def _router_prefixes(tree: ast.AST) -> dict[str, str]:
+    """`{"router": "/contacts"}` for each `router = APIRouter(prefix="/contacts")`."""
+    prefixes: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
+            continue
+        func = node.value.func
+        name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", None)
+        if name != "APIRouter":
+            continue
+        prefix = next(
+            (
+                kw.value.value
+                for kw in node.value.keywords
+                if kw.arg == "prefix"
+                and isinstance(kw.value, ast.Constant)
+                and isinstance(kw.value.value, str)
+            ),
+            "",
+        )
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                prefixes[target.id] = prefix
+    return prefixes
+
+
+def _declared_routes(source: str) -> list[tuple[str, str]]:
+    """`(METHOD, path)` for every `@app.get(...)`-style route decorator in `source`.
+
+    Applies a prefix declared on `APIRouter(prefix=...)` in the same module. A prefix
+    added elsewhere, at `include_router`, is unknown here; such routes then look like
+    `/{id}` with no collection segment and are skipped rather than guessed at.
+    """
+    tree = ast.parse(source)
+    prefixes = _router_prefixes(tree)
+    routes: list[tuple[str, str]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            continue
+        for decorator in node.decorator_list:
+            if (
+                not isinstance(decorator, ast.Call)
+                or not isinstance(decorator.func, ast.Attribute)
+                or decorator.func.attr not in _ROUTE_DECORATORS
+                or not isinstance(decorator.func.value, ast.Name)
+                or not decorator.args
+                or not isinstance(decorator.args[0], ast.Constant)
+                or not isinstance(decorator.args[0].value, str)
+            ):
+                continue
+            prefix = prefixes.get(decorator.func.value.id, "")
+            routes.append((decorator.func.attr.upper(), prefix + decorator.args[0].value))
+    return routes
 
 
 def _strip_fences(source: str) -> str:
@@ -333,6 +419,40 @@ class FileSpec(AgentSchema):
 CANONICAL_FILES = ("database.py", "models.py", "schemas.py", "main.py")
 
 
+def _is_list_model(model: str) -> bool:
+    return model.replace(" ", "").lower().startswith("list[")
+
+
+def _as_list_route(endpoint: Endpoint) -> Endpoint:
+    """A collection GET naming a single-record model returns a list of it.
+
+    The Coder copies the design's response_model verbatim, and a list route typed as
+    one record either fails at runtime or — worse for the admin UI, which only treats a
+    route returning an array as a collection — hides the collection entirely.
+    """
+    model = endpoint.response_model
+    if (
+        endpoint.method != "GET"
+        or "{" in endpoint.path
+        or _normalise_route_path(endpoint.path) == "/"
+        or not model
+        or _is_list_model(model)
+    ):
+        return endpoint
+    return endpoint.model_copy(update={"response_model": f"list[{model}]"})
+
+
+def _list_route_position(endpoints: list[Endpoint], base: str) -> int:
+    """Just after the collection's own routes (e.g. `POST /contacts`), else before its
+    first item route — so the design still reads collection by collection."""
+    collection_routes = [
+        i for i, e in enumerate(endpoints) if _normalise_route_path(e.path) == base
+    ]
+    if collection_routes:
+        return collection_routes[-1] + 1
+    return next(i for i, e in enumerate(endpoints) if _collection_base(e.path) == base)
+
+
 class Design(AgentSchema):
     collections: list[Collection] = Field(min_length=1)
     endpoints: list[Endpoint] = Field(min_length=1)
@@ -368,6 +488,59 @@ class Design(AgentSchema):
 
         self.files = cleaned
         return self
+
+    @model_validator(mode="after")
+    def _add_missing_list_routes(self) -> "Design":
+        """Give every collection with item routes its `GET` list route.
+
+        Observed live: a contacts design had create, get, update and delete but no
+        `GET /contacts`. Every downstream agent follows the design exactly, so the
+        generated app passed all its tests and still could not list a single record —
+        and the downloaded admin UI, which discovers collections from list routes,
+        showed none. The route is fully determined by the design, so it is added here
+        rather than spending a re-ask (and free-tier quota) on it.
+        """
+        missing = _missing_list_routes([(e.method, e.path) for e in self.endpoints])
+        endpoints = list(self.endpoints)
+        for base in missing:
+            item_model = self._item_response_model(base)
+            if item_model is None:
+                raise ValueError(
+                    f"{base} has item routes but no GET {base} list route, and no response "
+                    f"model to build one from. Add GET {base} returning list[<read schema>]."
+                )
+            listing = Endpoint(
+                method="GET",
+                path=base,
+                summary=f"List all {base.rsplit('/', 1)[-1]}",
+                response_model=f"list[{item_model}]",
+                status_code=200,
+            )
+            endpoints.insert(_list_route_position(endpoints, base), listing)
+        self.endpoints = [_as_list_route(e) for e in endpoints]
+        return self
+
+    def _item_response_model(self, base: str) -> str | None:
+        """The read schema for one record: the item GET's, else the create route's.
+
+        Nothing else qualifies — a 200 DELETE's `MessageResponse` is not a record.
+        """
+        for method, is_item in (("GET", True), ("POST", False)):
+            for e in self.endpoints:
+                path_matches = (
+                    _collection_base(e.path) == base
+                    if is_item
+                    else _normalise_route_path(e.path) == base
+                )
+                if (
+                    e.method == method
+                    and path_matches
+                    and ("{" in e.path) == is_item
+                    and e.response_model
+                    and not _is_list_model(e.response_model)
+                ):
+                    return e.response_model
+        return None
 
 
 # --------------------------------------------------------------------------- #
@@ -434,6 +607,14 @@ class SingleFileOutput(AgentSchema):
                 f"{self.path} duplicates document id: `id=str(doc.id)` and "
                 "`**doc.model_dump()` pass id twice. Name response fields explicitly "
                 "or use `doc.model_dump(exclude={'id'})`."
+            )
+
+        missing_lists = _missing_list_routes(_declared_routes(self.content))
+        if missing_lists:
+            wanted = ", ".join(f"GET {base}" for base in missing_lists)
+            raise ValueError(
+                f"{self.path} has item routes but no list route. Add {wanted} returning a "
+                "list of the response schema, so every record can be listed."
             )
 
         # Truncation does not always produce a syntax error. A file cut off after its

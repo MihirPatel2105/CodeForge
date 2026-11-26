@@ -27,7 +27,9 @@ def test_boot_probe_prefers_list_route_over_detail_route():
     detail = Endpoint(
         method="GET", path="/books/{book_id}", response_model="BookRead", status_code=200
     )
-    listing = Endpoint(method="GET", path="/books", response_model="BookRead", status_code=200)
+    listing = Endpoint(
+        method="GET", path="/books", response_model="list[BookRead]", status_code=200
+    )
     assert _boot_probe_endpoint([detail, listing]) is listing
 
 
