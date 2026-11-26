@@ -34,7 +34,7 @@ COMPOSE = """services:
   api:
     build: .
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT:-{API_PORT}}:8000"
     volumes:
       - api_data:/data/db
 volumes:
@@ -68,13 +68,14 @@ README = """# Your generated API
 1. Install and open Docker Desktop.
 2. Open a terminal in this folder.
 3. Run `docker compose up --build`.
-4. Open http://localhost:8000/docs to see every endpoint and its required fields.
+4. Open http://localhost:{API_PORT}/docs to see every endpoint and its required fields.
    Use the Try it out button to send a request.
 
-Port 8000 is the default. If it is already in use, copy `.env.example` to `.env`, set
-`API_PORT=8001`, and open http://localhost:8001/docs instead.
+Port {API_PORT} is the default. If it is already in use, for example by another
+downloaded API, copy `.env.example` to `.env`, set `API_PORT` to a free port such as
+{NEXT_API_PORT}, and open http://localhost:{NEXT_API_PORT}/docs instead.
 
-The API is at http://localhost:8000. MongoDB runs inside the API container and its data
+The API is at http://localhost:{API_PORT}. MongoDB runs inside the API container and its data
 is saved in a Docker volume. Stop with Ctrl-C, then `docker compose down`. Do not use
 `down -v` unless you want to delete the API data.
 
@@ -83,7 +84,7 @@ is saved in a Docker volume. Stop with Ctrl-C, then `docker compose down`. Do no
 In a second terminal, list the available routes:
 
 ```bash
-curl http://localhost:8000/openapi.json
+curl http://localhost:{API_PORT}/openapi.json
 ```
 
 Open `/docs`, choose a route, enter the example JSON, and click **Execute**. The page
@@ -108,7 +109,7 @@ ADMIN_COMPOSE = """services:
   admin:
     build: ./admin-ui
     ports:
-      - "127.0.0.1:${ADMIN_PORT:-3000}:80"
+      - "127.0.0.1:${ADMIN_PORT:-{ADMIN_PORT}}:80"
     depends_on:
       - api
 """
@@ -118,7 +119,8 @@ ADMIN_README = """# Manage your collection
 1. Install and open Docker Desktop.
 2. In this folder run:
    `docker compose -f compose.yaml -f compose.admin.yaml up --build`
-3. Open http://localhost:3000 to manage your records using forms and tables.
+3. Open http://localhost:{ADMIN_PORT} to manage your records using forms and tables.
+   The API docs stay at http://localhost:{API_PORT}/docs.
 
 The UI discovers collections from the running API's OpenAPI schema. It supports
 top-level collection routes with GET list responses (an array, or an object with
@@ -133,7 +135,8 @@ API key is needed. This is a local, single-user interface without authentication
 It binds to your computer's loopback address. Keep it local; adding public access
 requires authentication. MongoDB data uses the API's existing Docker volume.
 
-Set ADMIN_PORT in .env if port 3000 is occupied. Stop with Ctrl-C and run
+If a port is occupied, copy `.env.example` to `.env` and change `API_PORT` or
+`ADMIN_PORT` (exactly these names; any other name is ignored). Stop with Ctrl-C and run
 `docker compose -f compose.yaml -f compose.admin.yaml down`.
 Your API-only instructions remain in README.md.
 
@@ -141,6 +144,31 @@ The editable React source is in admin-ui/app and admin-ui/lib. No extra AI call
 is used to generate this UI. The API's sandbox tests cover the API; they do not
 certify every form or workflow in this optional interface.
 """
+
+
+# Host ports a download binds by default. Deliberately not 8000/3000: those belong to
+# CodeForge's own backend and Langfuse, which are usually running on the same machine
+# when someone opens a fresh download, so the defaults would never bind.
+DEFAULT_API_PORT = 8100
+DEFAULT_ADMIN_PORT = 3100
+
+
+def _with_ports(template: str) -> str:
+    return (
+        template.replace("{NEXT_API_PORT}", str(DEFAULT_API_PORT + 1))
+        .replace("{API_PORT}", str(DEFAULT_API_PORT))
+        .replace("{ADMIN_PORT}", str(DEFAULT_ADMIN_PORT))
+    )
+
+
+def _env_example(*, include_admin_ui: bool) -> str:
+    lines = [
+        "# Optional host ports. Copy to .env and change them if a port is in use.",
+        f"API_PORT={DEFAULT_API_PORT}",
+    ]
+    if include_admin_ui:
+        lines.append(f"ADMIN_PORT={DEFAULT_ADMIN_PORT}")
+    return "\n".join(lines) + "\n"
 
 
 def add_run_guide(payload: bytes, *, include_admin_ui: bool = False) -> bytes:
@@ -169,7 +197,7 @@ def add_run_guide(payload: bytes, *, include_admin_ui: bool = False) -> bytes:
                                 routes.append(f"- `{decorator.func.attr.upper()} {path}`")
             except (SyntaxError, UnicodeDecodeError):
                 pass
-            readme = README
+            readme = _with_ports(README)
             if include_admin_ui:
                 readme = readme.replace(
                     "# Your generated API\n",
@@ -188,8 +216,8 @@ def add_run_guide(payload: bytes, *, include_admin_ui: bool = False) -> bytes:
                     "README.md": readme,
                     "requirements.txt": REQUIREMENTS,
                     "Dockerfile": DOCKERFILE,
-                    "compose.yaml": COMPOSE,
-                    ".env.example": "# Optional host port for the API\nAPI_PORT=8000\n",
+                    "compose.yaml": _with_ports(COMPOSE),
+                    ".env.example": _env_example(include_admin_ui=include_admin_ui),
                     "start.sh": START,
                     ".dockerignore": "__pycache__\n.pytest_cache\n.venv\n.env\n",
                 }
@@ -202,8 +230,8 @@ def add_run_guide(payload: bytes, *, include_admin_ui: bool = False) -> bytes:
                             if file.is_file()
                         }
                     )
-                    additions["compose.admin.yaml"] = ADMIN_COMPOSE
-                    additions["ADMIN_UI.md"] = ADMIN_README
+                    additions["compose.admin.yaml"] = _with_ports(ADMIN_COMPOSE)
+                    additions["ADMIN_UI.md"] = _with_ports(ADMIN_README)
                 existing = set(original.namelist())
                 for name, content in additions.items():
                     if name not in existing:

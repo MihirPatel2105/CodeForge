@@ -32,7 +32,7 @@ def test_admin_option_is_runnable_and_preserves_api_source():
         assert "admin-ui/lib/schema.mjs" in archive.namelist()
         assert "admin-ui/node_modules" not in archive.namelist()
         compose = archive.read("compose.admin.yaml").decode()
-        assert "127.0.0.1:${ADMIN_PORT:-3000}:80" in compose
+        assert "127.0.0.1:${ADMIN_PORT:-3100}:80" in compose
         assert "build: ./admin-ui" in compose
         assert "proxy_pass http://api:8000/;" in archive.read("admin-ui/nginx.conf").decode()
         assert "-f compose.admin.yaml up --build" in archive.read("ADMIN_UI.md").decode()
