@@ -73,11 +73,23 @@ test("pages sit on one full-width canvas and questions animate in both direction
   await question.click();
   await expect.poll(height).toBeGreaterThan(40);
   const expanded = await height();
-  // Close and sample part-way, in one browser task so a slow round trip cannot outlast the motion.
+  // Close and take the first height that differs from the open one, sampled every frame in one
+  // browser task. A fixed 80 ms sample failed on a busy CI runner whose first animation frame
+  // had not arrived yet (closing === expanded); an instant snap shut still reads 0 and fails.
   const closing = await question.evaluate(el => {
-    (el as HTMLElement).click();
     const target = document.getElementById(el.getAttribute("aria-controls")!)!;
-    return new Promise<number>(resolve => setTimeout(() => resolve(target.getBoundingClientRect().height), 80));
+    const start = target.getBoundingClientRect().height;
+    (el as HTMLElement).click();
+    return new Promise<number>((resolve, reject) => {
+      const deadline = performance.now() + 2000;
+      const sample = () => {
+        const current = target.getBoundingClientRect().height;
+        if (current !== start) return resolve(current);
+        if (performance.now() > deadline) return reject(new Error(`answer stayed at ${start}px after closing`));
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
   });
   expect(closing).toBeGreaterThan(0);
   expect(closing).toBeLessThan(expanded);
