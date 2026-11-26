@@ -72,10 +72,14 @@ test("pages sit on one full-width canvas and questions animate in both direction
   const height = () => answer.evaluate(el => el.getBoundingClientRect().height);
   await question.click();
   await expect.poll(height).toBeGreaterThan(40);
+  // Wait for the opening motion to finish (Motion drives it through Web Animations, so none are
+  // left running). Recording `expanded` earlier failed twice on slow CI runners: the panel was
+  // still growing, so "closing" read equal to or taller than "expanded". A scrollHeight check is
+  // not enough — it rounds to whole pixels and passed while the panel was 0.27px short.
+  await expect.poll(() => answer.evaluate(el => el.getAnimations().length)).toBe(0);
   const expanded = await height();
   // Close and take the first height that differs from the open one, sampled every frame in one
-  // browser task. A fixed 80 ms sample failed on a busy CI runner whose first animation frame
-  // had not arrived yet (closing === expanded); an instant snap shut still reads 0 and fails.
+  // browser task, so a slow round trip cannot outlast the motion; an instant snap shut reads 0.
   const closing = await question.evaluate(el => {
     const target = document.getElementById(el.getAttribute("aria-controls")!)!;
     const start = target.getBoundingClientRect().height;
